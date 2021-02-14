@@ -11,7 +11,6 @@ import { StateProvider } from 'app/store';
 import Web3Provider from 'web3-react';
 import { connectors } from 'containers/Web3/connectors';
 import Web3 from 'web3';
-import BackgroundImage from 'containers/BackgroundImage/BackgroundImage';
 
 export default function MyApp(props) {
   const { Component, pageProps } = props;
@@ -39,7 +38,6 @@ export default function MyApp(props) {
 
   return (
     <React.Fragment>
-      <BackgroundImage />
       <Head>
         <title>Popcorn - DeFi for the People</title>
         <meta

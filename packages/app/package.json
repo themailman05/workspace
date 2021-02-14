@@ -2,9 +2,7 @@
   "name": "@popcorn/app",
   "version": "1.0.0",
   "scripts": {
-    "dev": "nodemon",
-    "build": "next build && tsc --project tsconfig.server.json",
-    "start": "cross-env NODE_ENV=production node dist/app/server/index.js",
+    "dev": "next",
     "test": "jest"
   },
   "dependencies": {
