@@ -1,0 +1,17 @@
+{
+  "name": "@popcorn/utils",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@popcorn/utils": "*",
+    "@types/pino": "^6.3.4",
+    "axios": "^0.21.1",
+    "date-fns": "^2.17.0",
+    "pino": "^6.9.0"
+  },
+  "license": "MIT"
+}
