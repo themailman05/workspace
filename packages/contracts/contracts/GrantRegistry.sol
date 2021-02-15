@@ -36,7 +36,6 @@ contract GrantRegistry {
  }
  
  struct Grant {
-    Awardee[] awardees;
     uint startBlock;
     uint endBlock;
     uint termLength;
@@ -44,6 +43,7 @@ contract GrantRegistry {
  }
  
  mapping(uint8 => Grant) private activeGrants;
+ mapping(uint8 => Awardee[]) private activeAwardees;
 
  modifier onlyGovernance {
    require(msg.sender == governance, "!governance");
@@ -118,9 +118,8 @@ contract GrantRegistry {
         }));
     }
   }
-  
+  activeAwardees[termLength] = awardees;
   activeGrants[termLength] = Grant({ 
-      awardees: awardees, 
       startBlock: block.number, 
       endBlock: block.number + getPeriodInBlocksForGrantTerm(termLength),
       termLength: termLength,
