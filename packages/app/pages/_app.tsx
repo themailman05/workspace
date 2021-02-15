@@ -44,6 +44,7 @@ export default function MyApp(props) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
+        <link rel="shortcut icon" type='image/x-icon' href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500&display=swap" rel="stylesheet"></link>
       </Head>
