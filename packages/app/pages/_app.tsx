@@ -9,7 +9,7 @@ import Router from 'next/router';
 import { GlobalLinearProgress } from 'containers/GlobalLinearProgress';
 import { StateProvider } from 'app/store';
 import Web3Provider from 'web3-react';
-import { connectors } from 'containers/Web3/connectors';
+import { connectors } from '../containers/Web3/connectors';
 import Web3 from 'web3';
 
 export default function MyApp(props) {

@@ -1,13 +1,10 @@
 import React from 'react';
-import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { Box, Link } from '@material-ui/core';
-import { Products } from './Products';  
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -28,13 +25,11 @@ const useStyles = makeStyles((theme) => ({
     height: '120px',
   },
   button: {
-    background: "rgb(131,58,180)",
     background: "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%)"
   },
   heroContent: {
     color: "#fff",
     padding: theme.spacing(8, 0, 6),
-    background: "rgb(131,58,180)",
     background: "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%)",
   },
   heroButtons: {

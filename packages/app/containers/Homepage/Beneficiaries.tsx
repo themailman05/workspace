@@ -26,7 +26,7 @@ export const Beneficiaries = ({classes}) => {
             </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primaryDark">
+              <Button size="small" color="secondary">
                 Enrollment Status: Pending
             </Button>
             </CardActions>
@@ -51,7 +51,7 @@ export const Beneficiaries = ({classes}) => {
             </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primaryDark">
+              <Button size="small" color="secondary">
                 Enrollment Status: Pending
             </Button>
             </CardActions>
@@ -76,7 +76,7 @@ export const Beneficiaries = ({classes}) => {
             </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primaryDark">
+              <Button size="small" color="secondary">
                 Enrollment Status: Pending
               </Button>
             </CardActions>

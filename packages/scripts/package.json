@@ -7,7 +7,6 @@
   "scripts": {
     "clean-dist": "rimraf dist/*",
     "clean": "yarn rimraf dist",
-    "build": "yarn clean-dist && tsc -b",
     "tsc": "tsc -b"
   }
 }

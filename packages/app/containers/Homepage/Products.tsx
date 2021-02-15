@@ -1,5 +1,5 @@
 import { Button, Card, CardActions, CardContent, Container, Grid, Typography } from "@material-ui/core";
-import { FrostedGlass } from "@popcorn/ui/components";
+import { FrostedGlass } from "@popcorn/ui";
 import React from "react";
 
 export const Products = ({classes}) => {
@@ -20,7 +20,7 @@ export const Products = ({classes}) => {
             </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primaryDark">
+              <Button size="small" color="secondary">
                 View
             </Button>
             </CardActions>
@@ -41,7 +41,7 @@ export const Products = ({classes}) => {
             </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primaryDark">
+              <Button size="small" color="secondary">
                 View
             </Button>
             </CardActions>
@@ -62,7 +62,7 @@ export const Products = ({classes}) => {
             </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primaryDark">
+              <Button size="small" color="secondary">
                 View
             </Button>
             </CardActions>
@@ -82,7 +82,7 @@ export const Products = ({classes}) => {
             </Typography>
             </CardContent>
             <CardActions>
-              <Button size="small" color="primaryDark">
+              <Button size="small" color="secondary">
                 View
             </Button>
             </CardActions>

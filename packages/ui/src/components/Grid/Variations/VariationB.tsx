@@ -27,7 +27,7 @@ export const GridLayout = () => {
         justify="center"
         alignItems="center"
       >
-        <Grid item xs={3}><FrostedGlass className={classes.FrostedGlass}>>xs=3</FrostedGlass></Grid>
+        <Grid item xs={3}><FrostedGlass className={classes.FrostedGlass}>xs=3</FrostedGlass></Grid>
         <Grid item xs={6}>
         <FrostedGlass className={classes.FrostedGlass}>
             xs=6
