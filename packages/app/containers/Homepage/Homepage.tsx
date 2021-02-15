@@ -6,7 +6,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import { Box } from '@material-ui/core';
+import { Box, Link } from '@material-ui/core';
 import { Products } from './Products';  
 
 const useStyles = makeStyles((theme) => ({
@@ -102,9 +102,11 @@ export const Homepage = () => {
             <div className={classes.heroButtons}>
               <Grid container spacing={2} justify="center">
                 <Grid item>
-                  <Button variant="contained" color="primary" className={classes.button}>
-                    Download Whitepaper
-                  </Button>
+                  <Link href="/docs/Popcorn_whitepaper_v1.pdf" target="_window">
+                    <Button variant="contained" color="primary" className={classes.button}>
+                      Download Whitepaper
+                    </Button>
+                  </Link>
                 </Grid>
 
               </Grid>
