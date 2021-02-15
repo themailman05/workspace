@@ -2,15 +2,16 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./BeneficiaryRegistry";
+import "./BeneficiaryRegistry.sol";
 
-contract GrantFactory {
+contract GrantRegistry {
 
  address private governance;
  address private council;
+ address private beneficiaryRegistry;
  
  uint8 private grantShareType;
- uint[3] private grantTermsEnabled;
+ mapping(uint8 => bool) private grantTermsEnabled;
  
  
  uint private blocksInADay = 6423;
@@ -25,11 +26,13 @@ contract GrantFactory {
  uint8 constant GRANT_SHARE_TYPE_EQUAL_WEIGHT = 1;
  uint8 constant GRANT_SHARE_TYPE_DYNAMIC_WEIGHT = 2;
  
- event GrantCreated(uint8 termLength, address[] awardees, uint8 grantShareType, uint256 shares);
- 
+ event GrantCreated(uint8 termLength, address[] awardees, uint8 grantShareType, bytes32 shares);
+  event GovernanceUpdated(address indexed _oldAddress, address indexed _newAddress);
+ event CouncilUpdated(address indexed _oldAddress, address indexed _newAddress);
+
  struct Awardee {
    address awardee;
-   uint256 share; // if grantShareType=GRANT_SHARE_TYPE_DYNAMIC_WEIGHT share will be % of grant
+   uint256 shares; // if grantShareType=GRANT_SHARE_TYPE_DYNAMIC_WEIGHT share will be % of grant
  }
  
  struct Grant {
@@ -57,11 +60,12 @@ contract GrantFactory {
    _;
  }
 
- constructor() {
+ constructor(address _beneficiaryRegistry) {
    governance = msg.sender;
    council = msg.sender;
-   grantTermsEnabled = [GRANT_TERM_QUARTER];
+   grantTermsEnabled[GRANT_TERM_QUARTER] = true;
    grantShareType = GRANT_SHARE_TYPE_EQUAL_WEIGHT;
+   beneficiaryRegistry = _beneficiaryRegistry;
  }
 
  function setGovernance(address _address) public validAddress(_address) onlyGovernance {
@@ -76,26 +80,36 @@ contract GrantFactory {
    emit CouncilUpdated(previousCouncil, _address);
  }
  
- function setEnabledGrantTerms(uint[] grantTerms) public onlyGovernance {
-    grantTermsEnabled = grantTerms;
+ function setEnabledGrantTerms(uint8[] calldata grantTerms) public onlyGovernance {
+    disableAllGrantTerms(); // reset grant terms
+    for (uint i=0; i<grantTerms.length; i++) {
+      grantTermsEnabled[grantTerms[i]] = true;
+    }
+ }
+
+ function disableAllGrantTerms() internal {
+   grantTermsEnabled[GRANT_TERM_MONTH] = false;
+   grantTermsEnabled[GRANT_TERM_QUARTER] = false;
+   grantTermsEnabled[GRANT_TERM_YEAR] = false;
  }
  
- function setGrantShareType(uint _grantShareType) public onlyGovernance {
+ function setGrantShareType(uint8 _grantShareType) public onlyGovernance {
      require(_grantShareType == GRANT_SHARE_TYPE_EQUAL_WEIGHT || _grantShareType == GRANT_SHARE_TYPE_DYNAMIC_WEIGHT, "invalid");
      grantShareType = _grantShareType;
  }
  
- function createGrant(uint8 termLength, address[] beneficiaries, uint256[] shares) public onlyGovernance {
+ function createGrant(uint8 termLength, address[] calldata beneficiaries, uint256[] calldata shares) public onlyGovernance {
   require(grantHasExpired(termLength), 'grantIsActive');
   require(grantTermsEnabled[termLength], 'termLength disabled');
   
-  Awardee[] awardees = [];
-  address[] eligibleBeneficiaries = [];
-  uint256[] eligibleBeneficiariesShares = [];
+  BeneficiaryRegistry registry = BeneficiaryRegistry(beneficiaryRegistry);
+  Awardee[] storage awardees;
+  address[] storage eligibleBeneficiaries;
+  uint256[] storage eligibleBeneficiariesShares;
 
   for (uint i=0; i<beneficiaries.length; i++) {
     // let's make sure that the beneficiaries are included in the registry before we award them a grant
-    if (BeneficiaryRegistry.beneficiaryExists(beneficiaries[i])) {
+    if (registry.beneficiaryExists(beneficiaries[i])) {
         eligibleBeneficiaries.push(beneficiaries[i]);
         eligibleBeneficiariesShares.push(shares[i]);
         awardees.push(Awardee({
@@ -113,30 +127,26 @@ contract GrantFactory {
       grantShareType: grantShareType
   });
   
-  emit GrantCreated(termLength, eligibleBeneficiaries, grantShareType, eligibleBeneficiariesShares);
+  emit GrantCreated(termLength, eligibleBeneficiaries, grantShareType, keccak256(abi.encodePacked(eligibleBeneficiariesShares)));
  }
  
- function getEligibleBeneficiaries(address[] beneficiaries) internal {
-    address[] eligibleBeneficiaries = [];
+ function getEligibleBeneficiaries(address[] memory beneficiaries) internal view returns (address[] memory _eligibleBeneficiaries){
+    address[] memory eligibleBeneficiaries = new address[](beneficiaries.length);
+    BeneficiaryRegistry registry = BeneficiaryRegistry(beneficiaryRegistry);
     for (uint i=0; i<beneficiaries.length; i++) {
-        if (BeneficiaryRegistry.beneficiaryExists(beneficiaries[i])) {
-            eligibleBeneficiaries.push(beneficiaries[i]);
+        if (registry.beneficiaryExists(beneficiaries[i])) {
+            eligibleBeneficiaries[i] = beneficiaries[i];
         }
     }
     return eligibleBeneficiaries;
  }
  
- function getActiveGrant(uint termLength) public view returns (Grant) {
-    return activeGrants[termLength];
- }
- 
  function grantHasExpired(uint8 termLength) public view returns (bool) {
-     if(!activeGrants[termLength]) return true;
      return activeGrants[termLength].endBlock < block.number;
  }
  
- function getPeriodInBlocksForGrantTerm(termLength) internal {
-  uint periodInBlocks;
+ function getPeriodInBlocksForGrantTerm(uint256 termLength) internal view returns (uint256) {
+  uint256 periodInBlocks;
   if (termLength == GRANT_TERM_MONTH) {
     periodInBlocks = blocksInAMonth;
   }
