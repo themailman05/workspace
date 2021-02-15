@@ -86,7 +86,7 @@ export const Homepage = () => {
 
               </Grid>
               <Grid item xs={4} sm={4} md={4}>
-                <img src="/images/popcorn_wip_white.png" className={classes.logomark}></img>
+                <img src="/images/popcorn_wip_white_small.png" className={classes.logomark}></img>
               </Grid>
               <Grid item xs={12} sm={12} md={12}>
                 <Typography variant="h5" align="center" color="textSecondary" paragraph className={classes.p}>
