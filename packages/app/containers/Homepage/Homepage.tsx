@@ -97,7 +97,7 @@ export const Homepage = () => {
             <div className={classes.heroButtons}>
               <Grid container spacing={2} justify="center">
                 <Grid item>
-                  <Link href="/docs/Popcorn_whitepaper_v1_1.pdf" target="_window">
+                  <Link href="/docs/Popcorn_whitepaper_v1.pdf" target="_window">
                     <Button variant="contained" color="primary" className={classes.button}>
                       Download Whitepaper
                     </Button>
