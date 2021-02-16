@@ -26,7 +26,7 @@ contract GrantRegistry {
  uint8 constant GRANT_SHARE_TYPE_EQUAL_WEIGHT = 1;
  uint8 constant GRANT_SHARE_TYPE_DYNAMIC_WEIGHT = 2;
  
- event GrantCreated(uint8 termLength, address[] awardees, uint8 grantShareType, bytes32 shares);
+ event GrantCreated(uint8 termLength, address[] awardees, uint8 grantShareType, uint256[] shares);
   event GovernanceUpdated(address indexed _oldAddress, address indexed _newAddress);
  event CouncilUpdated(address indexed _oldAddress, address indexed _newAddress);
 
@@ -104,20 +104,21 @@ contract GrantRegistry {
   
   BeneficiaryRegistry registry = BeneficiaryRegistry(beneficiaryRegistry);
   Awardee[] storage awardees;
-  address[] storage eligibleBeneficiaries;
-  uint256[] storage eligibleBeneficiariesShares;
+  address[] memory eligibleBeneficiaries;
+  uint256[] memory eligibleBeneficiariesShares;
 
   for (uint i=0; i<beneficiaries.length; i++) {
     // let's make sure that the beneficiaries are included in the registry before we award them a grant
     if (registry.beneficiaryExists(beneficiaries[i])) {
-        eligibleBeneficiaries.push(beneficiaries[i]);
-        eligibleBeneficiariesShares.push(shares[i]);
+        eligibleBeneficiaries[i] = beneficiaries[i];
+        eligibleBeneficiariesShares[i] = shares[i];
         awardees.push(Awardee({
             awardee: beneficiaries[i],
             shares: shares[i]
         }));
     }
   }
+
   activeAwardees[termLength] = awardees;
   activeGrants[termLength] = Grant({ 
       startBlock: block.number, 
@@ -126,7 +127,7 @@ contract GrantRegistry {
       grantShareType: grantShareType
   });
   
-  emit GrantCreated(termLength, eligibleBeneficiaries, grantShareType, keccak256(abi.encodePacked(eligibleBeneficiariesShares)));
+  emit GrantCreated(termLength, eligibleBeneficiaries, grantShareType, eligibleBeneficiariesShares);
  }
  
  function getEligibleBeneficiaries(address[] memory beneficiaries) internal view returns (address[] memory _eligibleBeneficiaries){

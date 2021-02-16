@@ -36,8 +36,8 @@
       ]
     },
     "/Users/anthonymartin/htdocs/popcorn/workspace/packages/contracts/contracts/GrantRegistry.sol": {
-      "lastModificationDate": 1613432027925,
-      "contentHash": "d4f51657cb70b3a0787786ae7ad0baa8",
+      "lastModificationDate": 1613433816582,
+      "contentHash": "531cde3bab1397955169aa3ee418caa5",
       "sourceName": "contracts/GrantRegistry.sol",
       "solcConfig": {
         "version": "0.7.3",
