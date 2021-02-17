@@ -1,8 +1,8 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/Users/anthonymartin/htdocs/popcorn/workspace/packages/contracts/contracts/BeneficiaryRegistry.sol": {
-      "lastModificationDate": 1613324891175,
+    "/Users/anthonymartin/Documents/projects/popcorn/workspace/packages/contracts/contracts/BeneficiaryRegistry.sol": {
+      "lastModificationDate": 1613554119017,
       "contentHash": "3a8983e01d509d00ddbbc78b22662bd4",
       "sourceName": "contracts/BeneficiaryRegistry.sol",
       "solcConfig": {
@@ -35,9 +35,9 @@
         "BeneficiaryRegistry"
       ]
     },
-    "/Users/anthonymartin/htdocs/popcorn/workspace/packages/contracts/contracts/GrantRegistry.sol": {
-      "lastModificationDate": 1613433816582,
-      "contentHash": "531cde3bab1397955169aa3ee418caa5",
+    "/Users/anthonymartin/Documents/projects/popcorn/workspace/packages/contracts/contracts/GrantRegistry.sol": {
+      "lastModificationDate": 1613568310471,
+      "contentHash": "7fab29f8cea0ca804304227520ebccd8",
       "sourceName": "contracts/GrantRegistry.sol",
       "solcConfig": {
         "version": "0.7.3",
@@ -62,13 +62,48 @@
         }
       },
       "imports": [
-        "./BeneficiaryRegistry.sol"
+        "./BeneficiaryRegistry.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         ">=0.7.0 <0.8.0"
       ],
       "artifacts": [
         "GrantRegistry"
+      ]
+    },
+    "/Users/anthonymartin/Documents/projects/popcorn/workspace/node_modules/hardhat/console.sol": {
+      "lastModificationDate": 1613555751229,
+      "contentHash": "cc4777addd464ea56fa35b1c45df0591",
+      "sourceName": "hardhat/console.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.4.22 <0.9.0"
+      ],
+      "artifacts": [
+        "console"
       ]
     }
   }
