@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/anthonymartin/Documents/projects/popcorn/workspace/packages/contracts/contracts/BeneficiaryRegistry.sol": {
-      "lastModificationDate": 1613554119017,
-      "contentHash": "3a8983e01d509d00ddbbc78b22662bd4",
+      "lastModificationDate": 1613569094338,
+      "contentHash": "8bc2cb3ca68741845c4bd44fd75cc377",
       "sourceName": "contracts/BeneficiaryRegistry.sol",
       "solcConfig": {
         "version": "0.7.3",
@@ -36,8 +36,8 @@
       ]
     },
     "/Users/anthonymartin/Documents/projects/popcorn/workspace/packages/contracts/contracts/GrantRegistry.sol": {
-      "lastModificationDate": 1613568310471,
-      "contentHash": "7fab29f8cea0ca804304227520ebccd8",
+      "lastModificationDate": 1613569175522,
+      "contentHash": "96e2e88d73b16cc56ccb2f430900d8b9",
       "sourceName": "contracts/GrantRegistry.sol",
       "solcConfig": {
         "version": "0.7.3",
@@ -62,8 +62,7 @@
         }
       },
       "imports": [
-        "./BeneficiaryRegistry.sol",
-        "hardhat/console.sol"
+        "./BeneficiaryRegistry.sol"
       ],
       "versionPragmas": [
         ">=0.7.0 <0.8.0"

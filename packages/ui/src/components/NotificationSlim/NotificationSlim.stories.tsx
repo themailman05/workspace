@@ -12,7 +12,7 @@ export default {
   },
   args: {
       visible: true,
-      children: <>Did you know that Popcorn helps you block distracting sites? <Link color="secondary" href="#">Learn more!</Link></>,
+      children: <>Did you know that Popcorn helps social impact organizations? <Link color="secondary" href="#">Learn more!</Link></>,
   }
 } as Meta;
 

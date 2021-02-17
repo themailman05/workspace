@@ -1,0 +1,49 @@
+Arguments: 
+  /Users/anthonymartin/.nvm/versions/node/v12.18.0/bin/node /Users/anthonymartin/.yarn/bin/yarn.js add prettier prettier-plugin-solidity
+
+PATH: 
+  /Users/anthonymartin/.yarn/bin:/Users/anthonymartin/.config/yarn/global/node_modules/.bin:/Users/anthonymartin/Library/Android/sdk/build-tools/30.0.2:/Users/anthonymartin/.nvm/versions/node/v12.18.0/bin:/Users/anthonymartin/Downloads/google-cloud-sdk/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/MacGPG2/bin:/Library/Apple/usr/bin:/Users/anthonymartin/.yarn/bin:/Users/anthonymartin/.config/yarn/global/node_modules/.bin:/Users/anthonymartin/Library/Android/sdk/build-tools/30.0.2:/Users/anthonymartin/.nvm/versions/node/v12.18.0/bin:/Users/anthonymartin/Downloads/google-cloud-sdk/bin
+
+Yarn version: 
+  1.22.5
+
+Node version: 
+  12.18.0
+
+Platform: 
+  darwin x64
+
+Trace: 
+  SyntaxError: /Users/anthonymartin/Documents/projects/popcorn/workspace/packages/contracts/package.json: Unexpected token } in JSON at position 393
+      at JSON.parse (<anonymous>)
+      at /Users/anthonymartin/.yarn/lib/cli.js:1625:59
+      at Generator.next (<anonymous>)
+      at step (/Users/anthonymartin/.yarn/lib/cli.js:310:30)
+      at /Users/anthonymartin/.yarn/lib/cli.js:321:13
+
+npm manifest: 
+  {
+    "name": "@popcorn/contracts",
+    "version": "1.0.0",
+    "main": "dist/index.js",
+    "types": "dist/index.d.js",
+    "scripts": {
+      "build": "tsc"
+    },
+    "dependencies": {
+      "@nomiclabs/hardhat-ethers": "^2.0.1",
+      "@nomiclabs/hardhat-waffle": "^2.0.1",
+      "@popcorn/utils": "*",
+      "chai": "^4.3.0",
+      "ethereum-waffle": "^3.2.2",
+      "ethers": "^5.0.31",
+      "hardhat": "^2.0.10",
+    },
+    "license": "MIT"
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile

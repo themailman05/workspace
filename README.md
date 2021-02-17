@@ -3,7 +3,8 @@
 - [Popcorn](#popcorn)
   - [Technology Used](#technology-used)
   - [Directory structure](#directory-structure)
-  - [Getting started](#getting-started)
+  - [Getting started with Frontend](#getting-started-with-frontend)
+  - [Getting started with Contracts](#getting-started-with-contracts)
   - [Default Service Locations](#default-service-locations)
   - [Useful Commands](#useful-commands)
   - [Contributing](#contributing)
@@ -14,9 +15,9 @@
 * [Lerna](https://lerna.js.org)
 * [Yarn](https://yarnpkg.com)
 * [Storybook](https://storybook.js.org/)
-* [GraphQL](https://graphql.org/)
 * [React styled components](https://styled-components.com)
 * [Solidity](https://soliditylang.org)
+* [Hardhat](https://hardhat.org)
 * [React testing library](https://testing-library.com/docs/react-testing-library/intro/)
 
 ## Directory structure
@@ -31,7 +32,7 @@ packages
 └── ... etc
 ```
 
-## Getting started
+## Getting started with Frontend
 
 1. Install packages
    * `yarn install`
@@ -39,9 +40,19 @@ packages
 2. Run dev (watch files and start up frontend)
    *  `yarn lerna run dev  --parallel`
 
-3. Start storybook:
-   * `yarn lerna run story`
+3. Start storybook (optional):
+   * `yarn lerna run story --parallel`
 
+
+## Getting started with Contracts
+To run tests:
+go to `packages/contracts`
+`yarn hardhat test`
+
+Deploy from `packages/contracts`:
+1. compile: `yarn hardhat compile`
+2. in one terminal: `yarn hardhat node`
+3. in another terminal: `yarn hardhat run --network localhost scripts/deploy.js`
 
 ## Default Service Locations 
 
