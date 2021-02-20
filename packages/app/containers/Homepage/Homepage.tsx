@@ -35,7 +35,6 @@ const useStyles = makeStyles((theme) => ({
   heroContent: {
     color: "#fff",
     padding: theme.spacing(8, 0, 6),
-    background: "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%)",
   },
   heroButtons: {
     marginTop: theme.spacing(4),
@@ -77,20 +76,14 @@ export const Homepage = () => {
     <React.Fragment>
 
       <main className={classes.root}>
-        {/* Hero unit */}
         <div className={classes.heroContent}>
-
           <Container maxWidth="sm">
-            <Grid container spacing={4}>
-      
-              <Grid item xs={4} sm={4} md={4}>
-              <img src="/images/popcorn_v1_dark_bg.png" className={classes.logomark}></img>
-       
-
+            <Grid container spacing={6} alignItems="center" style={{textAlign: "center"}}>
+              <Grid item xs={12} sm={12} md={4}>
+                <img src="/images/popcorn_v1_dark_bg.png" className={classes.logomark}></img>
               </Grid>
-              <Grid item xs={8} sm={8} md={8}>
-              <Typography component="h1" variant="h2" align="center" color="textSecondary" gutterBottom>
-                  <br />
+              <Grid item xs={12} sm={12} md={8}>
+                 <Typography component="h2" variant="h2" align="center" color="textSecondary" gutterBottom>
                   DeFi <Box fontWeight={100} fontStyle="italic" fontSize=".8em"> for the People</Box>
                 </Typography>
               </Grid>
