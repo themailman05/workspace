@@ -19,13 +19,18 @@ const useStyles = makeStyles((theme) => ({
   },
   logomark: {
     marginTop: '20px',
-    height: '200px',
+    height: '170px',
   },
   logomarkSmall: {
     height: '120px',
   },
   button: {
-    background: "linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%)"
+    background: "#fff",
+    color: "#000",
+    '&:hover': {
+      color:
+        "#fff"
+    },
   },
   heroContent: {
     color: "#fff",
@@ -77,16 +82,17 @@ export const Homepage = () => {
 
           <Container maxWidth="sm">
             <Grid container spacing={4}>
-              <Grid item xs={8} sm={8} md={8}>
+      
+              <Grid item xs={4} sm={4} md={4}>
+              <img src="/images/popcorn_v1_dark_bg.png" className={classes.logomark}></img>
+       
 
-                <Typography component="h1" variant="h2" align="center" color="textSecondary" gutterBottom>
+              </Grid>
+              <Grid item xs={8} sm={8} md={8}>
+              <Typography component="h1" variant="h2" align="center" color="textSecondary" gutterBottom>
                   <br />
                   DeFi <Box fontWeight={100} fontStyle="italic" fontSize=".8em"> for the People</Box>
                 </Typography>
-
-              </Grid>
-              <Grid item xs={4} sm={4} md={4}>
-                <img src="/images/popcorn_wip_white_small.png" className={classes.logomark}></img>
               </Grid>
               <Grid item xs={12} sm={12} md={12}>
                 <Typography variant="h5" align="center" color="textSecondary" paragraph className={classes.p}>
@@ -113,7 +119,7 @@ export const Homepage = () => {
       </main>
       {/* Footer */}
       <footer className={classes.footer}>
-        <img src="/images/popcorn_wip_cropped.png" className={classes.logomarkSmall}></img>
+        <img src="/images/popcorn_v1_dark_bg.png" className={classes.logomarkSmall}></img>
       </footer>
       {/* End footer */}
     </React.Fragment>
