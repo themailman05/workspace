@@ -10,6 +10,7 @@
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^3.4.0",
     "@popcorn/utils": "*",
     "chai": "^4.3.0",
     "ethereum-waffle": "^3.2.2",
