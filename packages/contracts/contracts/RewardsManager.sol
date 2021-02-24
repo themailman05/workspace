@@ -30,8 +30,9 @@ contract RewardsManager is Ownable {
   event RewardDeposited(address from, uint256 amount);
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
 
-  modifier validVault(uint8 vaultId_) {
-    require(vaultId_ < 3, "Invalid vault Id");
+  modifier vaultExists(uint8 vaultId_) {
+    require(vaultId_ < 3, "Invalid vault id");
+    require(vaults[vaultId_].endBlock > 0, "Uninitialized vault slot");
     _;
   }
 
@@ -43,7 +44,9 @@ contract RewardsManager is Ownable {
     uint8 vaultId_,
     uint256 endBlock_,
     bytes32 merkleRoot_
-  ) public onlyOwner validVault(vaultId_) {
+  ) public onlyOwner {
+    require(vaultId_ < 3, "Invalid vault id");
+    require(endBlock_ > block.number, "Invalid end block");
     require(
       vaults[vaultId_].status != VaultStatus.Open,
       "Vault must not be open"
@@ -60,7 +63,7 @@ contract RewardsManager is Ownable {
     emit VaultInitialized(vaultId_, merkleRoot_);
   }
 
-  function openVault(uint8 vaultId_) public onlyOwner validVault(vaultId_) {
+  function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(
       vaults[vaultId_].status == VaultStatus.Initialized,
       "Vault must be initialized"
@@ -71,7 +74,7 @@ contract RewardsManager is Ownable {
     emit VaultOpened(vaultId_);
   }
 
-  function closeVault(uint8 vaultId_) public onlyOwner validVault(vaultId_) {
+  function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
 
     uint256 _remainingBalance = vaults[vaultId_].balance;
@@ -88,7 +91,7 @@ contract RewardsManager is Ownable {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public view validVault(vaultId_) returns (bool) {
+  ) public view vaultExists(vaultId_) returns (bool) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     return
       MerkleProof.verify(
@@ -103,7 +106,8 @@ contract RewardsManager is Ownable {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public validVault(vaultId_) {
+  ) public vaultExists(vaultId_) {
+    //@todo validate active beneficiary address at registry
     require(
       verifyReward(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
@@ -127,6 +131,25 @@ contract RewardsManager is Ownable {
     _distribute(amount_);
 
     emit RewardDeposited(msg.sender, amount_);
+  }
+
+  function getVault(uint8 vaultId_)
+    public
+    view
+    vaultExists(vaultId_)
+    returns (
+      uint256 balance,
+      uint256 unclaimedShare,
+      bytes32 merkleRoot,
+      uint256 endBlock,
+      VaultStatus status
+    )
+  {
+    balance = vaults[vaultId_].balance;
+    unclaimedShare = vaults[vaultId_].unclaimedShare;
+    merkleRoot = vaults[vaultId_].merkleRoot;
+    endBlock = vaults[vaultId_].endBlock;
+    status = vaults[vaultId_].status;
   }
 
   function _distribute(uint256 amount_) internal {
