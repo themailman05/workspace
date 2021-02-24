@@ -13,19 +13,22 @@ contract RewardsManager is Ownable {
   Vault[3] private vaults;
   address public immutable pop;
 
-  enum VaultStatus {Pending, Open, Closed}
+  enum VaultStatus {Initialized, Open, Closed}
 
   struct Vault {
     uint256 balance;
+    uint256 unclaimedShare;
     bytes32 merkleRoot;
     uint256 endBlock;
     VaultStatus status;
   }
 
-  event VaultAssigned(uint8 vaultId, bytes32 merkleRoot);
+  event VaultInitialized(uint8 vaultId, bytes32 merkleRoot);
   event VaultOpened(uint8 vaultId);
   event VaultClosed(uint8 vaultId);
   event VaultDeposited(uint8 vaultId, uint256 amount);
+  event RewardDeposited(address from, uint256 amount);
+  event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
 
   modifier validVault(uint8 vaultId_) {
     require(vaultId_ < 3, "Invalid vault Id");
@@ -36,7 +39,7 @@ contract RewardsManager is Ownable {
     pop = pop_;
   }
 
-  function assignVault(
+  function initializeVault(
     uint8 vaultId_,
     uint256 endBlock_,
     bytes32 merkleRoot_
@@ -48,18 +51,19 @@ contract RewardsManager is Ownable {
 
     vaults[vaultId_] = Vault({
       balance: 0,
+      unclaimedShare: 100,
       merkleRoot: merkleRoot_,
       endBlock: endBlock_,
-      status: VaultStatus.Pending
+      status: VaultStatus.Initialized
     });
 
-    emit VaultAssigned(vaultId_, merkleRoot_);
+    emit VaultInitialized(vaultId_, merkleRoot_);
   }
 
   function openVault(uint8 vaultId_) public onlyOwner validVault(vaultId_) {
     require(
-      vaults[vaultId_].status == VaultStatus.Pending,
-      "Vault must be pending"
+      vaults[vaultId_].status == VaultStatus.Initialized,
+      "Vault must be initialized"
     );
 
     vaults[vaultId_].status = VaultStatus.Open;
@@ -92,6 +96,37 @@ contract RewardsManager is Ownable {
         vaults[vaultId_].merkleRoot,
         bytes32(keccak256(abi.encodePacked(beneficiary_, share_)))
       );
+  }
+
+  function claimReward(
+    uint8 vaultId_,
+    bytes32[] memory proof_,
+    address beneficiary_,
+    uint256 share_
+  ) public validVault(vaultId_) {
+    require(
+      verifyReward(vaultId_, proof_, beneficiary_, share_) == true,
+      "Invalid claim"
+    );
+
+    uint256 _reward =
+      share_.mul(vaults[vaultId_].balance).div(vaults[vaultId_].unclaimedShare);
+    vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
+      share_
+    );
+    vaults[vaultId_].balance = vaults[vaultId_].balance.sub(_reward);
+
+    IERC20(pop).transfer(beneficiary_, _reward);
+
+    emit RewardClaimed(vaultId_, beneficiary_, _reward);
+  }
+
+  function depositReward(uint256 amount_) public {
+    IERC20(pop).transferFrom(msg.sender, address(this), amount_);
+
+    _distribute(amount_);
+
+    emit RewardDeposited(msg.sender, amount_);
   }
 
   function _distribute(uint256 amount_) internal {
