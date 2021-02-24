@@ -16,7 +16,8 @@ contract RewardsManager is Ownable {
   enum VaultStatus {Initialized, Open, Closed}
 
   struct Vault {
-    uint256 balance;
+    uint256 totalDeposited;
+    uint256 currentBalance;
     uint256 unclaimedShare;
     bytes32 merkleRoot;
     uint256 endBlock;
@@ -53,7 +54,8 @@ contract RewardsManager is Ownable {
     );
 
     vaults[vaultId_] = Vault({
-      balance: 0,
+      totalDeposited: 0,
+      currentBalance: 0,
       unclaimedShare: 100,
       merkleRoot: merkleRoot_,
       endBlock: endBlock_,
@@ -77,8 +79,8 @@ contract RewardsManager is Ownable {
   function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
 
-    uint256 _remainingBalance = vaults[vaultId_].balance;
-    vaults[vaultId_].balance = 0;
+    uint256 _remainingBalance = vaults[vaultId_].currentBalance;
+    vaults[vaultId_].currentBalance = 0;
     vaults[vaultId_].status = VaultStatus.Closed;
 
     _distributeToVaults(_remainingBalance);
@@ -113,12 +115,13 @@ contract RewardsManager is Ownable {
       "Invalid claim"
     );
 
-    uint256 _reward =
-      share_.mul(vaults[vaultId_].balance).div(vaults[vaultId_].unclaimedShare);
+    uint256 _reward = vaults[vaultId_].totalDeposited.mul(share_).div(100);
     vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
       share_
     );
-    vaults[vaultId_].balance = vaults[vaultId_].balance.sub(_reward);
+    vaults[vaultId_].currentBalance = vaults[vaultId_].currentBalance.sub(
+      _reward
+    );
 
     IERC20(pop).transfer(beneficiary_, _reward);
 
@@ -141,14 +144,16 @@ contract RewardsManager is Ownable {
     view
     vaultExists(vaultId_)
     returns (
-      uint256 balance,
+      uint256 totalDeposited,
+      uint256 currentBalance,
       uint256 unclaimedShare,
       bytes32 merkleRoot,
       uint256 endBlock,
       VaultStatus status
     )
   {
-    balance = vaults[vaultId_].balance;
+    totalDeposited = vaults[vaultId_].totalDeposited;
+    currentBalance = vaults[vaultId_].currentBalance;
     unclaimedShare = vaults[vaultId_].unclaimedShare;
     merkleRoot = vaults[vaultId_].merkleRoot;
     endBlock = vaults[vaultId_].endBlock;
@@ -170,7 +175,12 @@ contract RewardsManager is Ownable {
     uint256 distribution = amount_.div(_openVaultCount);
 
     for (uint8 _vaultId = 0; _vaultId < vaults.length; _vaultId++) {
-      vaults[_vaultId].balance += distribution;
+      vaults[_vaultId].totalDeposited = vaults[_vaultId].totalDeposited.add(
+        distribution
+      );
+      vaults[_vaultId].currentBalance = vaults[_vaultId].currentBalance.add(
+        distribution
+      );
       emit VaultDeposited(_vaultId, distribution);
     }
   }

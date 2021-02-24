@@ -63,7 +63,8 @@ describe('RewardsManager', function () {
 
     it("vault has expected values", async function () {
       let vaultData = await this.rewards.getVault(0);
-      expect(vaultData.balance).to.equal(0);
+      expect(vaultData.totalDeposited).to.equal(0);
+      expect(vaultData.currentBalance).to.equal(0);
       expect(vaultData.unclaimedShare).to.equal(100);
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
       expect(vaultData.endBlock).to.equal(endBlock);
@@ -90,7 +91,8 @@ describe('RewardsManager', function () {
 
       it("vault has expected balance", async function () {
         let vaultData = await this.rewards.getVault(0);
-        expect(vaultData.balance).to.equal(totalReward);
+        expect(vaultData.totalDeposited).to.equal(totalReward);
+        expect(vaultData.currentBalance).to.equal(totalReward);
       });
 
       it("reverts invalid claim", async function () {
@@ -105,7 +107,7 @@ describe('RewardsManager', function () {
         ).to.be.true;
       });
 
-      describe("allows claim from beneficiary", function () {
+      describe("allows claim from beneficiary 1", function () {
         beforeEach(async function () {
           let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
           await this.rewards.claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address]);
@@ -113,9 +115,25 @@ describe('RewardsManager', function () {
 
         it("vault has expected data", async function () {
           let vaultData = await this.rewards.getVault(0);
-          let rewardShare = totalReward * claims[beneficiary1.address] / 100;
-          expect(vaultData.balance).to.equal(totalReward - rewardShare);
-          expect(vaultData.unclaimedShare).to.equal(100 - claims[beneficiary1.address]);
+          expect(vaultData.currentBalance).to.equal(9500000);
+          expect(vaultData.unclaimedShare).to.equal(95);
+        });
+
+        it("has expected contract balance", async function () {
+          expect(await this.pop.balanceOf(this.rewards.address)).to.equal(9500000);
+        });
+
+        describe("allows claim from beneficiary 2", function () {
+          beforeEach(async function () {
+            let proof = merkleTree.getProof(makeElement(beneficiary2.address, claims[beneficiary2.address]));
+            await this.rewards.claimReward(0, proof, beneficiary2.address, claims[beneficiary2.address]);
+          });
+
+          it("vault has expected data", async function () {
+            let vaultData = await this.rewards.getVault(0);
+            expect(vaultData.currentBalance).to.equal(9000000);
+            expect(vaultData.unclaimedShare).to.equal(90);
+          });
         });
       });
     });
