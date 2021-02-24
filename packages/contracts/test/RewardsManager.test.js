@@ -54,7 +54,7 @@ describe('RewardsManager', function () {
     await expect(this.rewards.initializeVault(0, currentBlock, merkleRoot)).to.be.revertedWith("Invalid end block");
   });
 
-  describe("vault is initialized", function () {
+  describe("vault 0 is initialized", function () {
     beforeEach(async function () {
       currentBlock = (await provider.getBlock("latest")).number;
       endBlock = currentBlock + 100;
@@ -63,11 +63,61 @@ describe('RewardsManager', function () {
 
     it("vault has expected values", async function () {
       let vaultData = await this.rewards.getVault(0);
-      expect(vaultData.balance, 0);
-      expect(vaultData.unclaimedShare, 100);
-      expect(vaultData.merkleRoot, merkleRoot);
-      expect(vaultData.endBlock, endBlock);
-      expect(vaultData.status, VaultStatus.Initialized);
+      expect(vaultData.balance).to.equal(0);
+      expect(vaultData.unclaimedShare).to.equal(100);
+      expect(vaultData.merkleRoot).to.equal(merkleRoot);
+      expect(vaultData.endBlock).to.equal(endBlock);
+      expect(vaultData.status).to.equal(VaultStatus.Initialized);
+    });
+
+    it("opens vault", async function () {
+      await this.rewards.openVault(0);
+      let vaultData = await this.rewards.getVault(0);
+      expect(vaultData.status).to.equal(VaultStatus.Open);
+    });
+
+    describe("open vault and deposit reward", function () {
+      beforeEach(async function () {
+        totalReward = "10000000";
+        await this.rewards.openVault(0);
+        await this.pop.approve(this.rewards.address, totalReward);
+        await this.rewards.depositReward(totalReward);
+      });
+
+      it("contract has expected balance", async function () {
+        expect(await this.pop.balanceOf(this.rewards.address)).to.equal(totalReward);
+      });
+
+      it("vault has expected balance", async function () {
+        let vaultData = await this.rewards.getVault(0);
+        expect(vaultData.balance).to.equal(totalReward);
+      });
+
+      it("reverts invalid claim", async function () {
+        let proof = [makeElement(owner.address, "10")];
+        await expect(this.rewards.claimReward(0, proof, owner.address, "10")).to.be.revertedWith("Invalid claim");
+      });
+
+      it("verifies valid claim", async function () {
+        let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+        expect(
+          await this.rewards.verifyClaim(0, proof, beneficiary1.address, claims[beneficiary1.address])
+        ).to.be.true;
+      });
+
+      describe("allows claim from beneficiary", function () {
+        beforeEach(async function () {
+          let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+          await this.rewards.claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address]);
+        });
+
+        it("vault has expected data", async function () {
+          let vaultData = await this.rewards.getVault(0);
+          let rewardShare = totalReward * claims[beneficiary1.address] / 100;
+          expect(vaultData.balance).to.equal(totalReward - rewardShare);
+          expect(vaultData.unclaimedShare).to.equal(100 - claims[beneficiary1.address]);
+        });
+      });
     });
   });
 });

@@ -18,7 +18,8 @@ const makeElement = function (who, amount) {
 
 const generateClaims = function (accounts) {
   let claims = {};
-  accounts.forEach((address, i) => (claims[address] = String(1000 + i)));
+  let split = 100/accounts.length;
+  accounts.forEach((address, i) => (claims[address] = String(split)));
   return claims;
 };
 

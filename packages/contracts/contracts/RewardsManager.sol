@@ -81,12 +81,12 @@ contract RewardsManager is Ownable {
     vaults[vaultId_].balance = 0;
     vaults[vaultId_].status = VaultStatus.Closed;
 
-    _distribute(_remainingBalance);
+    _distributeToVaults(_remainingBalance);
 
     emit VaultClosed(vaultId_);
   }
 
-  function verifyReward(
+  function verifyClaim(
     uint8 vaultId_,
     bytes32[] memory proof_,
     address beneficiary_,
@@ -109,7 +109,7 @@ contract RewardsManager is Ownable {
   ) public vaultExists(vaultId_) {
     //@todo validate active beneficiary address at registry
     require(
-      verifyReward(vaultId_, proof_, beneficiary_, share_) == true,
+      verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
     );
 
@@ -128,7 +128,10 @@ contract RewardsManager is Ownable {
   function depositReward(uint256 amount_) public {
     IERC20(pop).transferFrom(msg.sender, address(this), amount_);
 
-    _distribute(amount_);
+    //@todo calculate reward splits to various targets
+    uint256 _amountToVault = amount_;
+
+    _distributeToVaults(_amountToVault);
 
     emit RewardDeposited(msg.sender, amount_);
   }
@@ -152,7 +155,7 @@ contract RewardsManager is Ownable {
     status = vaults[vaultId_].status;
   }
 
-  function _distribute(uint256 amount_) internal {
+  function _distributeToVaults(uint256 amount_) internal {
     uint8 _openVaultCount = 0;
 
     for (uint8 i = 0; i < vaults.length; i++) {
