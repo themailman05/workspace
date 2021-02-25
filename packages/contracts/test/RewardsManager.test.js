@@ -58,7 +58,11 @@ describe('RewardsManager', function () {
     beforeEach(async function () {
       currentBlock = (await provider.getBlock("latest")).number;
       endBlock = currentBlock + 100;
-      await this.rewards.initializeVault(0, endBlock, merkleRoot);
+      result = await this.rewards.initializeVault(0, endBlock, merkleRoot);
+    });
+
+    it("emits a VaultInitialized event", async function () {
+      expect(result).to.emit(this.rewards, "VaultInitialized").withArgs(0, merkleRoot);
     });
 
     it("vault has expected values", async function () {
@@ -80,9 +84,14 @@ describe('RewardsManager', function () {
     describe("open vault and deposit reward", function () {
       beforeEach(async function () {
         totalReward = "10000000";
-        await this.rewards.openVault(0);
+        result1 = await this.rewards.openVault(0);
         await this.pop.approve(this.rewards.address, totalReward);
-        await this.rewards.depositReward(totalReward);
+        result2 = await this.rewards.depositReward(totalReward);
+      });
+
+      it("emits a VaultOpened & RewardDeposited event", async function () {
+        expect(result1).to.emit(this.rewards, "VaultOpened").withArgs(0);
+        expect(result2).to.emit(this.rewards, "RewardDeposited").withArgs(owner.address, totalReward);
       });
 
       it("contract has expected balance", async function () {
@@ -110,7 +119,11 @@ describe('RewardsManager', function () {
       describe("allows claim from beneficiary 1", function () {
         beforeEach(async function () {
           let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
-          await this.rewards.claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address]);
+          result = await this.rewards.claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address]);
+        });
+
+        it("emits a RewardClaimed event", async function () {
+          expect(result).to.emit(this.rewards, "RewardClaimed").withArgs(0, beneficiary1.address, 500000);
         });
 
         it("vault has expected data", async function () {
@@ -133,6 +146,10 @@ describe('RewardsManager', function () {
             let vaultData = await this.rewards.getVault(0);
             expect(vaultData.currentBalance).to.equal(9000000);
             expect(vaultData.unclaimedShare).to.equal(90);
+          });
+
+          it("has expected contract balance", async function () {
+            expect(await this.pop.balanceOf(this.rewards.address)).to.equal(9000000);
           });
         });
       });

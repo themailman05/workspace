@@ -41,11 +41,12 @@ contract RewardsManager is Ownable {
     pop = pop_;
   }
 
+  //@todo pick an available vault instead of specifying
   function initializeVault(
     uint8 vaultId_,
     uint256 endBlock_,
     bytes32 merkleRoot_
-  ) public onlyOwner {
+  ) public onlyOwner returns (uint8) {
     require(vaultId_ < 3, "Invalid vault id");
     require(endBlock_ > block.number, "Invalid end block");
     require(
@@ -63,6 +64,8 @@ contract RewardsManager is Ownable {
     });
 
     emit VaultInitialized(vaultId_, merkleRoot_);
+
+    return vaultId_;
   }
 
   function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
