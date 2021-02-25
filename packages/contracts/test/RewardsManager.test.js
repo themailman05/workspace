@@ -12,11 +12,11 @@ describe('RewardsManager', function () {
     [owner, beneficiary1, beneficiary2] = await ethers.getSigners();
 
     let MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.pop = await MockERC20.deploy("TestPOP", "TPOP");
-    await this.pop.mint(owner.address, "100000000000");
+    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+    await this.mockPop.mint(owner.address, "100000000000");
 
     let RewardsManager = await ethers.getContractFactory("RewardsManager");
-    this.rewards = await RewardsManager.deploy(this.pop.address);
+    this.rewards = await RewardsManager.deploy(this.mockPop.address);
 
     claims = generateClaims(await provider.listAccounts());
     merkleTree = merklize(claims);
@@ -24,7 +24,7 @@ describe('RewardsManager', function () {
   });
 
   it("should be constructed with POP token", async function () {
-    expect(await this.rewards.pop()).to.equal(this.pop.address);
+    expect(await this.rewards.pop()).to.equal(this.mockPop.address);
   });
 
   it("reverts deposit with no transfer approval", async function () {
@@ -32,7 +32,7 @@ describe('RewardsManager', function () {
   });
 
   it("reverts deposit with no open vaults", async function () {
-    await this.pop.approve(this.rewards.address, 100);
+    await this.mockPop.approve(this.rewards.address, 100);
     await expect(this.rewards.depositReward(100)).to.be.revertedWith("No open vaults");
   });
 
@@ -61,6 +61,10 @@ describe('RewardsManager', function () {
       result = await this.rewards.initializeVault(0, endBlock, merkleRoot);
     });
 
+    it("reverts when closing initialized vault", async function () {
+      await expect(this.rewards.closeVault(0)).to.be.revertedWith("Vault must be open");
+    });
+
     it("emits a VaultInitialized event", async function () {
       expect(result).to.emit(this.rewards, "VaultInitialized").withArgs(0, merkleRoot);
     });
@@ -85,7 +89,7 @@ describe('RewardsManager', function () {
       beforeEach(async function () {
         totalReward = "10000000";
         result1 = await this.rewards.openVault(0);
-        await this.pop.approve(this.rewards.address, totalReward);
+        await this.mockPop.approve(this.rewards.address, totalReward);
         result2 = await this.rewards.depositReward(totalReward);
       });
 
@@ -95,7 +99,7 @@ describe('RewardsManager', function () {
       });
 
       it("contract has expected balance", async function () {
-        expect(await this.pop.balanceOf(this.rewards.address)).to.equal(totalReward);
+        expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(totalReward);
       });
 
       it("vault has expected balance", async function () {
@@ -112,14 +116,25 @@ describe('RewardsManager', function () {
       it("verifies valid claim", async function () {
         let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
         expect(
-          await this.rewards.verifyClaim(0, proof, beneficiary1.address, claims[beneficiary1.address])
+          await this.rewards.connect(beneficiary1).verifyClaim(0, proof, beneficiary1.address, claims[beneficiary1.address])
         ).to.be.true;
+      });
+
+      it("reverts claim from wrong sender", async function () {
+        let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+        await expect(
+          this.rewards.connect(beneficiary2).claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address])
+        ).to.be.revertedWith("Sender must be beneficiary");
+      });
+
+      it("reverts when closing before end block", async function () {
+        await expect(this.rewards.closeVault(0)).to.be.revertedWith("Vault has not ended");
       });
 
       describe("allows claim from beneficiary 1", function () {
         beforeEach(async function () {
           let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
-          result = await this.rewards.claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address]);
+          result = await this.rewards.connect(beneficiary1).claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address]);
         });
 
         it("emits a RewardClaimed event", async function () {
@@ -133,13 +148,13 @@ describe('RewardsManager', function () {
         });
 
         it("has expected contract balance", async function () {
-          expect(await this.pop.balanceOf(this.rewards.address)).to.equal(9500000);
+          expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(9500000);
         });
 
         describe("allows claim from beneficiary 2", function () {
           beforeEach(async function () {
             let proof = merkleTree.getProof(makeElement(beneficiary2.address, claims[beneficiary2.address]));
-            await this.rewards.claimReward(0, proof, beneficiary2.address, claims[beneficiary2.address]);
+            await this.rewards.connect(beneficiary2).claimReward(0, proof, beneficiary2.address, claims[beneficiary2.address]);
           });
 
           it("vault has expected data", async function () {
@@ -149,7 +164,7 @@ describe('RewardsManager', function () {
           });
 
           it("has expected contract balance", async function () {
-            expect(await this.pop.balanceOf(this.rewards.address)).to.equal(9000000);
+            expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(9000000);
           });
         });
       });

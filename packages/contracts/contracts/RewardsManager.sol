@@ -2,6 +2,7 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
+import "./IBeneficiaryRegistry.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -41,12 +42,11 @@ contract RewardsManager is Ownable {
     pop = pop_;
   }
 
-  //@todo pick an available vault instead of specifying
   function initializeVault(
     uint8 vaultId_,
     uint256 endBlock_,
     bytes32 merkleRoot_
-  ) public onlyOwner returns (uint8) {
+  ) public onlyOwner {
     require(vaultId_ < 3, "Invalid vault id");
     require(endBlock_ > block.number, "Invalid end block");
     require(
@@ -64,8 +64,6 @@ contract RewardsManager is Ownable {
     });
 
     emit VaultInitialized(vaultId_, merkleRoot_);
-
-    return vaultId_;
   }
 
   function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
@@ -81,6 +79,7 @@ contract RewardsManager is Ownable {
 
   function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
+    require(block.number > vaults[vaultId_].endBlock, "Vault has not ended");
 
     uint256 _remainingBalance = vaults[vaultId_].currentBalance;
     vaults[vaultId_].currentBalance = 0;
@@ -97,6 +96,8 @@ contract RewardsManager is Ownable {
     address beneficiary_,
     uint256 share_
   ) public view vaultExists(vaultId_) returns (bool) {
+    require(msg.sender == beneficiary_, "Sender must be beneficiary");
+    //@todo validate beneficiary exists in registry
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     return
       MerkleProof.verify(
@@ -112,7 +113,6 @@ contract RewardsManager is Ownable {
     address beneficiary_,
     uint256 share_
   ) public vaultExists(vaultId_) {
-    //@todo validate active beneficiary address at registry
     require(
       verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
