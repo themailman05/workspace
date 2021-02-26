@@ -10,11 +10,13 @@
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^3.4.0",
     "@popcorn/utils": "*",
     "chai": "^4.3.0",
     "ethereum-waffle": "^3.2.2",
     "ethers": "^5.0.31",
     "hardhat": "^2.0.10",
+    "merkle-tree-solidity": "^1.0.8",
     "prettier": "^2.2.1",
     "prettier-plugin-solidity": "^1.0.0-beta.5"
   },

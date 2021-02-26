@@ -2,7 +2,9 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
-contract BeneficiaryRegistry {
+import "./IBeneficiaryRegistry.sol";
+
+contract BeneficiaryRegistry is IBeneficiaryRegistry {
   address private governance;
   address private council;
 
@@ -91,7 +93,12 @@ contract BeneficiaryRegistry {
     emit BeneficiaryRevoked(_address);
   }
 
-  function beneficiaryExists(address _address) public view returns (bool) {
+  function beneficiaryExists(address _address)
+    public
+    view
+    override
+    returns (bool)
+  {
     if (beneficiariesList.length == 0) return false;
     return
       beneficiariesList[beneficiariesMap[_address].listPointer] == _address;
