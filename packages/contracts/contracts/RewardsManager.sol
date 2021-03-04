@@ -135,15 +135,15 @@ contract RewardsManager is Ownable {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function depositReward(uint256 amount_) public {
-    IERC20(pop).transferFrom(msg.sender, address(this), amount_);
+  function depositReward(address from_, uint256 amount_) public {
+    IERC20(pop).transferFrom(from_, address(this), amount_);
 
     //@todo calculate reward splits to various targets
     uint256 _amountToVault = amount_;
 
     _distributeToVaults(_amountToVault);
 
-    emit RewardDeposited(msg.sender, amount_);
+    emit RewardDeposited(from_, amount_);
   }
 
   function getVault(uint8 vaultId_)

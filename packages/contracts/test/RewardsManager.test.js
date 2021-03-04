@@ -5,15 +5,16 @@ const provider = waffle.provider;
 
 describe('RewardsManager', function () {
   const VaultStatus = { "Initialized": 0, "Open": 1, "Closed": 2 };
-  let owner, beneficiary1, beneficiary2;
+  let owner, rewarder, beneficiary1, beneficiary2;
   let claims, merkleTree, merkleRoot;
 
   beforeEach(async function () {
-    [owner, beneficiary1, beneficiary2] = await ethers.getSigners();
+    [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
 
     let MockERC20 = await ethers.getContractFactory("MockERC20");
     this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
     await this.mockPop.mint(owner.address, "100000000000");
+    await this.mockPop.mint(rewarder.address, "500000000000");
 
     let RewardsManager = await ethers.getContractFactory("RewardsManager");
     this.rewards = await RewardsManager.deploy(this.mockPop.address);
@@ -28,12 +29,14 @@ describe('RewardsManager', function () {
   });
 
   it("reverts deposit with no transfer approval", async function () {
-    await expect(this.rewards.depositReward(100)).to.be.revertedWith("ERC20: transfer amount exceeds allowance");
+    await expect(
+      this.rewards.depositReward(owner.address, 100)
+    ).to.be.revertedWith("ERC20: transfer amount exceeds allowance");
   });
 
   it("reverts deposit with no open vaults", async function () {
     await this.mockPop.approve(this.rewards.address, 100);
-    await expect(this.rewards.depositReward(100)).to.be.revertedWith("No open vaults");
+    await expect(this.rewards.depositReward(owner.address, 100)).to.be.revertedWith("No open vaults");
   });
 
   it("reverts when trying to get uninitialized vault", async function () {
@@ -89,13 +92,13 @@ describe('RewardsManager', function () {
       beforeEach(async function () {
         totalReward = "10000000";
         result1 = await this.rewards.openVault(0);
-        await this.mockPop.approve(this.rewards.address, totalReward);
-        result2 = await this.rewards.depositReward(totalReward);
+        await this.mockPop.connect(rewarder).approve(this.rewards.address, totalReward);
+        result2 = await this.rewards.depositReward(rewarder.address, totalReward);
       });
 
       it("emits a VaultOpened & RewardDeposited event", async function () {
         expect(result1).to.emit(this.rewards, "VaultOpened").withArgs(0);
-        expect(result2).to.emit(this.rewards, "RewardDeposited").withArgs(owner.address, totalReward);
+        expect(result2).to.emit(this.rewards, "RewardDeposited").withArgs(rewarder.address, totalReward);
       });
 
       it("contract has expected balance", async function () {
