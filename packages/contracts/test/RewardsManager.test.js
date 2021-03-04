@@ -151,6 +151,13 @@ describe('RewardsManager', function () {
           expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(9500000);
         });
 
+        it("reverts a second claim", async function () {
+          let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+          await expect(
+            this.rewards.connect(beneficiary1).claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address])
+          ).to.be.revertedWith("Already claimed");
+        });
+
         describe("allows claim from beneficiary 2", function () {
           beforeEach(async function () {
             let proof = merkleTree.getProof(makeElement(beneficiary2.address, claims[beneficiary2.address]));
@@ -169,5 +176,7 @@ describe('RewardsManager', function () {
         });
       });
     });
+
+    //@todo reinitialize a vault over an existing one
   });
 });

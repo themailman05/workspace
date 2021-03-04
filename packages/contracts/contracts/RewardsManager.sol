@@ -20,6 +20,7 @@ contract RewardsManager is Ownable {
     uint256 totalDeposited;
     uint256 currentBalance;
     uint256 unclaimedShare;
+    mapping(address => bool) claimed;
     bytes32 merkleRoot;
     uint256 endBlock;
     VaultStatus status;
@@ -54,14 +55,14 @@ contract RewardsManager is Ownable {
       "Vault must not be open"
     );
 
-    vaults[vaultId_] = Vault({
-      totalDeposited: 0,
-      currentBalance: 0,
-      unclaimedShare: 100,
-      merkleRoot: merkleRoot_,
-      endBlock: endBlock_,
-      status: VaultStatus.Initialized
-    });
+    delete vaults[vaultId_];
+    Vault storage v = vaults[vaultId_];
+    v.totalDeposited = 0;
+    v.currentBalance = 0;
+    v.unclaimedShare = 100;
+    v.merkleRoot = merkleRoot_;
+    v.endBlock = endBlock_;
+    v.status = VaultStatus.Initialized;
 
     emit VaultInitialized(vaultId_, merkleRoot_);
   }
@@ -117,6 +118,7 @@ contract RewardsManager is Ownable {
       verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
     );
+    require(vaults[vaultId_].claimed[beneficiary_] == false, "Already claimed");
 
     uint256 _reward = vaults[vaultId_].totalDeposited.mul(share_).div(100);
     vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
@@ -125,6 +127,8 @@ contract RewardsManager is Ownable {
     vaults[vaultId_].currentBalance = vaults[vaultId_].currentBalance.sub(
       _reward
     );
+
+    vaults[vaultId_].claimed[beneficiary_] = true;
 
     IERC20(pop).transfer(beneficiary_, _reward);
 
