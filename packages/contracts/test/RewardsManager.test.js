@@ -134,6 +134,12 @@ describe('RewardsManager', function () {
         await expect(this.rewards.closeVault(0)).to.be.revertedWith("Vault has not ended");
       });
 
+      it("reverts when reinitializing open vault", async function () {
+        await expect(
+          this.rewards.initializeVault(0, endBlock, merkleRoot)
+        ).to.be.revertedWith("Vault must not be open");
+      });
+
       describe("allows claim from beneficiary 1", function () {
         beforeEach(async function () {
           let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
@@ -146,6 +152,7 @@ describe('RewardsManager', function () {
 
         it("vault has expected data", async function () {
           let vaultData = await this.rewards.getVault(0);
+          expect(await this.rewards.hasClaimed(0, beneficiary1.address)).to.be.true;
           expect(vaultData.currentBalance).to.equal(9500000);
           expect(vaultData.unclaimedShare).to.equal(95);
         });
@@ -169,6 +176,7 @@ describe('RewardsManager', function () {
 
           it("vault has expected data", async function () {
             let vaultData = await this.rewards.getVault(0);
+            expect(await this.rewards.hasClaimed(0, beneficiary2.address)).to.be.true;
             expect(vaultData.currentBalance).to.equal(9000000);
             expect(vaultData.unclaimedShare).to.equal(90);
           });
@@ -177,9 +185,35 @@ describe('RewardsManager', function () {
             expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(9000000);
           });
         });
+
+        //@todo close vault tests
       });
     });
 
-    //@todo reinitialize a vault over an existing one
+    describe("vault 0 is reinitialized", function () {
+      beforeEach(async function () {
+        result = await this.rewards.initializeVault(0, endBlock, merkleRoot);
+      });
+
+      it("reverts when closing initialized vault", async function () {
+        await expect(this.rewards.closeVault(0)).to.be.revertedWith("Vault must be open");
+      });
+
+      it("emits a VaultInitialized event", async function () {
+        expect(result).to.emit(this.rewards, "VaultInitialized").withArgs(0, merkleRoot);
+      });
+
+      it("vault has expected values", async function () {
+        let vaultData = await this.rewards.getVault(0);
+        expect(await this.rewards.hasClaimed(0, beneficiary1.address)).to.be.false;
+        expect(await this.rewards.hasClaimed(0, beneficiary2.address)).to.be.false;
+        expect(vaultData.totalDeposited).to.equal(0);
+        expect(vaultData.currentBalance).to.equal(0);
+        expect(vaultData.unclaimedShare).to.equal(100);
+        expect(vaultData.merkleRoot).to.equal(merkleRoot);
+        expect(vaultData.endBlock).to.equal(endBlock);
+        expect(vaultData.status).to.equal(VaultStatus.Initialized);
+      });
+    });
   });
 });

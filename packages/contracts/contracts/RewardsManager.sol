@@ -191,4 +191,13 @@ contract RewardsManager is Ownable {
       emit VaultDeposited(_vaultId, distribution);
     }
   }
+
+  function hasClaimed(uint8 vaultId_, address beneficiary_)
+    public
+    view
+    vaultExists(vaultId_)
+    returns (bool)
+  {
+    return vaults[vaultId_].claimed[beneficiary_];
+  }
 }
