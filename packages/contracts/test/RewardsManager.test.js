@@ -70,9 +70,9 @@ describe('RewardsManager', function () {
 
   describe("vault 0 is initialized", function () {
     beforeEach(async function () {
-      currentBlock = (await provider.getBlock("latest")).number;
-      endBlock = currentBlock + 100;
-      result = await this.rewardsProxy.initializeVault(0, endBlock, merkleRoot);
+      currentTime = (await provider.getBlock("latest")).timestamp;
+      endTime = currentTime + 10000;
+      result = await this.rewardsProxy.initializeVault(0, endTime, merkleRoot);
     });
 
     it("reverts when closing initialized vault", async function () {
@@ -89,7 +89,7 @@ describe('RewardsManager', function () {
       expect(vaultData.currentBalance).to.equal(0);
       expect(vaultData.unclaimedShare).to.equal(100);
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
-      expect(vaultData.endBlock).to.equal(endBlock);
+      expect(vaultData.endTime).to.equal(endTime);
       expect(vaultData.status).to.equal(VaultStatus.Initialized);
       expect(await this.rewardsProxy.hasClaimed(0, beneficiary1.address)).to.be.false;
       expect(await this.rewardsProxy.hasClaimed(0, beneficiary2.address)).to.be.false;
@@ -155,8 +155,12 @@ describe('RewardsManager', function () {
 
       it("reverts when reinitializing open vault", async function () {
         await expect(
-          this.rewardsProxy.initializeVault(0, endBlock, merkleRoot)
+          this.rewardsProxy.initializeVault(0, endTime, merkleRoot)
         ).to.be.revertedWith("Vault must not be open");
+      });
+
+      it("reverts close vault before end time", async function () {
+        await expect(this.rewardsProxy.closeVault(0)).to.be.revertedWith("Vault has not ended");
       });
 
       describe("allows claim from beneficiary 1", function () {
@@ -230,7 +234,7 @@ describe('RewardsManager', function () {
             expect(vaultData.currentBalance).to.equal(9500000);
             expect(vaultData.unclaimedShare).to.equal(95);
             expect(vaultData.merkleRoot).to.equal(merkleRoot);
-            expect(vaultData.endBlock).to.equal(endBlock);
+            expect(vaultData.endTime).to.equal(endTime);
             expect(vaultData.status).to.equal(VaultStatus.Open);
             expect(await this.upgradedProxy.hasClaimed(0, beneficiary1.address)).to.be.true;
             expect(await this.upgradedProxy.hasClaimed(0, beneficiary2.address)).to.be.false;
@@ -257,13 +261,24 @@ describe('RewardsManager', function () {
           });
         });
 
-        //@todo close vault tests
+        describe("closes vault 0 after end time", function () {
+          beforeEach(async function () {
+            ethers.provider.send("evm_increaseTime", [endTime - Math.floor(Date.now() / 1000)]);
+            ethers.provider.send("evm_mine");
+          });
+
+          it("reverts when no other vaults open", async function () {
+            await expect(this.rewardsProxy.closeVault(0)).to.be.revertedWith("No open vaults for rewards");
+          })
+
+          //@todo open vault 1 for remaining rewards and close 0
+        });
       });
     });
 
     describe("vault 0 is reinitialized", function () {
       beforeEach(async function () {
-        result = await this.rewardsProxy.initializeVault(0, endBlock, merkleRoot);
+        result = await this.rewardsProxy.initializeVault(0, endTime, merkleRoot);
       });
 
       it("reverts when closing initialized vault", async function () {
@@ -280,7 +295,7 @@ describe('RewardsManager', function () {
         expect(vaultData.currentBalance).to.equal(0);
         expect(vaultData.unclaimedShare).to.equal(100);
         expect(vaultData.merkleRoot).to.equal(merkleRoot);
-        expect(vaultData.endBlock).to.equal(endBlock);
+        expect(vaultData.endTime).to.equal(endTime);
         expect(vaultData.status).to.equal(VaultStatus.Initialized);
         expect(await this.rewardsProxy.hasClaimed(0, beneficiary1.address)).to.be.false;
         expect(await this.rewardsProxy.hasClaimed(0, beneficiary2.address)).to.be.false;

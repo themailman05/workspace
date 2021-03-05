@@ -22,7 +22,7 @@ contract RewardsManager is OwnableUpgradeable {
     uint256 unclaimedShare;
     mapping(address => bool) claimed;
     bytes32 merkleRoot;
-    uint256 endBlock;
+    uint256 endTime;
     VaultStatus status;
   }
 
@@ -35,7 +35,7 @@ contract RewardsManager is OwnableUpgradeable {
 
   modifier vaultExists(uint8 vaultId_) {
     require(vaultId_ < 3, "Invalid vault id");
-    require(vaults[vaultId_].endBlock > 0, "Uninitialized vault slot");
+    require(vaults[vaultId_].endTime > 0, "Uninitialized vault slot");
     _;
   }
 
@@ -46,11 +46,11 @@ contract RewardsManager is OwnableUpgradeable {
 
   function initializeVault(
     uint8 vaultId_,
-    uint256 endBlock_,
+    uint256 endTime_,
     bytes32 merkleRoot_
   ) public virtual onlyOwner {
     require(vaultId_ < 3, "Invalid vault id");
-    require(endBlock_ > block.number, "Invalid end block");
+    require(endTime_ > block.timestamp, "Invalid end block");
     require(
       vaults[vaultId_].status != VaultStatus.Open,
       "Vault must not be open"
@@ -62,7 +62,7 @@ contract RewardsManager is OwnableUpgradeable {
     v.currentBalance = 0;
     v.unclaimedShare = 100;
     v.merkleRoot = merkleRoot_;
-    v.endBlock = endBlock_;
+    v.endTime = endTime_;
     v.status = VaultStatus.Initialized;
 
     emit VaultInitialized(vaultId_, merkleRoot_);
@@ -91,7 +91,7 @@ contract RewardsManager is OwnableUpgradeable {
     vaultExists(vaultId_)
   {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
-    require(block.number > vaults[vaultId_].endBlock, "Vault has not ended");
+    require(block.timestamp >= vaults[vaultId_].endTime, "Vault has not ended");
 
     uint256 _remainingBalance = vaults[vaultId_].currentBalance;
     vaults[vaultId_].currentBalance = 0;
@@ -167,7 +167,7 @@ contract RewardsManager is OwnableUpgradeable {
       uint256 currentBalance,
       uint256 unclaimedShare,
       bytes32 merkleRoot,
-      uint256 endBlock,
+      uint256 endTime,
       VaultStatus status
     )
   {
@@ -175,7 +175,7 @@ contract RewardsManager is OwnableUpgradeable {
     currentBalance = vaults[vaultId_].currentBalance;
     unclaimedShare = vaults[vaultId_].unclaimedShare;
     merkleRoot = vaults[vaultId_].merkleRoot;
-    endBlock = vaults[vaultId_].endBlock;
+    endTime = vaults[vaultId_].endTime;
     status = vaults[vaultId_].status;
   }
 
@@ -188,7 +188,7 @@ contract RewardsManager is OwnableUpgradeable {
       }
     }
 
-    require(_openVaultCount > 0, "No open vaults");
+    require(_openVaultCount > 0, "No open vaults for rewards");
 
     //@todo handle dust after div
     uint256 distribution = amount_.div(_openVaultCount);
