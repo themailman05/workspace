@@ -12,7 +12,7 @@ contract RewardsManager is OwnableUpgradeable {
   using SafeMath for uint256;
 
   Vault[3] private vaults;
-  address public pop;
+  IERC20 public pop;
   IBeneficiaryRegistry public beneficiaryRegistry;
 
   enum VaultStatus {Initialized, Open, Closed}
@@ -45,7 +45,14 @@ contract RewardsManager is OwnableUpgradeable {
     initializer
   {
     __Ownable_init();
-    pop = pop_;
+    pop = IERC20(pop_);
+    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+  }
+
+  function setBeneficaryRegistry(address beneficiaryRegistry_)
+    public
+    onlyOwner
+  {
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
   }
 
@@ -153,13 +160,13 @@ contract RewardsManager is OwnableUpgradeable {
 
     vaults[vaultId_].claimed[beneficiary_] = true;
 
-    IERC20(pop).transfer(beneficiary_, _reward);
+    pop.transfer(beneficiary_, _reward);
 
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
   function depositReward(address from_, uint256 amount_) public virtual {
-    IERC20(pop).transferFrom(from_, address(this), amount_);
+    pop.transferFrom(from_, address(this), amount_);
 
     _distributeToVaults(amount_);
 
@@ -198,7 +205,7 @@ contract RewardsManager is OwnableUpgradeable {
     }
 
     if (_openVaultCount == 0) {
-      IERC20(pop).transfer(owner(), amount_);
+      pop.transfer(owner(), amount_);
       return;
     }
 
