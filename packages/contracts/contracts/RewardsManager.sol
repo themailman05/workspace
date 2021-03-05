@@ -60,7 +60,7 @@ contract RewardsManager is OwnableUpgradeable {
     Vault storage v = vaults[vaultId_];
     v.totalDeposited = 0;
     v.currentBalance = 0;
-    v.unclaimedShare = 100;
+    v.unclaimedShare = 100 ether;
     v.merkleRoot = merkleRoot_;
     v.endTime = endTime_;
     v.status = VaultStatus.Initialized;
@@ -131,7 +131,7 @@ contract RewardsManager is OwnableUpgradeable {
     );
     require(vaults[vaultId_].claimed[beneficiary_] == false, "Already claimed");
 
-    uint256 _reward = vaults[vaultId_].totalDeposited.mul(share_).div(100);
+    uint256 _reward = vaults[vaultId_].currentBalance.mul(share_).div(vaults[vaultId_].unclaimedShare);
     vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
       share_
     );

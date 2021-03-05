@@ -1,4 +1,4 @@
-const { solidityKeccak256 } = require("ethers/lib/utils");
+const { parseEther, solidityKeccak256 } = require("ethers/lib/utils");
 const MerkleTree = require("merkle-tree-solidity").default;
 
 const merklize = function (elements) {
@@ -18,7 +18,7 @@ const makeElement = function (who, amount) {
 
 const generateClaims = function (accounts) {
   let claims = {};
-  let split = 100/accounts.length;
+  let split = parseEther("100").div(accounts.length).toString();
   accounts.forEach((address, i) => (claims[address] = String(split)));
   return claims;
 };
