@@ -13,6 +13,7 @@ contract RewardsManager is OwnableUpgradeable {
 
   Vault[3] private vaults;
   address public pop;
+  IBeneficiaryRegistry public beneficiaryRegistry;
 
   enum VaultStatus {Initialized, Open, Closed}
 
@@ -39,9 +40,13 @@ contract RewardsManager is OwnableUpgradeable {
     _;
   }
 
-  function initialize(address pop_) public initializer {
+  function initialize(address pop_, address beneficiaryRegistry_)
+    public
+    initializer
+  {
     __Ownable_init();
     pop = pop_;
+    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
   }
 
   function initializeVault(
@@ -109,8 +114,12 @@ contract RewardsManager is OwnableUpgradeable {
     uint256 share_
   ) public view virtual vaultExists(vaultId_) returns (bool) {
     require(msg.sender == beneficiary_, "Sender must be beneficiary");
-    //@todo validate beneficiary exists in registry
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
+    require(
+      beneficiaryRegistry.beneficiaryExists(beneficiary_) == true,
+      "Beneficiary does not exist"
+    );
+
     return
       MerkleProof.verify(
         proof_,
@@ -131,7 +140,10 @@ contract RewardsManager is OwnableUpgradeable {
     );
     require(vaults[vaultId_].claimed[beneficiary_] == false, "Already claimed");
 
-    uint256 _reward = vaults[vaultId_].currentBalance.mul(share_).div(vaults[vaultId_].unclaimedShare);
+    uint256 _reward =
+      vaults[vaultId_].currentBalance.mul(share_).div(
+        vaults[vaultId_].unclaimedShare
+      );
     vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
       share_
     );
@@ -175,7 +187,6 @@ contract RewardsManager is OwnableUpgradeable {
     endTime = vaults[vaultId_].endTime;
     status = vaults[vaultId_].status;
   }
-
 
   function _distributeToVaults(uint256 amount_) internal {
     uint8 _openVaultCount = 0;

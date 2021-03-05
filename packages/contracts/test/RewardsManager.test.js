@@ -17,8 +17,15 @@ describe('RewardsManager', function () {
     await this.mockPop.mint(owner.address, "100000000000");
     await this.mockPop.mint(rewarder.address, "500000000000");
 
+    let BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
+    this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
+    await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
+
     let RewardsManager = await ethers.getContractFactory("RewardsManager");
-    this.rewardsProxy = await upgrades.deployProxy(RewardsManager, [this.mockPop.address]);
+    this.rewardsProxy = await upgrades.deployProxy(
+      RewardsManager,
+      [this.mockPop.address, this.mockBeneficiaryRegistry.address]
+    );
     await this.rewardsProxy.deployed();
 
     claims = generateClaims(await provider.listAccounts());
@@ -130,6 +137,17 @@ describe('RewardsManager', function () {
       it("reverts invalid claim", async function () {
         let proof = [makeElement(owner.address, "10")];
         await expect(this.rewardsProxy.claimReward(0, proof, owner.address, "10")).to.be.revertedWith("Invalid claim");
+      });
+
+      it("reverts claim when beneficiary does not exist", async function () {
+        let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+        await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
+        await expect(this.rewardsProxy.connect(beneficiary1).claimReward(
+          0,
+          proof,
+          beneficiary1.address,
+          claims[beneficiary1.address]
+        )).to.be.revertedWith("Beneficiary does not exist");
       });
 
       it("verifies valid claim", async function () {
