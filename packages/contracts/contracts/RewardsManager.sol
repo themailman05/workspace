@@ -149,10 +149,7 @@ contract RewardsManager is OwnableUpgradeable {
   function depositReward(address from_, uint256 amount_) public virtual {
     IERC20(pop).transferFrom(from_, address(this), amount_);
 
-    //@todo calculate reward splits to various targets
-    uint256 _amountToVault = amount_;
-
-    _distributeToVaults(_amountToVault);
+    _distributeToVaults(amount_);
 
     emit RewardDeposited(from_, amount_);
   }
@@ -179,6 +176,7 @@ contract RewardsManager is OwnableUpgradeable {
     status = vaults[vaultId_].status;
   }
 
+
   function _distributeToVaults(uint256 amount_) internal {
     uint8 _openVaultCount = 0;
 
@@ -188,7 +186,10 @@ contract RewardsManager is OwnableUpgradeable {
       }
     }
 
-    require(_openVaultCount > 0, "No open vaults for rewards");
+    if (_openVaultCount == 0) {
+      IERC20(pop).transfer(owner(), amount_);
+      return;
+    }
 
     //@todo handle dust after div
     uint256 distribution = amount_.div(_openVaultCount);

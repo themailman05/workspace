@@ -35,9 +35,11 @@ describe('RewardsManager', function () {
     ).to.be.revertedWith("ERC20: transfer amount exceeds allowance");
   });
 
-  it("reverts deposit with no open vaults", async function () {
-    await this.mockPop.approve(this.rewardsProxy.address, 100);
-    await expect(this.rewardsProxy.depositReward(owner.address, 100)).to.be.revertedWith("No open vaults");
+  it("reward redirected to owner with no open vaults", async function () {
+    await this.mockPop.connect(rewarder).approve(this.rewardsProxy.address, 100);
+    await this.rewardsProxy.depositReward(rewarder.address, 100);
+    expect(await this.mockPop.balanceOf(this.rewardsProxy.address)).to.equal(0);
+    expect(await this.mockPop.balanceOf(owner.address)).to.equal(100000000100);
   });
 
   it("reverts when trying to get uninitialized vault", async function () {
@@ -267,9 +269,10 @@ describe('RewardsManager', function () {
             ethers.provider.send("evm_mine");
           });
 
-          it("reverts when no other vaults open", async function () {
-            await expect(this.rewardsProxy.closeVault(0)).to.be.revertedWith("No open vaults for rewards");
-          })
+          it("redirect unclaimed rewards to owner when no other vaults open", async function () {
+            await this.rewardsProxy.closeVault(0);
+            expect(await this.mockPop.balanceOf(this.rewardsProxy.address)).to.equal(0);
+          });
 
           //@todo open vault 1 for remaining rewards and close 0
         });
