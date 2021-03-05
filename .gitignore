@@ -4,3 +4,6 @@ node_modules
 dist
 tsconfig.tsbuildinfo
 yarn-error.log
+.openzeppelin
+!.openzeppelin/goerli*.json
+!.openzeppelin/mainnet*.json
