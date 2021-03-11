@@ -51,8 +51,8 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
 
   function setGovernance(address _address)
     external
-    validAddress(_address)
     onlyGovernance
+    validAddress(_address)
   {
     address previousGovernance = governance;
     governance = _address;
@@ -61,8 +61,8 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
 
   function setCouncil(address _address)
     external
-    validAddress(_address)
     onlyCouncil
+    validAddress(_address)
   {
     address previousCouncil = council;
     council = _address;

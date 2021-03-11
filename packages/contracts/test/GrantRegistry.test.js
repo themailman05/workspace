@@ -2,10 +2,7 @@ const { expect } = require('chai');
 
 let beneficiaryRegistryContract;
 let grantRegistryContract;
-
-const GRANT_TERM_MONTH = 1;
-const GRANT_TERM_QUARTER = 2;
-const GRANT_TERM_YEAR = 3;
+const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 }
 
 describe('GrantRegistry', function () {
   before(async function () {
@@ -28,16 +25,16 @@ describe('GrantRegistry', function () {
     );
 
     await grantRegistryContract.createGrant(
-      GRANT_TERM_QUARTER,
+      GRANT_TERM.QUARTER,
       ['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'],
       [1], // shares
     );
     expect(
-      (await grantRegistryContract.getActiveGrant(GRANT_TERM_QUARTER)).length,
+      (await grantRegistryContract.getActiveGrant(GRANT_TERM.QUARTER)).length,
     ).to.equal(5);
 
     expect(
-      (await grantRegistryContract.getActiveAwardees(GRANT_TERM_QUARTER))[0],
+      (await grantRegistryContract.getActiveAwardees(GRANT_TERM.QUARTER))[0],
     ).to.equal('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266');
   });
 });

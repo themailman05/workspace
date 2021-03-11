@@ -4,15 +4,17 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./IBeneficiaryRegistry.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 
-contract RewardsManager is Ownable {
+contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   Vault[3] private vaults;
-  address public immutable pop;
+  IERC20 public immutable pop;
+  IBeneficiaryRegistry public beneficiaryRegistry;
 
   enum VaultStatus {Initialized, Open, Closed}
 
@@ -20,8 +22,9 @@ contract RewardsManager is Ownable {
     uint256 totalDeposited;
     uint256 currentBalance;
     uint256 unclaimedShare;
+    mapping(address => bool) claimed;
     bytes32 merkleRoot;
-    uint256 endBlock;
+    uint256 endTime;
     VaultStatus status;
   }
 
@@ -34,34 +37,42 @@ contract RewardsManager is Ownable {
 
   modifier vaultExists(uint8 vaultId_) {
     require(vaultId_ < 3, "Invalid vault id");
-    require(vaults[vaultId_].endBlock > 0, "Uninitialized vault slot");
+    require(vaults[vaultId_].endTime > 0, "Uninitialized vault slot");
     _;
   }
 
-  constructor(address pop_) {
-    pop = pop_;
+  constructor(address pop_, address beneficiaryRegistry_) {
+    pop = IERC20(pop_);
+    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+  }
+
+  function setBeneficaryRegistry(address beneficiaryRegistry_)
+    public
+    onlyOwner
+  {
+    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
   }
 
   function initializeVault(
     uint8 vaultId_,
-    uint256 endBlock_,
+    uint256 endTime_,
     bytes32 merkleRoot_
   ) public onlyOwner {
     require(vaultId_ < 3, "Invalid vault id");
-    require(endBlock_ > block.number, "Invalid end block");
+    require(endTime_ > block.timestamp, "Invalid end block");
     require(
       vaults[vaultId_].status != VaultStatus.Open,
       "Vault must not be open"
     );
 
-    vaults[vaultId_] = Vault({
-      totalDeposited: 0,
-      currentBalance: 0,
-      unclaimedShare: 100,
-      merkleRoot: merkleRoot_,
-      endBlock: endBlock_,
-      status: VaultStatus.Initialized
-    });
+    delete vaults[vaultId_];
+    Vault storage v = vaults[vaultId_];
+    v.totalDeposited = 0;
+    v.currentBalance = 0;
+    v.unclaimedShare = 100 * 10**18;
+    v.merkleRoot = merkleRoot_;
+    v.endTime = endTime_;
+    v.status = VaultStatus.Initialized;
 
     emit VaultInitialized(vaultId_, merkleRoot_);
   }
@@ -79,7 +90,7 @@ contract RewardsManager is Ownable {
 
   function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
-    require(block.number > vaults[vaultId_].endBlock, "Vault has not ended");
+    require(block.timestamp >= vaults[vaultId_].endTime, "Vault has not ended");
 
     uint256 _remainingBalance = vaults[vaultId_].currentBalance;
     vaults[vaultId_].currentBalance = 0;
@@ -97,8 +108,12 @@ contract RewardsManager is Ownable {
     uint256 share_
   ) public view vaultExists(vaultId_) returns (bool) {
     require(msg.sender == beneficiary_, "Sender must be beneficiary");
-    //@todo validate beneficiary exists in registry
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
+    require(
+      beneficiaryRegistry.beneficiaryExists(beneficiary_) == true,
+      "Beneficiary does not exist"
+    );
+
     return
       MerkleProof.verify(
         proof_,
@@ -112,13 +127,17 @@ contract RewardsManager is Ownable {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public vaultExists(vaultId_) {
+  ) public nonReentrant vaultExists(vaultId_) {
     require(
       verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
     );
+    require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
-    uint256 _reward = vaults[vaultId_].totalDeposited.mul(share_).div(100);
+    uint256 _reward =
+      vaults[vaultId_].currentBalance.mul(share_).div(
+        vaults[vaultId_].unclaimedShare
+      );
     vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
       share_
     );
@@ -126,20 +145,19 @@ contract RewardsManager is Ownable {
       _reward
     );
 
-    IERC20(pop).transfer(beneficiary_, _reward);
+    vaults[vaultId_].claimed[beneficiary_] = true;
+
+    pop.transfer(beneficiary_, _reward);
 
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function depositReward(uint256 amount_) public {
-    IERC20(pop).transferFrom(msg.sender, address(this), amount_);
+  function depositReward(address from_, uint256 amount_) public nonReentrant {
+    pop.transferFrom(from_, address(this), amount_);
 
-    //@todo calculate reward splits to various targets
-    uint256 _amountToVault = amount_;
+    _distributeToVaults(amount_);
 
-    _distributeToVaults(_amountToVault);
-
-    emit RewardDeposited(msg.sender, amount_);
+    emit RewardDeposited(from_, amount_);
   }
 
   function getVault(uint8 vaultId_)
@@ -151,7 +169,7 @@ contract RewardsManager is Ownable {
       uint256 currentBalance,
       uint256 unclaimedShare,
       bytes32 merkleRoot,
-      uint256 endBlock,
+      uint256 endTime,
       VaultStatus status
     )
   {
@@ -159,7 +177,7 @@ contract RewardsManager is Ownable {
     currentBalance = vaults[vaultId_].currentBalance;
     unclaimedShare = vaults[vaultId_].unclaimedShare;
     merkleRoot = vaults[vaultId_].merkleRoot;
-    endBlock = vaults[vaultId_].endBlock;
+    endTime = vaults[vaultId_].endTime;
     status = vaults[vaultId_].status;
   }
 
@@ -172,7 +190,10 @@ contract RewardsManager is Ownable {
       }
     }
 
-    require(_openVaultCount > 0, "No open vaults");
+    if (_openVaultCount == 0) {
+      pop.transfer(owner(), amount_);
+      return;
+    }
 
     //@todo handle dust after div
     uint256 distribution = amount_.div(_openVaultCount);
@@ -186,5 +207,14 @@ contract RewardsManager is Ownable {
       );
       emit VaultDeposited(_vaultId, distribution);
     }
+  }
+
+  function hasClaimed(uint8 vaultId_, address beneficiary_)
+    public
+    view
+    vaultExists(vaultId_)
+    returns (bool)
+  {
+    return vaults[vaultId_].claimed[beneficiary_];
   }
 }
