@@ -3,8 +3,9 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./IBeneficiaryRegistry.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract BeneficiaryRegistry is IBeneficiaryRegistry {
+contract BeneficiaryRegistry is IBeneficiaryRegistry, ReentrancyGuard {
   address private governance;
   address private council;
 
@@ -51,8 +52,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
 
   function setGovernance(address _address)
     external
-    validAddress(_address)
+    nonReentrant
     onlyGovernance
+    validAddress(_address)
   {
     address previousGovernance = governance;
     governance = _address;
@@ -61,8 +63,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
 
   function setCouncil(address _address)
     external
-    validAddress(_address)
+    nonReentrant
     onlyCouncil
+    validAddress(_address)
   {
     address previousCouncil = council;
     council = _address;
@@ -71,6 +74,7 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
 
   function addBeneficiary(address _address, bytes calldata applicationCid)
     external
+    nonReentrant
     onlyGovernance
   {
     require(_address == address(_address), "invalid address");
@@ -86,7 +90,11 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
     emit BeneficiaryAdded(_address, applicationCid);
   }
 
-  function revokeBeneficiary(address _address) external onlyCouncil {
+  function revokeBeneficiary(address _address)
+    external
+    nonReentrant
+    onlyCouncil
+  {
     require(beneficiaryExists(_address), "exists");
     delete beneficiariesList[beneficiariesMap[_address].listPointer];
     delete beneficiariesMap[_address];

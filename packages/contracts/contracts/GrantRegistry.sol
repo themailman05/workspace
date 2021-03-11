@@ -3,8 +3,9 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./BeneficiaryRegistry.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract GrantRegistry {
+contract GrantRegistry is ReentrancyGuard {
   address private governance;
   address private council;
   address private beneficiaryRegistry;
@@ -78,8 +79,9 @@ contract GrantRegistry {
 
   function setGovernance(address _address)
     public
-    validAddress(_address)
+    nonReentrant
     onlyGovernance
+    validAddress(_address)
   {
     address previousGovernance = governance;
     governance = _address;
@@ -88,8 +90,9 @@ contract GrantRegistry {
 
   function setCouncil(address _address)
     public
-    validAddress(_address)
+    nonReentrant
     onlyCouncil
+    validAddress(_address)
   {
     address previousCouncil = council;
     council = _address;
@@ -98,6 +101,7 @@ contract GrantRegistry {
 
   function setEnabledGrantTerms(uint8[] calldata grantTerms)
     public
+    nonReentrant
     onlyGovernance
   {
     disableAllGrantTerms(); // reset grant terms
@@ -112,7 +116,11 @@ contract GrantRegistry {
     grantTermsEnabled[uint8(GrantTerm.YEAR)] = false;
   }
 
-  function setGrantShareType(uint8 _grantShareType) public onlyGovernance {
+  function setGrantShareType(uint8 _grantShareType)
+    public
+    nonReentrant
+    onlyGovernance
+  {
     require(
       _grantShareType == GRANT_SHARE_TYPE_EQUAL_WEIGHT ||
         _grantShareType == GRANT_SHARE_TYPE_DYNAMIC_WEIGHT,
@@ -128,7 +136,7 @@ contract GrantRegistry {
     GrantTerm grantTerm,
     address[] calldata beneficiaries,
     uint256[] calldata shares
-  ) public onlyGovernance {
+  ) public nonReentrant onlyGovernance {
     require(grantHasExpired(grantTerm), "grantIsActive");
     require(grantTermsEnabled[uint8(grantTerm)], "grantTerm disabled");
 

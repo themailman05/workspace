@@ -4,11 +4,12 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./IBeneficiaryRegistry.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 
-contract RewardsManager is Ownable {
+contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   Vault[3] private vaults;
@@ -47,6 +48,7 @@ contract RewardsManager is Ownable {
 
   function setBeneficaryRegistry(address beneficiaryRegistry_)
     public
+    nonReentrant
     onlyOwner
   {
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
@@ -56,7 +58,7 @@ contract RewardsManager is Ownable {
     uint8 vaultId_,
     uint256 endTime_,
     bytes32 merkleRoot_
-  ) public onlyOwner {
+  ) public nonReentrant onlyOwner {
     require(vaultId_ < 3, "Invalid vault id");
     require(endTime_ > block.timestamp, "Invalid end block");
     require(
@@ -76,7 +78,12 @@ contract RewardsManager is Ownable {
     emit VaultInitialized(vaultId_, merkleRoot_);
   }
 
-  function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
+  function openVault(uint8 vaultId_)
+    public
+    nonReentrant
+    onlyOwner
+    vaultExists(vaultId_)
+  {
     require(
       vaults[vaultId_].status == VaultStatus.Initialized,
       "Vault must be initialized"
@@ -87,7 +94,12 @@ contract RewardsManager is Ownable {
     emit VaultOpened(vaultId_);
   }
 
-  function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
+  function closeVault(uint8 vaultId_)
+    public
+    nonReentrant
+    onlyOwner
+    vaultExists(vaultId_)
+  {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     require(block.timestamp >= vaults[vaultId_].endTime, "Vault has not ended");
 
@@ -126,7 +138,7 @@ contract RewardsManager is Ownable {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public vaultExists(vaultId_) {
+  ) public nonReentrant vaultExists(vaultId_) {
     require(
       verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
@@ -151,7 +163,7 @@ contract RewardsManager is Ownable {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function depositReward(address from_, uint256 amount_) public {
+  function depositReward(address from_, uint256 amount_) public nonReentrant {
     pop.transferFrom(from_, address(this), amount_);
 
     _distributeToVaults(amount_);
