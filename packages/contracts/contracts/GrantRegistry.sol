@@ -3,12 +3,11 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./BeneficiaryRegistry.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract GrantRegistry is ReentrancyGuard {
+contract GrantRegistry {
   address private governance;
   address private council;
-  address private beneficiaryRegistry;
+  IBeneficiaryRegistry private beneficiaryRegistry;
 
   uint8 private grantShareType;
   mapping(uint8 => bool) private grantTermsEnabled;
@@ -74,12 +73,11 @@ contract GrantRegistry is ReentrancyGuard {
     council = msg.sender;
     grantTermsEnabled[uint8(GrantTerm.QUARTER)] = true;
     grantShareType = GRANT_SHARE_TYPE_EQUAL_WEIGHT;
-    beneficiaryRegistry = _beneficiaryRegistry;
+    beneficiaryRegistry = IBeneficiaryRegistry(_beneficiaryRegistry);
   }
 
   function setGovernance(address _address)
     public
-    nonReentrant
     onlyGovernance
     validAddress(_address)
   {
@@ -90,7 +88,6 @@ contract GrantRegistry is ReentrancyGuard {
 
   function setCouncil(address _address)
     public
-    nonReentrant
     onlyCouncil
     validAddress(_address)
   {
@@ -101,7 +98,6 @@ contract GrantRegistry is ReentrancyGuard {
 
   function setEnabledGrantTerms(uint8[] calldata grantTerms)
     public
-    nonReentrant
     onlyGovernance
   {
     disableAllGrantTerms(); // reset grant terms
@@ -116,11 +112,7 @@ contract GrantRegistry is ReentrancyGuard {
     grantTermsEnabled[uint8(GrantTerm.YEAR)] = false;
   }
 
-  function setGrantShareType(uint8 _grantShareType)
-    public
-    nonReentrant
-    onlyGovernance
-  {
+  function setGrantShareType(uint8 _grantShareType) public onlyGovernance {
     require(
       _grantShareType == GRANT_SHARE_TYPE_EQUAL_WEIGHT ||
         _grantShareType == GRANT_SHARE_TYPE_DYNAMIC_WEIGHT,
@@ -136,11 +128,9 @@ contract GrantRegistry is ReentrancyGuard {
     GrantTerm grantTerm,
     address[] calldata beneficiaries,
     uint256[] calldata shares
-  ) public nonReentrant onlyGovernance {
+  ) public onlyGovernance {
     require(grantHasExpired(grantTerm), "grantIsActive");
     require(grantTermsEnabled[uint8(grantTerm)], "grantTerm disabled");
-
-    BeneficiaryRegistry registry = BeneficiaryRegistry(beneficiaryRegistry);
 
     address[] memory eligibleBeneficiaries =
       new address[](beneficiaries.length);
@@ -157,7 +147,7 @@ contract GrantRegistry is ReentrancyGuard {
     });
 
     for (uint256 i = 0; i < beneficiaries.length; i++) {
-      if (registry.beneficiaryExists(beneficiaries[i])) {
+      if (beneficiaryRegistry.beneficiaryExists(beneficiaries[i])) {
         eligibleBeneficiaries[i] = beneficiaries[i];
         eligibleBeneficiariesShares[i] = shares[i];
         activeGrants[_grantTerm].awardeesCount++;
@@ -221,9 +211,8 @@ contract GrantRegistry is ReentrancyGuard {
   {
     address[] memory eligibleBeneficiaries =
       new address[](beneficiaries.length);
-    BeneficiaryRegistry registry = BeneficiaryRegistry(beneficiaryRegistry);
     for (uint256 i = 0; i < beneficiaries.length; i++) {
-      if (registry.beneficiaryExists(beneficiaries[i])) {
+      if (beneficiaryRegistry.beneficiaryExists(beneficiaries[i])) {
         eligibleBeneficiaries[i] = beneficiaries[i];
       }
     }

@@ -48,7 +48,6 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
   function setBeneficaryRegistry(address beneficiaryRegistry_)
     public
-    nonReentrant
     onlyOwner
   {
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
@@ -58,7 +57,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     uint8 vaultId_,
     uint256 endTime_,
     bytes32 merkleRoot_
-  ) public nonReentrant onlyOwner {
+  ) public onlyOwner {
     require(vaultId_ < 3, "Invalid vault id");
     require(endTime_ > block.timestamp, "Invalid end block");
     require(
@@ -78,12 +77,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit VaultInitialized(vaultId_, merkleRoot_);
   }
 
-  function openVault(uint8 vaultId_)
-    public
-    nonReentrant
-    onlyOwner
-    vaultExists(vaultId_)
-  {
+  function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(
       vaults[vaultId_].status == VaultStatus.Initialized,
       "Vault must be initialized"
@@ -94,12 +88,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit VaultOpened(vaultId_);
   }
 
-  function closeVault(uint8 vaultId_)
-    public
-    nonReentrant
-    onlyOwner
-    vaultExists(vaultId_)
-  {
+  function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     require(block.timestamp >= vaults[vaultId_].endTime, "Vault has not ended");
 
