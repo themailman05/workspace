@@ -1,5 +1,4 @@
 require("@nomiclabs/hardhat-waffle");
-require("@openzeppelin/hardhat-upgrades");
 
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();

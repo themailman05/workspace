@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { waffle, upgrades } = require("hardhat");
+const { waffle } = require("hardhat");
 const { parseEther } = require("ethers/lib/utils");
 const { merklize, makeElement, generateClaims } = require("../scripts/merkle.js");
 const provider = waffle.provider;
@@ -22,10 +22,7 @@ describe('RewardsManager', function () {
     await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
 
     let RewardsManager = await ethers.getContractFactory("RewardsManager");
-    this.rewardsProxy = await upgrades.deployProxy(
-      RewardsManager,
-      [this.mockPop.address, this.mockBeneficiaryRegistry.address]
-    );
+    this.rewardsProxy = await RewardsManager.deploy(this.mockPop.address, this.mockBeneficiaryRegistry.address);
     await this.rewardsProxy.deployed();
 
     claims = generateClaims(await provider.listAccounts());
@@ -240,45 +237,6 @@ describe('RewardsManager', function () {
 
           it("has expected contract balance", async function () {
             expect(await this.mockPop.balanceOf(this.rewardsProxy.address)).to.equal(9000000);
-          });
-        });
-
-        describe("upgrade contract version", function () {
-          beforeEach(async function () {
-            let MockRewardsManagerV2 = await ethers.getContractFactory("MockRewardsManagerV2");
-            this.upgradedProxy = await upgrades.upgradeProxy(this.rewardsProxy.address, MockRewardsManagerV2);
-          });
-
-          it("vault has expected data", async function () {
-            let vaultData = await this.upgradedProxy.getVault(0);
-            expect(vaultData.totalDeposited).to.equal(totalReward);
-            expect(vaultData.currentBalance).to.equal(9500000);
-            expect(vaultData.unclaimedShare).to.equal(parseEther("95").toString());
-            expect(vaultData.merkleRoot).to.equal(merkleRoot);
-            expect(vaultData.endTime).to.equal(endTime);
-            expect(vaultData.status).to.equal(VaultStatus.Open);
-            expect(await this.upgradedProxy.hasClaimed(0, beneficiary1.address)).to.be.true;
-            expect(await this.upgradedProxy.hasClaimed(0, beneficiary2.address)).to.be.false;
-          });
-
-          describe("deposits to upgraded contract", function () {
-            beforeEach(async function () {
-              await this.mockPop.connect(rewarder).approve(this.upgradedProxy.address, totalReward);
-              result = await this.upgradedProxy.depositReward(rewarder.address, totalReward);
-            });
-
-            it("emits a RewardDeposited2 event", async function () {
-              expect(result).to.emit(this.upgradedProxy, "RewardDeposited2").withArgs(rewarder.address, totalReward);
-            });
-
-            it("has expected contract balance", async function () {
-              expect(await this.mockPop.balanceOf(this.upgradedProxy.address)).to.equal(19500000);
-            });
-
-            it("vault has expected data", async function () {
-              let vaultData = await this.upgradedProxy.getVault(0);
-              expect(vaultData.totalDeposited).to.equal(totalReward * 2);
-            });
           });
         });
 

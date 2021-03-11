@@ -3,16 +3,16 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./IBeneficiaryRegistry.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 
-contract RewardsManager is OwnableUpgradeable {
+contract RewardsManager is Ownable {
   using SafeMath for uint256;
 
   Vault[3] private vaults;
-  IERC20 public pop;
+  IERC20 public immutable pop;
   IBeneficiaryRegistry public beneficiaryRegistry;
 
   enum VaultStatus {Initialized, Open, Closed}
@@ -40,11 +40,7 @@ contract RewardsManager is OwnableUpgradeable {
     _;
   }
 
-  function initialize(address pop_, address beneficiaryRegistry_)
-    public
-    initializer
-  {
-    __Ownable_init();
+  constructor(address pop_, address beneficiaryRegistry_) {
     pop = IERC20(pop_);
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
   }
@@ -60,7 +56,7 @@ contract RewardsManager is OwnableUpgradeable {
     uint8 vaultId_,
     uint256 endTime_,
     bytes32 merkleRoot_
-  ) public virtual onlyOwner {
+  ) public onlyOwner {
     require(vaultId_ < 3, "Invalid vault id");
     require(endTime_ > block.timestamp, "Invalid end block");
     require(
@@ -80,12 +76,7 @@ contract RewardsManager is OwnableUpgradeable {
     emit VaultInitialized(vaultId_, merkleRoot_);
   }
 
-  function openVault(uint8 vaultId_)
-    public
-    virtual
-    onlyOwner
-    vaultExists(vaultId_)
-  {
+  function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(
       vaults[vaultId_].status == VaultStatus.Initialized,
       "Vault must be initialized"
@@ -96,12 +87,7 @@ contract RewardsManager is OwnableUpgradeable {
     emit VaultOpened(vaultId_);
   }
 
-  function closeVault(uint8 vaultId_)
-    public
-    virtual
-    onlyOwner
-    vaultExists(vaultId_)
-  {
+  function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     require(block.timestamp >= vaults[vaultId_].endTime, "Vault has not ended");
 
@@ -119,7 +105,7 @@ contract RewardsManager is OwnableUpgradeable {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public view virtual vaultExists(vaultId_) returns (bool) {
+  ) public view vaultExists(vaultId_) returns (bool) {
     require(msg.sender == beneficiary_, "Sender must be beneficiary");
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     require(
@@ -140,7 +126,7 @@ contract RewardsManager is OwnableUpgradeable {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public virtual vaultExists(vaultId_) {
+  ) public vaultExists(vaultId_) {
     require(
       verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
@@ -165,7 +151,7 @@ contract RewardsManager is OwnableUpgradeable {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function depositReward(address from_, uint256 amount_) public virtual {
+  function depositReward(address from_, uint256 amount_) public {
     pop.transferFrom(from_, address(this), amount_);
 
     _distributeToVaults(amount_);
@@ -176,7 +162,6 @@ contract RewardsManager is OwnableUpgradeable {
   function getVault(uint8 vaultId_)
     public
     view
-    virtual
     vaultExists(vaultId_)
     returns (
       uint256 totalDeposited,
@@ -226,7 +211,6 @@ contract RewardsManager is OwnableUpgradeable {
   function hasClaimed(uint8 vaultId_, address beneficiary_)
     public
     view
-    virtual
     vaultExists(vaultId_)
     returns (bool)
   {
