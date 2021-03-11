@@ -138,8 +138,9 @@ contract GrantRegistry {
       new address[](beneficiaries.length);
     uint256[] memory eligibleBeneficiariesShares =
       new uint256[](beneficiaries.length);
+    uint8 _grantTerm = uint8(grantTerm);
 
-    activeGrants[uint8(grantTerm)] = Grant({
+    activeGrants[_grantTerm] = Grant({
       startTime: block.timestamp,
       endTime: block.timestamp + getPeriodInSecondsForGrantTerm(grantTerm),
       grantTerm: grantTerm,
@@ -151,8 +152,8 @@ contract GrantRegistry {
       if (registry.beneficiaryExists(beneficiaries[i])) {
         eligibleBeneficiaries[i] = beneficiaries[i];
         eligibleBeneficiariesShares[i] = shares[i];
-        activeGrants[uint8(grantTerm)].awardeesCount++;
-        activeAwardees[uint8(grantTerm)].push(
+        activeGrants[_grantTerm].awardeesCount++;
+        activeAwardees[_grantTerm].push(
           Awardee({
             grantTerm: grantTerm,
             awardee: beneficiaries[0],
@@ -175,10 +176,11 @@ contract GrantRegistry {
     view
     returns (address[] memory)
   {
+    uint8 _grantTerm = uint8(grantTerm);
     address[] memory ret =
-      new address[](activeGrants[uint8(grantTerm)].awardeesCount);
-    for (uint256 i = 0; i < activeGrants[uint8(grantTerm)].awardeesCount; i++) {
-      ret[i] = activeAwardees[uint8(grantTerm)][i].awardee;
+      new address[](activeGrants[_grantTerm].awardeesCount);
+    for (uint256 i = 0; i < activeGrants[_grantTerm].awardeesCount; i++) {
+      ret[i] = activeAwardees[_grantTerm][i].awardee;
     }
     return ret;
   }
