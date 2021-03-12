@@ -3,6 +3,8 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./IBeneficiaryRegistry.sol";
+import "./ITreasury.sol";
+import "./IDAO.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -12,10 +14,16 @@ import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
-  Vault[3] private vaults;
   IERC20 public immutable pop;
+  IDAO public dao;
+  ITreasury public treasury;
   IBeneficiaryRegistry public beneficiaryRegistry;
 
+  uint256[3] public rewardSplits;
+  mapping(uint8 => uint256[2]) private rewardLimits;
+  Vault[3] private vaults;
+
+  enum RewardTargets {DAO, Treasury, Beneficiaries}
   enum VaultStatus {Initialized, Open, Closed}
 
   struct Vault {
@@ -32,8 +40,11 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   event VaultOpened(uint8 vaultId);
   event VaultClosed(uint8 vaultId);
   event VaultDeposited(uint8 vaultId, uint256 amount);
+  event DaoDeposited(address to, uint256 amount);
+  event TreasuryDeposited(address to, uint256 amount);
   event RewardDeposited(address from, uint256 amount);
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
+  event RewardSplitsUpdated(uint256[3] splits);
 
   modifier vaultExists(uint8 vaultId_) {
     require(vaultId_ < 3, "Invalid vault id");
@@ -41,16 +52,59 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     _;
   }
 
-  constructor(address pop_, address beneficiaryRegistry_) {
+  constructor(
+    address pop_,
+    address dao_,
+    address treasury_,
+    address beneficiaryRegistry_
+  ) {
     pop = IERC20(pop_);
+    dao = IDAO(dao_);
+    treasury = ITreasury(treasury_);
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+    rewardLimits[uint8(RewardTargets.DAO)] = [20 * 10**18, 80 * 10**18];
+    rewardLimits[uint8(RewardTargets.Treasury)] = [10 * 10**18, 80 * 10**18];
+    rewardLimits[uint8(RewardTargets.Beneficiaries)] = [
+      20 * 10**18,
+      90 * 10**18
+    ];
+    rewardSplits = [33 * 10**18, 33 * 10**18, 34 * 10**18];
+  }
+
+  function setDAO(address dao_) public onlyOwner {
+    require(dao_ != address(dao), "Same DAO");
+    dao = IDAO(dao_);
+  }
+
+  function setTreasury(address treasury_) public onlyOwner {
+    require(treasury_ != address(treasury), "Same Treasury");
+    treasury = ITreasury(treasury_);
   }
 
   function setBeneficaryRegistry(address beneficiaryRegistry_)
     public
     onlyOwner
   {
+    require(
+      beneficiaryRegistry_ != address(beneficiaryRegistry),
+      "Same Beneficiary Registry"
+    );
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+  }
+
+  function setRewardSplits(uint256[3] calldata splits_) public onlyOwner {
+    //@todo check input length?
+    uint256 _total = 0;
+    for (uint8 i = 0; i < 3; i++) {
+      require(
+        splits_[i] >= rewardLimits[i][0] && splits_[i] <= rewardLimits[i][1],
+        "Invalid split"
+      );
+      _total = _total.add(splits_[i]);
+    }
+    require(_total == 100 * 10**18, "Invalid split total");
+    rewardSplits = splits_;
+    emit RewardSplitsUpdated(splits_);
   }
 
   function initializeVault(
@@ -155,7 +209,21 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   function depositReward(address from_, uint256 amount_) public nonReentrant {
     pop.transferFrom(from_, address(this), amount_);
 
-    _distributeToVaults(amount_);
+    //@todo check edge case precision overflow
+    uint256 daoAmount_ =
+      amount_.mul(rewardSplits[uint8(RewardTargets.DAO)]).div(100 * 10**18);
+    uint256 treasuryAmount_ =
+      amount_.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(
+        100 * 10**18
+      );
+    uint256 beneficiariesAmount_ =
+      amount_.mul(rewardSplits[uint8(RewardTargets.Beneficiaries)]).div(
+        100 * 10**18
+      );
+
+    _distributeToDAO(daoAmount_);
+    _distributeToTreasury(treasuryAmount_);
+    _distributeToVaults(beneficiariesAmount_);
 
     emit RewardDeposited(from_, amount_);
   }
@@ -181,7 +249,18 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     status = vaults[vaultId_].status;
   }
 
+  function _distributeToDAO(uint256 amount_) internal {
+    if (amount_ == 0) return;
+    pop.transfer(address(dao), amount_);
+  }
+
+  function _distributeToTreasury(uint256 amount_) internal {
+    if (amount_ == 0) return;
+    pop.transfer(address(treasury), amount_);
+  }
+
   function _distributeToVaults(uint256 amount_) internal {
+    if (amount_ == 0) return;
     uint8 _openVaultCount = 0;
 
     for (uint8 i = 0; i < vaults.length; i++) {
