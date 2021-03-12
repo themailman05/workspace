@@ -8,11 +8,12 @@ import "./IStaking.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 
 contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
+  using SafeERC20 for IERC20;
 
   IERC20 public immutable pop;
   IStaking public staking;
@@ -21,6 +22,8 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
   uint256[3] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
+  mapping(address => uint256) public previousBalances;
+
   Vault[3] private vaults;
 
   enum RewardTargets {Staking, Treasury, Beneficiaries}
@@ -42,7 +45,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   event VaultDeposited(uint8 vaultId, uint256 amount);
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
-  event RewardDeposited(address from, uint256 amount);
+  event RewardsApplied(address token, uint256 amount);
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
   event RewardSplitsUpdated(uint256[3] splits);
 
@@ -185,6 +188,8 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     );
     require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
+    applyRewards(address(pop));
+
     uint256 _reward =
       vaults[vaultId_].currentBalance.mul(share_).div(
         vaults[vaultId_].unclaimedShare
@@ -203,22 +208,30 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function depositReward(address from_, uint256 amount_) public nonReentrant {
-    pop.transferFrom(from_, address(this), amount_);
+  function applyRewards(address token_) public {
+    uint256 _currentBalance = IERC20(token_).balanceOf(address(this));
+    if (_currentBalance <= previousBalances[token_]) return;
+
+    uint256 _availableReward = _currentBalance.sub(previousBalances[token_]);
+    //@todo minimum reward check
+
+    previousBalances[token_] = _currentBalance;
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount =
-      amount_.mul(rewardSplits[uint8(RewardTargets.Staking)]).div(100e18);
+      _availableReward.mul(rewardSplits[uint8(RewardTargets.Staking)]).div(100e18);
     uint256 _treasuryAmount =
-      amount_.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(100e18);
+      _availableReward.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(100e18);
     uint256 _beneficiariesAmount =
-      amount_.mul(rewardSplits[uint8(RewardTargets.Beneficiaries)]).div(100e18);
+      _availableReward.mul(rewardSplits[uint8(RewardTargets.Beneficiaries)]).div(
+        100e18
+      );
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);
     _distributeToVaults(_beneficiariesAmount);
 
-    emit RewardDeposited(from_, amount_);
+    emit RewardsApplied(address(pop), _availableReward);
   }
 
   function getVault(uint8 vaultId_)

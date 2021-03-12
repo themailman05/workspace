@@ -57,12 +57,6 @@ describe('RewardsManager', function () {
     expect(await this.rewardsManager.rewardSplits(2)).to.equal(parseEther("34"));
   });
 
-  it("reverts deposit with no transfer approval", async function () {
-    await expect(
-      this.rewardsManager.depositReward(owner.address, 100)
-    ).to.be.revertedWith("ERC20: transfer amount exceeds allowance");
-  });
-
   it("reverts when trying to get uninitialized vault", async function () {
     await expect(this.rewardsManager.getVault(0)).to.be.revertedWith("Uninitialized vault slot");
   });
@@ -117,8 +111,8 @@ describe('RewardsManager', function () {
 
   it("reward redirected to owner with no open vaults", async function () {
     let rewardAmount = parseEther("0.01");
-    await this.mockPop.connect(rewarder).approve(this.rewardsManager.address, rewardAmount);
-    await this.rewardsManager.depositReward(rewarder.address, rewardAmount);
+    await this.mockPop.connect(rewarder).transfer(this.rewardsManager.address, rewardAmount);
+    await this.rewardsManager.applyRewards(this.mockPop.address);
     expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(0);
     expect(await this.mockPop.balanceOf(owner.address)).to.equal(
       OwnerInitial.add(rewardAmount.mul(RewardSplits.Beneficiaries).div(parseEther("100")))
@@ -177,8 +171,8 @@ describe('RewardsManager', function () {
         treasuryReward = totalReward.mul(RewardSplits.Treasury).div(parseEther("100"));
         beneficiariesReward = totalReward.mul(RewardSplits.Beneficiaries).div(parseEther("100"));
         result1 = await this.rewardsManager.openVault(0);
-        await this.mockPop.connect(rewarder).approve(this.rewardsManager.address, totalReward);
-        result2 = await this.rewardsManager.depositReward(rewarder.address, totalReward);
+        await this.mockPop.connect(rewarder).transfer(this.rewardsManager.address, totalReward);
+        result2 = await this.rewardsManager.applyRewards(this.mockPop.address);
       });
 
       it("emits expected events", async function () {
@@ -186,7 +180,7 @@ describe('RewardsManager', function () {
         expect(result2).to.emit(this.rewardsManager, "StakingDeposited").withArgs(this.mockStaking.address, stakingReward);
         expect(result2).to.emit(this.rewardsManager, "TreasuryDeposited").withArgs(this.mockTreasury.address, treasuryReward);
         expect(result2).to.emit(this.rewardsManager, "VaultDeposited").withArgs(0, beneficiariesReward);
-        expect(result2).to.emit(this.rewardsManager, "RewardDeposited").withArgs(rewarder.address, totalReward);
+        expect(result2).to.emit(this.rewardsManager, "RewardsApplied").withArgs(this.mockPop.address, totalReward);
       });
 
       it("contract has expected balance", async function () {
