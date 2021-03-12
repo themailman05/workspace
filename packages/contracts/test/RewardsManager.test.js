@@ -181,8 +181,11 @@ describe('RewardsManager', function () {
         result2 = await this.rewardsManager.depositReward(rewarder.address, totalReward);
       });
 
-      it("emits a VaultOpened & RewardDeposited event", async function () {
+      it("emits expected events", async function () {
         expect(result1).to.emit(this.rewardsManager, "VaultOpened").withArgs(0);
+        expect(result2).to.emit(this.rewardsManager, "DaoDeposited").withArgs(this.mockDao.address, daoReward);
+        expect(result2).to.emit(this.rewardsManager, "TreasuryDeposited").withArgs(this.mockTreasury.address, treasuryReward);
+        expect(result2).to.emit(this.rewardsManager, "VaultDeposited").withArgs(0, beneficiariesReward);
         expect(result2).to.emit(this.rewardsManager, "RewardDeposited").withArgs(rewarder.address, totalReward);
       });
 

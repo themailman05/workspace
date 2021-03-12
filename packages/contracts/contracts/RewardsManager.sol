@@ -252,11 +252,13 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   function _distributeToDAO(uint256 amount_) internal {
     if (amount_ == 0) return;
     pop.transfer(address(dao), amount_);
+    emit DaoDeposited(address(dao), amount_);
   }
 
   function _distributeToTreasury(uint256 amount_) internal {
     if (amount_ == 0) return;
     pop.transfer(address(treasury), amount_);
+    emit TreasuryDeposited(address(treasury), amount_);
   }
 
   function _distributeToVaults(uint256 amount_) internal {
