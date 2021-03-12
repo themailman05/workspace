@@ -103,6 +103,12 @@ describe('RewardsManager', function () {
     ).to.be.revertedWith("Invalid split total");
   });
 
+  it("reverts when setting out of bounds reward splits", async function () {
+    await expect(
+      this.rewardsManager.setRewardSplits([parseEther("10"), parseEther("10"), parseEther("80")])
+    ).to.be.revertedWith("Invalid split");
+  });
+
   it("cannot tranfer ownership as non-owner", async function () {
     await expect(
       this.rewardsManager.connect(beneficiary1).transferOwnership(beneficiary1.address)
