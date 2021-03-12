@@ -62,13 +62,10 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     dao = IDAO(dao_);
     treasury = ITreasury(treasury_);
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
-    rewardLimits[uint8(RewardTargets.DAO)] = [20 * 10**18, 80 * 10**18];
-    rewardLimits[uint8(RewardTargets.Treasury)] = [10 * 10**18, 80 * 10**18];
-    rewardLimits[uint8(RewardTargets.Beneficiaries)] = [
-      20 * 10**18,
-      90 * 10**18
-    ];
-    rewardSplits = [33 * 10**18, 33 * 10**18, 34 * 10**18];
+    rewardLimits[uint8(RewardTargets.DAO)] = [20e18, 80e18];
+    rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
+    rewardLimits[uint8(RewardTargets.Beneficiaries)] = [20e18, 90e18];
+    rewardSplits = [33e18, 33e18, 34e18];
   }
 
   function setDAO(address dao_) public onlyOwner {
@@ -102,7 +99,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
       );
       _total = _total.add(splits_[i]);
     }
-    require(_total == 100 * 10**18, "Invalid split total");
+    require(_total == 100e18, "Invalid split total");
     rewardSplits = splits_;
     emit RewardSplitsUpdated(splits_);
   }
@@ -123,7 +120,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     Vault storage v = vaults[vaultId_];
     v.totalDeposited = 0;
     v.currentBalance = 0;
-    v.unclaimedShare = 100 * 10**18;
+    v.unclaimedShare = 100e18;
     v.merkleRoot = merkleRoot_;
     v.endTime = endTime_;
     v.status = VaultStatus.Initialized;
@@ -211,15 +208,11 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
     //@todo check edge case precision overflow
     uint256 daoAmount_ =
-      amount_.mul(rewardSplits[uint8(RewardTargets.DAO)]).div(100 * 10**18);
+      amount_.mul(rewardSplits[uint8(RewardTargets.DAO)]).div(100e18);
     uint256 treasuryAmount_ =
-      amount_.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(
-        100 * 10**18
-      );
+      amount_.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(100e18);
     uint256 beneficiariesAmount_ =
-      amount_.mul(rewardSplits[uint8(RewardTargets.Beneficiaries)]).div(
-        100 * 10**18
-      );
+      amount_.mul(rewardSplits[uint8(RewardTargets.Beneficiaries)]).div(100e18);
 
     _distributeToDAO(daoAmount_);
     _distributeToTreasury(treasuryAmount_);
