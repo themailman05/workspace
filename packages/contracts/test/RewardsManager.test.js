@@ -6,7 +6,7 @@ const provider = waffle.provider;
 
 describe('RewardsManager', function () {
   const VaultStatus = { "Initialized": 0, "Open": 1, "Closed": 2 };
-  const RewardSplits = { "DAO": parseEther("33"), "Treasury": parseEther("33"), "Beneficiaries": parseEther("34") };
+  const RewardSplits = { "Staking": parseEther("33"), "Treasury": parseEther("33"), "Beneficiaries": parseEther("34") };
   const OwnerInitial = parseEther("10");
   const RewarderInitial = parseEther("5");
   let owner, rewarder, beneficiary1, beneficiary2;
@@ -23,8 +23,8 @@ describe('RewardsManager', function () {
     let Treasury = await ethers.getContractFactory("MockTreasury");
     this.mockTreasury = await waffle.deployMockContract(owner, Treasury.interface.format());
 
-    let DAO = await ethers.getContractFactory("MockDAO");
-    this.mockDao = await waffle.deployMockContract(owner, DAO.interface.format());
+    let Staking = await ethers.getContractFactory("MockStaking");
+    this.mockStaking = await waffle.deployMockContract(owner, Staking.interface.format());
 
     let BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
     this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
@@ -33,7 +33,7 @@ describe('RewardsManager', function () {
     let RewardsManager = await ethers.getContractFactory("RewardsManager");
     this.rewardsManager = await RewardsManager.deploy(
       this.mockPop.address,
-      this.mockDao.address,
+      this.mockStaking.address,
       this.mockTreasury.address,
       this.mockBeneficiaryRegistry.address
     );
@@ -46,7 +46,7 @@ describe('RewardsManager', function () {
 
   it("should be constructed with correct addresses", async function () {
     expect(await this.rewardsManager.pop()).to.equal(this.mockPop.address);
-    expect(await this.rewardsManager.dao()).to.equal(this.mockDao.address);
+    expect(await this.rewardsManager.staking()).to.equal(this.mockStaking.address);
     expect(await this.rewardsManager.treasury()).to.equal(this.mockTreasury.address);
     expect(await this.rewardsManager.beneficiaryRegistry()).to.equal(this.mockBeneficiaryRegistry.address);
   });
@@ -173,7 +173,7 @@ describe('RewardsManager', function () {
     describe("open vault and deposit reward", function () {
       beforeEach(async function () {
         totalReward = parseEther("0.1");
-        daoReward = totalReward.mul(RewardSplits.DAO).div(parseEther("100"));
+        stakingReward = totalReward.mul(RewardSplits.Staking).div(parseEther("100"));
         treasuryReward = totalReward.mul(RewardSplits.Treasury).div(parseEther("100"));
         beneficiariesReward = totalReward.mul(RewardSplits.Beneficiaries).div(parseEther("100"));
         result1 = await this.rewardsManager.openVault(0);
@@ -183,7 +183,7 @@ describe('RewardsManager', function () {
 
       it("emits expected events", async function () {
         expect(result1).to.emit(this.rewardsManager, "VaultOpened").withArgs(0);
-        expect(result2).to.emit(this.rewardsManager, "DaoDeposited").withArgs(this.mockDao.address, daoReward);
+        expect(result2).to.emit(this.rewardsManager, "StakingDeposited").withArgs(this.mockStaking.address, stakingReward);
         expect(result2).to.emit(this.rewardsManager, "TreasuryDeposited").withArgs(this.mockTreasury.address, treasuryReward);
         expect(result2).to.emit(this.rewardsManager, "VaultDeposited").withArgs(0, beneficiariesReward);
         expect(result2).to.emit(this.rewardsManager, "RewardDeposited").withArgs(rewarder.address, totalReward);
@@ -193,16 +193,12 @@ describe('RewardsManager', function () {
         expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(beneficiariesReward);
       });
 
-      it("DAO has expected balance", async function () {
-        expect(await this.mockPop.balanceOf(this.mockDao.address)).to.equal(daoReward);
+      it("Staking has expected balance", async function () {
+        expect(await this.mockPop.balanceOf(this.mockStaking.address)).to.equal(stakingReward);
       });
 
       it("Treasury has expected balance", async function () {
         expect(await this.mockPop.balanceOf(this.mockTreasury.address)).to.equal(treasuryReward);
-      });
-
-      it("DAO has expected balance", async function () {
-        expect(await this.mockPop.balanceOf(this.mockDao.address)).to.equal(daoReward);
       });
 
       it("vault has expected balance", async function () {

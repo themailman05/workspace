@@ -4,7 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./IBeneficiaryRegistry.sol";
 import "./ITreasury.sol";
-import "./IDAO.sol";
+import "./IStaking.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -15,7 +15,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
 
   IERC20 public immutable pop;
-  IDAO public dao;
+  IStaking public staking;
   ITreasury public treasury;
   IBeneficiaryRegistry public beneficiaryRegistry;
 
@@ -23,7 +23,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   mapping(uint8 => uint256[2]) private rewardLimits;
   Vault[3] private vaults;
 
-  enum RewardTargets {DAO, Treasury, Beneficiaries}
+  enum RewardTargets {Staking, Treasury, Beneficiaries}
   enum VaultStatus {Initialized, Open, Closed}
 
   struct Vault {
@@ -40,7 +40,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   event VaultOpened(uint8 vaultId);
   event VaultClosed(uint8 vaultId);
   event VaultDeposited(uint8 vaultId, uint256 amount);
-  event DaoDeposited(address to, uint256 amount);
+  event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
   event RewardDeposited(address from, uint256 amount);
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
@@ -54,23 +54,23 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
   constructor(
     address pop_,
-    address dao_,
+    address staking_,
     address treasury_,
     address beneficiaryRegistry_
   ) {
     pop = IERC20(pop_);
-    dao = IDAO(dao_);
+    staking = IStaking(staking_);
     treasury = ITreasury(treasury_);
     beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
-    rewardLimits[uint8(RewardTargets.DAO)] = [20e18, 80e18];
+    rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
     rewardLimits[uint8(RewardTargets.Beneficiaries)] = [20e18, 90e18];
     rewardSplits = [33e18, 33e18, 34e18];
   }
 
-  function setDAO(address dao_) public onlyOwner {
-    require(dao_ != address(dao), "Same DAO");
-    dao = IDAO(dao_);
+  function setStaking(address staking_) public onlyOwner {
+    require(staking_ != address(staking), "Same Staking");
+    staking = IStaking(staking_);
   }
 
   function setTreasury(address treasury_) public onlyOwner {
@@ -207,16 +207,16 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     pop.transferFrom(from_, address(this), amount_);
 
     //@todo check edge case precision overflow
-    uint256 daoAmount_ =
-      amount_.mul(rewardSplits[uint8(RewardTargets.DAO)]).div(100e18);
-    uint256 treasuryAmount_ =
+    uint256 _stakingAmount =
+      amount_.mul(rewardSplits[uint8(RewardTargets.Staking)]).div(100e18);
+    uint256 _treasuryAmount =
       amount_.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(100e18);
-    uint256 beneficiariesAmount_ =
+    uint256 _beneficiariesAmount =
       amount_.mul(rewardSplits[uint8(RewardTargets.Beneficiaries)]).div(100e18);
 
-    _distributeToDAO(daoAmount_);
-    _distributeToTreasury(treasuryAmount_);
-    _distributeToVaults(beneficiariesAmount_);
+    _distributeToStaking(_stakingAmount);
+    _distributeToTreasury(_treasuryAmount);
+    _distributeToVaults(_beneficiariesAmount);
 
     emit RewardDeposited(from_, amount_);
   }
@@ -242,10 +242,10 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     status = vaults[vaultId_].status;
   }
 
-  function _distributeToDAO(uint256 amount_) internal {
+  function _distributeToStaking(uint256 amount_) internal {
     if (amount_ == 0) return;
-    pop.transfer(address(dao), amount_);
-    emit DaoDeposited(address(dao), amount_);
+    pop.transfer(address(staking), amount_);
+    emit StakingDeposited(address(staking), amount_);
   }
 
   function _distributeToTreasury(uint256 amount_) internal {
