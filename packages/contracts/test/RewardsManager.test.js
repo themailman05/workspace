@@ -329,14 +329,55 @@ describe('RewardsManager', function () {
           beforeEach(async function () {
             ethers.provider.send("evm_increaseTime", [endTime - Math.floor(Date.now() / 1000)]);
             ethers.provider.send("evm_mine");
+            result = await this.rewardsManager.closeVault(0);
+          });
+
+          it("emits a VaultClosed event", async function () {
+            expect(result).to.emit(this.rewardsManager, "VaultClosed").withArgs(0);
           });
 
           it("redirect unclaimed rewards to owner when no other vaults open", async function () {
-            await this.rewardsManager.closeVault(0);
             expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(0);
           });
+        });
 
-          //@todo open vault 1 for remaining rewards and close 0
+        describe("initialize and open vault 1", function () {
+          beforeEach(async function () {
+            currentTime = (await provider.getBlock("latest")).timestamp;
+            endTime = currentTime + 11111;
+            await this.rewardsManager.initializeVault(1, endTime, merkleRoot);
+            await this.rewardsManager.openVault(1);
+          });
+
+          it("vault 1 has expected values", async function () {
+            let vaultData = await this.rewardsManager.getVault(1);
+            expect(vaultData.totalDeposited).to.equal(0);
+            expect(vaultData.currentBalance).to.equal(0);
+            expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
+            expect(vaultData.merkleRoot).to.equal(merkleRoot);
+            expect(vaultData.endTime).to.equal(endTime);
+            expect(vaultData.status).to.equal(VaultStatus.Open);
+            expect(await this.rewardsManager.hasClaimed(1, beneficiary1.address)).to.be.false;
+            expect(await this.rewardsManager.hasClaimed(1, beneficiary2.address)).to.be.false;
+          });
+
+          describe("close vault 0 and redirect remaining rewards to open vault", function () {
+            beforeEach(async function () {
+              ethers.provider.send("evm_increaseTime", [endTime - Math.floor(Date.now() / 1000)]);
+              ethers.provider.send("evm_mine");
+              await this.rewardsManager.closeVault(0);
+            });
+
+            it("vault 1 has expected values", async function () {
+              let currentBalance = beneficiariesReward.sub(beneficiary1Claim);
+              let vaultData = await this.rewardsManager.getVault(1);
+              expect(vaultData.totalDeposited).to.equal(currentBalance);
+              expect(vaultData.currentBalance).to.equal(currentBalance);
+              expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
+              expect(await this.rewardsManager.hasClaimed(1, beneficiary1.address)).to.be.false;
+              expect(await this.rewardsManager.hasClaimed(1, beneficiary2.address)).to.be.false;
+            });
+          });
         });
       });
     });
