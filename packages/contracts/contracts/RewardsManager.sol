@@ -188,8 +188,6 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     );
     require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
-    applyRewards(address(pop));
-
     uint256 _reward =
       vaults[vaultId_].currentBalance.mul(share_).div(
         vaults[vaultId_].unclaimedShare
@@ -205,27 +203,37 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
     pop.transfer(beneficiary_, _reward);
 
+    _checkpointToken(address(pop));
+
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function applyRewards(address token_) public {
+  function _checkpointToken(address token_) internal returns (uint256) {
+    uint256 _balanceDiff = 0;
     uint256 _currentBalance = IERC20(token_).balanceOf(address(this));
-    if (_currentBalance <= previousBalances[token_]) return;
-
-    uint256 _availableReward = _currentBalance.sub(previousBalances[token_]);
-    //@todo minimum reward check
-
+    if (_currentBalance > previousBalances[token_]) {
+      _balanceDiff = _currentBalance.sub(previousBalances[token_]);
+    }
     previousBalances[token_] = _currentBalance;
+    return _balanceDiff;
+  }
+
+  function applyRewards(address token_) public {
+    uint256 _availableReward = _checkpointToken(token_);
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Staking)]).div(100e18);
-    uint256 _treasuryAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(100e18);
-    uint256 _beneficiariesAmount =
-      _availableReward.mul(rewardSplits[uint8(RewardTargets.Beneficiaries)]).div(
+      _availableReward.mul(rewardSplits[uint8(RewardTargets.Staking)]).div(
         100e18
       );
+    uint256 _treasuryAmount =
+      _availableReward.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(
+        100e18
+      );
+    uint256 _beneficiariesAmount =
+      _availableReward
+        .mul(rewardSplits[uint8(RewardTargets.Beneficiaries)])
+        .div(100e18);
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);
