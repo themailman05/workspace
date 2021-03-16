@@ -218,8 +218,9 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     return _balanceDiff;
   }
 
-  function applyRewards(address token_) public {
+  function applyRewards(address token_) public nonReentrant {
     uint256 _availableReward = _checkpointToken(token_);
+    if (_availableReward == 0) return;
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount =
