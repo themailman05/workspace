@@ -1,22 +1,29 @@
 const { expect } = require("chai");
 const { waffle } = require("hardhat");
+const { parseEther } = require("ethers/lib/utils");
 const { merklize, makeElement, generateClaims } = require("../scripts/merkle.js");
 const provider = waffle.provider;
 
 describe('RewardsManager', function () {
   const VaultStatus = { "Initialized": 0, "Open": 1, "Closed": 2 };
-  let owner, beneficiary1, beneficiary2;
+  let owner, rewarder, beneficiary1, beneficiary2;
   let claims, merkleTree, merkleRoot;
 
   beforeEach(async function () {
-    [owner, beneficiary1, beneficiary2] = await ethers.getSigners();
+    [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
 
     let MockERC20 = await ethers.getContractFactory("MockERC20");
     this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
     await this.mockPop.mint(owner.address, "100000000000");
+    await this.mockPop.mint(rewarder.address, "500000000000");
+
+    let BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
+    this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
+    await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
 
     let RewardsManager = await ethers.getContractFactory("RewardsManager");
-    this.rewards = await RewardsManager.deploy(this.mockPop.address);
+    this.rewardsManager = await RewardsManager.deploy(this.mockPop.address, this.mockBeneficiaryRegistry.address);
+    await this.rewardsManager.deployed();
 
     claims = generateClaims(await provider.listAccounts());
     merkleTree = merklize(claims);
@@ -24,149 +31,256 @@ describe('RewardsManager', function () {
   });
 
   it("should be constructed with POP token", async function () {
-    expect(await this.rewards.pop()).to.equal(this.mockPop.address);
+    expect(await this.rewardsManager.pop()).to.equal(this.mockPop.address);
   });
 
   it("reverts deposit with no transfer approval", async function () {
-    await expect(this.rewards.depositReward(100)).to.be.revertedWith("ERC20: transfer amount exceeds allowance");
+    await expect(
+      this.rewardsManager.depositReward(owner.address, 100)
+    ).to.be.revertedWith("ERC20: transfer amount exceeds allowance");
   });
 
-  it("reverts deposit with no open vaults", async function () {
-    await this.mockPop.approve(this.rewards.address, 100);
-    await expect(this.rewards.depositReward(100)).to.be.revertedWith("No open vaults");
+  it("reward redirected to owner with no open vaults", async function () {
+    await this.mockPop.connect(rewarder).approve(this.rewardsManager.address, 100);
+    await this.rewardsManager.depositReward(rewarder.address, 100);
+    expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(0);
+    expect(await this.mockPop.balanceOf(owner.address)).to.equal(100000000100);
   });
 
   it("reverts when trying to get uninitialized vault", async function () {
-    await expect(this.rewards.getVault(0)).to.be.revertedWith("Uninitialized vault slot");
+    await expect(this.rewardsManager.getVault(0)).to.be.revertedWith("Uninitialized vault slot");
   });
 
   it("reverts when trying to get invalid vault", async function () {
-    await expect(this.rewards.getVault(4)).to.be.revertedWith("Invalid vault id");
+    await expect(this.rewardsManager.getVault(4)).to.be.revertedWith("Invalid vault id");
   });
 
   it("reverts when trying to initialize an invalid vault id", async function () {
     const currentBlock = (await provider.getBlock("latest")).number;
-    await expect(this.rewards.initializeVault(4, currentBlock + 1, merkleRoot)).to.be.revertedWith("Invalid vault id");
+    await expect(
+      this.rewardsManager.initializeVault(4, currentBlock + 1, merkleRoot)
+    ).to.be.revertedWith("Invalid vault id");
   });
 
   it("reverts when trying to initialize an invalid end block", async function () {
     const currentBlock = (await provider.getBlock("latest")).number;
-    await expect(this.rewards.initializeVault(0, currentBlock, merkleRoot)).to.be.revertedWith("Invalid end block");
+    await expect(
+      this.rewardsManager.initializeVault(0, currentBlock, merkleRoot)
+    ).to.be.revertedWith("Invalid end block");
+  });
+
+  it("cannot tranfer ownership as non-owner", async function () {
+    await expect(
+      this.rewardsManager.connect(beneficiary1).transferOwnership(beneficiary1.address)
+    ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
   describe("vault 0 is initialized", function () {
     beforeEach(async function () {
-      currentBlock = (await provider.getBlock("latest")).number;
-      endBlock = currentBlock + 100;
-      result = await this.rewards.initializeVault(0, endBlock, merkleRoot);
+      currentTime = (await provider.getBlock("latest")).timestamp;
+      endTime = currentTime + 10000;
+      result = await this.rewardsManager.initializeVault(0, endTime, merkleRoot);
     });
 
     it("reverts when closing initialized vault", async function () {
-      await expect(this.rewards.closeVault(0)).to.be.revertedWith("Vault must be open");
+      await expect(this.rewardsManager.closeVault(0)).to.be.revertedWith("Vault must be open");
     });
 
     it("emits a VaultInitialized event", async function () {
-      expect(result).to.emit(this.rewards, "VaultInitialized").withArgs(0, merkleRoot);
+      expect(result).to.emit(this.rewardsManager, "VaultInitialized").withArgs(0, merkleRoot);
     });
 
     it("vault has expected values", async function () {
-      let vaultData = await this.rewards.getVault(0);
+      let vaultData = await this.rewardsManager.getVault(0);
       expect(vaultData.totalDeposited).to.equal(0);
       expect(vaultData.currentBalance).to.equal(0);
-      expect(vaultData.unclaimedShare).to.equal(100);
+      expect(vaultData.unclaimedShare).to.equal(parseEther("100").toString());
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
-      expect(vaultData.endBlock).to.equal(endBlock);
+      expect(vaultData.endTime).to.equal(endTime);
       expect(vaultData.status).to.equal(VaultStatus.Initialized);
+      expect(await this.rewardsManager.hasClaimed(0, beneficiary1.address)).to.be.false;
+      expect(await this.rewardsManager.hasClaimed(0, beneficiary2.address)).to.be.false;
     });
 
     it("opens vault", async function () {
-      await this.rewards.openVault(0);
-      let vaultData = await this.rewards.getVault(0);
+      await this.rewardsManager.openVault(0);
+      let vaultData = await this.rewardsManager.getVault(0);
       expect(vaultData.status).to.equal(VaultStatus.Open);
     });
 
     describe("open vault and deposit reward", function () {
       beforeEach(async function () {
         totalReward = "10000000";
-        result1 = await this.rewards.openVault(0);
-        await this.mockPop.approve(this.rewards.address, totalReward);
-        result2 = await this.rewards.depositReward(totalReward);
+        result1 = await this.rewardsManager.openVault(0);
+        await this.mockPop.connect(rewarder).approve(this.rewardsManager.address, totalReward);
+        result2 = await this.rewardsManager.depositReward(rewarder.address, totalReward);
       });
 
       it("emits a VaultOpened & RewardDeposited event", async function () {
-        expect(result1).to.emit(this.rewards, "VaultOpened").withArgs(0);
-        expect(result2).to.emit(this.rewards, "RewardDeposited").withArgs(owner.address, totalReward);
+        expect(result1).to.emit(this.rewardsManager, "VaultOpened").withArgs(0);
+        expect(result2).to.emit(this.rewardsManager, "RewardDeposited").withArgs(rewarder.address, totalReward);
       });
 
       it("contract has expected balance", async function () {
-        expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(totalReward);
+        expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(totalReward);
       });
 
       it("vault has expected balance", async function () {
-        let vaultData = await this.rewards.getVault(0);
+        let vaultData = await this.rewardsManager.getVault(0);
         expect(vaultData.totalDeposited).to.equal(totalReward);
         expect(vaultData.currentBalance).to.equal(totalReward);
       });
 
       it("reverts invalid claim", async function () {
         let proof = [makeElement(owner.address, "10")];
-        await expect(this.rewards.claimReward(0, proof, owner.address, "10")).to.be.revertedWith("Invalid claim");
+        await expect(
+          this.rewardsManager.claimReward(0, proof, owner.address, "10")
+        ).to.be.revertedWith("Invalid claim");
+      });
+
+      it("reverts claim when beneficiary does not exist", async function () {
+        let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+        await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
+        await expect(this.rewardsManager.connect(beneficiary1).claimReward(
+          0,
+          proof,
+          beneficiary1.address,
+          claims[beneficiary1.address]
+        )).to.be.revertedWith("Beneficiary does not exist");
       });
 
       it("verifies valid claim", async function () {
         let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
-        expect(
-          await this.rewards.connect(beneficiary1).verifyClaim(0, proof, beneficiary1.address, claims[beneficiary1.address])
-        ).to.be.true;
+        expect(await this.rewardsManager.connect(beneficiary1).verifyClaim(
+          0,
+          proof,
+          beneficiary1.address,
+          claims[beneficiary1.address]
+        )).to.be.true;
       });
 
       it("reverts claim from wrong sender", async function () {
         let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
-        await expect(
-          this.rewards.connect(beneficiary2).claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address])
-        ).to.be.revertedWith("Sender must be beneficiary");
+        await expect(this.rewardsManager.connect(beneficiary2).claimReward(
+          0,
+          proof,
+          beneficiary1.address,
+          claims[beneficiary1.address]
+        )).to.be.revertedWith("Sender must be beneficiary");
       });
 
       it("reverts when closing before end block", async function () {
-        await expect(this.rewards.closeVault(0)).to.be.revertedWith("Vault has not ended");
+        await expect(this.rewardsManager.closeVault(0)).to.be.revertedWith("Vault has not ended");
+      });
+
+      it("reverts when reinitializing open vault", async function () {
+        await expect(
+          this.rewardsManager.initializeVault(0, endTime, merkleRoot)
+        ).to.be.revertedWith("Vault must not be open");
+      });
+
+      it("reverts close vault before end time", async function () {
+        await expect(this.rewardsManager.closeVault(0)).to.be.revertedWith("Vault has not ended");
       });
 
       describe("allows claim from beneficiary 1", function () {
         beforeEach(async function () {
           let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
-          result = await this.rewards.connect(beneficiary1).claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address]);
+          result = await this.rewardsManager.connect(beneficiary1).claimReward(
+            0,
+            proof,
+            beneficiary1.address,
+            claims[beneficiary1.address]
+          );
         });
 
         it("emits a RewardClaimed event", async function () {
-          expect(result).to.emit(this.rewards, "RewardClaimed").withArgs(0, beneficiary1.address, 500000);
+          expect(result).to.emit(this.rewardsManager, "RewardClaimed").withArgs(0, beneficiary1.address, 500000);
         });
 
         it("vault has expected data", async function () {
-          let vaultData = await this.rewards.getVault(0);
+          let vaultData = await this.rewardsManager.getVault(0);
           expect(vaultData.currentBalance).to.equal(9500000);
-          expect(vaultData.unclaimedShare).to.equal(95);
+          expect(vaultData.unclaimedShare).to.equal(parseEther("95").toString());
+          expect(await this.rewardsManager.hasClaimed(0, beneficiary1.address)).to.be.true;
         });
 
         it("has expected contract balance", async function () {
-          expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(9500000);
+          expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(9500000);
+        });
+
+        it("reverts a second claim", async function () {
+          let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+          await expect(this.rewardsManager.connect(beneficiary1).claimReward(
+            0,
+            proof,
+            beneficiary1.address,
+            claims[beneficiary1.address]
+          )).to.be.revertedWith("Already claimed");
         });
 
         describe("allows claim from beneficiary 2", function () {
           beforeEach(async function () {
             let proof = merkleTree.getProof(makeElement(beneficiary2.address, claims[beneficiary2.address]));
-            await this.rewards.connect(beneficiary2).claimReward(0, proof, beneficiary2.address, claims[beneficiary2.address]);
+            await this.rewardsManager.connect(beneficiary2).claimReward(
+              0,
+              proof,
+              beneficiary2.address,
+              claims[beneficiary2.address]
+            );
           });
 
           it("vault has expected data", async function () {
-            let vaultData = await this.rewards.getVault(0);
+            let vaultData = await this.rewardsManager.getVault(0);
             expect(vaultData.currentBalance).to.equal(9000000);
-            expect(vaultData.unclaimedShare).to.equal(90);
+            expect(vaultData.unclaimedShare).to.equal(parseEther("90").toString());
+            expect(await this.rewardsManager.hasClaimed(0, beneficiary2.address)).to.be.true;
           });
 
           it("has expected contract balance", async function () {
-            expect(await this.mockPop.balanceOf(this.rewards.address)).to.equal(9000000);
+            expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(9000000);
           });
         });
+
+        describe("closes vault 0 after end time", function () {
+          beforeEach(async function () {
+            ethers.provider.send("evm_increaseTime", [endTime - Math.floor(Date.now() / 1000)]);
+            ethers.provider.send("evm_mine");
+          });
+
+          it("redirect unclaimed rewards to owner when no other vaults open", async function () {
+            await this.rewardsManager.closeVault(0);
+            expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(0);
+          });
+
+          //@todo open vault 1 for remaining rewards and close 0
+        });
+      });
+    });
+
+    describe("vault 0 is reinitialized", function () {
+      beforeEach(async function () {
+        result = await this.rewardsManager.initializeVault(0, endTime, merkleRoot);
+      });
+
+      it("reverts when closing initialized vault", async function () {
+        await expect(this.rewardsManager.closeVault(0)).to.be.revertedWith("Vault must be open");
+      });
+
+      it("emits a VaultInitialized event", async function () {
+        expect(result).to.emit(this.rewardsManager, "VaultInitialized").withArgs(0, merkleRoot);
+      });
+
+      it("vault has expected values", async function () {
+        let vaultData = await this.rewardsManager.getVault(0);
+        expect(vaultData.totalDeposited).to.equal(0);
+        expect(vaultData.currentBalance).to.equal(0);
+        expect(vaultData.unclaimedShare).to.equal(parseEther("100").toString());
+        expect(vaultData.merkleRoot).to.equal(merkleRoot);
+        expect(vaultData.endTime).to.equal(endTime);
+        expect(vaultData.status).to.equal(VaultStatus.Initialized);
+        expect(await this.rewardsManager.hasClaimed(0, beneficiary1.address)).to.be.false;
+        expect(await this.rewardsManager.hasClaimed(0, beneficiary2.address)).to.be.false;
       });
     });
   });
