@@ -10,6 +10,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
@@ -19,10 +21,12 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   IStaking public staking;
   ITreasury public treasury;
   IBeneficiaryRegistry public beneficiaryRegistry;
+  IUniswapV2Factory public immutable uniswapV2Factory;
+  IUniswapV2Router02 public immutable uniswapV2Router;
 
+  uint256 public previousPopBalance;
   uint256[3] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
-  mapping(address => uint256) public previousBalances;
 
   Vault[3] private vaults;
 
@@ -45,9 +49,10 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   event VaultDeposited(uint8 vaultId, uint256 amount);
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
-  event RewardsApplied(address token, uint256 amount);
+  event RewardsApplied(uint256 amount);
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
   event RewardSplitsUpdated(uint256[3] splits);
+  event TokenSwapped(address token, uint256 amountIn, uint256 amountOut);
 
   modifier vaultExists(uint8 vaultId_) {
     require(vaultId_ < 3, "Invalid vault id");
@@ -56,40 +61,43 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   }
 
   constructor(
-    address pop_,
-    address staking_,
-    address treasury_,
-    address beneficiaryRegistry_
+    IERC20 pop_,
+    IStaking staking_,
+    ITreasury treasury_,
+    IBeneficiaryRegistry beneficiaryRegistry_,
+    IUniswapV2Router02 uniswapV2Router_
   ) {
-    pop = IERC20(pop_);
-    staking = IStaking(staking_);
-    treasury = ITreasury(treasury_);
-    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+    pop = pop_;
+    staking = staking_;
+    treasury = treasury_;
+    beneficiaryRegistry = beneficiaryRegistry_;
+    uniswapV2Router = uniswapV2Router_;
+    uniswapV2Factory = IUniswapV2Factory(uniswapV2Router_.factory());
     rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
     rewardLimits[uint8(RewardTargets.Beneficiaries)] = [20e18, 90e18];
     rewardSplits = [33e18, 33e18, 34e18];
   }
 
-  function setStaking(address staking_) public onlyOwner {
-    require(staking_ != address(staking), "Same Staking");
-    staking = IStaking(staking_);
+  function setStaking(IStaking staking_) public onlyOwner {
+    require(staking_ != staking, "Same Staking");
+    staking = staking_;
   }
 
-  function setTreasury(address treasury_) public onlyOwner {
-    require(treasury_ != address(treasury), "Same Treasury");
-    treasury = ITreasury(treasury_);
+  function setTreasury(ITreasury treasury_) public onlyOwner {
+    require(treasury_ != treasury, "Same Treasury");
+    treasury = treasury_;
   }
 
-  function setBeneficaryRegistry(address beneficiaryRegistry_)
+  function setBeneficaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
     public
     onlyOwner
   {
     require(
-      beneficiaryRegistry_ != address(beneficiaryRegistry),
+      beneficiaryRegistry_ != beneficiaryRegistry,
       "Same Beneficiary Registry"
     );
-    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+    beneficiaryRegistry = beneficiaryRegistry_;
   }
 
   function setRewardSplits(uint256[3] calldata splits_) public onlyOwner {
@@ -188,7 +196,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     );
     require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
-    _applyRewards(address(pop));
+    _applyRewards();
 
     uint256 _reward =
       vaults[vaultId_].currentBalance.mul(share_).div(
@@ -205,22 +213,41 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
     pop.transfer(beneficiary_, _reward);
 
-    previousBalances[address(pop)] = IERC20(address(pop)).balanceOf(
-      address(this)
-    );
+    previousPopBalance = pop.balanceOf(address(this));
 
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function _applyRewards(address token_) internal {
+  function sweepTokenToRewards(IERC20 token_) public nonReentrant {
+    address[] memory _addressPair = createPair(address(token_), address(pop));
+    uint256 _balance = token_.balanceOf(address(this));
+
+    token_.safeIncreaseAllowance(address(uniswapV2Router), _balance);
+    uint256[] memory _amounts =
+      uniswapV2Router.swapExactTokensForTokens(
+        _balance,
+        0,
+        _addressPair,
+        address(this),
+        block.timestamp.add(3600)
+      );
+
+    emit TokenSwapped(address(token_), _amounts[0], _amounts[1]);
+
+    _applyRewards();
+
+    previousPopBalance = pop.balanceOf(address(this));
+  }
+
+  function _applyRewards() internal {
     uint256 _availableReward = 0;
-    uint256 _currentBalance = IERC20(token_).balanceOf(address(this));
-    if (_currentBalance > previousBalances[token_]) {
-      _availableReward = _currentBalance.sub(previousBalances[token_]);
+    uint256 _currentBalance = pop.balanceOf(address(this));
+    if (_currentBalance > previousPopBalance) {
+      _availableReward = _currentBalance.sub(previousPopBalance);
     }
     if (_availableReward == 0) return;
 
-    previousBalances[token_] = _currentBalance;
+    previousPopBalance = _currentBalance;
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount =
@@ -240,7 +267,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     _distributeToTreasury(_treasuryAmount);
     _distributeToVaults(_beneficiariesAmount);
 
-    emit RewardsApplied(address(pop), _availableReward);
+    emit RewardsApplied(_availableReward);
   }
 
   function getVault(uint8 vaultId_)
@@ -312,5 +339,16 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     returns (bool)
   {
     return vaults[vaultId_].claimed[beneficiary_];
+  }
+
+  function createPair(address tokenA, address tokenB)
+    internal
+    pure
+    returns (address[] memory)
+  {
+    address[] memory _addressPair = new address[](2);
+    _addressPair[0] = tokenA;
+    _addressPair[1] = tokenB;
+    return _addressPair;
   }
 }
