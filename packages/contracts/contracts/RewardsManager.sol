@@ -218,16 +218,20 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function sweepTokenToRewards(IERC20 token_) public nonReentrant {
-    address[] memory _addressPair = createPair(address(token_), address(pop));
+  function swapTokenForRewards(IERC20 token_) public nonReentrant {
     uint256 _balance = token_.balanceOf(address(this));
+    require(_balance > 0, "No swappable balance");
+
+    address[] memory _path = new address[](2);
+    _path[0] = address(token_);
+    _path[1] = address(pop);
 
     token_.safeIncreaseAllowance(address(uniswapV2Router), _balance);
     uint256[] memory _amounts =
       uniswapV2Router.swapExactTokensForTokens(
         _balance,
         0,
-        _addressPair,
+        _path,
         address(this),
         block.timestamp.add(3600)
       );
@@ -339,16 +343,5 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     returns (bool)
   {
     return vaults[vaultId_].claimed[beneficiary_];
-  }
-
-  function createPair(address tokenA, address tokenB)
-    internal
-    pure
-    returns (address[] memory)
-  {
-    address[] memory _addressPair = new address[](2);
-    _addressPair[0] = tokenA;
-    _addressPair[1] = tokenB;
-    return _addressPair;
   }
 }

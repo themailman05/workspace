@@ -447,7 +447,7 @@ describe('RewardsManager', function () {
               beneficiariesSwapReward = swapReward.mul(RewardSplits.Beneficiaries).div(parseEther("100"));
               await this.mockUniswapV2Router.mock.swapExactTokensForTokens.returns([altAmount, swapReward]);
               await this.mockPop.transfer(this.rewardsManager.address, swapReward); //simulate swap
-              result = await this.rewardsManager.sweepTokenToRewards(this.mockAlt.address);
+              result = await this.rewardsManager.swapTokenForRewards(this.mockAlt.address);
             });
 
             it("emits expected events", async function () {
