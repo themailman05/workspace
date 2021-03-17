@@ -188,6 +188,8 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     );
     require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
+    _applyRewards(address(pop));
+
     uint256 _reward =
       vaults[vaultId_].currentBalance.mul(share_).div(
         vaults[vaultId_].unclaimedShare
@@ -203,24 +205,22 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
     pop.transfer(beneficiary_, _reward);
 
-    _checkpointToken(address(pop));
+    previousBalances[address(pop)] = IERC20(address(pop)).balanceOf(
+      address(this)
+    );
 
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function _checkpointToken(address token_) internal returns (uint256) {
-    uint256 _balanceDiff = 0;
+  function _applyRewards(address token_) internal {
+    uint256 _availableReward = 0;
     uint256 _currentBalance = IERC20(token_).balanceOf(address(this));
     if (_currentBalance > previousBalances[token_]) {
-      _balanceDiff = _currentBalance.sub(previousBalances[token_]);
+      _availableReward = _currentBalance.sub(previousBalances[token_]);
     }
-    previousBalances[token_] = _currentBalance;
-    return _balanceDiff;
-  }
-
-  function applyRewards(address token_) public nonReentrant {
-    uint256 _availableReward = _checkpointToken(token_);
     if (_availableReward == 0) return;
+
+    previousBalances[token_] = _currentBalance;
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount =

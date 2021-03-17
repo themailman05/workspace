@@ -109,16 +109,6 @@ describe('RewardsManager', function () {
     ).to.be.revertedWith("Ownable: caller is not the owner");
   });
 
-  it("reward redirected to owner with no open vaults", async function () {
-    let rewardAmount = parseEther("0.01");
-    await this.mockPop.connect(rewarder).transfer(this.rewardsManager.address, rewardAmount);
-    await this.rewardsManager.applyRewards(this.mockPop.address);
-    expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(0);
-    expect(await this.mockPop.balanceOf(owner.address)).to.equal(
-      OwnerInitial.add(rewardAmount.mul(RewardSplits.Beneficiaries).div(parseEther("100")))
-    );
-  });
-
   describe("reward splits are set", function () {
     beforeEach(async function() {
       await this.rewardsManager.setRewardSplits([parseEther("20"), parseEther("20"), parseEther("60")]);
@@ -174,43 +164,16 @@ describe('RewardsManager', function () {
         stakingReward = firstReward.mul(RewardSplits.Staking).div(parseEther("100"));
         treasuryReward = firstReward.mul(RewardSplits.Treasury).div(parseEther("100"));
         beneficiariesReward = firstReward.mul(RewardSplits.Beneficiaries).div(parseEther("100"));
-        result1 = await this.rewardsManager.openVault(0);
+        result = await this.rewardsManager.openVault(0);
         await this.mockPop.connect(rewarder).transfer(this.rewardsManager.address, firstReward);
-        result2 = await this.rewardsManager.applyRewards(this.mockPop.address);
       });
 
       it("emits expected events", async function () {
-        expect(result1).to.emit(this.rewardsManager, "VaultOpened").withArgs(0);
-        expect(result2).to.emit(this.rewardsManager, "StakingDeposited")
-          .withArgs(this.mockStaking.address, stakingReward);
-        expect(result2).to.emit(this.rewardsManager, "TreasuryDeposited")
-          .withArgs(this.mockTreasury.address, treasuryReward);
-        expect(result2).to.emit(this.rewardsManager, "VaultDeposited")
-          .withArgs(0, beneficiariesReward);
-        expect(result2).to.emit(this.rewardsManager, "RewardsApplied")
-          .withArgs(this.mockPop.address, firstReward);
+        expect(result).to.emit(this.rewardsManager, "VaultOpened").withArgs(0);
       });
 
       it("contract has expected balance", async function () {
-        expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(beneficiariesReward);
-      });
-
-      it("Staking has expected balance", async function () {
-        expect(await this.mockPop.balanceOf(this.mockStaking.address)).to.equal(stakingReward);
-      });
-
-      it("Treasury has expected balance", async function () {
-        expect(await this.mockPop.balanceOf(this.mockTreasury.address)).to.equal(treasuryReward);
-      });
-
-      it("vault has expected balance", async function () {
-        let vaultData = await this.rewardsManager.getVault(0);
-        expect(vaultData.totalDeposited).to.equal(beneficiariesReward);
-        expect(vaultData.currentBalance).to.equal(beneficiariesReward);
-      });
-
-      it("has expected previous pop balance", async function () {
-        expect(await this.rewardsManager.previousBalances(this.mockPop.address)).to.equal(firstReward);
+        expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(firstReward);
       });
 
       it("reverts invalid claim", async function () {
@@ -243,7 +206,7 @@ describe('RewardsManager', function () {
 
       it("reverts claim from wrong sender", async function () {
         let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
-        await expect(this.rewardsManager.connect(beneficiary2).claimReward(
+        result = await expect(this.rewardsManager.connect(beneficiary2).claimReward(
           0,
           proof,
           beneficiary1.address,
@@ -277,7 +240,15 @@ describe('RewardsManager', function () {
           );
         });
 
-        it("emits a RewardClaimed event", async function () {
+        it("emits expected events", async function () {
+          expect(result).to.emit(this.rewardsManager, "StakingDeposited")
+            .withArgs(this.mockStaking.address, stakingReward);
+          expect(result).to.emit(this.rewardsManager, "TreasuryDeposited")
+            .withArgs(this.mockTreasury.address, treasuryReward);
+          expect(result).to.emit(this.rewardsManager, "VaultDeposited")
+            .withArgs(0, beneficiariesReward);
+          expect(result).to.emit(this.rewardsManager, "RewardsApplied")
+            .withArgs(this.mockPop.address, firstReward);
           expect(result).to.emit(this.rewardsManager, "RewardClaimed").withArgs(
             0,
             beneficiary1.address,
@@ -285,13 +256,12 @@ describe('RewardsManager', function () {
           );
         });
 
-        it("vault has expected data", async function () {
-          let currentBalance = beneficiariesReward.sub(beneficiary1Claim);
-          let unclaimedShare = parseEther("100").sub(claims[beneficiary1.address]);
-          let vaultData = await this.rewardsManager.getVault(0);
-          expect(vaultData.currentBalance).to.equal(currentBalance);
-          expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
-          expect(await this.rewardsManager.hasClaimed(0, beneficiary1.address)).to.be.true;
+        it("Staking has expected balance", async function () {
+          expect(await this.mockPop.balanceOf(this.mockStaking.address)).to.equal(stakingReward);
+        });
+
+        it("Treasury has expected balance", async function () {
+          expect(await this.mockPop.balanceOf(this.mockTreasury.address)).to.equal(treasuryReward);
         });
 
         it("contract has expected balance", async function () {
@@ -304,6 +274,16 @@ describe('RewardsManager', function () {
           expect(
             await this.rewardsManager.previousBalances(this.mockPop.address)
           ).to.equal(beneficiariesReward.sub(beneficiary1Claim));
+        });
+
+        it("vault has expected data", async function () {
+          let currentBalance = beneficiariesReward.sub(beneficiary1Claim);
+          let unclaimedShare = parseEther("100").sub(claims[beneficiary1.address]);
+          let vaultData = await this.rewardsManager.getVault(0);
+          expect(vaultData.totalDeposited).to.equal(beneficiariesReward);
+          expect(vaultData.currentBalance).to.equal(currentBalance);
+          expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
+          expect(await this.rewardsManager.hasClaimed(0, beneficiary1.address)).to.be.true;
         });
 
         it("reverts a second claim", async function () {
@@ -329,9 +309,12 @@ describe('RewardsManager', function () {
 
           describe("allows claim from beneficiary 2", function () {
             beforeEach(async function () {
-              beneficiary2Claim = beneficiariesReward.mul(claims[beneficiary2.address]).div(parseEther("100"));
+              stakingSecondReward = secondReward.mul(RewardSplits.Staking).div(parseEther("100"));
+              treasurySecondReward = secondReward.mul(RewardSplits.Treasury).div(parseEther("100"));
+              beneficiariesSecondReward = secondReward.mul(RewardSplits.Beneficiaries).div(parseEther("100"));
+              beneficiary2Claim = beneficiariesReward.add(beneficiariesSecondReward).sub(beneficiary1Claim).mul(claims[beneficiary2.address]).div(parseEther("95"));
               let proof = merkleTree.getProof(makeElement(beneficiary2.address, claims[beneficiary2.address]));
-              await this.rewardsManager.connect(beneficiary2).claimReward(
+              result = await this.rewardsManager.connect(beneficiary2).claimReward(
                 0,
                 proof,
                 beneficiary2.address,
@@ -339,44 +322,36 @@ describe('RewardsManager', function () {
               );
             });
 
+            it("emits expected events", async function () {
+              expect(result).to.emit(this.rewardsManager, "StakingDeposited")
+                .withArgs(this.mockStaking.address, stakingSecondReward);
+              expect(result).to.emit(this.rewardsManager, "TreasuryDeposited")
+                .withArgs(this.mockTreasury.address, treasurySecondReward);
+              expect(result).to.emit(this.rewardsManager, "VaultDeposited")
+                .withArgs(0, beneficiariesSecondReward);
+              expect(result).to.emit(this.rewardsManager, "RewardsApplied")
+                .withArgs(this.mockPop.address, secondReward);
+            });
+
             it("vault has expected data", async function () {
-              let currentBalance = beneficiariesReward.sub(beneficiary1Claim).sub(beneficiary2Claim);
+              let currentBalance = beneficiariesReward.sub(beneficiary1Claim).sub(beneficiary2Claim).add(beneficiariesSecondReward)
               let unclaimedShare = parseEther("100").sub(claims[beneficiary1.address]).sub(claims[beneficiary1.address]);
               let vaultData = await this.rewardsManager.getVault(0);
+              expect(vaultData.totalDeposited).to.equal(beneficiariesReward.add(beneficiariesSecondReward));
               expect(vaultData.currentBalance).to.equal(currentBalance);
               expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
               expect(await this.rewardsManager.hasClaimed(0, beneficiary2.address)).to.be.true;
             });
 
             it("has expected contract balance", async function () {
-              let currentBalance = beneficiariesReward.sub(beneficiary1Claim).sub(beneficiary2Claim).add(secondReward);
+              let currentBalance = beneficiariesReward.add(beneficiariesSecondReward).sub(beneficiary1Claim).sub(beneficiary2Claim);
               expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(currentBalance);
             });
 
             it("has expected previous pop balance", async function () {
               expect(
                 await this.rewardsManager.previousBalances(this.mockPop.address)
-              ).to.equal(beneficiariesReward.sub(beneficiary1Claim).sub(beneficiary2Claim).add(secondReward));
-            });
-
-            describe("apply second rewards after claim", function() {
-              beforeEach(async function () {
-                stakingReward = secondReward.mul(RewardSplits.Staking).div(parseEther("100"));
-                treasuryReward = secondReward.mul(RewardSplits.Treasury).div(parseEther("100"));
-                beneficiariesReward = secondReward.mul(RewardSplits.Beneficiaries).div(parseEther("100"));
-                result = await this.rewardsManager.applyRewards(this.mockPop.address);
-              });
-
-              it("emits expected events", async function () {
-                expect(result).to.emit(this.rewardsManager, "StakingDeposited")
-                  .withArgs(this.mockStaking.address, stakingReward);
-                expect(result).to.emit(this.rewardsManager, "TreasuryDeposited")
-                  .withArgs(this.mockTreasury.address, treasuryReward);
-                expect(result).to.emit(this.rewardsManager, "VaultDeposited")
-                  .withArgs(0, beneficiariesReward);
-                expect(result).to.emit(this.rewardsManager, "RewardsApplied")
-                  .withArgs(this.mockPop.address, secondReward);
-              });
+              ).to.equal(beneficiariesReward.add(beneficiariesSecondReward).sub(beneficiary1Claim).sub(beneficiary2Claim));
             });
           });
 
