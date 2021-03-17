@@ -230,13 +230,13 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     uint256[] memory _amounts =
       uniswapV2Router.swapExactTokensForTokens(
         _balance,
-        0,
+        1,
         _path,
         address(this),
         block.timestamp.add(3600)
       );
 
-    emit TokenSwapped(address(token_), _amounts[0], _amounts[1]);
+    emit TokenSwapped(_path[0], _amounts[0], _amounts[1]);
 
     _applyRewards();
 
