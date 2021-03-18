@@ -11,13 +11,14 @@ describe('RewardsManager', function () {
   const RewardSplits = { "Staking": parseEther("33"), "Treasury": parseEther("33"), "Beneficiaries": parseEther("34") };
   const OwnerInitial = parseEther("10");
   const RewarderInitial = parseEther("5");
+  let MockERC20, Staking, Treasury, BeneficiaryRegistry;
   let owner, rewarder, beneficiary1, beneficiary2;
   let claims, merkleTree, merkleRoot;
 
   beforeEach(async function () {
     [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
 
-    let MockERC20 = await ethers.getContractFactory("MockERC20");
+    MockERC20 = await ethers.getContractFactory("MockERC20");
     this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
     await this.mockPop.mint(owner.address, OwnerInitial);
     await this.mockPop.mint(rewarder.address, RewarderInitial);
@@ -25,13 +26,13 @@ describe('RewardsManager', function () {
     this.mockAlt = await MockERC20.deploy("TestALT", "TALT");
     await this.mockAlt.mint(owner.address, OwnerInitial);
 
-    let Treasury = await ethers.getContractFactory("MockTreasury");
+    Treasury = await ethers.getContractFactory("MockTreasury");
     this.mockTreasury = await waffle.deployMockContract(owner, Treasury.interface.format());
 
-    let Staking = await ethers.getContractFactory("MockStaking");
+    Staking = await ethers.getContractFactory("MockStaking");
     this.mockStaking = await waffle.deployMockContract(owner, Staking.interface.format());
 
-    let BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
+    BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
     this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
     await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
 
@@ -130,6 +131,46 @@ describe('RewardsManager', function () {
       expect(await this.rewardsManager.rewardSplits(0)).to.equal(parseEther("20"));
       expect(await this.rewardsManager.rewardSplits(1)).to.equal(parseEther("20"));
       expect(await this.rewardsManager.rewardSplits(2)).to.equal(parseEther("60"));
+    });
+  });
+
+  it("should revert setting to same Staking", async function () {
+    await expect(this.rewardsManager.setStaking(this.mockStaking.address)).to.be.revertedWith("Same Staking");
+  });
+
+  it("should revert setting to same Treasury", async function () {
+    await expect(this.rewardsManager.setTreasury(this.mockTreasury.address)).to.be.revertedWith("Same Treasury");
+  });
+
+  it("should revert setting to same Beneficiary Registry", async function () {
+    await expect(
+      this.rewardsManager.setBeneficiaryRegistry(this.mockBeneficiaryRegistry.address)
+    ).to.be.revertedWith("Same BeneficiaryRegistry");
+  });
+
+  describe("sets new dependent contracts", function () {
+    it("sets new Staking", async function () {
+      let newStaking = await waffle.deployMockContract(owner, Staking.interface.format());
+      result = await this.rewardsManager.setStaking(newStaking.address);
+      expect(await this.rewardsManager.staking()).to.equal(newStaking.address);
+      expect(result).to.emit(this.rewardsManager, "StakingChanged")
+        .withArgs(this.mockStaking.address, newStaking.address);
+    });
+
+    it("sets new Treasury", async function () {
+      let newTreasury = await waffle.deployMockContract(owner, Treasury.interface.format());
+      result = await this.rewardsManager.setTreasury(newTreasury.address);
+      expect(await this.rewardsManager.treasury()).to.equal(newTreasury.address);
+      expect(result).to.emit(this.rewardsManager, "TreasuryChanged")
+        .withArgs(this.mockTreasury.address, newTreasury.address);
+    });
+
+    it("sets new BeneficiaryRegistry", async function () {
+      let newBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
+      result = await this.rewardsManager.setBeneficiaryRegistry(newBeneficiaryRegistry.address);
+      expect(await this.rewardsManager.beneficiaryRegistry()).to.equal(newBeneficiaryRegistry.address);
+      expect(result).to.emit(this.rewardsManager, "BeneficiaryRegistryChanged")
+        .withArgs(this.mockBeneficiaryRegistry.address, newBeneficiaryRegistry.address);
     });
   });
 
