@@ -57,6 +57,12 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
   event RewardSplitsUpdated(uint256[3] splits);
   event TokenSwapped(address token, uint256 amountIn, uint256 amountOut);
+  event StakingChanged(IStaking from, IStaking to);
+  event TreasuryChanged(ITreasury from, ITreasury to);
+  event BeneficiaryRegistryChanged(
+    IBeneficiaryRegistry from,
+    IBeneficiaryRegistry to
+  );
 
   modifier vaultExists(uint8 vaultId_) {
     require(vaultId_ < 3, "Invalid vault id");
@@ -84,24 +90,30 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   }
 
   function setStaking(IStaking staking_) public onlyOwner {
-    require(staking_ != staking, "Same Staking");
+    require(staking != staking_, "Same Staking");
+    IStaking _previousStaking = staking;
     staking = staking_;
+    emit StakingChanged(_previousStaking, staking);
   }
 
   function setTreasury(ITreasury treasury_) public onlyOwner {
-    require(treasury_ != treasury, "Same Treasury");
+    require(treasury != treasury_, "Same Treasury");
+    ITreasury _previousTreasury = treasury;
     treasury = treasury_;
+    emit TreasuryChanged(_previousTreasury, treasury);
   }
 
-  function setBeneficaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
+  function setBeneficiaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
     public
     onlyOwner
   {
     require(
-      beneficiaryRegistry_ != beneficiaryRegistry,
-      "Same Beneficiary Registry"
+      beneficiaryRegistry != beneficiaryRegistry_,
+      "Same BeneficiaryRegistry"
     );
+    IBeneficiaryRegistry _beneficiaryRegistry = beneficiaryRegistry;
     beneficiaryRegistry = beneficiaryRegistry_;
+    emit BeneficiaryRegistryChanged(_beneficiaryRegistry, beneficiaryRegistry);
   }
 
   function setRewardSplits(uint256[3] calldata splits_) public onlyOwner {
