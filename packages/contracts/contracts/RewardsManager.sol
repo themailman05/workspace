@@ -226,6 +226,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   /// @param amountOut_ Minimum desired amount (>0) of POP tokens to be received from swap
   /// @dev Path specification requires at least source token as first in path and POP address as last
   /// @dev Token swap internals implemented as described at https://uniswap.org/docs/v2/smart-contracts/router02/#swapexacttokensfortokens
+  /// @return swapped in/out amounts uint256 tuple
   function swapTokenForRewards(address[] calldata path_, uint256 amountOut_)
     public
     nonReentrant
