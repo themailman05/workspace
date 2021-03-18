@@ -167,6 +167,12 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit VaultClosed(vaultId_);
   }
 
+  /// @param vaultId_ Vault ID in range 0-2
+  /// @param proof_ Merkle proof of path to leaf element
+  /// @param beneficiary_ Beneficiary address encoded in leaf element
+  /// @param share_ Beneficiary expected share encoded in leaf element
+  /// @notice Verifies a valid claim with no cost
+  /// @return Returns boolean true or false if claim is valid
   function verifyClaim(
     uint8 vaultId_,
     bytes32[] memory proof_,
@@ -188,6 +194,12 @@ contract RewardsManager is Ownable, ReentrancyGuard {
       );
   }
 
+  /// @param vaultId_ Vault ID in range 0-2
+  /// @param proof_ Merkle proof of path to leaf element
+  /// @param beneficiary_ Beneficiary address encoded in leaf element
+  /// @param share_ Beneficiary expected share encoded in leaf element
+  /// @notice Transfers POP tokens only once to beneficiary on successful claim
+  /// @dev Applies any outstanding rewards before processing claim
   function claimReward(
     uint8 vaultId_,
     bytes32[] memory proof_,
