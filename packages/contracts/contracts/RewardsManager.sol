@@ -10,19 +10,27 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
+import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
+import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
+/// @title Popcorn Rewards Manager
+/// @notice Manages distribution of POP rewards to Popcorn Treasury, DAO Staking, and Beneficiaries.
 contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
+
+  uint256 public constant SWAP_TIMEOUT = 600;
 
   IERC20 public immutable pop;
   IStaking public staking;
   ITreasury public treasury;
   IBeneficiaryRegistry public beneficiaryRegistry;
+  IUniswapV2Factory public immutable uniswapV2Factory;
+  IUniswapV2Router02 public immutable uniswapV2Router;
 
+  uint256 public previousPopBalance;
   uint256[3] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
-  mapping(address => uint256) public previousBalances;
 
   Vault[3] private vaults;
 
@@ -45,9 +53,10 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   event VaultDeposited(uint8 vaultId, uint256 amount);
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
-  event RewardsApplied(address token, uint256 amount);
+  event RewardsApplied(uint256 amount);
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
   event RewardSplitsUpdated(uint256[3] splits);
+  event TokenSwapped(address token, uint256 amountIn, uint256 amountOut);
 
   modifier vaultExists(uint8 vaultId_) {
     require(vaultId_ < 3, "Invalid vault id");
@@ -56,40 +65,43 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   }
 
   constructor(
-    address pop_,
-    address staking_,
-    address treasury_,
-    address beneficiaryRegistry_
+    IERC20 pop_,
+    IStaking staking_,
+    ITreasury treasury_,
+    IBeneficiaryRegistry beneficiaryRegistry_,
+    IUniswapV2Router02 uniswapV2Router_
   ) {
-    pop = IERC20(pop_);
-    staking = IStaking(staking_);
-    treasury = ITreasury(treasury_);
-    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+    pop = pop_;
+    staking = staking_;
+    treasury = treasury_;
+    beneficiaryRegistry = beneficiaryRegistry_;
+    uniswapV2Router = uniswapV2Router_;
+    uniswapV2Factory = IUniswapV2Factory(uniswapV2Router_.factory());
     rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
     rewardLimits[uint8(RewardTargets.Beneficiaries)] = [20e18, 90e18];
     rewardSplits = [33e18, 33e18, 34e18];
   }
 
-  function setStaking(address staking_) public onlyOwner {
-    require(staking_ != address(staking), "Same Staking");
-    staking = IStaking(staking_);
+  function setStaking(IStaking staking_) public onlyOwner {
+    require(staking_ != staking, "Same Staking");
+    staking = staking_;
   }
 
-  function setTreasury(address treasury_) public onlyOwner {
-    require(treasury_ != address(treasury), "Same Treasury");
-    treasury = ITreasury(treasury_);
+  function setTreasury(ITreasury treasury_) public onlyOwner {
+    require(treasury_ != treasury, "Same Treasury");
+    treasury = treasury_;
   }
 
-  function setBeneficaryRegistry(address beneficiaryRegistry_)
+  function setBeneficaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
     public
     onlyOwner
   {
     require(
-      beneficiaryRegistry_ != address(beneficiaryRegistry),
+      beneficiaryRegistry_ != beneficiaryRegistry,
       "Same Beneficiary Registry"
     );
-    beneficiaryRegistry = IBeneficiaryRegistry(beneficiaryRegistry_);
+    beneficiaryRegistry = beneficiaryRegistry_;
   }
 
   function setRewardSplits(uint256[3] calldata splits_) public onlyOwner {
@@ -155,6 +167,12 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit VaultClosed(vaultId_);
   }
 
+  /// @param vaultId_ Vault ID in range 0-2
+  /// @param proof_ Merkle proof of path to leaf element
+  /// @param beneficiary_ Beneficiary address encoded in leaf element
+  /// @param share_ Beneficiary expected share encoded in leaf element
+  /// @notice Verifies a valid claim with no cost
+  /// @return Returns boolean true or false if claim is valid
   function verifyClaim(
     uint8 vaultId_,
     bytes32[] memory proof_,
@@ -176,6 +194,12 @@ contract RewardsManager is Ownable, ReentrancyGuard {
       );
   }
 
+  /// @param vaultId_ Vault ID in range 0-2
+  /// @param proof_ Merkle proof of path to leaf element
+  /// @param beneficiary_ Beneficiary address encoded in leaf element
+  /// @param share_ Beneficiary expected share encoded in leaf element
+  /// @notice Transfers POP tokens only once to beneficiary on successful claim
+  /// @dev Applies any outstanding rewards before processing claim
   function claimReward(
     uint8 vaultId_,
     bytes32[] memory proof_,
@@ -188,7 +212,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     );
     require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
-    _applyRewards(address(pop));
+    _applyRewards();
 
     uint256 _reward =
       vaults[vaultId_].currentBalance.mul(share_).div(
@@ -205,22 +229,60 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
     pop.transfer(beneficiary_, _reward);
 
-    previousBalances[address(pop)] = IERC20(address(pop)).balanceOf(
-      address(this)
-    );
+    previousPopBalance = pop.balanceOf(address(this));
 
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function _applyRewards(address token_) internal {
+  /// @param path_ Uniswap path specification for source token to POP
+  /// @param amountOut_ Minimum desired amount (>0) of POP tokens to be received from swap
+  /// @dev Path specification requires at least source token as first in path and POP address as last
+  /// @dev Token swap internals implemented as described at https://uniswap.org/docs/v2/smart-contracts/router02/#swapexacttokensfortokens
+  /// @return swapped in/out amounts uint256 tuple
+  function swapTokenForRewards(address[] calldata path_, uint256 amountOut_)
+    public
+    nonReentrant
+    returns (uint256[] memory)
+  {
+    require(path_.length >= 2, "Invalid swap path");
+    require(amountOut_ > 0, "Invalid amount");
+    require(
+      path_[path_.length - 1] == address(pop),
+      "POP must be last in path"
+    );
+
+    IERC20 _token = IERC20(path_[0]);
+    uint256 _balance = _token.balanceOf(address(this));
+    require(_balance > 0, "No swappable balance");
+
+    _token.safeIncreaseAllowance(address(uniswapV2Router), _balance);
+    uint256[] memory _amounts =
+      uniswapV2Router.swapExactTokensForTokens(
+        _balance,
+        amountOut_,
+        path_,
+        address(this),
+        block.timestamp.add(SWAP_TIMEOUT)
+      );
+
+    emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
+
+    _applyRewards();
+
+    previousPopBalance = pop.balanceOf(address(this));
+
+    return _amounts;
+  }
+
+  function _applyRewards() internal {
     uint256 _availableReward = 0;
-    uint256 _currentBalance = IERC20(token_).balanceOf(address(this));
-    if (_currentBalance > previousBalances[token_]) {
-      _availableReward = _currentBalance.sub(previousBalances[token_]);
+    uint256 _currentBalance = pop.balanceOf(address(this));
+    if (_currentBalance > previousPopBalance) {
+      _availableReward = _currentBalance.sub(previousPopBalance);
     }
     if (_availableReward == 0) return;
 
-    previousBalances[token_] = _currentBalance;
+    previousPopBalance = _currentBalance;
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount =
@@ -240,7 +302,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     _distributeToTreasury(_treasuryAmount);
     _distributeToVaults(_beneficiariesAmount);
 
-    emit RewardsApplied(address(pop), _availableReward);
+    emit RewardsApplied(_availableReward);
   }
 
   function getVault(uint8 vaultId_)
