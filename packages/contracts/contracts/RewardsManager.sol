@@ -13,11 +13,13 @@ import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
+/// @title Popcorn Rewards Manager
+/// @notice Manages distribution of POP rewards to Popcorn Treasury, DAO Staking, and Beneficiaries.
 contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
-  uint256 public constant SWAP_TIMEOUT = 3600;
+  uint256 public constant SWAP_TIMEOUT = 600;
 
   IERC20 public immutable pop;
   IStaking public staking;
@@ -220,13 +222,17 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
+  /// @param path_ Uniswap path specification for source token to POP
+  /// @param amountOut_ Minimum desired amount (>0) of POP tokens to be received from swap
+  /// @dev Path specification requires at least source token as first in path and POP address as last
+  /// @dev Token swap internals implemented as described at https://uniswap.org/docs/v2/smart-contracts/router02/#swapexacttokensfortokens
   function swapTokenForRewards(address[] calldata path_, uint256 amountOut_)
     public
     nonReentrant
     returns (uint256[] memory)
   {
     require(path_.length >= 2, "Invalid swap path");
-    require(amountOut_ >= 1, "Invalid amount");
+    require(amountOut_ > 0, "Invalid amount");
     require(
       path_[path_.length - 1] == address(pop),
       "POP must be last in path"
