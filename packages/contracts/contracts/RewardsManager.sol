@@ -17,6 +17,8 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
+  uint256 public constant SWAP_TIMEOUT = 3600;
+
   IERC20 public immutable pop;
   IStaking public staking;
   ITreasury public treasury;
@@ -218,29 +220,39 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  function swapTokenForRewards(IERC20 token_) public nonReentrant {
-    uint256 _balance = token_.balanceOf(address(this));
+  function swapTokenForRewards(address[] calldata path_, uint256 amountOut_)
+    public
+    nonReentrant
+    returns (uint256[] memory)
+  {
+    require(path_.length >= 2, "Invalid swap path");
+    require(amountOut_ >= 1, "Invalid amount");
+    require(
+      path_[path_.length - 1] == address(pop),
+      "POP must be last in path"
+    );
+
+    IERC20 _token = IERC20(path_[0]);
+    uint256 _balance = _token.balanceOf(address(this));
     require(_balance > 0, "No swappable balance");
 
-    address[] memory _path = new address[](2);
-    _path[0] = address(token_);
-    _path[1] = address(pop);
-
-    token_.safeIncreaseAllowance(address(uniswapV2Router), _balance);
+    _token.safeIncreaseAllowance(address(uniswapV2Router), _balance);
     uint256[] memory _amounts =
       uniswapV2Router.swapExactTokensForTokens(
         _balance,
-        1,
-        _path,
+        amountOut_,
+        path_,
         address(this),
-        block.timestamp.add(3600)
+        block.timestamp.add(SWAP_TIMEOUT)
       );
 
-    emit TokenSwapped(_path[0], _amounts[0], _amounts[1]);
+    emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
 
     _applyRewards();
 
     previousPopBalance = pop.balanceOf(address(this));
+
+    return _amounts;
   }
 
   function _applyRewards() internal {

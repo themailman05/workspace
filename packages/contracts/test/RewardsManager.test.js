@@ -439,6 +439,24 @@ describe('RewardsManager', function () {
             expect(await this.mockAlt.balanceOf(this.rewardsManager.address)).to.equal(altAmount);
           });
 
+          it("reverts with short path", async function () {
+            await expect(
+              this.rewardsManager.swapTokenForRewards([this.mockAlt.address], 100)
+            ).to.be.revertedWith("Invalid swap path");
+          });
+
+          it("reverts with invalid amount", async function () {
+            await expect(
+              this.rewardsManager.swapTokenForRewards([this.mockAlt.address, this.mockPop.address], 0)
+            ).to.be.revertedWith("Invalid amount");
+          });
+
+          it("reverts with invalid path", async function () {
+            await expect(
+              this.rewardsManager.swapTokenForRewards([this.mockAlt.address, this.mockAlt.address], 100)
+            ).to.be.revertedWith("POP must be last in path");
+          });
+
           describe("convert and apply rewards", function () {
             beforeEach(async function () {
               swapReward = parseEther("0.24");
@@ -447,7 +465,10 @@ describe('RewardsManager', function () {
               beneficiariesSwapReward = swapReward.mul(RewardSplits.Beneficiaries).div(parseEther("100"));
               await this.mockUniswapV2Router.mock.swapExactTokensForTokens.returns([altAmount, swapReward]);
               await this.mockPop.transfer(this.rewardsManager.address, swapReward); //simulate swap
-              result = await this.rewardsManager.swapTokenForRewards(this.mockAlt.address);
+              result = await this.rewardsManager.swapTokenForRewards(
+                [this.mockAlt.address, this.mockPop.address],
+                swapReward
+              );
             });
 
             it("emits expected events", async function () {
