@@ -11,7 +11,7 @@ describe('RewardsManager', function () {
   const RewardSplits = { "Staking": parseEther("33"), "Treasury": parseEther("33"), "Beneficiaries": parseEther("34") };
   const OwnerInitial = parseEther("10");
   const RewarderInitial = parseEther("5");
-  let MockERC20, Staking, Treasury, BeneficiaryRegistry;
+  let MockERC20, Staking, Treasury, BeneficiaryRegistry, RewardsManager;
   let owner, rewarder, beneficiary1, beneficiary2;
   let claims, merkleTree, merkleRoot;
 
@@ -40,7 +40,7 @@ describe('RewardsManager', function () {
     this.mockUniswapV2Router = await waffle.deployMockContract(owner, IUniswapV2Router02.abi);
     await this.mockUniswapV2Router.mock.factory.returns(this.mockUniswapV2Factory.address);
 
-    let RewardsManager = await ethers.getContractFactory("RewardsManager");
+    RewardsManager = await ethers.getContractFactory("RewardsManager");
     this.rewardsManager = await RewardsManager.deploy(
       this.mockPop.address,
       this.mockStaking.address,
@@ -150,7 +150,7 @@ describe('RewardsManager', function () {
 
   describe("sets new dependent contracts", function () {
     it("sets new Staking", async function () {
-      let newStaking = await waffle.deployMockContract(owner, Staking.interface.format());
+      const newStaking = await waffle.deployMockContract(owner, Staking.interface.format());
       result = await this.rewardsManager.setStaking(newStaking.address);
       expect(await this.rewardsManager.staking()).to.equal(newStaking.address);
       expect(result).to.emit(this.rewardsManager, "StakingChanged")
@@ -158,7 +158,7 @@ describe('RewardsManager', function () {
     });
 
     it("sets new Treasury", async function () {
-      let newTreasury = await waffle.deployMockContract(owner, Treasury.interface.format());
+      const newTreasury = await waffle.deployMockContract(owner, Treasury.interface.format());
       result = await this.rewardsManager.setTreasury(newTreasury.address);
       expect(await this.rewardsManager.treasury()).to.equal(newTreasury.address);
       expect(result).to.emit(this.rewardsManager, "TreasuryChanged")
@@ -166,7 +166,7 @@ describe('RewardsManager', function () {
     });
 
     it("sets new BeneficiaryRegistry", async function () {
-      let newBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
+      const newBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
       result = await this.rewardsManager.setBeneficiaryRegistry(newBeneficiaryRegistry.address);
       expect(await this.rewardsManager.beneficiaryRegistry()).to.equal(newBeneficiaryRegistry.address);
       expect(result).to.emit(this.rewardsManager, "BeneficiaryRegistryChanged")
@@ -190,7 +190,7 @@ describe('RewardsManager', function () {
     });
 
     it("vault has expected values", async function () {
-      let vaultData = await this.rewardsManager.getVault(0);
+      const vaultData = await this.rewardsManager.getVault(0);
       expect(vaultData.totalDeposited).to.equal(0);
       expect(vaultData.currentBalance).to.equal(0);
       expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
@@ -203,7 +203,7 @@ describe('RewardsManager', function () {
 
     it("opens vault", async function () {
       await this.rewardsManager.openVault(0);
-      let vaultData = await this.rewardsManager.getVault(0);
+      const vaultData = await this.rewardsManager.getVault(0);
       expect(vaultData.status).to.equal(VaultStatus.Open);
     });
 
@@ -230,14 +230,14 @@ describe('RewardsManager', function () {
       });
 
       it("reverts invalid claim", async function () {
-        let proof = [makeElement(owner.address, "10")];
+        const proof = [makeElement(owner.address, "10")];
         await expect(
           this.rewardsManager.claimReward(0, proof, owner.address, "10")
         ).to.be.revertedWith("Invalid claim");
       });
 
       it("reverts claim when beneficiary does not exist", async function () {
-        let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+        const proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
         await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
         await expect(this.rewardsManager.connect(beneficiary1).claimReward(
           0,
@@ -248,7 +248,7 @@ describe('RewardsManager', function () {
       });
 
       it("verifies valid claim", async function () {
-        let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+        const proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
         expect(await this.rewardsManager.connect(beneficiary1).verifyClaim(
           0,
           proof,
@@ -258,7 +258,7 @@ describe('RewardsManager', function () {
       });
 
       it("reverts claim from wrong sender", async function () {
-        let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+        const proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
         result = await expect(this.rewardsManager.connect(beneficiary2).claimReward(
           0,
           proof,
@@ -284,7 +284,7 @@ describe('RewardsManager', function () {
       describe("allows claim from beneficiary 1", function () {
         beforeEach(async function () {
           beneficiary1Claim = beneficiariesReward.mul(claims[beneficiary1.address]).div(parseEther("100"));
-          let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+          const proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
           result = await this.rewardsManager.connect(beneficiary1).claimReward(
             0,
             proof,
@@ -325,9 +325,9 @@ describe('RewardsManager', function () {
         });
 
         it("vault has expected data", async function () {
-          let currentBalance = beneficiariesReward.sub(beneficiary1Claim);
-          let unclaimedShare = parseEther("100").sub(claims[beneficiary1.address]);
-          let vaultData = await this.rewardsManager.getVault(0);
+          const currentBalance = beneficiariesReward.sub(beneficiary1Claim);
+          const unclaimedShare = parseEther("100").sub(claims[beneficiary1.address]);
+          const vaultData = await this.rewardsManager.getVault(0);
           expect(vaultData.totalDeposited).to.equal(beneficiariesReward);
           expect(vaultData.currentBalance).to.equal(currentBalance);
           expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
@@ -335,7 +335,7 @@ describe('RewardsManager', function () {
         });
 
         it("reverts a second claim", async function () {
-          let proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
+          const proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
           await expect(this.rewardsManager.connect(beneficiary1).claimReward(
             0,
             proof,
@@ -351,7 +351,7 @@ describe('RewardsManager', function () {
           });
 
           it("has expected contract balance", async function () {
-            let currentBalance = beneficiariesReward.sub(beneficiary1Claim).add(secondReward);
+            const currentBalance = beneficiariesReward.sub(beneficiary1Claim).add(secondReward);
             expect(await this.mockPop.balanceOf(this.rewardsManager.address)).to.equal(currentBalance);
           });
 
@@ -365,7 +365,7 @@ describe('RewardsManager', function () {
                 .sub(beneficiary1Claim)
                 .mul(claims[beneficiary2.address])
                 .div(parseEther("95"));
-              let proof = merkleTree.getProof(makeElement(beneficiary2.address, claims[beneficiary2.address]));
+              const proof = merkleTree.getProof(makeElement(beneficiary2.address, claims[beneficiary2.address]));
               result = await this.rewardsManager.connect(beneficiary2).claimReward(
                 0,
                 proof,
@@ -385,14 +385,14 @@ describe('RewardsManager', function () {
             });
 
             it("vault has expected data", async function () {
-              let currentBalance = beneficiariesReward
+              const currentBalance = beneficiariesReward
                 .add(beneficiariesSecondReward)
                 .sub(beneficiary1Claim)
                 .sub(beneficiary2Claim);
-              let unclaimedShare = parseEther("100")
+              const unclaimedShare = parseEther("100")
                 .sub(claims[beneficiary1.address])
                 .sub(claims[beneficiary2.address]);
-              let vaultData = await this.rewardsManager.getVault(0);
+              const vaultData = await this.rewardsManager.getVault(0);
               expect(vaultData.totalDeposited).to.equal(beneficiariesReward.add(beneficiariesSecondReward));
               expect(vaultData.currentBalance).to.equal(currentBalance);
               expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
@@ -400,7 +400,7 @@ describe('RewardsManager', function () {
             });
 
             it("has expected contract balance", async function () {
-              let currentBalance = beneficiariesReward
+              const currentBalance = beneficiariesReward
                 .add(beneficiariesSecondReward)
                 .sub(beneficiary1Claim)
                 .sub(beneficiary2Claim);
@@ -439,7 +439,7 @@ describe('RewardsManager', function () {
             });
 
             it("vault 1 has expected values", async function () {
-              let vaultData = await this.rewardsManager.getVault(1);
+              const vaultData = await this.rewardsManager.getVault(1);
               expect(vaultData.totalDeposited).to.equal(0);
               expect(vaultData.currentBalance).to.equal(0);
               expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
@@ -458,8 +458,8 @@ describe('RewardsManager', function () {
               });
 
               it("vault 1 has expected values", async function () {
-                let currentBalance = beneficiariesReward.sub(beneficiary1Claim);
-                let vaultData = await this.rewardsManager.getVault(1);
+                const currentBalance = beneficiariesReward.sub(beneficiary1Claim);
+                const vaultData = await this.rewardsManager.getVault(1);
                 expect(vaultData.totalDeposited).to.equal(currentBalance);
                 expect(vaultData.currentBalance).to.equal(currentBalance);
                 expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
@@ -525,9 +525,9 @@ describe('RewardsManager', function () {
             });
 
             it("vault has expected data", async function () {
-              let currentBalance = beneficiariesReward.add(beneficiariesSwapReward).sub(beneficiary1Claim)
-              let unclaimedShare = parseEther("100").sub(claims[beneficiary1.address])
-              let vaultData = await this.rewardsManager.getVault(0);
+              const currentBalance = beneficiariesReward.add(beneficiariesSwapReward).sub(beneficiary1Claim)
+              const unclaimedShare = parseEther("100").sub(claims[beneficiary1.address])
+              const vaultData = await this.rewardsManager.getVault(0);
               expect(vaultData.totalDeposited).to.equal(beneficiariesReward.add(beneficiariesSwapReward));
               expect(vaultData.currentBalance).to.equal(currentBalance);
               expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
@@ -565,7 +565,7 @@ describe('RewardsManager', function () {
       });
 
       it("vault has expected values", async function () {
-        let vaultData = await this.rewardsManager.getVault(0);
+        const vaultData = await this.rewardsManager.getVault(0);
         expect(vaultData.totalDeposited).to.equal(0);
         expect(vaultData.currentBalance).to.equal(0);
         expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
