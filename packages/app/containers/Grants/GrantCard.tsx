@@ -1,7 +1,6 @@
-import Slider from 'rc-slider';
-import 'rc-slider/assets/index.css';
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
+import Link from 'next/link';
 
 interface IGrantCard {
   id: string;
@@ -24,18 +23,31 @@ export default function GrantCard({
   remainingVotes,
   active,
 }: IGrantCard): JSX.Element {
-  console.log(votesAssignedByUser);
   return (
-    <div className="bg-white shadow-sm w-80 h-100 rounded-lg">
-      <div className="w-full h-28 bg-red-300 rounded-t-lg" />
+    <div className="bg-white shadow-sm w-80 h-100 rounded-lg mr-6 mb-6">
+      <Link href={`grants/${id}`} passHref>
+        <a>
+          <div className="w-full h-28 bg-red-300 rounded-t-lg cursor-pointer" />
+        </a>
+      </Link>
       <div className="w-full px-4 pb-3">
         <div className="h-14 mt-3">
-          <h3 className="text-lg font-bold text-gray-700 leading-snug">
-            {title}
-          </h3>
+          <Link href={`grants/${id}`} passHref>
+            <a>
+              <h3 className="text-lg font-bold text-gray-700 leading-snug cursor-pointer">
+                {title}
+              </h3>
+            </a>
+          </Link>
         </div>
         <div className="h-36">
-          <p className="text-sm text-gray-500">{description}</p>
+          <Link href={`grants/${id}`} passHref>
+            <a>
+              <p className="text-sm text-gray-500 cursor-pointer">
+                {description}
+              </p>
+            </a>
+          </Link>
         </div>
         <div className="">
           {active ? (

@@ -1,8 +1,8 @@
 import { Check, Lock } from 'react-feather';
 import { useState } from 'react';
 import { useEffect } from 'react';
-import GrantCard from 'containers/Grants/GrantCard';
-import Sidebar from 'containers/Grants/SideBar';
+import Sidebar from '../../containers/Grants/SideBar';
+import GrantRound from 'containers/Grants/GrantRound';
 
 const demoGrants = [
   {
@@ -31,6 +31,30 @@ const demoGrants = [
   },
   {
     id: '3',
+    title: 'Handshake Development Fund (Panvala League)',
+    description:
+      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
+    totalVotes: 40,
+    votesAssignedByUser: 0,
+  },
+  {
+    id: '4',
+    title: 'Handshake',
+    description:
+      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
+    totalVotes: 40,
+    votesAssignedByUser: 0,
+  },
+  {
+    id: '5',
+    title: 'Handshake Development Fund (Panvala League)',
+    description:
+      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
+    totalVotes: 40,
+    votesAssignedByUser: 0,
+  },
+  {
+    id: '6',
     title: 'Handshake Development Fund (Panvala League)',
     description:
       "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
@@ -83,31 +107,14 @@ export default function Test() {
           <Sidebar remainingVotes={remainingVotes} maxVotes={maxVotes} />
         </div>
         <div className="w-10/12 flex flex-col">
-          <span className="flex flex-row items-center mb-4">
-            <div className="h-8 w-8 mr-2 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
-              <Check size={20} className="text-white" />
-            </div>
-            <h2 className="text-3xl font-bold text-white">
-              Yearly Grant - 2021
-            </h2>
-          </span>
-
-          <div className="w-full flex flex-row items-center space-x-6">
-            {activeGrants.length &&
-              activeGrants.map((grant) => (
-                <GrantCard
-                  key={grant.id}
-                  id={grant.id}
-                  title={grant.title}
-                  description={grant.description}
-                  totalVotes={grant.totalVotes}
-                  votesAssignedByUser={grant.votesAssignedByUser}
-                  assignVotes={assignVotes}
-                  remainingVotes={maxVotes - grant.votesAssignedByUser}
-                  active={true}
-                />
-              ))}
-          </div>
+          <GrantRound
+            id="2021"
+            title="Yearly Grant - 2021"
+            active={true}
+            grants={activeGrants}
+            assignVotes={assignVotes}
+            remainingVotes={remainingVotes}
+          />
         </div>
       </div>
     </div>
