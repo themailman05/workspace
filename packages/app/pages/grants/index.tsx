@@ -27,7 +27,9 @@ export function useEagerConnect() {
   const [tried, setTried] = useState(false);
 
   useEffect(() => {
+    
     connectors.Injected.isAuthorized().then((isAuthorized: boolean) => {
+      console.log('authorized')
       if (isAuthorized) {
         activate(connectors.Injected, undefined, true).catch(() => {
           setTried(true);
@@ -122,9 +124,18 @@ export default function Test() {
   const [maxVotes, setMaxVotes] = useState(0);
   const [remainingVotes, setRemainingVotes] = useState(0);
   const [activeGrants, setActiveGrants] = useState([]);
-
   const triedEager = useEagerConnect();
-  library.getNetwork().then((res) => console.log(res));
+  
+  useEffect(() => {
+    if (!active) {
+      activate(connectors.Network);
+    }
+  }, [active])
+
+  useEffect(() => {
+    library?.getNetwork().then((res) => console.log("getNetwork", res));
+  }, [library])
+  
 
   console.log('library', library);
 

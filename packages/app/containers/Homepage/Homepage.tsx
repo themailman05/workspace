@@ -5,6 +5,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { Box, Link } from '@material-ui/core';
+import { Web3ReactProvider, useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
 
 const useStyles = makeStyles((theme) => ({
   root: {

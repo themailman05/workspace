@@ -10,8 +10,9 @@ import { GlobalLinearProgress } from 'containers/GlobalLinearProgress';
 import { StateProvider } from 'app/store';
 import { Web3ReactProvider, useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
+import { connectors } from '../containers/Web3/connectors';
 
-function getLibrary(provider: any): Web3Provider {
+function getLibrary(provider: any, connector): Web3Provider {
   console.log('getLibrary', provider);
   const library = new Web3Provider(provider);
   library.pollingInterval = 12000;
