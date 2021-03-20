@@ -4,6 +4,7 @@ import GrantCard from './GrantCard';
 interface IGrantRound {
   id: string;
   title: string;
+  description: string;
   active: boolean;
   grants: any[];
   assignVotes: (id: string, votes: number) => void;
@@ -13,6 +14,7 @@ interface IGrantRound {
 export default function GrantRound({
   id,
   title,
+  description,
   active,
   grants,
   assignVotes,
@@ -30,6 +32,7 @@ export default function GrantRound({
         </div>
         <h2 className="text-3xl font-bold text-white">{title}</h2>
       </span>
+      <p className="text-white">{description}</p>
       <div className="w-full flex flex-row flex-wrap items-center">
         {grants.length &&
           grants.map((grant) => (

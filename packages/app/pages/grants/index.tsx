@@ -1,12 +1,52 @@
-import { Check, Lock } from 'react-feather';
 import { useState } from 'react';
 import { useEffect } from 'react';
+import { useWeb3React } from '@web3-react/core';
 import Sidebar from '../../containers/Grants/SideBar';
 import GrantRound from 'containers/Grants/GrantRound';
+import { Web3Provider } from '@ethersproject/providers';
+import { connectors } from '../../containers/Web3/connectors';
 
 //DATASTRUCTURE
 //Do Grant rounds hold the indivividual grants
 //Or do we get individual grants which contain infos about the grant round?
+
+//Quadratic Voting for assigning Votes
+
+//GET OPEN ELECTION
+//????
+
+//GET ACTIVE GRANTS (closed elections and still recieves money)
+//call getActiveGrants in GrantRegistry
+//call getActiveAwardees with the grantterms from before
+//get ipfs hashes from the BeneficiaryRegistry with the previous Data
+//get data from ipfs with those hashes
+
+export function useEagerConnect() {
+  const { activate, active } = useWeb3React();
+
+  const [tried, setTried] = useState(false);
+
+  useEffect(() => {
+    connectors.Injected.isAuthorized().then((isAuthorized: boolean) => {
+      if (isAuthorized) {
+        activate(connectors.Injected, undefined, true).catch(() => {
+          setTried(true);
+        });
+      } else {
+        setTried(true);
+      }
+    });
+  }, []); // intentionally only running on mount (make sure it's only mounted once :))
+
+  // if the connection worked, wait until we get confirmation of that to flip the flag
+  useEffect(() => {
+    if (!tried && active) {
+      setTried(true);
+    }
+  }, [tried, active]);
+
+  return tried;
+}
 
 const demoGrants = [
   {
@@ -68,9 +108,25 @@ const demoGrants = [
 ];
 
 export default function Test() {
+  const context = useWeb3React<Web3Provider>();
+  const {
+    connector,
+    library,
+    chainId,
+    account,
+    activate,
+    deactivate,
+    active,
+    error,
+  } = context;
   const [maxVotes, setMaxVotes] = useState(0);
   const [remainingVotes, setRemainingVotes] = useState(0);
   const [activeGrants, setActiveGrants] = useState([]);
+
+  const triedEager = useEagerConnect();
+  library.getNetwork().then((res) => console.log(res));
+
+  console.log('library', library);
 
   useEffect(() => {
     setMaxVotes(550);
@@ -114,6 +170,7 @@ export default function Test() {
           <GrantRound
             id="2021"
             title="Yearly Grant - 2021"
+            description="DescriptionText"
             active={true}
             grants={activeGrants}
             assignVotes={assignVotes}
