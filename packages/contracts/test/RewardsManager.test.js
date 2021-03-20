@@ -3,7 +3,6 @@ const { waffle } = require("hardhat");
 const { parseEther } = require("ethers/lib/utils");
 const IUniswapV2Factory = require("../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json");
 const IUniswapV2Router02 = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json");
-const provider = waffle.provider;
 
 describe('RewardsManager', function () {
   const RewardSplits = { "Staking": parseEther("33"), "Treasury": parseEther("33"), "BeneficiaryVaults": parseEther("34") };

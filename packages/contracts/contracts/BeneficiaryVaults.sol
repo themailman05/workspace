@@ -54,6 +54,9 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     beneficiaryRegistry = beneficiaryRegistry_;
   }
 
+  /// @param beneficiaryRegistry_ Address of new BeneficiaryRegistry contract
+  /// @notice Overrides existing BeneficiaryRegistry contract
+  /// @dev Must implement IBeneficiaryRegistry and cannot be same as existing
   function setBeneficiaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
     public
     onlyOwner
@@ -216,7 +219,6 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     if (_openVaultCount == 0) return;
 
     totalVaultedBalance = totalVaultedBalance.add(amount_);
-
     //@todo handle dust after div
     uint256 _allocation = amount_.div(_openVaultCount);
 
