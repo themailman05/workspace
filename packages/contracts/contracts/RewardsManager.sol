@@ -2,12 +2,12 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./IBeneficiaryRegistry.sol";
-import "./ITreasury.sol";
 import "./IStaking.sol";
+import "./ITreasury.sol";
+import "./IBeneficiaryVaults.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
@@ -24,71 +24,50 @@ contract RewardsManager is Ownable, ReentrancyGuard {
   IERC20 public immutable pop;
   IStaking public staking;
   ITreasury public treasury;
-  IBeneficiaryRegistry public beneficiaryRegistry;
+  IBeneficiaryVaults public beneficiaryVaults;
   IUniswapV2Factory public immutable uniswapV2Factory;
   IUniswapV2Router02 public immutable uniswapV2Router;
 
-  uint256 public previousPopBalance;
   uint256[3] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
 
-  Vault[3] private vaults;
+  enum RewardTargets {Staking, Treasury, BeneficiaryVaults}
 
-  enum RewardTargets {Staking, Treasury, Beneficiaries}
-  enum VaultStatus {Initialized, Open, Closed}
-
-  struct Vault {
-    uint256 totalDeposited;
-    uint256 currentBalance;
-    uint256 unclaimedShare;
-    mapping(address => bool) claimed;
-    bytes32 merkleRoot;
-    uint256 endTime;
-    VaultStatus status;
-  }
-
-  event VaultInitialized(uint8 vaultId, bytes32 merkleRoot);
-  event VaultOpened(uint8 vaultId);
-  event VaultClosed(uint8 vaultId);
-  event VaultDeposited(uint8 vaultId, uint256 amount);
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
-  event RewardsApplied(uint256 amount);
-  event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
+  event BeneficiaryVaultsDeposited(address to, uint256 amount);
+  event RewardsDistributed(uint256 amount);
   event RewardSplitsUpdated(uint256[3] splits);
   event TokenSwapped(address token, uint256 amountIn, uint256 amountOut);
   event StakingChanged(IStaking from, IStaking to);
   event TreasuryChanged(ITreasury from, ITreasury to);
-  event BeneficiaryRegistryChanged(
-    IBeneficiaryRegistry from,
-    IBeneficiaryRegistry to
+  event BeneficiaryVaultsChanged(
+    IBeneficiaryVaults from,
+    IBeneficiaryVaults to
   );
-
-  modifier vaultExists(uint8 vaultId_) {
-    require(vaultId_ < 3, "Invalid vault id");
-    require(vaults[vaultId_].endTime > 0, "Uninitialized vault slot");
-    _;
-  }
 
   constructor(
     IERC20 pop_,
     IStaking staking_,
     ITreasury treasury_,
-    IBeneficiaryRegistry beneficiaryRegistry_,
+    IBeneficiaryVaults beneficiaryVaults_,
     IUniswapV2Router02 uniswapV2Router_
   ) {
     pop = pop_;
     staking = staking_;
     treasury = treasury_;
-    beneficiaryRegistry = beneficiaryRegistry_;
+    beneficiaryVaults = beneficiaryVaults_;
     uniswapV2Router = uniswapV2Router_;
     uniswapV2Factory = IUniswapV2Factory(uniswapV2Router_.factory());
     rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
-    rewardLimits[uint8(RewardTargets.Beneficiaries)] = [20e18, 90e18];
+    rewardLimits[uint8(RewardTargets.BeneficiaryVaults)] = [20e18, 90e18];
     rewardSplits = [33e18, 33e18, 34e18];
   }
 
+  /// @param staking_ Address of new Staking contract
+  /// @notice Overrides existing Staking contract
+  /// @dev Must implement IStaking and cannot be same as existing
   function setStaking(IStaking staking_) public onlyOwner {
     require(staking != staking_, "Same Staking");
     IStaking _previousStaking = staking;
@@ -96,6 +75,9 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit StakingChanged(_previousStaking, staking);
   }
 
+  /// @param treasury_ Address of new Treasury contract
+  /// @notice Overrides existing Treasury contract
+  /// @dev Must implement ITreasury and cannot be same as existing
   function setTreasury(ITreasury treasury_) public onlyOwner {
     require(treasury != treasury_, "Same Treasury");
     ITreasury _previousTreasury = treasury;
@@ -103,21 +85,26 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit TreasuryChanged(_previousTreasury, treasury);
   }
 
-  function setBeneficiaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
+  /// @param beneficiaryVaults_ Address of new BeneficiaryVaults contract
+  /// @notice Overrides existing BeneficiaryVaults contract
+  /// @dev Must implement IeneficiaryVaults and cannot be same as existing
+  function setBeneficiaryVaults(IBeneficiaryVaults beneficiaryVaults_)
     public
     onlyOwner
   {
-    require(
-      beneficiaryRegistry != beneficiaryRegistry_,
-      "Same BeneficiaryRegistry"
+    require(beneficiaryVaults != beneficiaryVaults_, "Same BeneficiaryVaults");
+    IBeneficiaryVaults _previousBeneficiaryVaults = beneficiaryVaults;
+    beneficiaryVaults = beneficiaryVaults_;
+    emit BeneficiaryVaultsChanged(
+      _previousBeneficiaryVaults,
+      beneficiaryVaults_
     );
-    IBeneficiaryRegistry _beneficiaryRegistry = beneficiaryRegistry;
-    beneficiaryRegistry = beneficiaryRegistry_;
-    emit BeneficiaryRegistryChanged(_beneficiaryRegistry, beneficiaryRegistry);
   }
 
+  /// @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
+  /// @notice Set new reward distribution allocations
+  /// @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
   function setRewardSplits(uint256[3] calldata splits_) public onlyOwner {
-    //@todo check input length?
     uint256 _total = 0;
     for (uint8 i = 0; i < 3; i++) {
       require(
@@ -129,121 +116,6 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     require(_total == 100e18, "Invalid split total");
     rewardSplits = splits_;
     emit RewardSplitsUpdated(splits_);
-  }
-
-  function initializeVault(
-    uint8 vaultId_,
-    uint256 endTime_,
-    bytes32 merkleRoot_
-  ) public onlyOwner {
-    require(vaultId_ < 3, "Invalid vault id");
-    require(endTime_ > block.timestamp, "Invalid end block");
-    require(
-      vaults[vaultId_].status != VaultStatus.Open,
-      "Vault must not be open"
-    );
-
-    delete vaults[vaultId_];
-    Vault storage v = vaults[vaultId_];
-    v.totalDeposited = 0;
-    v.currentBalance = 0;
-    v.unclaimedShare = 100e18;
-    v.merkleRoot = merkleRoot_;
-    v.endTime = endTime_;
-    v.status = VaultStatus.Initialized;
-
-    emit VaultInitialized(vaultId_, merkleRoot_);
-  }
-
-  function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
-    require(
-      vaults[vaultId_].status == VaultStatus.Initialized,
-      "Vault must be initialized"
-    );
-
-    vaults[vaultId_].status = VaultStatus.Open;
-
-    emit VaultOpened(vaultId_);
-  }
-
-  function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
-    require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
-    require(block.timestamp >= vaults[vaultId_].endTime, "Vault has not ended");
-
-    uint256 _remainingBalance = vaults[vaultId_].currentBalance;
-    vaults[vaultId_].currentBalance = 0;
-    vaults[vaultId_].status = VaultStatus.Closed;
-
-    _distributeToVaults(_remainingBalance);
-
-    emit VaultClosed(vaultId_);
-  }
-
-  /// @param vaultId_ Vault ID in range 0-2
-  /// @param proof_ Merkle proof of path to leaf element
-  /// @param beneficiary_ Beneficiary address encoded in leaf element
-  /// @param share_ Beneficiary expected share encoded in leaf element
-  /// @notice Verifies a valid claim with no cost
-  /// @return Returns boolean true or false if claim is valid
-  function verifyClaim(
-    uint8 vaultId_,
-    bytes32[] memory proof_,
-    address beneficiary_,
-    uint256 share_
-  ) public view vaultExists(vaultId_) returns (bool) {
-    require(msg.sender == beneficiary_, "Sender must be beneficiary");
-    require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
-    require(
-      beneficiaryRegistry.beneficiaryExists(beneficiary_) == true,
-      "Beneficiary does not exist"
-    );
-
-    return
-      MerkleProof.verify(
-        proof_,
-        vaults[vaultId_].merkleRoot,
-        bytes32(keccak256(abi.encodePacked(beneficiary_, share_)))
-      );
-  }
-
-  /// @param vaultId_ Vault ID in range 0-2
-  /// @param proof_ Merkle proof of path to leaf element
-  /// @param beneficiary_ Beneficiary address encoded in leaf element
-  /// @param share_ Beneficiary expected share encoded in leaf element
-  /// @notice Transfers POP tokens only once to beneficiary on successful claim
-  /// @dev Applies any outstanding rewards before processing claim
-  function claimReward(
-    uint8 vaultId_,
-    bytes32[] memory proof_,
-    address beneficiary_,
-    uint256 share_
-  ) public nonReentrant vaultExists(vaultId_) {
-    require(
-      verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
-      "Invalid claim"
-    );
-    require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
-
-    _applyRewards();
-
-    uint256 _reward =
-      vaults[vaultId_].currentBalance.mul(share_).div(
-        vaults[vaultId_].unclaimedShare
-      );
-    vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
-      share_
-    );
-    vaults[vaultId_].currentBalance = vaults[vaultId_].currentBalance.sub(
-      _reward
-    );
-
-    vaults[vaultId_].claimed[beneficiary_] = true;
-
-    pop.transfer(beneficiary_, _reward);
-
-    previousPopBalance = pop.balanceOf(address(this));
-
-    emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
   /// @param path_ Uniswap path specification for source token to POP
@@ -279,22 +151,14 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
     emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
 
-    _applyRewards();
-
-    previousPopBalance = pop.balanceOf(address(this));
-
     return _amounts;
   }
 
-  function _applyRewards() internal {
-    uint256 _availableReward = 0;
-    uint256 _currentBalance = pop.balanceOf(address(this));
-    if (_currentBalance > previousPopBalance) {
-      _availableReward = _currentBalance.sub(previousPopBalance);
-    }
-    if (_availableReward == 0) return;
-
-    previousPopBalance = _currentBalance;
+  /// @notice Distribute POP rewards to dependent RewardTarget contracts
+  /// @dev Contract must have pop balance in order to distribute according to rewardSplits ratio
+  function distributeRewards() public nonReentrant {
+    uint256 _availableReward = pop.balanceOf(address(this));
+    require(_availableReward > 0, "No POP balance");
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount =
@@ -305,37 +169,16 @@ contract RewardsManager is Ownable, ReentrancyGuard {
       _availableReward.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(
         100e18
       );
-    uint256 _beneficiariesAmount =
+    uint256 _beneficiaryVaultsAmount =
       _availableReward
-        .mul(rewardSplits[uint8(RewardTargets.Beneficiaries)])
+        .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
         .div(100e18);
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);
-    _distributeToVaults(_beneficiariesAmount);
+    _distributeToVaults(_beneficiaryVaultsAmount);
 
-    emit RewardsApplied(_availableReward);
-  }
-
-  function getVault(uint8 vaultId_)
-    public
-    view
-    vaultExists(vaultId_)
-    returns (
-      uint256 totalDeposited,
-      uint256 currentBalance,
-      uint256 unclaimedShare,
-      bytes32 merkleRoot,
-      uint256 endTime,
-      VaultStatus status
-    )
-  {
-    totalDeposited = vaults[vaultId_].totalDeposited;
-    currentBalance = vaults[vaultId_].currentBalance;
-    unclaimedShare = vaults[vaultId_].unclaimedShare;
-    merkleRoot = vaults[vaultId_].merkleRoot;
-    endTime = vaults[vaultId_].endTime;
-    status = vaults[vaultId_].status;
+    emit RewardsDistributed(_availableReward);
   }
 
   function _distributeToStaking(uint256 amount_) internal {
@@ -352,39 +195,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
   function _distributeToVaults(uint256 amount_) internal {
     if (amount_ == 0) return;
-    uint8 _openVaultCount = 0;
-
-    for (uint8 i = 0; i < vaults.length; i++) {
-      if (vaults[i].status == VaultStatus.Open) {
-        _openVaultCount += 1;
-      }
-    }
-
-    if (_openVaultCount == 0) {
-      pop.transfer(owner(), amount_);
-      return;
-    }
-
-    //@todo handle dust after div
-    uint256 distribution = amount_.div(_openVaultCount);
-
-    for (uint8 _vaultId = 0; _vaultId < vaults.length; _vaultId++) {
-      vaults[_vaultId].totalDeposited = vaults[_vaultId].totalDeposited.add(
-        distribution
-      );
-      vaults[_vaultId].currentBalance = vaults[_vaultId].currentBalance.add(
-        distribution
-      );
-      emit VaultDeposited(_vaultId, distribution);
-    }
-  }
-
-  function hasClaimed(uint8 vaultId_, address beneficiary_)
-    public
-    view
-    vaultExists(vaultId_)
-    returns (bool)
-  {
-    return vaults[vaultId_].claimed[beneficiary_];
+    pop.transfer(address(beneficiaryVaults), amount_);
+    emit BeneficiaryVaultsDeposited(address(beneficiaryVaults), amount_);
   }
 }
