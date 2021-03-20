@@ -5,7 +5,7 @@ interface IVoteSlider {
   id: string;
   totalVotes: number;
   votesAssignedByUser: number;
-  remainingVotes: number;
+  maxVotes: number;
   assignVotes: (id: string, votes: number) => void;
 }
 
@@ -13,7 +13,7 @@ export default function VoteSlider({
   id,
   totalVotes,
   votesAssignedByUser,
-  remainingVotes,
+  maxVotes,
   assignVotes,
 }: IVoteSlider): JSX.Element {
   return (
@@ -32,7 +32,7 @@ export default function VoteSlider({
         value={votesAssignedByUser}
         onChange={(val) => assignVotes(id, val)}
         min={0}
-        max={remainingVotes}
+        max={maxVotes}
         step={1}
       />
     </>

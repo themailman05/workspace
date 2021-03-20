@@ -4,6 +4,10 @@ import { useEffect } from 'react';
 import Sidebar from '../../containers/Grants/SideBar';
 import GrantRound from 'containers/Grants/GrantRound';
 
+//DATASTRUCTURE
+//Do Grant rounds hold the indivividual grants
+//Or do we get individual grants which contain infos about the grant round?
+
 const demoGrants = [
   {
     id: '0',
@@ -75,7 +79,7 @@ export default function Test() {
   }, []);
 
   useEffect(() => {
-    if (activeGrants.length && remainingVotes > 0) {
+    if (activeGrants.length) {
       setRemainingVotes(
         (prevState) =>
           maxVotes -

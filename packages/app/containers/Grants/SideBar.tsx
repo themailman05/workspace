@@ -9,7 +9,6 @@ export default function Sidebar({
   remainingVotes,
   maxVotes,
 }: ISideBar): JSX.Element {
-  console.log('Sidebar', remainingVotes);
   return (
     <div className="w-8/12">
       <div className="w-full h-24 bg-white border border-gray-400 rounded-lg p-3">

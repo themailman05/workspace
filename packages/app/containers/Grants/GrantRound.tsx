@@ -41,8 +41,7 @@ export default function GrantRound({
               totalVotes={grant.totalVotes}
               votesAssignedByUser={grant.votesAssignedByUser}
               assignVotes={assignVotes}
-              //Always only allows to take half of max possible Votes
-              remainingVotes={remainingVotes}
+              maxVotes={remainingVotes + grant.votesAssignedByUser}
               active={active}
             />
           ))}

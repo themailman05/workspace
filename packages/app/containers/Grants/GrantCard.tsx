@@ -9,7 +9,7 @@ interface IGrantCard {
   totalVotes: number;
   votesAssignedByUser?: number;
   assignVotes?: (id: string, votes: number) => void;
-  remainingVotes?: number;
+  maxVotes?: number;
   active: boolean;
 }
 
@@ -20,7 +20,7 @@ export default function GrantCard({
   totalVotes,
   votesAssignedByUser,
   assignVotes,
-  remainingVotes,
+  maxVotes,
   active,
 }: IGrantCard): JSX.Element {
   return (
@@ -56,7 +56,7 @@ export default function GrantCard({
               totalVotes={totalVotes}
               votesAssignedByUser={votesAssignedByUser}
               assignVotes={assignVotes}
-              remainingVotes={remainingVotes}
+              maxVotes={maxVotes}
             />
           ) : (
             <GrantFunded votes={totalVotes} />
