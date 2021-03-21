@@ -1,29 +1,36 @@
+import { useRouter } from 'next/router';
 import { Check, Lock } from 'react-feather';
+import SidebarActionButton from './SidebarActionButton';
 
 interface ISideBar {
   remainingVotes: number;
   maxVotes: number;
+  isWalletConnected: boolean;
+  connectWallet: () => void;
+  submitVotes: () => void;
 }
 
 export default function Sidebar({
   remainingVotes,
   maxVotes,
+  isWalletConnected,
+  connectWallet,
+  submitVotes,
 }: ISideBar): JSX.Element {
   return (
     <div className="w-8/12">
-      <div className="w-full h-24 bg-white border border-gray-400 rounded-lg p-3">
+      <div className="w-full h-24 bg-white border border-gray-400 rounded-lg p-3 mb-2">
         <p className="font-medium text-gray-700">Your Votes</p>
         <p className="text-center text-2xl font-bold text-gray-700">
           {remainingVotes} / {maxVotes}
         </p>
       </div>
-      <button
-        className="w-full button button-primary mt-2"
-        id="submitVotes"
-        type="button"
-      >
-        Vote
-      </button>
+      <SidebarActionButton
+        hasLockedPop={maxVotes > 0}
+        isWalletConnected={isWalletConnected}
+        connectWallet={connectWallet}
+        submitVotes={submitVotes}
+      />
       <ul className="mt-4">
         <li>
           <p className="text-lg font-medium text-white">2021</p>

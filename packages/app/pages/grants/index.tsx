@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import Sidebar from '../../containers/Grants/SideBar';
+import Sidebar from '../../containers/Grants/Sidebar';
 import GrantRound from 'containers/Grants/GrantRound';
 import { Web3Provider } from '@ethersproject/providers';
 import { connectors } from '../../containers/Web3/connectors';
@@ -27,9 +27,8 @@ export function useEagerConnect() {
   const [tried, setTried] = useState(false);
 
   useEffect(() => {
-    
     connectors.Injected.isAuthorized().then((isAuthorized: boolean) => {
-      console.log('authorized')
+      console.log('authorized');
       if (isAuthorized) {
         activate(connectors.Injected, undefined, true).catch(() => {
           setTried(true);
@@ -124,26 +123,25 @@ export default function Test() {
   const [maxVotes, setMaxVotes] = useState(0);
   const [remainingVotes, setRemainingVotes] = useState(0);
   const [activeGrants, setActiveGrants] = useState([]);
-  const triedEager = useEagerConnect();
-  
+  useEagerConnect();
+
   useEffect(() => {
     if (!active) {
       activate(connectors.Network);
     }
-  }, [active])
+  }, [active]);
 
   useEffect(() => {
-    library?.getNetwork().then((res) => console.log("getNetwork", res));
-  }, [library])
-  
+    library?.getNetwork().then((res) => console.log('getNetwork', res));
+  }, [library]);
 
-  console.log('library', library);
+  console.log('library', library?.connection?.url);
 
   useEffect(() => {
     setMaxVotes(550);
     setActiveGrants(demoGrants);
     setRemainingVotes(540);
-  }, []);
+  }, [active]);
 
   useEffect(() => {
     if (activeGrants.length) {
@@ -158,6 +156,14 @@ export default function Test() {
       );
     }
   }, [activeGrants]);
+
+  function connectWallet() {
+    activate(connectors.Injected);
+  }
+
+  function submitVotes(){
+
+  }
 
   function assignVotes(id: string, votes: number): void {
     const activeGrantsCopy = [...activeGrants];
@@ -175,7 +181,13 @@ export default function Test() {
       <header className="w-full h-10 bg-white"></header>
       <div className="w-screen flex flex-row mt-4">
         <div className="w-2/12 flex flex-col items-center">
-          <Sidebar remainingVotes={remainingVotes} maxVotes={maxVotes} />
+          <Sidebar
+            remainingVotes={remainingVotes}
+            maxVotes={maxVotes}
+            isWalletConnected={library?.connection?.url === "metamask"}
+            connectWallet={connectWallet}
+            submitVotes={submitVotes}
+          />
         </div>
         <div className="w-10/12 flex flex-col">
           <GrantRound
