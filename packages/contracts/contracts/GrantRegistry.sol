@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./BeneficiaryRegistry.sol";
 
+
 contract GrantRegistry {
   address private governance;
   address private council;

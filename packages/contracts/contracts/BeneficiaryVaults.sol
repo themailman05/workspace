@@ -54,9 +54,11 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     beneficiaryRegistry = beneficiaryRegistry_;
   }
 
-  /// @param beneficiaryRegistry_ Address of new BeneficiaryRegistry contract
-  /// @notice Overrides existing BeneficiaryRegistry contract
-  /// @dev Must implement IBeneficiaryRegistry and cannot be same as existing
+  /**
+  * @notice Overrides existing BeneficiaryRegistry contract
+  * @param beneficiaryRegistry_ Address of new BeneficiaryRegistry contract
+  * @dev Must implement IBeneficiaryRegistry and cannot be same as existing
+  */
   function setBeneficiaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
     public
     onlyOwner
@@ -70,11 +72,13 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     emit BeneficiaryRegistryChanged(_beneficiaryRegistry, beneficiaryRegistry);
   }
 
-  /// @param vaultId_ Vault ID in range 0-2
-  /// @param endTime_ Unix timestamp in seconds after which a vault can be closed
-  /// @param merkleRoot_ Merkle root to support claims
-  /// @notice Initializes a vault for beneficiary claims
-  /// @dev Vault cannot be initialized if it is currently in an open state, otherwise existing data is reset
+  /**
+  * @notice Initializes a vault for beneficiary claims
+  * @param vaultId_ Vault ID in range 0-2
+  * @param endTime_ Unix timestamp in seconds after which a vault can be closed
+  * @param merkleRoot_ Merkle root to support claims
+  * @dev Vault cannot be initialized if it is currently in an open state, otherwise existing data is reset*
+  */
   function initializeVault(
     uint8 vaultId_,
     uint256 endTime_,
@@ -99,9 +103,11 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     emit VaultInitialized(vaultId_, merkleRoot_);
   }
 
-  /// @param vaultId_ Vault ID in range 0-2
-  /// @notice Open a vault it can receive rewards and accept claims
-  /// @dev Vault must be in an initialized state
+  /**
+  * @notice Open a vault it can receive rewards and accept claims
+  * @dev Vault must be in an initialized state
+  * @param vaultId_ Vault ID in range 0-2
+  */
   function openVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(
       vaults[vaultId_].status == VaultStatus.Initialized,
@@ -113,9 +119,11 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     emit VaultOpened(vaultId_);
   }
 
-  /// @param vaultId_ Vault ID in range 0-2
-  /// @notice Close an open vault and redirect rewards to other vaults
-  /// @dev Vault must be in an open state
+  /**
+  * @notice Close an open vault and redirect rewards to other vaults
+  * @dev Vault must be in an open state
+  * @param vaultId_ Vault ID in range 0-2
+  */
   function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     require(block.timestamp >= vaults[vaultId_].endTime, "Vault has not ended");
@@ -132,12 +140,14 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     emit VaultClosed(vaultId_);
   }
 
-  /// @param vaultId_ Vault ID in range 0-2
-  /// @param proof_ Merkle proof of path to leaf element
-  /// @param beneficiary_ Beneficiary address encoded in leaf element
-  /// @param share_ Beneficiary expected share encoded in leaf element
-  /// @notice Verifies a valid claim with no cost
-  /// @return Returns boolean true or false if claim is valid
+  /**
+  * @notice Verifies a valid claim with no cost
+  * @param vaultId_ Vault ID in range 0-2
+  * @param proof_ Merkle proof of path to leaf element
+  * @param beneficiary_ Beneficiary address encoded in leaf element
+  * @param share_ Beneficiary expected share encoded in leaf element
+  * @return Returns boolean true or false if claim is valid
+  */
   function verifyClaim(
     uint8 vaultId_,
     bytes32[] memory proof_,
@@ -159,12 +169,14 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
       );
   }
 
-  /// @param vaultId_ Vault ID in range 0-2
-  /// @param proof_ Merkle proof of path to leaf element
-  /// @param beneficiary_ Beneficiary address encoded in leaf element
-  /// @param share_ Beneficiary expected share encoded in leaf element
-  /// @notice Transfers POP tokens only once to beneficiary on successful claim
-  /// @dev Applies any outstanding rewards before processing claim
+  /**
+  * @notice Transfers POP tokens only once to beneficiary on successful claim
+  * @dev Applies any outstanding rewards before processing claim
+  * @param vaultId_ Vault ID in range 0-2
+  * @param proof_ Merkle proof of path to leaf element
+  * @param beneficiary_ Beneficiary address encoded in leaf element
+  * @param share_ Beneficiary expected share encoded in leaf element
+  */
   function claimReward(
     uint8 vaultId_,
     bytes32[] memory proof_,
@@ -199,8 +211,10 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     emit RewardClaimed(vaultId_, beneficiary_, _reward);
   }
 
-  /// @notice Distribute unallocated POP token balance to vaults
-  /// @dev Requires at least one open vault
+  /**
+  * @notice Distribute unallocated POP token balance to vaults
+  * @dev Requires at least one open vault
+  */
   function distributeRewards() public nonReentrant {
     uint8 _openVaultCount = _getOpenVaultCount();
     require(_openVaultCount > 0, "No open vaults");
