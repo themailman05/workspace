@@ -47,7 +47,7 @@ describe('RewardsManager', function () {
   });
 
   it("should be constructed with correct addresses", async function () {
-    expect(await this.rewardsManager.pop()).to.equal(this.mockPop.address);
+    expect(await this.rewardsManager.POP()).to.equal(this.mockPop.address);
     expect(await this.rewardsManager.staking()).to.equal(this.mockStaking.address);
     expect(await this.rewardsManager.treasury()).to.equal(this.mockTreasury.address);
     expect(await this.rewardsManager.beneficiaryVaults()).to.equal(this.mockBeneficiaryVaults.address);

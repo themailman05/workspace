@@ -13,15 +13,17 @@ import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
-/// @title Popcorn Rewards Manager
-/// @notice Manages distribution of POP rewards to Popcorn Treasury, DAO Staking, and Beneficiaries.
+/**
+* @title Popcorn Rewards Manager
+* @notice Manages distribution of POP rewards to Popcorn Treasury, DAO Staking, and Beneficiaries
+*/
 contract RewardsManager is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   uint256 public constant SWAP_TIMEOUT = 600;
 
-  IERC20 public immutable pop;
+  IERC20 public immutable POP;
   IStaking public staking;
   ITreasury public treasury;
   IBeneficiaryVaults public beneficiaryVaults;
@@ -53,7 +55,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     IBeneficiaryVaults beneficiaryVaults_,
     IUniswapV2Router02 uniswapV2Router_
   ) {
-    pop = pop_;
+    POP = pop_;
     staking = staking_;
     treasury = treasury_;
     beneficiaryVaults = beneficiaryVaults_;
@@ -65,9 +67,11 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     rewardSplits = [33e18, 33e18, 34e18];
   }
 
-  /// @param staking_ Address of new Staking contract
-  /// @notice Overrides existing Staking contract
-  /// @dev Must implement IStaking and cannot be same as existing
+  /**
+  * @notice Overrides existing Staking contract
+  * @param staking_ Address of new Staking contract
+  * @dev Must implement IStaking and cannot be same as existing
+  */
   function setStaking(IStaking staking_) public onlyOwner {
     require(staking != staking_, "Same Staking");
     IStaking _previousStaking = staking;
@@ -75,9 +79,11 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit StakingChanged(_previousStaking, staking);
   }
 
-  /// @param treasury_ Address of new Treasury contract
-  /// @notice Overrides existing Treasury contract
-  /// @dev Must implement ITreasury and cannot be same as existing
+  /**
+  * @notice Overrides existing Treasury contract
+  * @param treasury_ Address of new Treasury contract
+  * @dev Must implement ITreasury and cannot be same as existing
+  */
   function setTreasury(ITreasury treasury_) public onlyOwner {
     require(treasury != treasury_, "Same Treasury");
     ITreasury _previousTreasury = treasury;
@@ -85,9 +91,11 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit TreasuryChanged(_previousTreasury, treasury);
   }
 
-  /// @param beneficiaryVaults_ Address of new BeneficiaryVaults contract
-  /// @notice Overrides existing BeneficiaryVaults contract
-  /// @dev Must implement IeneficiaryVaults and cannot be same as existing
+  /**
+  * @notice Overrides existing BeneficiaryVaults contract
+  * @param beneficiaryVaults_ Address of new BeneficiaryVaults contract
+  * @dev Must implement IeneficiaryVaults and cannot be same as existing
+  */
   function setBeneficiaryVaults(IBeneficiaryVaults beneficiaryVaults_)
     public
     onlyOwner
@@ -101,9 +109,11 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     );
   }
 
-  /// @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
-  /// @notice Set new reward distribution allocations
-  /// @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
+  /**
+  * @notice Set new reward distribution allocations
+  * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
+  * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
+  */
   function setRewardSplits(uint256[3] calldata splits_) public onlyOwner {
     uint256 _total = 0;
     for (uint8 i = 0; i < 3; i++) {
@@ -118,20 +128,22 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     emit RewardSplitsUpdated(splits_);
   }
 
-  /// @param path_ Uniswap path specification for source token to POP
-  /// @param amountOut_ Minimum desired amount (>0) of POP tokens to be received from swap
-  /// @dev Path specification requires at least source token as first in path and POP address as last
-  /// @dev Token swap internals implemented as described at https://uniswap.org/docs/v2/smart-contracts/router02/#swapexacttokensfortokens
-  /// @return swapped in/out amounts uint256 tuple
-  function swapTokenForRewards(address[] calldata path_, uint256 amountOut_)
+  /**
+  * @param path_ Uniswap path specification for source token to POP
+  * @param minAmountOut_ Minimum desired amount (>0) of POP tokens to be received from swap
+  * @dev Path specification requires at least source token as first in path and POP address as last
+  * @dev Token swap internals implemented as described at https://uniswap.org/docs/v2/smart-contracts/router02/#swapexacttokensfortokens
+  * @return swapped in/out amounts uint256 tuple
+  */
+  function swapTokenForRewards(address[] calldata path_, uint256 minAmountOut_)
     public
     nonReentrant
     returns (uint256[] memory)
   {
     require(path_.length >= 2, "Invalid swap path");
-    require(amountOut_ > 0, "Invalid amount");
+    require(minAmountOut_ > 0, "Invalid amount");
     require(
-      path_[path_.length - 1] == address(pop),
+      path_[path_.length - 1] == address(POP),
       "POP must be last in path"
     );
 
@@ -143,7 +155,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     uint256[] memory _amounts =
       uniswapV2Router.swapExactTokensForTokens(
         _balance,
-        amountOut_,
+        minAmountOut_,
         path_,
         address(this),
         block.timestamp.add(SWAP_TIMEOUT)
@@ -154,10 +166,12 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     return _amounts;
   }
 
-  /// @notice Distribute POP rewards to dependent RewardTarget contracts
-  /// @dev Contract must have pop balance in order to distribute according to rewardSplits ratio
+  /**
+  * @notice Distribute POP rewards to dependent RewardTarget contracts
+  * @dev Contract must have POP balance in order to distribute according to rewardSplits ratio
+  */
   function distributeRewards() public nonReentrant {
-    uint256 _availableReward = pop.balanceOf(address(this));
+    uint256 _availableReward = POP.balanceOf(address(this));
     require(_availableReward > 0, "No POP balance");
 
     //@todo check edge case precision overflow
@@ -183,19 +197,19 @@ contract RewardsManager is Ownable, ReentrancyGuard {
 
   function _distributeToStaking(uint256 amount_) internal {
     if (amount_ == 0) return;
-    pop.transfer(address(staking), amount_);
+    POP.transfer(address(staking), amount_);
     emit StakingDeposited(address(staking), amount_);
   }
 
   function _distributeToTreasury(uint256 amount_) internal {
     if (amount_ == 0) return;
-    pop.transfer(address(treasury), amount_);
+    POP.transfer(address(treasury), amount_);
     emit TreasuryDeposited(address(treasury), amount_);
   }
 
   function _distributeToVaults(uint256 amount_) internal {
     if (amount_ == 0) return;
-    pop.transfer(address(beneficiaryVaults), amount_);
+    POP.transfer(address(beneficiaryVaults), amount_);
     emit BeneficiaryVaultsDeposited(address(beneficiaryVaults), amount_);
   }
 }
