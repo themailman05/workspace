@@ -3,12 +3,11 @@ import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import Sidebar from '../../containers/Grants/Sidebar';
 import GrantRound from 'containers/Grants/GrantRound';
-import { Web3Provider } from '@ethersproject/providers';
+import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { connectors } from '../../containers/Web3/connectors';
-
-//DATASTRUCTURE
-//Do Grant rounds hold the indivividual grants
-//Or do we get individual grants which contain infos about the grant round?
+import { Contract } from '@ethersproject/contracts';
+import GrantRegistryAbi from '../../../contracts/artifacts/contracts/GrantRegistry.sol/GrantRegistry.json';
+import BeneficiaryRegistryAbi from '../../../contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
 
 //Quadratic Voting for assigning Votes
 
@@ -20,34 +19,6 @@ import { connectors } from '../../containers/Web3/connectors';
 //call getActiveAwardees with the grantterms from before
 //get ipfs hashes from the BeneficiaryRegistry with the previous Data
 //get data from ipfs with those hashes
-
-export function useEagerConnect() {
-  const { activate, active } = useWeb3React();
-
-  const [tried, setTried] = useState(false);
-
-  useEffect(() => {
-    connectors.Injected.isAuthorized().then((isAuthorized: boolean) => {
-      console.log('authorized');
-      if (isAuthorized) {
-        activate(connectors.Injected, undefined, true).catch(() => {
-          setTried(true);
-        });
-      } else {
-        setTried(true);
-      }
-    });
-  }, []); // intentionally only running on mount (make sure it's only mounted once :))
-
-  // if the connection worked, wait until we get confirmation of that to flip the flag
-  useEffect(() => {
-    if (!tried && active) {
-      setTried(true);
-    }
-  }, [tried, active]);
-
-  return tried;
-}
 
 const demoGrants = [
   {
@@ -108,6 +79,25 @@ const demoGrants = [
   },
 ];
 
+const GrantRegistryData = [
+  {
+    startTime: '',
+    endTime: '',
+    grantTerm: '',
+    grantShareType: '',
+    awardeesCount: '',
+    awardees: [''],
+  },
+  {
+    startTime: '',
+    endTime: '',
+    grantTerm: '',
+    grantShareType: '',
+    awardeesCount: '',
+    awardees: [''],
+  },
+];
+
 export default function Test() {
   const context = useWeb3React<Web3Provider>();
   const {
@@ -120,28 +110,54 @@ export default function Test() {
     active,
     error,
   } = context;
-  const [maxVotes, setMaxVotes] = useState(0);
-  const [remainingVotes, setRemainingVotes] = useState(0);
+  const [maxVotes, setMaxVotes] = useState<number>(0);
+  const [remainingVotes, setRemainingVotes] = useState<number>(0);
   const [activeGrants, setActiveGrants] = useState([]);
-  useEagerConnect();
+  const [grantRegistry, setGrantRegistry] = useState<Contract>();
+  const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
 
   useEffect(() => {
     if (!active) {
       activate(connectors.Network);
+      if (library?.connection?.url === 'metamask') {
+        //TODO get pop -> to tell the user to either lock them or buy some
+        //TODO get locked pop -> to vote or tell the user to lock pop
+        //TODO swap the contract provider to signer so the user can vote
+        //grantRegistry.connect(library.getSigner());
+      }
     }
   }, [active]);
 
   useEffect(() => {
-    library?.getNetwork().then((res) => console.log('getNetwork', res));
+    if (!library) {
+      return;
+    }
+    setGrantRegistry(
+      //TODO swap the hardhat addresses with the mainnet
+      new Contract(
+        '0xe7f1725e7734ce288f8367e1bb143e90bb3f0512',
+        GrantRegistryAbi.abi,
+        library,
+      ),
+    );
+    setBeneficiaryRegistry(
+      //TODO swap the hardhat addresses with the mainnet
+      new Contract(
+        '0x5fbdb2315678afecb367f032d93f642f64180aa3',
+        BeneficiaryRegistryAbi.abi,
+        library,
+      ),
+    );
   }, [library]);
 
-  console.log('library', library?.connection?.url);
-
   useEffect(() => {
-    setMaxVotes(550);
+    const activeGrant = grantRegistry.getActiveGrant();
+    const activeAwardees = grantRegistry.getActiveAwardees(activeGrant[2]);
+    //TODO get data from ipfs
     setActiveGrants(demoGrants);
+    setMaxVotes(550);
     setRemainingVotes(540);
-  }, [active]);
+  }, [grantRegistry, beneficiaryRegistry]);
 
   useEffect(() => {
     if (activeGrants.length) {
@@ -161,9 +177,7 @@ export default function Test() {
     activate(connectors.Injected);
   }
 
-  function submitVotes(){
-
-  }
+  function submitVotes() {}
 
   function assignVotes(id: string, votes: number): void {
     const activeGrantsCopy = [...activeGrants];
@@ -184,7 +198,7 @@ export default function Test() {
           <Sidebar
             remainingVotes={remainingVotes}
             maxVotes={maxVotes}
-            isWalletConnected={library?.connection?.url === "metamask"}
+            isWalletConnected={library?.connection?.url === 'metamask'}
             connectWallet={connectWallet}
             submitVotes={submitVotes}
           />
