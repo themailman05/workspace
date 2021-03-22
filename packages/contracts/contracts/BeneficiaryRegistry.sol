@@ -49,6 +49,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
     council = msg.sender;
   }
 
+  /**
+  * @notice sets governance to address provided
+  */
   function setGovernance(address _address)
     external
     onlyGovernance
@@ -59,6 +62,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
     emit GovernanceUpdated(previousGovernance, _address);
   }
 
+  /**
+  * @notice sets council to address provided. council can revoke beneficiaries
+  */
   function setCouncil(address _address)
     external
     onlyCouncil
@@ -69,6 +75,10 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
     emit CouncilUpdated(previousCouncil, _address);
   }
 
+  /**
+  * @notice add a beneficiary with their IPFS cid to the registry
+  * TODO: allow only election contract to modify beneficiary
+  */
   function addBeneficiary(address _address, bytes calldata applicationCid)
     external
     onlyGovernance
@@ -86,6 +96,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
     emit BeneficiaryAdded(_address, applicationCid);
   }
 
+  /**
+  * @notice remove a beneficiary from the registry. (callable only by council)
+  */
   function revokeBeneficiary(address _address) external onlyCouncil {
     require(beneficiaryExists(_address), "exists");
     delete beneficiariesList[beneficiariesMap[_address].listPointer];
@@ -93,6 +106,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
     emit BeneficiaryRevoked(_address);
   }
 
+  /**
+  * @notice check if beneficiary exists in the registry
+  */
   function beneficiaryExists(address _address)
     public
     view
@@ -104,6 +120,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
       beneficiariesList[beneficiariesMap[_address].listPointer] == _address;
   }
 
+  /**
+  * @notice get beneficiary's application cid from registry. this cid is the address to the beneficiary application that is included in the beneficiary nomination proposal.
+  */
   function getBeneficiary(address _address) public view returns (bytes memory) {
     return beneficiariesMap[_address].applicationCid;
   }
