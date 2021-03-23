@@ -6,8 +6,9 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "./IStaking.sol";
 
-contract Staking is Ownable, ReentrancyGuard {
+contract Staking is IStaking, Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -94,7 +95,11 @@ contract Staking is Ownable, ReentrancyGuard {
     }
   }
 
-  function getWithdrawableBalance() external returns (uint256) {
+  function getVoiceCredits(address _address) public view returns (uint256) {
+    return voiceCredits[_address];
+  }
+
+  function getWithdrawableBalance() public view returns (uint256) {
     uint256 _withdrawable = 0;
     uint256 _currentTime = block.timestamp;
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
