@@ -25,13 +25,17 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
   mapping(address => uint256) withdrawnBalances;
 
   uint256 constant SECONDS_IN_A_WEEK = 604800;
-  uint256 constant MAX_LOCK_TIME = SECONDS_IN_A_WEEK.mul(52).mul(4);
+  uint256 constant MAX_LOCK_TIME = 604800 * 52 * 4; // 4 years
 
   IERC20 public immutable POP;
   event StakingDeposited(address _address, uint256 amount);
   event StakingWithdrawn(address _address, uint256 amount);
 
-  function stake(uint256 amount, uint256 lengthOfTime) external nonReentrant {
+  constructor(IERC20 _pop) {
+    POP = _pop;
+  }
+
+  function stake(uint256 amount, uint256 lengthOfTime) external override nonReentrant {
     require(amount > 0, "amount must be greater than 0");
     require(
       lengthOfTime >= SECONDS_IN_A_WEEK,
@@ -61,15 +65,12 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
   }
 
 
-  function withdraw(uint256 amount) external nonReentrant {
+  function withdraw(uint256 amount) external override nonReentrant {
     require(amount > 0, "amount must be greater than 0");
     require(balances[msg.sender] > 0, "insufficient balance");
-    require(_isWithdrawable(amount), "amount not withdrawable");
-    require(amount <= _getWithdrawableBalance());
+    require(amount <= getWithdrawableBalance());
 
     withdrawnBalances[msg.sender].add(amount);
-    totalLockedBalances[msg.sender].sub(amount);
-
 
     POP.safeTransferFrom(address(this), msg.sender, amount);
     _clearWithdrawnFromLocked(amount);
@@ -79,15 +80,16 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
   function _recalculateVoiceCredits() internal {
     uint256 _voiceCredits = 0;
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
-      _locked = lockedBalances[msg.sender][i];
+      LockedBalance memory _locked = lockedBalances[msg.sender][i];
       _voiceCredits = _voiceCredits.add(_locked._balance.mul(_locked._time).div(MAX_LOCK_TIME));
     }
     voiceCredits[msg.sender] = _voiceCredits;
   }
 
   function _clearWithdrawnFromLocked(uint256 _amount) internal {
+    uint256 _currentTime = block.timestamp;
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
-      _locked = lockedBalances[msg.sender][i];
+      LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time).sub(_currentTime) <= 0) {
         _amount = _amount.sub(_locked._balance);
         if (_amount >= 0) {
@@ -95,25 +97,25 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
           return;
         }
         if (_amount < 0) {
-          _locked._balance = abs(_amount);
+          _locked._balance = _amount >= 0 ? _amount : -_amount;
           return;
         }
-      } 
+      }
     }
   }
 
-  function getVoiceCredits(address _address) public view returns (uint256) {
+  function getVoiceCredits(address _address) public view override returns (uint256) {
     return voiceCredits[_address];
   }
 
-  function getWithdrawableBalance() public view returns (uint256) {
+  function getWithdrawableBalance() public view override returns (uint256) {
     uint256 _withdrawable = 0;
     uint256 _currentTime = block.timestamp;
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
-      _locked = lockedBalances[msg.sender][i];
+      LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time).sub(_currentTime) <= 0) {
         _withdrawable.add(_locked._balance);
-      } 
+      }
     }
 
     return _withdrawable;
