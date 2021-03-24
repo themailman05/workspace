@@ -43,8 +43,8 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     );
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
 
-    uint256 _voiceCredits = amount.mul(lengthOfTime).div(MAX_LOCK_TIME);
-    voiceCredits[msg.sender].add(_voiceCredits);
+    POP.safeTransferFrom(msg.sender, address(this), amount);
+
     balances[msg.sender].add(amount);
 
     lockedBalances[msg.sender].push(
@@ -56,7 +56,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
       })
     );
 
-    POP.safeTransferFrom(msg.sender, address(this), amount);
+    _recalculateVoiceCredits();
     emit StakingDeposited(msg.sender, amount);
   }
 
@@ -65,8 +65,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     require(amount > 0, "amount must be greater than 0");
     require(balances[msg.sender] > 0, "insufficient balance");
     require(_isWithdrawable(amount), "amount not withdrawable");
-    uint256 _withdrawableBalance = getWithdrawableBalance();
-    require(_withdrawableBalance.add(withdrawnBalance) >= amount);
+    require(amount <= _getWithdrawableBalance());
 
     withdrawnBalances[msg.sender].add(amount);
     totalLockedBalances[msg.sender].sub(amount);
@@ -74,8 +73,16 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
 
     POP.safeTransferFrom(address(this), msg.sender, amount);
     _clearWithdrawnFromLocked(amount);
-    // todo: recalculate voiceCredits
+    _recalculateVoiceCredits();
+  }
 
+  function _recalculateVoiceCredits() internal {
+    uint256 _voiceCredits = 0;
+    for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
+      _locked = lockedBalances[msg.sender][i];
+      _voiceCredits = _voiceCredits.add(_locked._balance.mul(_locked._time).div(MAX_LOCK_TIME));
+    }
+    voiceCredits[msg.sender] = _voiceCredits;
   }
 
   function _clearWithdrawnFromLocked(uint256 _amount) internal {
