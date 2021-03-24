@@ -151,8 +151,8 @@ export default function Test() {
   }, [library]);
 
   useEffect(() => {
-    const activeGrant = grantRegistry.getActiveGrant();
-    const activeAwardees = grantRegistry.getActiveAwardees(activeGrant[2]);
+    //const activeGrant = grantRegistry.getActiveGrant();
+    //const activeAwardees = grantRegistry.getActiveAwardees(activeGrant[2]);
     //TODO get data from ipfs
     setActiveGrants(demoGrants);
     setMaxVotes(550);
