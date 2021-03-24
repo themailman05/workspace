@@ -1,10 +1,46 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/Users/anthonymartin/Documents/projects/popcorn/workspace/packages/contracts/contracts/BeneficiaryRegistry.sol": {
-      "lastModificationDate": 1613569094338,
-      "contentHash": "8bc2cb3ca68741845c4bd44fd75cc377",
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/packages/contracts/contracts/BeneficiaryRegistry.sol": {
+      "lastModificationDate": 1616246013039,
+      "contentHash": "62a9d42130fd36a0b44c823b4c8c036e",
       "sourceName": "contracts/BeneficiaryRegistry.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IBeneficiaryRegistry.sol"
+      ],
+      "versionPragmas": [
+        ">=0.7.0 <0.8.0"
+      ],
+      "artifacts": [
+        "BeneficiaryRegistry"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/packages/contracts/contracts/IBeneficiaryRegistry.sol": {
+      "lastModificationDate": 1616246013039,
+      "contentHash": "f0ec1492bc2edb3f37599f6fb4d17144",
+      "sourceName": "contracts/IBeneficiaryRegistry.sol",
       "solcConfig": {
         "version": "0.7.3",
         "settings": {
@@ -32,12 +68,12 @@
         ">=0.7.0 <0.8.0"
       ],
       "artifacts": [
-        "BeneficiaryRegistry"
+        "IBeneficiaryRegistry"
       ]
     },
-    "/Users/anthonymartin/Documents/projects/popcorn/workspace/packages/contracts/contracts/GrantRegistry.sol": {
-      "lastModificationDate": 1613569175522,
-      "contentHash": "96e2e88d73b16cc56ccb2f430900d8b9",
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/packages/contracts/contracts/GrantRegistry.sol": {
+      "lastModificationDate": 1616246013039,
+      "contentHash": "0c097d08b1f554bd32522db51eb0dc24",
       "sourceName": "contracts/GrantRegistry.sol",
       "solcConfig": {
         "version": "0.7.3",
@@ -71,10 +107,87 @@
         "GrantRegistry"
       ]
     },
-    "/Users/anthonymartin/Documents/projects/popcorn/workspace/node_modules/hardhat/console.sol": {
-      "lastModificationDate": 1613555751229,
-      "contentHash": "cc4777addd464ea56fa35b1c45df0591",
-      "sourceName": "hardhat/console.sol",
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/packages/contracts/contracts/RewardsManager.sol": {
+      "lastModificationDate": 1616246013040,
+      "contentHash": "0e2bf0523abbe772b1c224d9f91a93ca",
+      "sourceName": "contracts/RewardsManager.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./IBeneficiaryRegistry.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/math/SafeMath.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+        "@openzeppelin/contracts/cryptography/MerkleProof.sol"
+      ],
+      "versionPragmas": [
+        ">=0.7.0 <0.8.0"
+      ],
+      "artifacts": [
+        "RewardsManager"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1616263924345,
+      "contentHash": "6748815a5b45c4aeeda56819f41190e0",
+      "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../utils/Context.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "Ownable"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/node_modules/@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+      "lastModificationDate": 1616263924367,
+      "contentHash": "1c60f58cee45c61469e1aea31e4dd879",
+      "sourceName": "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
       "solcConfig": {
         "version": "0.7.3",
         "settings": {
@@ -99,10 +212,220 @@
       },
       "imports": [],
       "versionPragmas": [
-        ">=0.4.22 <0.9.0"
+        ">=0.6.0 <0.8.0"
       ],
       "artifacts": [
-        "console"
+        "ReentrancyGuard"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/node_modules/@openzeppelin/contracts/math/SafeMath.sol": {
+      "lastModificationDate": 1616263924356,
+      "contentHash": "e03e12206057e809eb76c5f681170c32",
+      "sourceName": "@openzeppelin/contracts/math/SafeMath.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "SafeMath"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1616263935045,
+      "contentHash": "e0a41531d159d3a32f84b7a3ecf9fabb",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "IERC20"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/node_modules/@openzeppelin/contracts/cryptography/MerkleProof.sol": {
+      "lastModificationDate": 1616263924350,
+      "contentHash": "44bd823687d58263d3b1da555235f93e",
+      "sourceName": "@openzeppelin/contracts/cryptography/MerkleProof.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "MerkleProof"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1616263924367,
+      "contentHash": "2adbd82f6d055a4751566d4671512b03",
+      "sourceName": "@openzeppelin/contracts/utils/Context.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "Context"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1616263935051,
+      "contentHash": "8065b340476f61365c076897199425f1",
+      "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../utils/Context.sol",
+        "./IERC20.sol",
+        "../../math/SafeMath.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "ERC20"
+      ]
+    },
+    "/Users/amirjabarivasal/Documents/popcorn/workspace/packages/contracts/contracts/mocks/MockERC20.sol": {
+      "lastModificationDate": 1616246013040,
+      "contentHash": "061135060506f72fffb814b161b76052",
+      "sourceName": "contracts/mocks/MockERC20.sol",
+      "solcConfig": {
+        "version": "0.7.3",
+        "settings": {
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol"
+      ],
+      "versionPragmas": [
+        ">=0.6.0 <0.8.0"
+      ],
+      "artifacts": [
+        "MockERC20"
       ]
     }
   }

@@ -8,7 +8,7 @@ import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
 import GrantRegistryAbi from '../../../contracts/artifacts/contracts/GrantRegistry.sol/GrantRegistry.json';
 import BeneficiaryRegistryAbi from '../../../contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
-
+const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 }
 //Quadratic Voting for assigning Votes
 
 //GET OPEN ELECTION
@@ -135,7 +135,7 @@ export default function Test() {
     setGrantRegistry(
       //TODO swap the hardhat addresses with the mainnet
       new Contract(
-        '0xe7f1725e7734ce288f8367e1bb143e90bb3f0512',
+        '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
         GrantRegistryAbi.abi,
         library,
       ),
@@ -143,7 +143,7 @@ export default function Test() {
     setBeneficiaryRegistry(
       //TODO swap the hardhat addresses with the mainnet
       new Contract(
-        '0x5fbdb2315678afecb367f032d93f642f64180aa3',
+        '0x5FbDB2315678afecb367f032d93F642f64180aa3',
         BeneficiaryRegistryAbi.abi,
         library,
       ),
@@ -151,8 +151,13 @@ export default function Test() {
   }, [library]);
 
   useEffect(() => {
-    //const activeGrant = grantRegistry.getActiveGrant();
-    //const activeAwardees = grantRegistry.getActiveAwardees(activeGrant[2]);
+    if (grantRegistry && beneficiaryRegistry) {
+      grantRegistry.getActiveGrant(GRANT_TERM.QUARTER)
+      .then(activeGrant => console.log('active Grant', activeGrant))
+      grantRegistry.getActiveAwardees(GRANT_TERM.QUARTER)
+      .then(activeAwardees => console.log('active Awardees', activeAwardees));
+
+    }
     //TODO get data from ipfs
     setActiveGrants(demoGrants);
     setMaxVotes(550);
