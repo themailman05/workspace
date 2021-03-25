@@ -105,7 +105,7 @@ const GrantRegistryData = [
   },
 ];
 
-export default function Test() {
+export default function GrantOverview() {
   const context = useWeb3React<Web3Provider>();
   const {
     connector,
