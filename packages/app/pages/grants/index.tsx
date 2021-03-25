@@ -1,22 +1,21 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import Sidebar from '../../containers/Grants/Sidebar';
+import Sidebar from '../../containers/Grants/Sidebar/Sidebar';
 import GrantRound from 'containers/Grants/GrantRound';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
 import GrantRegistryAbi from '../../../contracts/artifacts/contracts/GrantRegistry.sol/GrantRegistry.json';
 import BeneficiaryRegistryAbi from '../../../contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
-const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 }
+
+const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
 //Quadratic Voting for assigning Votes
 
 //GET OPEN ELECTION
 //????
 
 //GET ACTIVE GRANTS (closed elections and still recieves money)
-//call getActiveGrants in GrantRegistry
-//call getActiveAwardees with the grantterms from before
 //get ipfs hashes from the BeneficiaryRegistry with the previous Data
 //get data from ipfs with those hashes
 
@@ -83,18 +82,26 @@ const GrantRegistryData = [
   {
     startTime: '',
     endTime: '',
-    grantTerm: '',
+    grantTerm: 0,
     grantShareType: '',
-    awardeesCount: '',
-    awardees: [''],
+    awardeesCount: 4,
+    awardees: ['0', '1', '2', '3'],
   },
   {
     startTime: '',
     endTime: '',
-    grantTerm: '',
+    grantTerm: 1,
     grantShareType: '',
-    awardeesCount: '',
-    awardees: [''],
+    awardeesCount: 3,
+    awardees: ['4', '5', '6'],
+  },
+  {
+    startTime: '',
+    endTime: '',
+    grantTerm: 2,
+    grantShareType: '',
+    awardeesCount: 1,
+    awardees: ['4'],
   },
 ];
 
@@ -115,6 +122,7 @@ export default function Test() {
   const [activeGrants, setActiveGrants] = useState([]);
   const [grantRegistry, setGrantRegistry] = useState<Contract>();
   const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
+  const [activeGrantRound, scrollToGrantRound] = useState<string>();
 
   useEffect(() => {
     if (!active) {
@@ -132,31 +140,39 @@ export default function Test() {
     if (!library) {
       return;
     }
-    setGrantRegistry(
-      //TODO swap the hardhat addresses with the mainnet
-      new Contract(
-        '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
-        GrantRegistryAbi.abi,
-        library,
-      ),
-    );
-    setBeneficiaryRegistry(
-      //TODO swap the hardhat addresses with the mainnet
-      new Contract(
-        '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-        BeneficiaryRegistryAbi.abi,
-        library,
-      ),
-    );
+    if (library?.connection?.url === 'metamask') {
+      setGrantRegistry(
+        //TODO swap the hardhat addresses with the mainnet
+        new Contract(
+          '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+          GrantRegistryAbi.abi,
+          library,
+        ),
+      );
+      setBeneficiaryRegistry(
+        //TODO swap the hardhat addresses with the mainnet
+        new Contract(
+          '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+          BeneficiaryRegistryAbi.abi,
+          library,
+        ),
+      );
+    }
   }, [library]);
 
   useEffect(() => {
     if (grantRegistry && beneficiaryRegistry) {
-      grantRegistry.getActiveGrant(GRANT_TERM.QUARTER)
-      .then(activeGrant => console.log('active Grant', activeGrant))
-      grantRegistry.getActiveAwardees(GRANT_TERM.QUARTER)
-      .then(activeAwardees => console.log('active Awardees', activeAwardees));
-
+      grantRegistry
+        .getActiveGrant(GRANT_TERM.QUARTER)
+        .then((activeGrant) => console.log('active Grant', activeGrant));
+      grantRegistry
+        .getActiveAwardees(GRANT_TERM.QUARTER)
+        .then((activeAwardees) =>
+          console.log('active Awardees', activeAwardees),
+        );
+      beneficiaryRegistry
+        .getBeneficiary('0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
+        .then((res) => console.log('beneficiary', res));
     }
     //TODO get data from ipfs
     setActiveGrants(demoGrants);
@@ -203,9 +219,30 @@ export default function Test() {
           <Sidebar
             remainingVotes={remainingVotes}
             maxVotes={maxVotes}
+            grantRounds={[
+              {
+                name: 'Quaterly',
+                address: '0',
+                active: true,
+                year: 2021,
+              },
+              {
+                name: 'Monthly',
+                address: '1',
+                active: false,
+                year: 2021,
+              },
+              {
+                name: 'Yearly',
+                address: '2',
+                active: false,
+                year: 2020,
+              },
+            ]}
             isWalletConnected={library?.connection?.url === 'metamask'}
             connectWallet={connectWallet}
             submitVotes={submitVotes}
+            scrollToGrantRound={scrollToGrantRound}
           />
         </div>
         <div className="w-10/12 flex flex-col">
@@ -217,6 +254,7 @@ export default function Test() {
             grants={activeGrants}
             assignVotes={assignVotes}
             remainingVotes={remainingVotes}
+            scrollTo={false} //{grantRound.address === activeGrantRound}
           />
         </div>
       </div>

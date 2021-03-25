@@ -27,14 +27,14 @@ export default function GrantCard({
     <div className="bg-white shadow-sm w-80 h-100 rounded-lg mr-6 mb-6">
       <Link href={`grants/${id}`} passHref>
         <a>
-          <div className="w-full h-28 bg-red-300 rounded-t-lg cursor-pointer" />
+          <div className="w-full h-28 bg-red-300 rounded-t-lg" />
         </a>
       </Link>
       <div className="w-full px-4 pb-3">
         <div className="h-14 mt-3">
           <Link href={`grants/${id}`} passHref>
             <a>
-              <h3 className="text-lg font-bold text-gray-700 leading-snug cursor-pointer">
+              <h3 className="text-lg font-bold text-gray-700 leading-snug">
                 {title}
               </h3>
             </a>
@@ -43,9 +43,7 @@ export default function GrantCard({
         <div className="h-36">
           <Link href={`grants/${id}`} passHref>
             <a>
-              <p className="text-sm text-gray-500 cursor-pointer">
-                {description}
-              </p>
+              <p className="text-sm text-gray-500">{description}</p>
             </a>
           </Link>
         </div>

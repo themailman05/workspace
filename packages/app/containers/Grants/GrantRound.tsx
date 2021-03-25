@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useRef } from 'react';
 import { Check, Lock } from 'react-feather';
 import GrantCard from './GrantCard';
 
@@ -9,6 +11,7 @@ interface IGrantRound {
   grants: any[];
   assignVotes: (id: string, votes: number) => void;
   remainingVotes: number;
+  scrollTo?: boolean;
 }
 
 export default function GrantRound({
@@ -19,9 +22,18 @@ export default function GrantRound({
   grants,
   assignVotes,
   remainingVotes,
+  scrollTo = false,
 }: IGrantRound): JSX.Element {
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current && scrollTo) {
+      ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [scrollTo]);
+
   return (
-    <>
+    <div ref={ref} className="mb-16">
       <span className="flex flex-row flex-wrap items-center mb-4">
         <div className="h-8 w-8 mr-2 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
           {active ? (
@@ -33,7 +45,7 @@ export default function GrantRound({
         <h2 className="text-3xl font-bold text-white">{title}</h2>
       </span>
       <p className="text-white">{description}</p>
-      <div className="w-full flex flex-row flex-wrap items-center">
+      <div className="w-full flex flex-row flex-wrap items-center mt-4">
         {grants.length &&
           grants.map((grant) => (
             <GrantCard
@@ -49,6 +61,6 @@ export default function GrantRound({
             />
           ))}
       </div>
-    </>
+    </div>
   );
 }
