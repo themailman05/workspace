@@ -75,6 +75,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     POP.safeTransferFrom(address(this), msg.sender, amount);
     _clearWithdrawnFromLocked(amount);
     _recalculateVoiceCredits();
+    emit StakingWithdrawn(msg.sender, amount);
   }
 
   function _recalculateVoiceCredits() internal {
@@ -90,7 +91,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     uint256 _currentTime = block.timestamp;
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
-      if (_locked._lockedAt.add(_locked._time).sub(_currentTime) <= 0) {
+      if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
         _amount = _amount.sub(_locked._balance);
         if (_amount >= 0) {
           delete lockedBalances[msg.sender][i];
@@ -113,7 +114,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     uint256 _currentTime = block.timestamp;
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
-      if (_locked._lockedAt.add(_locked._time).sub(_currentTime) <= 0) {
+      if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
         _withdrawable.add(_locked._balance);
       }
     }
