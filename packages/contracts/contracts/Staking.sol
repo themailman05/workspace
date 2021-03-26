@@ -93,9 +93,13 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
         _amount = _amount.sub(_locked._balance);
-        if (_amount >= 0) {
+        if (_amount == 0) {
           delete lockedBalances[msg.sender][i];
           return;
+        }
+        if (_amount > 0) {
+          delete lockedBalances[msg.sender][i];
+          continue;
         }
         if (_amount < 0) {
           _locked._balance = _amount >= 0 ? _amount : -_amount;
@@ -115,7 +119,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
-        _withdrawable.add(_locked._balance);
+        _withdrawable = _withdrawable.add(_locked._balance);
       }
     }
 

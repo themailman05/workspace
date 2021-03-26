@@ -83,4 +83,26 @@ describe('Staking', function () {
         expect(await this.contract.getVoiceCredits(owner.address)).to.equal(0);
     });
   });
+
+  describe("getWithdrawableBalance", function () {
+    it("should not return locked balance", async function () {
+        //  balance 0 for owner
+        expect(await this.contract.connect(owner).getWithdrawableBalance()).to.equal(0);
+
+        const amount = parseEther("1")
+        await this.mockPop.connect(owner).approve(this.contract.address, amount);
+        // owner stakes 1 ether for a week
+        await this.contract.connect(owner).stake(amount, 604800);
+
+        //  still balance 0 for owner
+        expect(await this.contract.connect(owner).getWithdrawableBalance()).to.equal(0);
+
+        // +1 week passes
+        ethers.provider.send("evm_increaseTime", [700000]);
+        ethers.provider.send("evm_mine", []);
+
+        // balance of 1 either available for withdraw
+        expect(await this.contract.connect(owner).getWithdrawableBalance()).to.equal(amount);
+    });
+  });
 });
