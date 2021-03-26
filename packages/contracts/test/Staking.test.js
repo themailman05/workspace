@@ -38,7 +38,7 @@ describe('Staking', function () {
       ).to.be.revertedWith("must lock tokens for less than/equal to  4 year");
     });
 
-    it("should lock available balance", async function () {
+    it("should error on insufficient balance", async function () {
       await expect(
         this.contract.stake(parseEther("1000"), 604800)
       ).to.be.revertedWith("insufficient balance");
