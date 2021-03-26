@@ -5,7 +5,7 @@ let contract;
 
 describe('Staking', function () {
 
-  before(async function () {
+  beforeEach(async function () {
     [owner, rewarder, nonOwner] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
@@ -76,7 +76,7 @@ describe('Staking', function () {
         ethers.provider.send("evm_increaseTime", [700000]);
         ethers.provider.send("evm_mine");
         const result = expect(
-            this.contract.connect(owner).withdraw(amount)
+            await this.contract.connect(owner).withdraw(amount)
         )
         result.to.emit(this.contract, "StakingWithdrawn").withArgs(owner.address, amount);
         expect(await this.contract.connect(owner).getWithdrawableBalance()).to.equal(0);

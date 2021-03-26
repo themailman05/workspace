@@ -49,7 +49,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
 
-    balances[msg.sender].add(amount);
+    balances[msg.sender] = balances[msg.sender].add(amount);
 
     lockedBalances[msg.sender].push(
       LockedBalance({
@@ -70,8 +70,9 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     require(balances[msg.sender] > 0, "insufficient balance");
     require(amount <= getWithdrawableBalance());
 
-    withdrawnBalances[msg.sender].add(amount);
+    withdrawnBalances[msg.sender] = withdrawnBalances[msg.sender].add(amount);
 
+    POP.approve(address(this), amount);
     POP.safeTransferFrom(address(this), msg.sender, amount);
     _clearWithdrawnFromLocked(amount);
     _recalculateVoiceCredits();
@@ -102,7 +103,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
           continue;
         }
         if (_amount < 0) {
-          _locked._balance = _amount >= 0 ? _amount : -_amount;
+          _locked._balance = -_amount;
           return;
         }
       }
