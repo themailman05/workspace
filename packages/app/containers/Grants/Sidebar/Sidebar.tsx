@@ -1,4 +1,6 @@
+import { IGrantRoundFilter } from 'pages/grants';
 import { useState } from 'react';
+import { Dispatch } from 'react';
 import { useEffect } from 'react';
 import ActionButton from './ActionButton';
 import FilterGrantRounds from './FilterGrantRounds';
@@ -13,12 +15,9 @@ interface ISideBar {
   isWalletConnected: boolean;
   connectWallet: () => void;
   submitVotes: () => void;
-  scrollToGrantRound: (grantAddress: string) => void;
-}
-
-export interface IGrantRoundFilter {
-  active: boolean;
-  closed: boolean;
+  scrollToGrantRound: (grantId: string) => void;
+  grantRoundFilter: IGrantRoundFilter;
+  setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
 }
 
 export default function Sidebar({
@@ -29,12 +28,10 @@ export default function Sidebar({
   connectWallet,
   submitVotes,
   scrollToGrantRound,
+  grantRoundFilter,
+  setGrantRoundFilter,
 }: ISideBar): JSX.Element {
   const [grantYears, setGrantYears] = useState<number[]>([]);
-  const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
-    active: true,
-    closed: true,
-  });
 
   useEffect(() => {
     const years = [];

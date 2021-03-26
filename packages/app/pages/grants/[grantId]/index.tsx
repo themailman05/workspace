@@ -1,3 +1,3 @@
 export default function GrantRound(): JSX.Element {
-  return <div></div>;
+  return <div>Hello World</div>;
 }

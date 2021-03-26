@@ -1,5 +1,5 @@
+import { IGrantRoundFilter } from 'pages/grants';
 import { Dispatch } from 'react';
-import { IGrantRoundFilter } from './Sidebar';
 
 interface IFilterGrantRounds {
   grantRoundFilter: IGrantRoundFilter;
