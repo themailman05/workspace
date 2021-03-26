@@ -12,6 +12,7 @@ interface IGrantRound {
   remainingVotes: number;
   assignVotes?: (id: string, votes: number) => void;
   scrollTo?: boolean;
+  quadratic?: boolean;
 }
 
 export default function GrantRound({
@@ -23,6 +24,7 @@ export default function GrantRound({
   remainingVotes,
   assignVotes,
   scrollTo = false,
+  quadratic = false,
 }: IGrantRound): JSX.Element {
   const ref = useRef(null);
 
@@ -56,9 +58,10 @@ export default function GrantRound({
               totalVotes={beneficiary.totalVotes}
               votesAssignedByUser={beneficiary.votesAssignedByUser}
               assignVotes={assignVotes}
-              maxVotes={remainingVotes + beneficiary.votesAssignedByUser}
+              maxVotes={remainingVotes} //+ beneficiary.votesAssignedByUser
               active={active}
               grantRoundId={id}
+              quadratic={quadratic}
             />
           ))}
       </div>

@@ -13,6 +13,7 @@ interface IGrantCard {
   votesAssignedByUser?: number;
   assignVotes?: (id: string, votes: number) => void;
   maxVotes?: number;
+  quadratic: boolean;
 }
 
 export default function GrantCard({
@@ -25,6 +26,7 @@ export default function GrantCard({
   votesAssignedByUser,
   assignVotes,
   maxVotes,
+  quadratic,
 }: IGrantCard): JSX.Element {
   const router = useRouter();
 
@@ -54,24 +56,14 @@ export default function GrantCard({
         </div>
         <div className="">
           {active ? (
-            <>
-              {assignVotes ? (
-                <VoteSlider
-                  id={address}
-                  totalVotes={totalVotes}
-                  votesAssignedByUser={votesAssignedByUser}
-                  assignVotes={assignVotes}
-                  maxVotes={maxVotes}
-                />
-              ) : (
-                <button
-                  className="button button-primary w-44 "
-                  onClick={() => router.push(`grants/${grantRoundId}`)}
-                >
-                  Go to Election
-                </button>
-              )}
-            </>
+            <VoteSlider
+              id={address}
+              totalVotes={totalVotes}
+              votesAssignedByUser={votesAssignedByUser}
+              assignVotes={assignVotes}
+              maxVotes={maxVotes}
+              quadratic={quadratic}
+            />
           ) : (
             <GrantFunded votes={totalVotes} />
           )}

@@ -164,14 +164,14 @@ export default function GrantOverview() {
   function submitVotes() {}
 
   function assignVotes(id: string, votes: number): void {
-    const activeGrantsCopy = [...activeGrantElections];
+    /* const activeGrantsCopy = [...activeGrantElections];
     const grantIndex = activeGrantsCopy.findIndex((grant) => grant.id === id);
     const updatedGrant = {
       ...activeGrantsCopy.find((grant) => grant.id === id),
       votesAssignedByUser: votes,
     };
     activeGrantsCopy.splice(grantIndex, 1, updatedGrant);
-    setActiveGrantElections(activeGrantsCopy);
+    setActiveGrantElections(activeGrantsCopy); */
   }
 
   return (
@@ -216,11 +216,12 @@ export default function GrantOverview() {
                 beneficiaries={beneficiaries.filter((beneficiary) =>
                   election.awardees.includes(beneficiary.address),
                 )}
-                assignVotes={null}
+                assignVotes={assignVotes}
                 remainingVotes={remainingVotes}
                 scrollTo={
                   createGrantElectionName(election) === activeGrantRound
                 }
+                quadratic
               />
             ))}
         </div>
