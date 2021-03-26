@@ -103,7 +103,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
           continue;
         }
         if (_amount < 0) {
-          _locked._balance = -_amount;
+          lockedBalances[msg.sender][i]._balance = -_amount;
           return;
         }
       }
