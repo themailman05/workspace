@@ -9,8 +9,8 @@ describe('PrivateSale', function () {
   const DefaultSupply = parseEther("7500000");
   const MinimumPurchase = parseFixed("25000", 6);
   const TokenPrice = parseFixed("15", 4);
-  const Participant1Initial = parseFixed("100000", 6);
-  const Participant2Initial = parseFixed("2000000", 6);
+  const Participant1Initial = parseFixed("150000", 6);
+  const Participant2Initial = parseFixed("1000000", 6);
 
   beforeEach(async function () {
     [owner, treasury, participant1, participant2, participant3] = await ethers.getSigners();
@@ -24,7 +24,7 @@ describe('PrivateSale', function () {
     await this.mockUsdc.mint(participant2.address, Participant2Initial);
 
     let MockTokenManager = await ethers.getContractFactory("MockTokenManager");
-    this.mockTokenManager = await MockTokenManager.deploy();
+    this.mockTokenManager = await waffle.deployMockContract(owner, MockTokenManager.interface.format());
 
     let PrivateSale = await ethers.getContractFactory("PrivateSale");
     this.privateSale = await PrivateSale.deploy(
@@ -77,8 +77,8 @@ describe('PrivateSale', function () {
 
   describe("set participants allowances", function () {
     beforeEach(async function () {
-      participant1Allowance = parseFixed("100000", 6);
-      participant2Allowance = parseFixed("500000", 6);
+      participant1Allowance = parseFixed("150000", 6);
+      participant2Allowance = parseFixed("50000", 6);
       result = await this.privateSale.allowParticipant(participant1.address, participant1Allowance);
       await this.privateSale.allowParticipant(participant2.address, participant2Allowance);
       await this.privateSale.allowParticipant(participant3.address, MinimumPurchase);
@@ -121,7 +121,8 @@ describe('PrivateSale', function () {
 
     describe("participant1 purchases POP", function () {
       beforeEach(async function () {
-        expectedParticipant1Pop = participant1Allowance.div(TokenPrice).mul(parseEther("1"));
+        expectedParticipant1Pop = parseEther("1000000");
+        await this.mockTokenManager.mock.assignVested.returns(0);
         await this.mockUsdc.connect(participant1).approve(this.privateSale.address, participant1Allowance);
         result = await this.privateSale.connect(participant1).purchase(participant1Allowance);
       });
@@ -131,7 +132,7 @@ describe('PrivateSale', function () {
           .withArgs(participant1.address, expectedParticipant1Pop);
       });
 
-      it("participant has expected balance", async function () {
+      it("participant 1 has expected balance", async function () {
         expect(
           await this.mockUsdc.balanceOf(participant1.address)
         ).to.equal(Participant1Initial.sub(participant1Allowance));
@@ -147,7 +148,7 @@ describe('PrivateSale', function () {
         expect(await this.privateSale.supply()).to.equal(DefaultSupply.sub(expectedParticipant1Pop));
       });
 
-      it("has updated participant allowance", async function () {
+      it("has updated participant 1 allowance", async function () {
         expect(await this.privateSale.allowances(participant1.address)).to.equal("0");
       });
 
@@ -156,6 +157,85 @@ describe('PrivateSale', function () {
         await expect(
           this.privateSale.connect(participant1).purchase(MinimumPurchase)
         ).to.be.revertedWith("Allowance exceeded");
+      });
+
+      describe("participant2 partial purchases POP", function () {
+        beforeEach(async function () {
+          participant2Purchase = participant2Allowance.div("2");
+          expectedParticipant2Pop = parseEther("166666");
+          await this.mockTokenManager.mock.assignVested.returns(1);
+          await this.mockUsdc.connect(participant2).approve(this.privateSale.address, participant2Purchase);
+          result = await this.privateSale.connect(participant2).purchase(participant2Purchase);
+        });
+
+        it("emits expected events", async function () {
+          expect(result).to.emit(this.privateSale, "TokensPurchased")
+            .withArgs(participant2.address, expectedParticipant2Pop);
+        });
+
+        it("participant 2 has expected balance", async function () {
+          expect(
+            await this.mockUsdc.balanceOf(participant2.address)
+          ).to.equal(Participant2Initial.sub(participant2Purchase));
+        });
+  
+        it("Treasury has expected balance", async function () {
+          expect(
+            await this.mockUsdc.balanceOf(treasury.address)
+          ).to.equal(participant1Allowance.add(participant2Purchase));
+        });
+  
+        it("has updated supply", async function () {
+          expect(await this.privateSale.supply()).to.equal(
+            DefaultSupply.sub(expectedParticipant1Pop).sub(expectedParticipant2Pop)
+          );
+        });
+  
+        it("has updated participant 2 allowance", async function () {
+          expect(await this.privateSale.allowances(participant2.address)).to.equal(parseFixed("25000", 6));
+        });
+
+        describe("participant2 partial purchases POP again", function () {
+          beforeEach(async function () {
+            await this.mockTokenManager.mock.assignVested.returns(1);
+            await this.mockUsdc.connect(participant2).approve(this.privateSale.address, participant2Purchase);
+            result = await this.privateSale.connect(participant2).purchase(participant2Purchase);
+          });
+
+          it("emits expected events", async function () {
+            expect(result).to.emit(this.privateSale, "TokensPurchased")
+              .withArgs(participant2.address, expectedParticipant2Pop);
+          });
+
+          it("participant 2 has expected balance", async function () {
+            expect(
+              await this.mockUsdc.balanceOf(participant2.address)
+            ).to.equal(Participant2Initial.sub(participant2Allowance));
+          });
+    
+          it("Treasury has expected balance", async function () {
+            expect(
+              await this.mockUsdc.balanceOf(treasury.address)
+            ).to.equal(participant1Allowance.add(participant2Allowance));
+          });
+    
+          it("has updated supply", async function () {
+            expect(await this.privateSale.supply()).to.equal(
+              DefaultSupply.sub(expectedParticipant1Pop).sub(expectedParticipant2Pop.mul("2"))
+            );
+          });
+    
+          it("has updated participant 2 allowance", async function () {
+            expect(await this.privateSale.allowances(participant2.address)).to.equal("0");
+          });
+
+          it("should revert when purchasing with no remaining allowance", async function () {
+            await this.mockUsdc.connect(participant2).approve(this.privateSale.address, MinimumPurchase);
+            await expect(
+              this.privateSale.connect(participant2).purchase(MinimumPurchase)
+            ).to.be.revertedWith("Allowance exceeded");
+          });
+        });
       });
     });
   })
