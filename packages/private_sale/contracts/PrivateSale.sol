@@ -68,7 +68,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     emit ParticipantAllowed(participant_, allowance_);
   }
 
-  function setPopPerUsdc(uint256 tokenPrice_) external onlyOwner {
+  function setTokenPrice(uint256 tokenPrice_) external onlyOwner {
     //@todo price checks
     tokenPrice = tokenPrice_;
     emit TokenPriceChanged(tokenPrice);
