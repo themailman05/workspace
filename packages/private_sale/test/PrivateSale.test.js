@@ -2,13 +2,11 @@ const { expect } = require("chai");
 const { waffle, ethers } = require("hardhat");
 const { parseEther } = require("ethers/lib/utils");
 const { parseFixed } = require("@ethersproject/bignumber");
-const provider = waffle.provider;
 
 describe('PrivateSale', function () {
   let owner, treasury, participant1, participant2;
   const DefaultSupply = parseEther("7500000");
   const MinimumPurchase = parseFixed("25000", 6);
-  const TokenPrice = parseFixed("15", 4);
   const Participant1Initial = parseFixed("150000", 6);
   const Participant2Initial = parseFixed("1000000", 6);
 

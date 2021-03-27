@@ -5,12 +5,13 @@ import "./ITokenManager.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title PrivateSale
  * @dev purchase vested tokens
  */
-contract PrivateSale is Ownable {
+contract PrivateSale is Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -73,7 +74,7 @@ contract PrivateSale is Ownable {
     emit TokenPriceChanged(tokenPrice);
   }
 
-  function purchase(uint256 amount_) public {
+  function purchase(uint256 amount_) public nonReentrant {
     require(participants[msg.sender] == true, "Participant not allowed");
     require(amount_ >= minimumPurchase, "Minimum not met");
     require(allowances[msg.sender] >= amount_, "Allowance exceeded");
@@ -81,6 +82,9 @@ contract PrivateSale is Ownable {
     uint256 _popToReceive = amount_.div(tokenPrice).mul(1e18);
 
     require(supply >= _popToReceive, "Not enough supply");
+
+    supply = supply.sub(_popToReceive);
+    allowances[msg.sender] = allowances[msg.sender].sub(amount_);
 
     usdc.safeTransferFrom(msg.sender, treasury, amount_);
 
@@ -93,9 +97,6 @@ contract PrivateSale is Ownable {
       uint64(block.timestamp.add(secondsInDay.mul(548))), // + 18 months
       true
     );
-
-    supply = supply.sub(_popToReceive);
-    allowances[msg.sender] = allowances[msg.sender].sub(amount_);
 
     emit TokensPurchased(msg.sender, _popToReceive);
   }
