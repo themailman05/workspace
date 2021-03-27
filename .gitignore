@@ -6,4 +6,5 @@ tsconfig.tsbuildinfo
 yarn-error.log
 .openzeppelin
 !.openzeppelin/goerli*.json
+!.openzeppelin/rinkeby*.json
 !.openzeppelin/mainnet*.json
