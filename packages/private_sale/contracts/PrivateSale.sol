@@ -1,99 +1,102 @@
 // SPDX-License-Identifier: GPL-3.0
 
 pragma solidity >=0.7.0 <0.8.0;
-import './ITokenManager.sol';
-import '@openzeppelin/contracts/access/Ownable.sol';
-import '@openzeppelin/contracts/math/SafeMath.sol';
-import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import "./ITokenManager.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 /**
  * @title PrivateSale
  * @dev purchase vested tokens
  */
 contract PrivateSale is Ownable {
-    using SafeMath for uint256;
+  using SafeMath for uint256;
+  using SafeERC20 for IERC20;
 
-    ITokenManager public tokenManager;
-    IERC20 public pop;
-    IERC20 public usdc;
-    address public treasury;
-    uint256 public tokenPrice = 150000000000000000;
-    uint256 public supply = 7500000 * 10e18;
-    uint256 constant secondsInDay = 86400;
+  ITokenManager public tokenManager;
+  IERC20 public pop;
+  IERC20 public usdc;
+  address public treasury;
+  uint256 public tokenPrice = 15e4;
+  uint256 public supply = 7500000 * 1e18;
+  uint256 public constant minimumPurchase = 25000 * 1e6;
+  uint256 constant secondsInDay = 86400;
 
-    mapping(address => bool) allowList;
-    mapping(address => uint256) allowances;
+  mapping(address => bool) public participants;
+  mapping(address => uint256) public allowances;
 
-    event TreasuryUpdated(address indexed _address);
+  event TreasuryChanged(address from, address to);
+  event ParticipantAllowed(address participant, uint256 allowance);
+  event TokenPriceChanged(uint256 popPerUsdc);
+  event TokensPurchased(address participant, uint256 amount);
+  event SupplyChanged(uint256 from, uint256 to);
 
-    event AddressAllowed(address indexed _address, uint256 _allowance);
+  constructor(
+    ITokenManager tokenManager_,
+    IERC20 pop_,
+    IERC20 usdc_,
+    address treasury_,
+    uint256 supply_
+  ) {
+    tokenManager = tokenManager_;
+    pop = pop_;
+    usdc = usdc_;
+    treasury = treasury_;
+    supply = supply_;
+  }
 
-    event TokenPriceUpdated(uint256 indexed _price);
+  function setTreasury(address treasury_) external onlyOwner {
+    require(treasury != treasury_, "Same Treasury");
+    address _previousTreasury = treasury;
+    treasury = treasury_;
+    emit TreasuryChanged(_previousTreasury, treasury);
+  }
 
-    event TokensPurchased(address indexed _address, uint256 indexed _amount);
+  function setSupply(uint256 supply_) external onlyOwner {
+    require(supply != supply_, "Same supply");
+    uint256 _previousSupply = supply;
+    supply = supply_;
+    emit SupplyChanged(_previousSupply, supply);
+  }
 
-    event SupplyUpdated(uint256 indexed _amount);
+  function allowParticipant(address participant_, uint256 allowance_) external onlyOwner {
+    require(allowance_ >= minimumPurchase, "Allowance too low");
+    participants[participant_] = true;
+    allowances[participant_] = allowance_;
+    emit ParticipantAllowed(participant_, allowance_);
+  }
 
-    constructor(
-        address _tokenManager,
-        address _usdc,
-        address _pop,
-        address _treasury,
-        uint256 _supply
-    ) {
-        tokenManager = ITokenManager(_tokenManager);
-        usdc = IERC20(_usdc); //get tokens
-        pop = IERC20(_pop);
-        treasury = _treasury;
-        supply = _supply;
-    }
+  function setPopPerUsdc(uint256 tokenPrice_) external onlyOwner {
+    //@todo price checks
+    tokenPrice = tokenPrice_;
+    emit TokenPriceChanged(tokenPrice);
+  }
 
-    function setTreasury(address _treasury) external onlyOwner {
-        treasury = _treasury;
-        emit TreasuryUpdated(_treasury);
-    }
+  function purchase(uint256 amount_) public {
+    require(participants[msg.sender] == true, "Participant not allowed");
+    require(amount_ >= minimumPurchase, "Minimum not met");
+    require(allowances[msg.sender] >= amount_, "Allowance exceeded");
 
-    function setSupply(uint256 _supply) external onlyOwner {
-        supply = _supply;
-        emit SupplyUpdated(_supply);
-    }
+    uint256 _popToReceive = amount_.div(tokenPrice).mul(1e18);
 
-    function allow(address _address, uint256 _allowance) external onlyOwner {
-        allowList[_address] = true;
-        allowances[_address] = _allowance;
-        emit AddressAllowed(_address, _allowance);
-    }
+    require(supply >= _popToReceive, "Not enough supply");
 
-    function setPrice(uint256 _tokenPrice) external onlyOwner {
-        tokenPrice = _tokenPrice;
-        emit TokenPriceUpdated(_tokenPrice);
-    }
+    usdc.safeTransferFrom(msg.sender, treasury, amount_);
 
-    function purchase(uint256 _amount) public {
-        require(allowList[msg.sender] == true, 'address not allowed');
-        require(_amount >= uint256(25000).mul(10**6), 'minimum not met');
+    //@todo consider result
+    tokenManager.assignVested(
+      msg.sender,
+      _popToReceive,
+      uint64(block.timestamp), // now
+      uint64(block.timestamp.add(secondsInDay.mul(365))), // + 1 year
+      uint64(block.timestamp.add(secondsInDay.mul(548))), // + 18 months
+      true
+    );
 
-        uint256 _paid = _amount.mul(10**12);
-        uint256 _popToReceive = _paid.div(tokenPrice);
+    supply = supply.sub(_popToReceive);
+    allowances[msg.sender] = allowances[msg.sender].sub(amount_);
 
-        require(supply >= _popToReceive, 'not enough supply');
-        require(allowances[msg.sender] >= _popToReceive, 'allowance exceeded');
-        require(
-            usdc.transferFrom(msg.sender, treasury, _amount),
-            'transfer failed'
-        );
-
-        tokenManager.assignVested(
-            msg.sender,
-            _popToReceive,
-            uint64(block.timestamp), // now
-            uint64(block.timestamp.add(secondsInDay.mul(365))), // + 1 year
-            uint64(block.timestamp.add(secondsInDay.mul(548))), // + 18 months
-            true
-        );
-
-        supply = supply.sub(_popToReceive);
-        allowances[msg.sender] = allowances[msg.sender].sub(_popToReceive);
-        emit TokensPurchased(msg.sender, _popToReceive);
-    }
+    emit TokensPurchased(msg.sender, _popToReceive);
+  }
 }
