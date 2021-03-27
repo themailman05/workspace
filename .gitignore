@@ -7,4 +7,3 @@ yarn-error.log
 .openzeppelin
 !.openzeppelin/goerli*.json
 !.openzeppelin/mainnet*.json
-packages/contracts/artifacts
