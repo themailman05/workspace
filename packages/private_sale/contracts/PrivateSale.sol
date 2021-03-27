@@ -29,7 +29,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
 
   event TreasuryChanged(address from, address to);
   event ParticipantAllowed(address participant, uint256 allowance);
-  event TokenPriceChanged(uint256 popPerUsdc);
+  event TokenPriceChanged(uint256 from, uint256 to);
   event TokensPurchased(address participant, uint256 amount);
   event SupplyChanged(uint256 from, uint256 to);
 
@@ -70,8 +70,9 @@ contract PrivateSale is Ownable, ReentrancyGuard {
 
   function setTokenPrice(uint256 tokenPrice_) external onlyOwner {
     //@todo price checks
+    uint256 _previousPrice = tokenPrice;
     tokenPrice = tokenPrice_;
-    emit TokenPriceChanged(tokenPrice);
+    emit TokenPriceChanged(_previousPrice, tokenPrice);
   }
 
   function purchase(uint256 amount_) public nonReentrant {
@@ -79,7 +80,8 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     require(amount_ >= minimumPurchase, "Minimum not met");
     require(allowances[msg.sender] >= amount_, "Allowance exceeded");
 
-    uint256 _popToReceive = amount_.div(tokenPrice).mul(1e18);
+    uint256 _wholePopToReceive = amount_.div(tokenPrice);
+    uint256 _popToReceive = _wholePopToReceive.mul(1e18);
 
     require(supply >= _popToReceive, "Not enough supply");
 
@@ -91,7 +93,7 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     //@todo consider result
     tokenManager.assignVested(
       msg.sender,
-      _popToReceive,
+      _wholePopToReceive,
       uint64(block.timestamp), // now
       uint64(block.timestamp.add(secondsInDay.mul(365))), // + 1 year
       uint64(block.timestamp.add(secondsInDay.mul(548))), // + 18 months
