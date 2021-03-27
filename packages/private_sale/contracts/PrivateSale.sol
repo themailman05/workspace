@@ -13,12 +13,12 @@ import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 contract PrivateSale is Ownable {
     using SafeMath for uint256;
 
-    ITokenManager tokenManager;
-    IERC20 pop;
-    IERC20 usdc;
-    address treasury;
-    uint256 tokenPrice = 150000000000000000;
-    uint256 supply = 75000000 * 10**18;
+    ITokenManager public tokenManager;
+    IERC20 public pop;
+    IERC20 public usdc;
+    address public treasury;
+    uint256 public tokenPrice = 150000000000000000;
+    uint256 public supply = 7500000 * 10e18;
     uint256 constant secondsInDay = 86400;
 
     mapping(address => bool) allowList;
@@ -26,7 +26,7 @@ contract PrivateSale is Ownable {
 
     event TreasuryUpdated(address indexed _address);
 
-    event AddressAllowed(address indexed _address);
+    event AddressAllowed(address indexed _address, uint256 _allowance);
 
     event TokenPriceUpdated(uint256 indexed _price);
 
@@ -42,29 +42,29 @@ contract PrivateSale is Ownable {
         uint256 _supply
     ) {
         tokenManager = ITokenManager(_tokenManager);
-        usdc = IERC20(_usdc);
+        usdc = IERC20(_usdc); //get tokens
         pop = IERC20(_pop);
         treasury = _treasury;
         supply = _supply;
     }
 
-    function setTreasury(address _treasury) external onlyOwner() {
+    function setTreasury(address _treasury) external onlyOwner {
         treasury = _treasury;
         emit TreasuryUpdated(_treasury);
     }
 
-    function setSupply(uint256 _supply) external onlyOwner() {
+    function setSupply(uint256 _supply) external onlyOwner {
         supply = _supply;
         emit SupplyUpdated(_supply);
     }
 
-    function allow(address _address, uint256 _allowance) external onlyOwner() {
+    function allow(address _address, uint256 _allowance) external onlyOwner {
         allowList[_address] = true;
         allowances[_address] = _allowance;
-        emit AddressAllowed(_address);
+        emit AddressAllowed(_address, _allowance);
     }
 
-    function setPrice(uint256 _tokenPrice) external onlyOwner() {
+    function setPrice(uint256 _tokenPrice) external onlyOwner {
         tokenPrice = _tokenPrice;
         emit TokenPriceUpdated(_tokenPrice);
     }

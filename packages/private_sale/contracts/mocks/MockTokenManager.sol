@@ -5,10 +5,6 @@ pragma solidity >=0.6.0 <0.8.0;
 import "../ITokenManager.sol";
 
 contract MockTokenManager is ITokenManager {
-  constructor() returns (bool) {
-    return true;
-  }
-
   function assignVested(
       address _receiver,
       uint256 _amount,
@@ -16,8 +12,7 @@ contract MockTokenManager is ITokenManager {
       uint64 _cliff,
       uint64 _vested,
       bool _revokable
-  ) external returns (uint256) {
+  ) external override returns (uint256) {
     return _amount;
-  };
-}
+  }
 }

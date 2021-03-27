@@ -1,9 +1,0 @@
-{
-  "name": "@popcorn/aragon",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "AGPL-3.0",
-  "dependencies": {
-    "@aragon/cli": "^7.1.6"
-  }
-}
