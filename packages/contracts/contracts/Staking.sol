@@ -49,7 +49,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
 
-    balances[msg.sender].add(amount);
+    balances[msg.sender] = balances[msg.sender].add(amount);
 
     lockedBalances[msg.sender].push(
       LockedBalance({
@@ -70,8 +70,9 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     require(balances[msg.sender] > 0, "insufficient balance");
     require(amount <= getWithdrawableBalance());
 
-    withdrawnBalances[msg.sender].add(amount);
+    withdrawnBalances[msg.sender] = withdrawnBalances[msg.sender].add(amount);
 
+    POP.approve(address(this), amount);
     POP.safeTransferFrom(address(this), msg.sender, amount);
     _clearWithdrawnFromLocked(amount);
     _recalculateVoiceCredits();
@@ -92,13 +93,17 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
-        _amount = _amount.sub(_locked._balance);
-        if (_amount >= 0) {
+        if (_amount == _locked._balance) {
           delete lockedBalances[msg.sender][i];
           return;
         }
-        if (_amount < 0) {
-          _locked._balance = _amount >= 0 ? _amount : -_amount;
+        if (_amount > _locked._balance) {
+          _amount = _amount.sub(_locked._balance);
+          delete lockedBalances[msg.sender][i];
+          continue;
+        }
+        if (_amount < _locked._balance) {
+          lockedBalances[msg.sender][i]._balance = _locked._balance.sub(_amount);
           return;
         }
       }
@@ -115,7 +120,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
-        _withdrawable.add(_locked._balance);
+        _withdrawable = _withdrawable.add(_locked._balance);
       }
     }
 
