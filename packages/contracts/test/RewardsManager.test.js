@@ -15,11 +15,11 @@ describe('RewardsManager', function () {
     [owner, rewarder, nonOwner] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP", 18);
     await this.mockPop.mint(owner.address, OwnerInitial);
     await this.mockPop.mint(rewarder.address, RewarderInitial);
 
-    this.mockAlt = await MockERC20.deploy("TestALT", "TALT");
+    this.mockAlt = await MockERC20.deploy("TestALT", "TALT", 12);
     await this.mockAlt.mint(owner.address, OwnerInitial);
 
     Treasury = await ethers.getContractFactory("MockTreasury");
@@ -43,7 +43,6 @@ describe('RewardsManager', function () {
       this.mockBeneficiaryVaults.address,
       this.mockUniswapV2Router.address
     );
-    await this.rewardsManager.deployed();
   });
 
   it("should be constructed with correct addresses", async function () {

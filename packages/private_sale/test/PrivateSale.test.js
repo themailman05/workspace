@@ -14,10 +14,10 @@ describe('PrivateSale', function () {
     [owner, treasury, participant1, participant2, participant3] = await ethers.getSigners();
 
     let MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP", 18);
     await this.mockPop.mint(owner.address, parseEther("1000"));
 
-    this.mockUsdc = await MockERC20.deploy("TestUSDC", "TUSDC");
+    this.mockUsdc = await MockERC20.deploy("TestUSDC", "TUSDC", 6);
     await this.mockUsdc.mint(participant1.address, Participant1Initial);
     await this.mockUsdc.mint(participant2.address, Participant2Initial);
 
@@ -32,7 +32,6 @@ describe('PrivateSale', function () {
       treasury.address,
       DefaultSupply
     );
-    await this.privateSale.deployed();
   });
 
   it("should be constructed with expected values", async function () {
