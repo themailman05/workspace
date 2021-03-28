@@ -1,8 +1,8 @@
 import React from 'react';
-import { Homepage } from 'containers/Homepage/Homepage';
+import { Purchase } from 'containers/Purchase/Purchase';
 
 const IndexPage = () => {
-  return <Homepage />;
+    return <Purchase />;
 };
 
 export default IndexPage;

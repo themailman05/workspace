@@ -1,4 +1,5 @@
 const { parseEther } = require("ethers/lib/utils");
+const { parseFixed } = require("@ethersproject/bignumber");
 
 async function main() {
   const [deployer, treasury, participant1, participant2] = await ethers.getSigners();
@@ -19,12 +20,12 @@ async function main() {
     await popcornUsdc.deployed();
     console.log("PopcornUSDC deployed to:", popcornUsdc.address);
 
-    const participant1Usdc = "500000";
-    await popcornUsdc.mint(participant1.address, parseEther(participant1Usdc));
+    participant1Usdc = "500000";
+    await popcornUsdc.mint(participant1.address, parseFixed(participant1Usdc, 6));
     console.log(`Minted ${participant1Usdc} POPUSDC to ${participant1.address}`);
 
-    const participant2Usdc = "1000000";
-    await popcornUsdc.mint(participant2.address, parseEther(participant2Usdc));
+    participant2Usdc = "1000000";
+    await popcornUsdc.mint(participant2.address, parseFixed(participant2Usdc, 6));
     console.log(`Minted ${participant2Usdc} POPUSDC to ${participant2.address}`);
 
     USDC_ADDRESS = popcornUsdc.address;
@@ -46,6 +47,12 @@ async function main() {
   await privateSale.deployed();
 
   console.log("PrivateSale deployed to:", privateSale.address);
+
+  // Auto add participant for testnet
+  if (["rinkeby", "hardhat"].includes(hre.network.name)) {
+    await privateSale.allowParticipant(participant1.address, parseFixed(participant1Usdc, 6));
+    console.log(`Allowance of $${participant1Usdc} granted for ${participant1.address}`);
+  }
 }
 
 main()

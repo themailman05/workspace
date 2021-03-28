@@ -8,9 +8,8 @@ import '../styles/globals.css';
 import Router from 'next/router';
 import { GlobalLinearProgress } from 'containers/GlobalLinearProgress';
 import { StateProvider } from 'app/store';
-import Web3Provider from 'web3-react';
-import { connectors } from '../containers/Web3/connectors';
-import Web3 from 'web3';
+import { Web3ReactProvider } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
 
 export default function MyApp(props) {
   const { Component, pageProps } = props;
@@ -28,7 +27,7 @@ export default function MyApp(props) {
     });
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
@@ -54,15 +53,16 @@ export default function MyApp(props) {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <GlobalLinearProgress visible={loading} />
-            <Web3Provider
-              connectors={connectors}
-              libraryName={'web3.js'}
-              web3Api={Web3}
-            >
+            <Web3ReactProvider getLibrary={
+              (provider, connector) => {
+                const library = new Web3Provider(provider);
+                library.pollingInterval = 5000;
+                return library;
+              }}>
               <StateProvider>
                 <Component {...pageProps} />
               </StateProvider>
-            </Web3Provider>
+            </Web3ReactProvider>
           </ThemeProvider>
         </MuiThemeProvider>
       </StylesProvider>
