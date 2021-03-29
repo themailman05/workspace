@@ -1,8 +1,19 @@
-html, body {
+/* ./styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
   width: 100%;
   height: 100%;
-  background: rgb(148,187,233);
-  background: radial-gradient(circle, rgba(148,187,233,1) 0%, rgba(148,187,233,.8) 83%,rgba(219, 230, 241, 0.778) 100%);
+  background: rgb(148, 187, 233);
+  background: radial-gradient(
+    circle,
+    rgba(148, 187, 233, 1) 0%,
+    rgba(148, 187, 233, 0.8) 83%,
+    rgba(219, 230, 241, 0.778) 100%
+  );
 }
 html,
 a {
@@ -10,8 +21,28 @@ a {
   text-decoration: none;
 }
 
-
-
 * {
   box-sizing: border-box;
+}
+
+@layer components {
+  .button {
+    @apply flex-shrink-0 block h-8 w-24 font-semibold rounded text-gray-700 text-base align-middle text-center leading-button shadow-md;
+  }
+
+  .button:disabled {
+    @apply bg-gray-300 cursor-not-allowed text-gray-500;
+  }
+
+  .button:disabled:hover {
+    @apply bg-gray-300 cursor-not-allowed;
+  }
+
+  .button-primary {
+    @apply bg-primary text-white transition duration-150 ease-in-out;
+  }
+
+  .button-primary:hover {
+    @apply bg-primaryLight shadow-lg transform scale-102 text-white font-bold text-lg;
+  }
 }

@@ -1,8 +1,10 @@
-import { Connectors } from 'web3-react'
-import { NetworkOnlyConnector } from 'web3-react/dist/connectors';
-const { InjectedConnector } = Connectors
- 
-const MetaMask = new InjectedConnector({ supportedNetworks: [1, 4] })
-const Infura = new NetworkOnlyConnector({ providerURL: process.env.RPC_URL })
+import { InjectedConnector } from '@web3-react/injected-connector';
+import { NetworkConnector } from '@web3-react/network-connector';
 
-export const connectors = { MetaMask, Infura };
+const Injected = new InjectedConnector({ supportedChainIds: [1, 4, 31337] });
+const Network = new NetworkConnector({
+  urls: { 1: process.env.RPC_URL, 4: process.env.RPC_URL },
+  defaultChainId: 1,
+});
+
+export const connectors = { Injected, Network };
