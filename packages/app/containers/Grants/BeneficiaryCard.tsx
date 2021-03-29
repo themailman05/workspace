@@ -2,32 +2,33 @@ import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
 import Link from 'next/link';
 import { Router, useRouter } from 'next/router';
+import { IVote } from 'pages/grants';
 
-interface IGrantCard {
+interface IBeneficiaryCard {
   address: string;
   title: string;
   description: string;
+  grantTerm: number;
   totalVotes: number;
   active: boolean;
-  grantRoundId: string;
   votesAssignedByUser?: number;
-  assignVotes?: (id: string, votes: number) => void;
+  assignVotes?: (grantTerm: number, vote: IVote) => void;
   maxVotes?: number;
   quadratic: boolean;
 }
 
-export default function GrantCard({
+export default function BeneficiaryCard({
   address,
   title,
   description,
   totalVotes,
   active,
-  grantRoundId,
+  grantTerm,
   votesAssignedByUser,
   assignVotes,
   maxVotes,
   quadratic,
-}: IGrantCard): JSX.Element {
+}: IBeneficiaryCard): JSX.Element {
   const router = useRouter();
 
   return (
@@ -57,11 +58,12 @@ export default function GrantCard({
         <div className="">
           {active ? (
             <VoteSlider
-              id={address}
+              address={address}
               totalVotes={totalVotes}
               votesAssignedByUser={votesAssignedByUser}
               assignVotes={assignVotes}
               maxVotes={maxVotes}
+              grantTerm={grantTerm}
               quadratic={quadratic}
             />
           ) : (

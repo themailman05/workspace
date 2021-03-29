@@ -11,10 +11,15 @@ import BeneficiaryRegistryAbi from '../../abis/BeneficiaryRegistry.json';
 import beneficiaryFixture from '../../fixtures/beneficiaries.json';
 import activeElections from '../../fixtures/activeElections.json';
 import closedElections from '../../fixtures/closedElections.json';
+import createGrantRounds from 'utils/createGrantRounds';
+import ElectionSection from 'containers/Grants/ElectionSection';
+import createElectionName from 'utils/createElectionName';
+import getBeneficiariesForElection from 'utils/getBeneficiariesForElection';
 
 const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
 
 interface GrantElection {
+  id: string;
   startTime: string;
   endTime: string;
   grantTerm: number;
@@ -22,6 +27,7 @@ interface GrantElection {
   awardeesCount: number;
   awardees: string[];
   description: string;
+  active: boolean;
 }
 
 export interface IGrantRoundFilter {
@@ -29,28 +35,13 @@ export interface IGrantRoundFilter {
   closed: boolean;
 }
 
-function createGrantElectionName(election) {
-  const grantTerm = ['Monthly', 'Quaterly', 'Yearly'];
-  const startDate = new Date(Number(election.startTime) * 1000);
-  return `${grantTerm[election.grantTerm]} - ${
-    startDate.getMonth() + 1
-  }/${startDate.getFullYear()}`;
+export interface IVote {
+  address: string;
+  votes: number;
 }
 
-function createGrantRounds(activeElections, closedElections) {
-  const activeGrantRound = activeElections.map((election) => ({
-    name: createGrantElectionName(election),
-    id: `active-${election.grantTerm}-${election.startTime}`,
-    active: true,
-    year: new Date(Number(election.startTime) * 1000).getFullYear(),
-  }));
-  const closedGrantRound = closedElections.map((election) => ({
-    name: createGrantElectionName(election),
-    id: `closed-${election.grantTerm}-${election.startTime}`,
-    active: false,
-    year: new Date(Number(election.startTime) * 1000).getFullYear(),
-  }));
-  return [...activeGrantRound, ...closedGrantRound];
+export interface IElectionVotes {
+  votes: IVote[];
 }
 
 export default function GrantOverview() {
@@ -66,9 +57,13 @@ export default function GrantOverview() {
     error,
   } = context;
   const [maxVotes, setMaxVotes] = useState<number>(0);
-  const [remainingVotes, setRemainingVotes] = useState<number>(0);
-  const [activeGrantElections, setActiveGrantElections] = useState([]);
-  const [closedGrantElections, setClosedGrantElections] = useState([]);
+  const [votes, setVotes] = useState<any[]>([]);
+  const [activeGrantElections, setActiveGrantElections] = useState<
+    GrantElection[]
+  >([]);
+  const [closedGrantElections, setClosedGrantElections] = useState<
+    GrantElection[]
+  >([]);
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [grantRegistry, setGrantRegistry] = useState<Contract>();
   const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
@@ -81,20 +76,36 @@ export default function GrantOverview() {
   useEffect(() => {
     //Get Demo Data
     setActiveGrantElections(
-      activeElections.map((election) => ({ ...election, active: true })),
+      activeElections.map((election) => ({
+        ...election,
+        id: `active-${election.grantTerm}-${election.startTime}`,
+        active: true,
+      })),
     );
     setClosedGrantElections(
-      closedElections.map((election) => ({ ...election, active: false })),
+      closedElections.map((election) => ({
+        ...election,
+        id: `closed-${election.grantTerm}-${election.startTime}`,
+        active: false,
+      })),
     );
     setBeneficiaries(beneficiaryFixture);
     setMaxVotes(550);
-    setRemainingVotes(540);
+    const tempVotes = [[], [], []];
+    activeElections.forEach(
+      (election) =>
+        (tempVotes[election.grantTerm] = election.awardees.map((awardee) => ({
+          address: awardee,
+          votes: 0,
+        }))),
+    );
+    setVotes(tempVotes);
   }, []);
 
   useEffect(() => {
     if (!active) {
       activate(connectors.Network);
-      if (library?.connection?.url === 'metamask') {
+      if (library?.connection?.url === 'metamask' && chainId === 31337) {
         //TODO get pop -> to tell the user to either lock them or buy some
         //TODO get locked pop -> to vote or tell the user to lock pop
         //TODO swap the contract provider to signer so the user can vote
@@ -108,7 +119,7 @@ export default function GrantOverview() {
       return;
     }
     //Infura cant connect to the local network which is why we can instantiate the contracts only with metamask
-    if (library?.connection?.url === 'metamask') {
+    if (library?.connection?.url === 'metamask' && chainId === 31337) {
       setGrantRegistry(
         //TODO swap the hardhat addresses with the mainnet
         new Contract(
@@ -132,7 +143,8 @@ export default function GrantOverview() {
     if (!grantRegistry && !beneficiaryRegistry) {
       return;
     }
-    grantRegistry
+    //ONLY WORKING WITH DEMO / REAL DATA
+    /* grantRegistry
       .getActiveGrant(GRANT_TERM.QUARTER)
       .then((activeGrant) => console.log('active Grant', activeGrant));
     grantRegistry
@@ -140,92 +152,76 @@ export default function GrantOverview() {
       .then((activeAwardees) => console.log('active Awardees', activeAwardees));
     beneficiaryRegistry
       .getBeneficiary('0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
-      .then((res) => console.log('beneficiary', res));
+      .then((res) => console.log('beneficiary', res)); */
   }, [grantRegistry, beneficiaryRegistry]);
-
-  useEffect(() => {
-    /* if (activeGrantElections.length) {
-      setRemainingVotes(
-        (prevState) =>
-          maxVotes -
-          activeGrantElections.reduce(
-            (accumulator, currentValue) =>
-              accumulator + currentValue.votesAssignedByUser,
-            0,
-          ),
-      );
-    } */
-  }, [activeGrantElections]);
 
   function connectWallet() {
     activate(connectors.Injected);
   }
 
-  function submitVotes() {}
+  function submitVotes() {
+    console.log('SUBMIT VOTES');
+    console.log(
+      votes.map((election) =>
+        election.map((awardee) => [awardee.address, awardee.votes]),
+      ),
+    );
+    console.log('__________________');
+  }
 
-  function assignVotes(id: string, votes: number): void {
-    /* const activeGrantsCopy = [...activeGrantElections];
-    const grantIndex = activeGrantsCopy.findIndex((grant) => grant.id === id);
-    const updatedGrant = {
-      ...activeGrantsCopy.find((grant) => grant.id === id),
-      votesAssignedByUser: votes,
-    };
-    activeGrantsCopy.splice(grantIndex, 1, updatedGrant);
-    setActiveGrantElections(activeGrantsCopy); */
+  function assignVotes(grantTerm: number, vote: IVote): void {
+    console.log('grantTerm', grantTerm);
+    console.log('vote', vote);
+    const votesCopy = [...votes];
+    const updatedElection = [
+      ...votesCopy[grantTerm].filter(
+        (awardee) => awardee.address !== vote.address,
+      ),
+      vote,
+    ];
+    votesCopy.splice(grantTerm, 1, updatedElection);
+    setVotes(votesCopy);
   }
 
   return (
-    <div className="w-screen overflow-x-hidden">
-      <header className="w-full h-10 bg-white"></header>
-      <div className="w-screen flex flex-row mt-4">
-        <div className="w-2/12 flex flex-col items-center">
-          <Sidebar
-            remainingVotes={remainingVotes}
+    <div className="w-full">
+      <header className="w-full h-10 bg-white mb-8"></header>
+      {[...activeGrantElections, ...closedGrantElections]
+        .filter(
+          (election) =>
+            (election.active && grantRoundFilter.active) ||
+            (!election.active && grantRoundFilter.closed),
+        )
+        .sort(
+          (election1, election2) =>
+            Number(election2.startTime) - Number(election1.startTime),
+        )
+        .map((election) => (
+          <ElectionSection
+            key={election.id}
+            id={election.id}
+            title={createElectionName(election)}
+            description={election.description}
+            grantTerm={election.grantTerm}
+            isActiveElection={election.active}
+            beneficiaries={getBeneficiariesForElection(
+              beneficiaries,
+              election.awardees,
+            )}
             maxVotes={maxVotes}
+            votes={election.active ? votes[election.grantTerm] : null}
             grantRounds={createGrantRounds(activeElections, closedElections)}
             isWalletConnected={library?.connection?.url === 'metamask'}
+            grantRoundFilter={grantRoundFilter}
+            assignVotes={assignVotes}
             connectWallet={connectWallet}
             submitVotes={submitVotes}
             scrollToGrantRound={scrollToGrantRound}
-            grantRoundFilter={grantRoundFilter}
             setGrantRoundFilter={setGrantRoundFilter}
+            scrollToMe={election.id === activeGrantRound}
+            quadratic={false}
           />
-        </div>
-        <div className="w-10/12 flex flex-col">
-          {[...activeGrantElections, ...closedGrantElections]
-            .filter(
-              (election) =>
-                (election.active && grantRoundFilter.active) ||
-                (!election.active && grantRoundFilter.closed),
-            )
-            .sort(
-              (election1, election2) =>
-                election2.startTime - election1.startTime,
-            )
-            .map((election) => (
-              <GrantRound
-                key={`${election.active ? 'active' : 'closed'}-${
-                  election.grantTerm
-                }-${election.startTime}`}
-                id={`${election.active ? 'active' : 'closed'}-${
-                  election.grantTerm
-                }-${election.startTime}`}
-                title={createGrantElectionName(election)}
-                description={election.description}
-                active={election.active}
-                beneficiaries={beneficiaries.filter((beneficiary) =>
-                  election.awardees.includes(beneficiary.address),
-                )}
-                assignVotes={assignVotes}
-                remainingVotes={remainingVotes}
-                scrollTo={
-                  createGrantElectionName(election) === activeGrantRound
-                }
-                quadratic
-              />
-            ))}
-        </div>
-      </div>
+        ))}
     </div>
   );
 }

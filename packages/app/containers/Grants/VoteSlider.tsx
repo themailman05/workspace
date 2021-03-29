@@ -1,20 +1,23 @@
+import { IVote } from 'pages/grants';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
 interface IVoteSlider {
-  id: string;
+  address: string;
   totalVotes: number;
   votesAssignedByUser: number;
   maxVotes: number;
-  assignVotes?: (id: string, votes: number) => void;
+  grantTerm: number;
+  assignVotes?: (grantTerm: number, vote: IVote) => void;
   quadratic: boolean;
 }
 
 export default function VoteSlider({
-  id,
+  address,
   totalVotes,
   votesAssignedByUser,
   maxVotes,
+  grantTerm,
   assignVotes,
   quadratic,
 }: IVoteSlider): JSX.Element {
@@ -31,9 +34,9 @@ export default function VoteSlider({
 
   function handleSliderChange(value: number) {
     if (quadratic) {
-      assignVotes(id, value ** 2);
+      assignVotes(grantTerm, { address: address, votes: value ** 2 });
     } else {
-      assignVotes(id, value);
+      assignVotes(grantTerm, { address: address, votes: value });
     }
   }
 
