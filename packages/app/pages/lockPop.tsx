@@ -221,7 +221,7 @@ export default function LockPop() {
               </p>
 
               <div className="pop-available-div">
-                <p>You have {pop} POP tokens available to stake</p>
+                <p>You have {pop} POP tokens available to lock</p>
                 <button className="button-1">Purchase more POP</button>
               </div>
 
@@ -242,7 +242,7 @@ export default function LockPop() {
                 <p>Voting power: </p>
                 <p className="bold ">{votes * (timeToSeconds[duration] / timeToSeconds['4 years']) }</p>
               </div>
-              <button className="button-1 lock-pop-button" onClick={() => setConfirmModal('visible')}>Lock POP</button>          
+              <button disabled={!votes || !duration} className="button-1 lock-pop-button" onClick={() => setConfirmModal('visible')}>Lock POP</button>          
             </div>
             </div>
             </div>
