@@ -1,4 +1,5 @@
 import Sidebar from '../containers/Grants/Sidebar/Sidebar';
+import Modal from '../containers/modal';
 import { useWeb3React } from '@web3-react/core';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { useState, useEffect } from 'react';
@@ -9,6 +10,8 @@ import Staking from '../../contracts/artifacts/contracts/Staking.sol/Staking.jso
 import MockPop from '../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
 import { ethers } from 'ethers';
 const { parseEther } = require("ethers/lib/utils");
+const { BigNumber } = require('@ethersproject/bignumber');
+
 // const { ethers }
 // import ethers from 'ethers';
 
@@ -36,27 +39,39 @@ export default function LockPop() {
     const [mockERC, setMockERC] = useState<Contract>();
     const [votes, setVotes] = useState<number>(0);
     const [duration, setDuration] = useState<string>();
+    const [pop, setPop] = useState<number>(0);
+    const [confirmModal, setConfirmModal] = useState<string>('invisible');
+    const [connectModal, setConnectModal] = useState<string>('invisible');
+
+    const stakingAddress = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853';
+    const mockERCAddress = '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707';
 
 
     function submitVotes() {}
 
-    async function lockPop() {
-      const signer = library.getSigner();
+    async function lockPop(amountToLock, amountOfTime = 606666) {
+      // const signer = library.getSigner();
 
-      const connected = await mockERC.connect(signer)
-      console.log(connected);
-      const minted = await connected.mint('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', 100000, { gasPrice: '1' })
-      console.log(minted);
-      const balance = await mockERC.balanceOf('0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'); //this doesnt work
-      console.log(balance);
+      // const connected = await mockERC.connect(signer)
+      // console.log(connected);
+      // let parsedAmount = amou;ntToLock
+      await mockERC.connect(account).approve(stakingAddress, parseEther('1')).then(res => console.log('approved', res))
+      .catch(err => alert('Not approved by ERC20 contract'));
 
-      const connectedStaking = await staking.connect(signer);
-      await connectedStaking.stake(2, 606666).then(rez => console.log(rez))
+      const connectedStaking = await staking.connect(account);
+      await connectedStaking.stake(parseEther('1'), amountOfTime).then(rez => console.log('successfully staked',rez)).catch(err => console.log(err, 'err'))
     }
 
     function connectWallet() {
       activate(connectors.Injected);
+      setConnectModal('invisible')
     }
+
+    useEffect(() => {
+      if (!account) {
+        setConnectModal('visible')
+      }
+    }, [])
 
   useEffect(() => {
     if (!active) {
@@ -70,6 +85,19 @@ export default function LockPop() {
     }
   }, [active]);
 
+  async function getBalance() {
+    const PopBalance = await mockERC.balanceOf(account);
+    const number = BigNumber.from(PopBalance).toNumber();
+    console.log('popBalance is ', number);
+    if (number) setPop(number);
+  }
+
+  useEffect(() => {
+    if (account && mockERC && confirmModal === 'invisible') {
+      getBalance();
+    }
+  }, [account, mockERC, confirmModal])
+
     useEffect(() => {
       if (!library) {
         return
@@ -78,7 +106,7 @@ export default function LockPop() {
       setStaking(
         //TODO swap the hardhat addresses with the mainnet
         new Contract(
-          '0xc6e7DF5E7b4f2A278906862b61205850344D4e7d',
+          stakingAddress,
           Staking.abi,
           library,
         ),
@@ -87,14 +115,12 @@ export default function LockPop() {
       setMockERC(
         //TODO swap the hardhat addresses with the mainnet
         new Contract(
-          '0x68B1D87F95878fE05B998F19b66F4baba5De1aed',
+          mockERCAddress,
           MockPop.abi,
           library,
         ),
       );
   
-    // }
-
     }, [library, active])
 
     function assignVotes(id, votes) {
@@ -105,6 +131,18 @@ export default function LockPop() {
   console.log(library, active, account, mockERC)
   return (
         <div className="w-screen">
+          <Modal visible={confirmModal}>
+            <p>Are you sure you want to lock {votes} POP for {duration} ?</p>
+            <div className="button-modal-holder">
+              <button onClick={() => lockPop(votes)} className="button-1">Confirm</button>
+              <button className='button-1' onClick={() => setConfirmModal('invisible')}>Cancel</button>
+            </div>
+          </Modal>
+
+          <Modal visible={connectModal}>
+            <p>You must connect your wallet to be able to lock any POP</p>
+            <button onClick={connectWallet} className='button-1'>Connect Wallet</button>
+          </Modal>
             <header className="w-full h-10 bg-white"></header>
             <div className="lockpop-page-container">
               <div className="w-2/12 flex flex-col items-center">
@@ -142,18 +180,25 @@ export default function LockPop() {
               <h1 className="lock-pop-title">Lock your POP</h1>
               <p className="lockpop-explanation">In order to participate in the selection of beneficiaries and awarding grants to beneficiaries, you must first lock your tokens.
               </p>
+
+              <div className="pop-available-div">
+                <p>You have {pop} POP tokens available to stake</p>
+                <button>Purchase more POP</button>
+              </div>
+
               <div className="slider-div">
-                <LockPopSlider id="lock-pop-slider" assignVotes={assignVotes} maxVotes={100} totalVotes={votes} votesAssignedByUser={votes} />    
+                <LockPopSlider id="lock-pop-slider" assignVotes={assignVotes} maxVotes={pop} totalVotes={votes} votesAssignedByUser={votes} />    
               </div>
               <p>Click below to stake {votes} Pop</p>
 
               <p className="lockpop-time">how long do you want to lock your POP for? </p>
           
               <p className="lockpop-small">Locking tokens for a longer period of time will give you more voting power.</p>
+              <p>Voting power = POP locked * duration / maximum duration</p>
               <select className="select-time" value={duration} onChange={(v) => setDuration(v.target.value)}>
                 {['1 week', '1 month', '3 months', '6 months', '1 year', '4 years'].map(duration => <option value={duration}>{duration}</option>)}
               </select>
-              <button className="stake-button" onClick={lockPop}>STAKE</button>          
+              <button className="stake-button" onClick={() => setConfirmModal('visible')}>STAKE</button>          
             </div>
             </div>
          </div>

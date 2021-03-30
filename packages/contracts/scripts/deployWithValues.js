@@ -54,7 +54,7 @@ async function main() {
 
   const MockERC20 = await ethers.getContractFactory('MockERC20');
   this.mockPop = await MockERC20.deploy('TestPOP', 'TPOP');
-  await this.mockPop.mint(deployer, parseEther('10')); //deployer has 10 ethers worth of pop
+  await this.mockPop.mint(deployer, 10); //deployer has 10 ethers worth of pop
 
   const Staking = await ethers.getContractFactory('Staking');
   this.stakingContract = await Staking.deploy(this.mockPop.address);
