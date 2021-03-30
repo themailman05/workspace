@@ -19,9 +19,9 @@ export default function VoteSlider({
   return (
     <>
       <span className="flex flex-row justify-between">
-        <p className="text-lg font-medium text-gray-500">POP locked</p>
+        <p className="">POP locked</p>
         <span className="text-base text-gray-500 flex flex-row">
-          <p className="font-medium">{totalVotes}</p>
+          <p className="">{totalVotes}</p>
           {/* <p className="">
             {votesAssignedByUser}
           </p> */}

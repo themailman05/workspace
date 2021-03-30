@@ -12,11 +12,8 @@ import { ethers } from 'ethers';
 const { parseEther } = require("ethers/lib/utils");
 const { BigNumber } = require('@ethersproject/bignumber');
 
-// const { ethers }
-// import ethers from 'ethers';
 
 export default function LockPop() {
-  let maxRemainingVotes = 0;
 
   const context = useWeb3React<Web3Provider>();
     const {
@@ -38,14 +35,17 @@ export default function LockPop() {
     const [staking, setStaking] = useState<Contract>();
     const [mockERC, setMockERC] = useState<Contract>(); 
     const [votes, setVotes] = useState<number>(0);
-    const [duration, setDuration] = useState<string>();
+    const [duration, setDuration] = useState<string>('1 week');
     const [pop, setPop] = useState<number>(0);
     const [confirmModal, setConfirmModal] = useState<string>('invisible');
     const [connectModal, setConnectModal] = useState<string>('invisible');
+    const [completeModal, setCompleteModal] = useState<string>('invisible');
+    const [errorModal, setErrorModal] = useState<string>('invisible');
+    const [errorMsg, setErrorMsg] = useState<string>('');
 
     const stakingAddress = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853';
     const mockERCAddress = '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707';
-
+    const timeToSeconds = { '1 week': 604800, '1 month': 2635200, '3 months': 7905600, '6 months': 15811200, '1 year': 31622400, '4 years': 126489600 };
 
     function submitVotes() {}
 
@@ -59,9 +59,19 @@ export default function LockPop() {
       .catch(err => console.log('err', err));
 
       const connectedStaking = await staking.connect(signer);
-      await connectedStaking.stake(1, amountOfTime).then(rez => console.log('successfully staked',rez)).catch(err => console.log(err, 'err'));
+      await connectedStaking.stake(1, amountOfTime)
+      .then(rez => {
+        console.log('successfully staked',rez);
+        setConfirmModal('invisible');
+        setCompleteModal('visible');
+      })
+      .catch(err => {
+        console.log(err, 'err');
+        setErrorModal('visible');
+        setErrorMsg(err);
+      });
 
-      setConfirmModal('invisible');
+      
     }
 
     function connectWallet() {
@@ -98,7 +108,7 @@ export default function LockPop() {
     if (account && mockERC && confirmModal === 'invisible') {
       getBalance();
     }
-  }, [account, mockERC, confirmModal])
+  }, [account, mockERC, confirmModal, completeModal])
 
     useEffect(() => {
       if (!library) {
@@ -130,6 +140,30 @@ export default function LockPop() {
       setVotes(votes);
     }
 
+    function CompleteModal() {
+      return (
+        <Modal visible={completeModal}>
+            <p>You have successfully locked {votes} POP for {duration}</p>
+            <div className="button-modal-holder">
+              <button onClick={() => setCompleteModal('invisible')} className="button-1">Lock more POP</button>
+              <button className='button-1' onClick={() => setCompleteModal('invisible')}>Vote in Grant</button>
+            </div>
+          </Modal>
+      )
+    }
+
+    function ErrorModal() {
+      return (
+        <Modal visible={errorModal}>
+            <p>There was an error</p>
+            <p>{errorMsg}</p>
+            <div className="button-modal-holder">
+              <button onClick={() => setErrorMsg('invisible')} className="button-1">Try again</button>
+            </div>
+          </Modal>
+      )
+    }
+
   console.log(library, active, account, mockERC)
   return (
         <div className="w-screen">
@@ -140,11 +174,13 @@ export default function LockPop() {
               <button className='button-1' onClick={() => setConfirmModal('invisible')}>Cancel</button>
             </div>
           </Modal>
-
+          {CompleteModal()}
+          {ErrorModal()}
           <Modal visible={connectModal}>
             <p>You must connect your wallet to be able to lock any POP</p>
             <button onClick={connectWallet} className='button-1'>Connect Wallet</button>
           </Modal>
+
             <header className="w-full h-10 bg-white"></header>
             <div className="lockpop-page-container">
               <div className="w-2/12 flex flex-col items-center">
@@ -179,28 +215,35 @@ export default function LockPop() {
                 />
             </div>
           <div className="lockpop-content-div">
+            <div className="lockpop-form-div">
               <h1 className="lock-pop-title">Lock your POP</h1>
               <p className="lockpop-explanation">In order to participate in the selection of beneficiaries and awarding grants to beneficiaries, you must first lock your tokens.
               </p>
 
               <div className="pop-available-div">
                 <p>You have {pop} POP tokens available to stake</p>
-                <button>Purchase more POP</button>
+                <button className="button-1">Purchase more POP</button>
               </div>
 
               <div className="slider-div">
                 <LockPopSlider id="lock-pop-slider" assignVotes={assignVotes} maxVotes={pop} totalVotes={votes} votesAssignedByUser={votes} />    
               </div>
-              <p>Click below to stake {votes} Pop</p>
+              {/* <p>Click below to stake {votes} Pop</p> */}
 
               <p className="lockpop-time">how long do you want to lock your POP for? </p>
           
               <p className="lockpop-small">Locking tokens for a longer period of time will give you more voting power.</p>
-              <p>Voting power = POP locked * duration / maximum duration</p>
+              
               <select className="select-time" value={duration} onChange={(v) => setDuration(v.target.value)}>
                 {['1 week', '1 month', '3 months', '6 months', '1 year', '4 years'].map(duration => <option value={duration}>{duration}</option>)}
               </select>
-              <button className="stake-button" onClick={() => setConfirmModal('visible')}>STAKE</button>          
+              {/* <p>Voting power = POP locked * duration / maximum duration</p> */}
+              <div className='voting-power-div'>
+                <p>Voting power: </p>
+                <p className="bold ">{votes * (timeToSeconds[duration] / timeToSeconds['4 years']) }</p>
+              </div>
+              <button className="button-1 lock-pop-button" onClick={() => setConfirmModal('visible')}>Lock POP</button>          
+            </div>
             </div>
             </div>
          </div>

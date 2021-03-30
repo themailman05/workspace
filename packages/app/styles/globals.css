@@ -24,6 +24,9 @@ a {
 * {
   box-sizing: border-box;
 }
+p {
+  font-size: 0.95rem;
+}
 
 @layer components {
   .button {
@@ -62,7 +65,7 @@ a {
 .lockpop-content-div {
   display: flex;
   flex-direction: column;
-  border: 10px solid white;
+  /* border: 10px solid white; */
   padding: 15px;
 }
 
@@ -71,6 +74,7 @@ a {
   font-weight: 500;
   line-height: 2rem;
   margin-bottom: 28px;
+  /* max-width:70%; */
 }
 
 .lockpop-time {
@@ -81,10 +85,8 @@ a {
   margin-top: 28px;
 }
 .lockpop-small {
-  font-size: 1rem;
   font-weight: 400;
   line-height: 1.7rem;
-  margin-bottom: 28px;
   margin-top: 1px;
 }
 
@@ -101,12 +103,12 @@ a {
 }
 
 .select-time {
-  max-width: 70%;
-  width: 70%;
+  /* max-width: 70%; */
+  /* width: 70%; */
 }
 
 .slider-div{
-  max-width: 70%;
+  /* max-width: 70%; */
 }
 
 .modal-main-div {
@@ -141,8 +143,10 @@ a {
 .pop-available-div {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
+  justify-content: space-between;
+  /* width: 70%; */
   margin-bottom: 28px;
+  align-items: center;
 }
 
 .button-1 {
@@ -165,4 +169,32 @@ a {
   display: flex;
   flex-direction: row;
   justify-content: space-evenly;
+}
+
+.bold {
+  font-weight: 700;
+}
+
+.voting-power-div {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  /* width: 70%; */
+  margin-bottom: 28px;
+  align-items: center;
+  margin-top: 28px;
+}
+
+.lockpop-form-div {
+  max-width: 70%;
+  align-self: center;
+  display:flex;
+  flex-direction: column;
+}
+
+.lock-pop-button {
+  width: 250px;
+  align-self: center;
+  font-size: 1.2rem;
+  font-weight:700;
 }
