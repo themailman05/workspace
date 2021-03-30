@@ -12,5 +12,10 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
+  networks: {
+  hardhat: {
+    chainId: 1337
+  },
+},
   solidity: "0.7.3",
 };

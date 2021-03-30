@@ -36,7 +36,7 @@ export default function LockPop() {
     const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
     const [activeGrantRound, scrollToGrantRound] = useState<string>();
     const [staking, setStaking] = useState<Contract>();
-    const [mockERC, setMockERC] = useState<Contract>();
+    const [mockERC, setMockERC] = useState<Contract>(); 
     const [votes, setVotes] = useState<number>(0);
     const [duration, setDuration] = useState<string>();
     const [pop, setPop] = useState<number>(0);
@@ -50,16 +50,18 @@ export default function LockPop() {
     function submitVotes() {}
 
     async function lockPop(amountToLock, amountOfTime = 606666) {
-      // const signer = library.getSigner();
+      const signer = library.getSigner();
 
-      // const connected = await mockERC.connect(signer)
-      // console.log(connected);
+      const connected = await mockERC.connect(signer)
+      console.log(connected);
       // let parsedAmount = amou;ntToLock
-      await mockERC.connect(account).approve(stakingAddress, parseEther('1')).then(res => console.log('approved', res))
-      .catch(err => alert('Not approved by ERC20 contract'));
+      await connected.approve(stakingAddress, 1).then(res => console.log('approved', res))
+      .catch(err => console.log('err', err));
 
-      const connectedStaking = await staking.connect(account);
-      await connectedStaking.stake(parseEther('1'), amountOfTime).then(rez => console.log('successfully staked',rez)).catch(err => console.log(err, 'err'))
+      const connectedStaking = await staking.connect(signer);
+      await connectedStaking.stake(1, amountOfTime).then(rez => console.log('successfully staked',rez)).catch(err => console.log(err, 'err'));
+
+      setConfirmModal('invisible');
     }
 
     function connectWallet() {
