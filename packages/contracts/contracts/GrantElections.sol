@@ -64,13 +64,19 @@ contract GrantElections {
     }
 
     function _recalculateRanking(ElectionTerm _electionTerm, address _beneficiary, uint256 weight) internal {
-        // ranking: 100, 50, 20
-        // passing: 60
-        // ranking: 100, 50, 60
-        // ranking: 100, 60, 50
-        for (uint8 i = electionConfigurations[_electionTerm].ranking; i >= 0; i--) {
-            if (weight > beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]]) {
+        if (weight > beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][electionConfigurations[_electionTerm].ranking - 1]]) {
+            // If weight is bigger than the last in the ranking for the election term, take its position
+            electionRanking[_electionTerm][electionConfigurations[_electionTerm].ranking - 1] = _beneficiary;
+        } else {
+            // Otherwise, no need to recalculate ranking
+            return;
+        }
 
+        // traverse inverted ranking
+        for (uint8 i = electionConfigurations[_electionTerm].ranking; i > 0; i--) {
+            // if the votes are higher than the next one in the ranking, swap them
+            if (beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] > beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] + 1) {
+                (electionRanking[_electionTerm][i], electionRanking[_electionTerm][i+1]) = (electionRanking[_electionTerm][i+1], electionRanking[_electionTerm][i]);
             }
         }
     }
