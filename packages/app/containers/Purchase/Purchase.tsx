@@ -7,8 +7,8 @@ import { Contract } from '@ethersproject/contracts';
 import { abi as PrivateSaleABI } from '../../../private_sale/artifacts/contracts/PrivateSale.sol/PrivateSale.json';
 import { abi as ERC20ABI } from '@openzeppelin/contracts/build/contracts/ERC20.json';
 
-const USDC_ADDRESS = "0xcA8bfC4D2a7d7ec9B6326121562062E70049dFb0";
-const PRIVATE_SALE_ADDRESS = "0xCcDf1Cb5ab599dd62AD2F176827DA07B24DB093d";
+const USDC_ADDRESS = "0x3e27659B15217D8B7b3DC4F615AcfaC2355B6585";
+const PRIVATE_SALE_ADDRESS = "0xce096065aaEA9acfa6cC41E1DB1DE698F5601794";
 
 const useStyles = makeStyles((theme) => ({
   root: {

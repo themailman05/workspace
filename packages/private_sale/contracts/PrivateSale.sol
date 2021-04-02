@@ -90,10 +90,9 @@ contract PrivateSale is Ownable, ReentrancyGuard {
 
     usdc.safeTransferFrom(msg.sender, treasury, amount_);
 
-    //@todo consider result
     tokenManager.assignVested(
       msg.sender,
-      _wholePopToReceive,
+      _popToReceive,
       uint64(block.timestamp), // now
       uint64(block.timestamp.add(secondsInDay.mul(365))), // + 1 year
       uint64(block.timestamp.add(secondsInDay.mul(548))), // + 18 months
