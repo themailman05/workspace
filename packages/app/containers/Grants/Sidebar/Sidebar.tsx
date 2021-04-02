@@ -13,7 +13,6 @@ interface ISideBar {
   votes?: IVote[];
   maxVotes: number;
   grantRounds: IGrantRound[];
-  grantTerm: number;
   isWalletConnected: boolean;
   isActiveElection: boolean;
   connectWallet: () => void;
@@ -27,7 +26,6 @@ export default function Sidebar({
   votes,
   maxVotes,
   grantRounds,
-  grantTerm,
   isWalletConnected,
   isActiveElection,
   connectWallet,

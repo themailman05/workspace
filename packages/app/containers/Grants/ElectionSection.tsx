@@ -53,7 +53,6 @@ export default function ElectionSection({
           maxVotes={maxVotes}
           grantRounds={grantRounds}
           isWalletConnected={isWalletConnected}
-          grantTerm={grantTerm}
           grantRoundFilter={grantRoundFilter}
           isActiveElection={isActiveElection}
           connectWallet={connectWallet}

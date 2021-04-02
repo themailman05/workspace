@@ -140,6 +140,12 @@ export default function GrantOverview() {
   }, [library]);
 
   useEffect(() => {
+    if (!grantRoundFilter.active && !grantRoundFilter.closed) {
+      setGrantRoundFilter({ active: true, closed: true });
+    }
+  }, [grantRoundFilter]);
+
+  useEffect(() => {
     if (!grantRegistry && !beneficiaryRegistry) {
       return;
     }
