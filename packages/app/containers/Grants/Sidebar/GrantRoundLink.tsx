@@ -2,14 +2,14 @@ import { Check, Lock } from 'react-feather';
 
 export interface IGrantRound {
   name: string;
-  address: string;
+  id: string;
   active: boolean;
   year: number;
 }
 
 interface IGrantRoundLink {
   grantRound: IGrantRound;
-  scrollToGrantRound: (grantAddress: string) => void;
+  scrollToGrantRound: (grantId: string) => void;
 }
 
 export default function GrantRoundLink({
@@ -18,9 +18,9 @@ export default function GrantRoundLink({
 }: IGrantRoundLink): JSX.Element {
   return (
     <li
-      id={`${grantRound.address}-GrantLink`}
+      id={`${grantRound.id}-GrantLink`}
       className="flex flex-row items-center cursor-pointer"
-      onClick={() => scrollToGrantRound(grantRound.address)}
+      onClick={() => scrollToGrantRound(grantRound.id)}
     >
       <div className="h-5 w-5 mr-2 rounded-full border border-white flex items-center justify-center flex-shrink-0">
         {grantRound.active ? (

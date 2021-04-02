@@ -1,5 +1,5 @@
+import { IGrantRoundFilter } from 'pages/grants';
 import { Dispatch } from 'react';
-import { IGrantRoundFilter } from './Sidebar';
 
 interface IFilterGrantRounds {
   grantRoundFilter: IGrantRoundFilter;
@@ -21,6 +21,7 @@ export default function FilterGrantRounds({
       <p>Show:</p>
       {Object.keys(grantRoundFilter)?.map((key) => (
         <label
+          key={key}
           className="flex flex-row items-center space-x-1 cursor-pointer"
           htmlFor={`show-${key}-elections`}
           onClick={() => filterGrantRounds(key)}
