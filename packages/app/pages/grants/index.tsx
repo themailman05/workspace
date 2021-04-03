@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import Sidebar from '../../containers/Grants/Sidebar/Sidebar';
-import GrantRound from 'containers/Grants/GrantRound';
-import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { Web3Provider } from '@ethersproject/providers';
 import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
 import GrantRegistryAbi from '../../abis/GrantRegistry.json';
@@ -12,11 +10,10 @@ import beneficiaryFixture from '../../fixtures/beneficiaries.json';
 import activeElections from '../../fixtures/activeElections.json';
 import closedElections from '../../fixtures/closedElections.json';
 import createGrantRounds from 'utils/createGrantRounds';
-import ElectionSection from 'containers/Grants/ElectionSection';
+import ElectionSection from 'containers/GrantElections/ElectionSection';
 import createElectionName from 'utils/createElectionName';
 import getBeneficiariesForElection from 'utils/getBeneficiariesForElection';
-
-const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
+import NavBar from 'components/NavBar';
 
 interface GrantElection {
   id: string;
@@ -191,7 +188,7 @@ export default function GrantOverview() {
 
   return (
     <div className="w-full">
-      <header className="w-full h-10 bg-white mb-8"></header>
+      <NavBar />
       {[...activeGrantElections, ...closedGrantElections]
         .filter(
           (election) =>

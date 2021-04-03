@@ -1,7 +1,6 @@
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
 import Link from 'next/link';
-import { Router, useRouter } from 'next/router';
 import { IVote } from 'pages/grants';
 
 interface IBeneficiaryCard {
@@ -29,8 +28,6 @@ export default function BeneficiaryCard({
   maxVotes,
   quadratic,
 }: IBeneficiaryCard): JSX.Element {
-  const router = useRouter();
-
   return (
     <div className="bg-white shadow-sm w-80 h-100 rounded-lg mr-6 mb-6">
       <Link href={`beneficiary/${address}`} passHref>

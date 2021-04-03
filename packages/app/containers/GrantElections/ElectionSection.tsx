@@ -1,6 +1,6 @@
-import GrantRound from './GrantRound';
-import Sidebar from './Sidebar/Sidebar';
-import { IGrantRound } from './Sidebar/GrantRoundLink';
+import GrantRound from '../../components/Grants/GrantRound';
+import Sidebar from '../../components/Sidebar/Sidebar';
+import { IGrantRound } from '../../components/Sidebar/GrantRoundLink';
 import { IGrantRoundFilter, IVote } from 'pages/grants';
 import { Dispatch } from 'react';
 
