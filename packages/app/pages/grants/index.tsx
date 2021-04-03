@@ -106,7 +106,7 @@ export default function GrantOverview() {
         //TODO get pop -> to tell the user to either lock them or buy some
         //TODO get locked pop -> to vote or tell the user to lock pop
         //TODO swap the contract provider to signer so the user can vote
-        //grantRegistry.connect(library.getSigner());
+        grantRegistry.connect(library.getSigner());
       }
     }
   }, [active]);
@@ -115,25 +115,20 @@ export default function GrantOverview() {
     if (!library) {
       return;
     }
-    //Infura cant connect to the local network which is why we can instantiate the contracts only with metamask
-    if (library?.connection?.url === 'metamask' && chainId === 31337) {
-      setGrantRegistry(
-        //TODO swap the hardhat addresses with the mainnet
-        new Contract(
-          '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
-          GrantRegistryAbi.abi,
-          library,
-        ),
-      );
-      setBeneficiaryRegistry(
-        //TODO swap the hardhat addresses with the mainnet
-        new Contract(
-          '0x5FbDB2315678afecb367f032d93F642f64180aa3',
-          BeneficiaryRegistryAbi.abi,
-          library,
-        ),
-      );
-    }
+    setGrantRegistry(
+      new Contract(
+        process.env.NEXT_PUBLIC_GRANT_REGISTRY_ADDRESS,
+        GrantRegistryAbi.abi,
+        library,
+      ),
+    );
+    setBeneficiaryRegistry(
+      new Contract(
+        process.env.NEXT_PUBLIC_BENEFICIARY_REGISTRY_ADDRESS,
+        BeneficiaryRegistryAbi.abi,
+        library,
+      ),
+    );
   }, [library]);
 
   useEffect(() => {
@@ -146,16 +141,16 @@ export default function GrantOverview() {
     if (!grantRegistry && !beneficiaryRegistry) {
       return;
     }
-    //ONLY WORKING WITH DEMO / REAL DATA
-    /* grantRegistry
-      .getActiveGrant(GRANT_TERM.QUARTER)
+    //DEMOING Contracts
+    grantRegistry
+      .getActiveGrant(1)
       .then((activeGrant) => console.log('active Grant', activeGrant));
     grantRegistry
-      .getActiveAwardees(GRANT_TERM.QUARTER)
+      .getActiveAwardees(1)
       .then((activeAwardees) => console.log('active Awardees', activeAwardees));
     beneficiaryRegistry
-      .getBeneficiary('0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
-      .then((res) => console.log('beneficiary', res)); */
+      .getBeneficiary('0x22f5413C075Ccd56D575A54763831C4c27A37Bdb')
+      .then((res) => console.log('beneficiary', res));
   }, [grantRegistry, beneficiaryRegistry]);
 
   function connectWallet() {
