@@ -6,6 +6,10 @@ const workspace = join(__dirname, '..');
 module.exports = {
   env: {
     RPC_URL: process.env.RPC_URL,
+    ADDR_STAKING: process.env.ADDR_STAKING,
+    ADDR_POP: process.env.ADDR_POP,
+    ADDR_GRANT_REGISTRY: process.env.ADDR_GRANT_REGISTRY,
+    ADDR_BENEFICIARY_REGISTRY: process.env.ADDR_BENEFICIARY_REGISTRY,
   },
   poweredByHeader: false,
   webpack: (config, options) => {
