@@ -8,6 +8,7 @@ import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
 import GrantRegistryAbi from '../../abis/GrantRegistry.json';
 import BeneficiaryRegistryAbi from '../../abis/BeneficiaryRegistry.json';
+import GrantElectionsAbi from '../../abis/GrantElections.json';
 import beneficiaryFixture from '../../fixtures/beneficiaries.json';
 import activeElections from '../../fixtures/activeElections.json';
 import closedElections from '../../fixtures/closedElections.json';
@@ -66,6 +67,7 @@ export default function GrantOverview() {
   >([]);
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [grantRegistry, setGrantRegistry] = useState<Contract>();
+  const [grantElection, setGrantElection] = useState<Contract>();
   const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
   const [activeGrantRound, scrollToGrantRound] = useState<string>();
   const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
@@ -136,6 +138,14 @@ export default function GrantOverview() {
           library,
         ),
       );
+
+      setGrantElection(
+        new Contract(
+          process.env.ADDR_GRANT_ELECTIONS,
+          GrantElectionsAbi.abi,
+          library,
+        )
+      )
     }
   }, [library]);
 
