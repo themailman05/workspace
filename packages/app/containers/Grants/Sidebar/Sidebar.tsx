@@ -21,7 +21,6 @@ interface ISideBar {
   scrollToGrantRound: (grantId: string) => void;
   grantRoundFilter: IGrantRoundFilter;
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
-  minimal?: boolean;
 }
 
 export default function Sidebar({
@@ -34,7 +33,6 @@ export default function Sidebar({
   connectWallet,
   submitVotes,
   scrollToGrantRound,
-  minimal,
   grantRoundFilter,
   setGrantRoundFilter,
 }: ISideBar): JSX.Element {
@@ -50,17 +48,7 @@ export default function Sidebar({
     setGrantYears(years);
   }, []);
 
-  return minimal ? (
-    <div className="w-8/12">
-      <VoteCounter remainingVotes={remainingVotes} maxVotes={maxVotes} />
-      <ActionButton
-        hasLockedPop={maxVotes > 0}
-        isWalletConnected={isWalletConnected}
-        connectWallet={connectWallet}
-        submitVotes={submitVotes}
-      />
-    </div>
-  ) : (
+  return (
     <div className="w-8/12 mx-auto">
       {isActiveElection && (
         <>
