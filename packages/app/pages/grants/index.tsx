@@ -102,7 +102,7 @@ export default function GrantOverview() {
   useEffect(() => {
     if (!active) {
       activate(connectors.Network);
-      if (library?.connection?.url === 'metamask' && chainId === 31337) {
+      if (library?.connection?.url === 'metamask') {
         //TODO get pop -> to tell the user to either lock them or buy some
         //TODO get locked pop -> to vote or tell the user to lock pop
         //TODO swap the contract provider to signer so the user can vote
@@ -115,20 +115,20 @@ export default function GrantOverview() {
     if (!library) {
       return;
     }
-    setGrantRegistry(
-      new Contract(
-        process.env.NEXT_PUBLIC_GRANT_REGISTRY_ADDRESS,
-        GrantRegistryAbi.abi,
-        library,
-      ),
-    );
-    setBeneficiaryRegistry(
-      new Contract(
-        process.env.NEXT_PUBLIC_BENEFICIARY_REGISTRY_ADDRESS,
-        BeneficiaryRegistryAbi.abi,
-        library,
-      ),
-    );
+      setGrantRegistry(
+        new Contract(
+          process.env.ADDR_GRANT_REGISTRY,
+          GrantRegistryAbi.abi,
+          library,
+        ),
+      );
+      setBeneficiaryRegistry(
+        new Contract(
+          process.env.ADDR_BENEFICIARY_REGISTRY,
+          BeneficiaryRegistryAbi.abi,
+          library,
+        ),
+      );
   }, [library]);
 
   useEffect(() => {
