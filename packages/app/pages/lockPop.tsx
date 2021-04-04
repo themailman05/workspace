@@ -31,7 +31,6 @@ export default function LockPop() {
 
     const stakingAddress = process.env.ADDR_STAKING;
     const mockERCAddress = process.env.ADDR_POP;
-    console.log("addresses", stakingAddress, mockERCAddress)
 
     const ONE_WEEK = 604800;
     const lockPeriods = { 
