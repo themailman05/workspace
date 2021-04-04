@@ -64,6 +64,8 @@ async function main() {
   this.grantElectionContract = await GrantElections.deploy(this.stakingContract.address, beneficiaryRegistry.address );
   await this.grantElectionContract.deployed();
 
+  await this.grantElectionContract.initialize(GRANT_TERM.QUARTER);
+
   console.log('active awardees: ', activeAwardees);
   console.log("MOCKPOP deployed to:", this.mockPop.address);
   console.log("StakingContract deployed to:", this.stakingContract.address);

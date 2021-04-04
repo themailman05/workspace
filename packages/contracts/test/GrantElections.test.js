@@ -4,9 +4,9 @@ const { parseEther } = require("ethers/lib/utils");
 let contract;
 
 describe('GrantElections', function () {
-
+    const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 }
     before(async function () {
-        [owner, rewarder, nonOwner] = await ethers.getSigners();
+        [owner, rewarder, nonOwner, beneficiary] = await ethers.getSigners();
 
         MockERC20 = await ethers.getContractFactory("MockERC20");
         this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
@@ -20,12 +20,28 @@ describe('GrantElections', function () {
         this.beneficiaryRegistry = await BeneficiaryRegistry.deploy(); //issue without address?
         await this.beneficiaryRegistry.deployed();
 
-    });
+        await this.beneficiaryRegistry.addBeneficiary(
+        beneficiary.address,
+        ethers.utils.formatBytes32String('Beneficiary Amir')
+      ).then(response => console.log(response)).catch(err => console.log(err));
 
-    beforeEach(async function () {
-        const Staking = await ethers.getContractFactory('GrantElections');
-        this.contract = await Staking.deploy(this.stakingContract.address, this.beneficiaryRegistry.address);
+        const GrantElections = await ethers.getContractFactory('GrantElections');
+        this.contract = await GrantElections.deploy(this.stakingContract.address, this.beneficiaryRegistry.address);
         await this.contract.deployed();
+
+        // initialise a grant
+
+        const GrantRegistry = await ethers.getContractFactory('GrantRegistry');
+
+        this.grantRegistry = await GrantRegistry.deploy(this.beneficiaryRegistry.address);
+        await this.grantRegistry.deployed();
+
+        await this.grantRegistry.createGrant(
+            GRANT_TERM.QUARTER,
+            [beneficiary.address],
+            [1]
+        )
+
     });
 
     describe("vote", function () {
@@ -33,6 +49,11 @@ describe('GrantElections', function () {
             await expect(
                 this.contract.vote([], [], 0)
             ).to.be.revertedWith("Election not open for voting");
+        });
+
+        it("should initialise ", async function () {
+            const initialised = await this.contract.initialize(1);
+            console.log(initialised);
         });
     });
 });
