@@ -34,8 +34,8 @@ export default function Navbar(): JSX.Element {
         <li>
           <NavbarLink
             label="Staking"
-            url="/staking"
-            isActive={router.pathname === '/staking'}
+            url="/lock-pop"
+            isActive={router.pathname === '/lock-pop'}
           />
         </li>
       </ul>
