@@ -13,7 +13,7 @@ import createGrantRounds from 'utils/createGrantRounds';
 import ElectionSection from 'containers/GrantElections/ElectionSection';
 import createElectionName from 'utils/createElectionName';
 import getBeneficiariesForElection from 'utils/getBeneficiariesForElection';
-import NavBar from 'components/NavBar';
+import Navbar from 'components/Navbar';
 
 interface GrantElection {
   id: string;
@@ -142,16 +142,42 @@ export default function GrantOverview() {
       return;
     }
     //DEMOING Contracts
-    grantRegistry
-      .getActiveGrant(1)
-      .then((activeGrant) => console.log('active Grant', activeGrant));
-    grantRegistry
-      .getActiveAwardees(1)
-      .then((activeAwardees) => console.log('active Awardees', activeAwardees));
+    grantRegistry.getActiveGrant(1).then((activeGrant) => {
+      console.log(activeGrant[0].toNumber());
+      setClosedGrantElections([
+        {
+          startTime: String(activeGrant[0].toNumber()),
+          endTime: String(activeGrant[1].toNumber()),
+          id: `closed-1-${activeGrant[0].toNumber() * 1000}`,
+          grantTerm: 1,
+          grantShareType: activeGrant[3],
+          awardees: [''],
+          awardeesCount: activeGrant[4],
+          description: 'A description that will later be pulled from IPFS',
+          active: false,
+        },
+      ]);
+    });
+    grantRegistry.getActiveAwardees(1).then((activeAwardees) =>
+      setClosedGrantElections((prevState) => [
+        ...prevState.filter((election) => election.grantTerm !== 1),
+        {
+          ...prevState.find((election) => election.grantTerm === 1),
+          awardees: activeAwardees,
+        },
+      ]),
+    );
+  }, [grantRegistry, beneficiaryRegistry]);
+
+  useEffect(() => {
+    if (!beneficiaryRegistry) {
+      return;
+    }
+    //Go through each election and call the function per beneficiary
     beneficiaryRegistry
       .getBeneficiary('0x22f5413C075Ccd56D575A54763831C4c27A37Bdb')
-      .then((res) => console.log('beneficiary', res));
-  }, [grantRegistry, beneficiaryRegistry]);
+      .then((res) => console.log('beneficiary ipfs-hash', res));
+  }, [activeGrantElections, closedGrantElections]);
 
   function connectWallet() {
     activate(connectors.Injected);
@@ -183,7 +209,7 @@ export default function GrantOverview() {
 
   return (
     <div className="w-full">
-      <NavBar />
+      <Navbar />
       {[...activeGrantElections, ...closedGrantElections]
         .filter(
           (election) =>

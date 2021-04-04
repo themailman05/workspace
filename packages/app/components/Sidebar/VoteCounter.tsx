@@ -8,9 +8,15 @@ export default function VoteCounter({
   maxVotes,
 }: IVoteCounter): JSX.Element {
   return (
-    <div className="w-full h-24 bg-white border border-gray-400 rounded-lg p-3 mb-2">
-      <p className="font-medium text-gray-700">Your Votes</p>
-      <p className="text-center text-2xl font-bold text-gray-700">
+    <div
+      className="w-full h-24 rounded-lg p-3 mb-2"
+      style={{
+        background: 'rgba(255, 255, 255, .5)',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <p className="font-medium text-gray-800">Your Votes</p>
+      <p className="text-center text-2xl font-bold text-gray-800">
         {remainingVotes} / {maxVotes}
       </p>
     </div>

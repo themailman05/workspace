@@ -1,18 +1,42 @@
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import NavbarLink from './NavbarLinks';
 
-export default function NavBar(): JSX.Element {
+export default function Navbar(): JSX.Element {
+  const router = useRouter();
   return (
-    <nav className="w-full h-10 bg-white mb-8">
-      <ul className="flex flex-row items-center">
+    <nav
+      className="flex shadow-md py-3 mb-8 px-14"
+      style={{
+        background: 'rgba(255, 255, 255, .5)',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
+      <div>
+        <Link href="/" passHref>
+          <a>
+            <img
+              src="/images/popcorn_v1_dark_bg.png"
+              alt="Logo"
+              className="w-8 h-8"
+            ></img>
+          </a>
+        </Link>
+      </div>
+      <ul className="flex flex-row items-center mx-auto space-x-4">
         <li>
-          <Link href="/grants" passHref>
-            <a>Grant Elections</a>
-          </Link>
+          <NavbarLink
+            label="Grants"
+            url="/grants"
+            isActive={router.pathname === '/grants'}
+          />
         </li>
         <li>
-          <Link href="/staking" passHref>
-            <a>POP Staking</a>
-          </Link>
+          <NavbarLink
+            label="Staking"
+            url="/staking"
+            isActive={router.pathname === '/staking'}
+          />
         </li>
       </ul>
     </nav>

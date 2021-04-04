@@ -29,17 +29,23 @@ export default function BeneficiaryCard({
   quadratic,
 }: IBeneficiaryCard): JSX.Element {
   return (
-    <div className="bg-white shadow-sm w-80 h-100 rounded-lg mr-6 mb-6">
+    <div
+      className="shadow-sm w-80 h-100 rounded-lg mr-6 mb-6"
+      style={{
+        background: 'rgba(255, 255, 255, .5)',
+        backdropFilter: 'blur(10px)',
+      }}
+    >
       <Link href={`beneficiary/${address}`} passHref>
         <a>
-          <div className="w-full h-28 bg-red-300 rounded-t-lg" />
+          <div className="w-full h-28 rounded-t-lg" />
         </a>
       </Link>
       <div className="w-full px-4 pb-3">
         <div className="h-14 mt-3">
           <Link href={`beneficiary/${address}`} passHref>
             <a>
-              <h3 className="text-lg font-bold text-gray-700 leading-snug">
+              <h3 className="text-lg font-bold text-gray-800 leading-snug">
                 {title}
               </h3>
             </a>
@@ -48,7 +54,7 @@ export default function BeneficiaryCard({
         <div className="h-36">
           <Link href={`beneficiary/${address}`} passHref>
             <a>
-              <p className="text-sm text-gray-500">{description}</p>
+              <p className="text-sm text-gray-700">{description}</p>
             </a>
           </Link>
         </div>
