@@ -1,5 +1,8 @@
+import { IGrantRoundFilter, IVote } from 'pages/grants';
 import { useState } from 'react';
+import { Dispatch } from 'react';
 import { useEffect } from 'react';
+import calculateRemainingVotes from 'utils/calculateRemainingVotes';
 import ActionButton from './ActionButton';
 import FilterGrantRounds from './FilterGrantRounds';
 import { IGrantRound } from './GrantRoundLink';
@@ -7,36 +10,35 @@ import VoteCounter from './VoteCounter';
 import YearSpoiler from './YearSpoiler';
 
 interface ISideBar {
-  remainingVotes: number;
+  votes?: IVote[];
   maxVotes: number;
   grantRounds: IGrantRound[];
+  grantTerm: number;
   isWalletConnected: boolean;
+  isActiveElection: boolean;
   connectWallet: () => void;
   submitVotes: () => void;
-  scrollToGrantRound: (grantAddress: string) => void;
-  minimal?: Boolean;
-}
-
-export interface IGrantRoundFilter {
-  active: boolean;
-  closed: boolean;
+  scrollToGrantRound: (grantId: string) => void;
+  grantRoundFilter: IGrantRoundFilter;
+  setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
+  minimal?: boolean;
 }
 
 export default function Sidebar({
-  remainingVotes,
+  votes,
   maxVotes,
   grantRounds,
+  grantTerm,
   isWalletConnected,
+  isActiveElection,
   connectWallet,
   submitVotes,
   scrollToGrantRound,
   minimal,
+  grantRoundFilter,
+  setGrantRoundFilter,
 }: ISideBar): JSX.Element {
   const [grantYears, setGrantYears] = useState<number[]>([]);
-  const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
-    active: true,
-    closed: true,
-  });
 
   useEffect(() => {
     const years = [];
@@ -59,17 +61,25 @@ export default function Sidebar({
       />
     </div>
   ) : (
-    <div className="w-8/12">
-      <VoteCounter remainingVotes={remainingVotes} maxVotes={maxVotes} />
-      <ActionButton
-        hasLockedPop={maxVotes > 0}
-        isWalletConnected={isWalletConnected}
-        connectWallet={connectWallet}
-        submitVotes={submitVotes}
-      />
+    <div className="w-8/12 mx-auto">
+      {isActiveElection && (
+        <>
+          <VoteCounter
+            remainingVotes={votes && calculateRemainingVotes(maxVotes, votes)}
+            maxVotes={maxVotes}
+          />
+          <ActionButton
+            hasLockedPop={maxVotes > 0}
+            isWalletConnected={isWalletConnected}
+            connectWallet={connectWallet}
+            submitVotes={submitVotes}
+          />
+        </>
+      )}
       <ul className="mt-4">
         {grantYears?.map((grantYear, i) => (
           <YearSpoiler
+            key={grantYear}
             year={grantYear}
             grantRounds={grantRounds.filter(
               (grantRound) => grantRound.year === grantYear,

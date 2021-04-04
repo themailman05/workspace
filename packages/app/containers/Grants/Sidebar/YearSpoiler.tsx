@@ -1,12 +1,12 @@
+import { IGrantRoundFilter } from 'pages/grants';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import GrantRoundLink, { IGrantRound } from './GrantRoundLink';
-import { IGrantRoundFilter } from './Sidebar';
 
 interface IYearSpoiler {
   year: number;
   grantRounds: IGrantRound[];
-  scrollToGrantRound: (grantAddress: string) => void;
+  scrollToGrantRound: (grantId: string) => void;
   grantRoundFilter: IGrantRoundFilter;
   opened?: boolean;
 }
@@ -40,7 +40,7 @@ export default function YearSpoiler({
             )
             .map((grantRound) => (
               <GrantRoundLink
-                key={`${grantRound.address}-GrantLink`}
+                key={`${grantRound.id}-GrantLink`}
                 grantRound={grantRound}
                 scrollToGrantRound={scrollToGrantRound}
               />
@@ -51,7 +51,7 @@ export default function YearSpoiler({
             )
             .map((grantRound) => (
               <GrantRoundLink
-                key={`${grantRound.address}-GrantLink`}
+                key={`${grantRound.id}-GrantLink`}
                 grantRound={grantRound}
                 scrollToGrantRound={scrollToGrantRound}
               />

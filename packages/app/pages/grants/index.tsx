@@ -6,104 +6,43 @@ import GrantRound from 'containers/Grants/GrantRound';
 import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
 import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
-import GrantRegistryAbi from '../../../contracts/artifacts/contracts/GrantRegistry.sol/GrantRegistry.json';
-import BeneficiaryRegistryAbi from '../../../contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
+import GrantRegistryAbi from '../../abis/GrantRegistry.json';
+import BeneficiaryRegistryAbi from '../../abis/BeneficiaryRegistry.json';
+import beneficiaryFixture from '../../fixtures/beneficiaries.json';
+import activeElections from '../../fixtures/activeElections.json';
+import closedElections from '../../fixtures/closedElections.json';
+import createGrantRounds from 'utils/createGrantRounds';
+import ElectionSection from 'containers/Grants/ElectionSection';
+import createElectionName from 'utils/createElectionName';
+import getBeneficiariesForElection from 'utils/getBeneficiariesForElection';
 
 const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
-//Quadratic Voting for assigning Votes
 
-//GET OPEN ELECTION
-//????
+interface GrantElection {
+  id: string;
+  startTime: string;
+  endTime: string;
+  grantTerm: number;
+  grantShareType: string;
+  awardeesCount: number;
+  awardees: string[];
+  description: string;
+  active: boolean;
+}
 
-//GET ACTIVE GRANTS (closed elections and still recieves money)
-//get ipfs hashes from the BeneficiaryRegistry with the previous Data
-//get data from ipfs with those hashes
+export interface IGrantRoundFilter {
+  active: boolean;
+  closed: boolean;
+}
 
-const demoGrants = [
-  {
-    id: '0',
-    title: 'Handshake Development Fund (Panvala League)',
-    description:
-      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
-    totalVotes: 40,
-    votesAssignedByUser: 10,
-  },
-  {
-    id: '1',
-    title: 'Handshake',
-    description:
-      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
-    totalVotes: 40,
-    votesAssignedByUser: 0,
-  },
-  {
-    id: '2',
-    title: 'Handshake Development Fund (Panvala League)',
-    description:
-      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
-    totalVotes: 40,
-    votesAssignedByUser: 0,
-  },
-  {
-    id: '3',
-    title: 'Handshake Development Fund (Panvala League)',
-    description:
-      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
-    totalVotes: 40,
-    votesAssignedByUser: 0,
-  },
-  {
-    id: '4',
-    title: 'Handshake',
-    description:
-      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
-    totalVotes: 40,
-    votesAssignedByUser: 0,
-  },
-  {
-    id: '5',
-    title: 'Handshake Development Fund (Panvala League)',
-    description:
-      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
-    totalVotes: 40,
-    votesAssignedByUser: 0,
-  },
-  {
-    id: '6',
-    title: 'Handshake Development Fund (Panvala League)',
-    description:
-      "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
-    totalVotes: 40,
-    votesAssignedByUser: 0,
-  },
-];
+export interface IVote {
+  address: string;
+  votes: number;
+}
 
-const GrantRegistryData = [
-  {
-    startTime: '',
-    endTime: '',
-    grantTerm: 0,
-    grantShareType: '',
-    awardeesCount: 4,
-    awardees: ['0', '1', '2', '3'],
-  },
-  {
-    startTime: '',
-    endTime: '',
-    grantTerm: 1,
-    grantShareType: '',
-    awardeesCount: 3,
-    awardees: ['4', '5', '6'],
-  },
-  {
-    startTime: '',
-    endTime: '',
-    grantTerm: 2,
-    grantShareType: '',
-    awardeesCount: 1,
-    awardees: ['4'],
-  },
-];
+export interface IElectionVotes {
+  votes: IVote[];
+}
 
 export default function GrantOverview() {
   const context = useWeb3React<Web3Provider>();
@@ -118,16 +57,55 @@ export default function GrantOverview() {
     error,
   } = context;
   const [maxVotes, setMaxVotes] = useState<number>(0);
-  const [remainingVotes, setRemainingVotes] = useState<number>(0);
-  const [activeGrants, setActiveGrants] = useState([]);
+  const [votes, setVotes] = useState<any[]>([]);
+  const [activeGrantElections, setActiveGrantElections] = useState<
+    GrantElection[]
+  >([]);
+  const [closedGrantElections, setClosedGrantElections] = useState<
+    GrantElection[]
+  >([]);
+  const [beneficiaries, setBeneficiaries] = useState([]);
   const [grantRegistry, setGrantRegistry] = useState<Contract>();
   const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
   const [activeGrantRound, scrollToGrantRound] = useState<string>();
+  const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
+    active: true,
+    closed: true,
+  });
+
+  useEffect(() => {
+    //Get Demo Data
+    setActiveGrantElections(
+      activeElections.map((election) => ({
+        ...election,
+        id: `active-${election.grantTerm}-${election.startTime}`,
+        active: true,
+      })),
+    );
+    setClosedGrantElections(
+      closedElections.map((election) => ({
+        ...election,
+        id: `closed-${election.grantTerm}-${election.startTime}`,
+        active: false,
+      })),
+    );
+    setBeneficiaries(beneficiaryFixture);
+    setMaxVotes(550);
+    const tempVotes = [[], [], []];
+    activeElections.forEach(
+      (election) =>
+        (tempVotes[election.grantTerm] = election.awardees.map((awardee) => ({
+          address: awardee,
+          votes: 0,
+        }))),
+    );
+    setVotes(tempVotes);
+  }, []);
 
   useEffect(() => {
     if (!active) {
       activate(connectors.Network);
-      if (library?.connection?.url === 'metamask') {
+      if (library?.connection?.url === 'metamask' && chainId === 31337) {
         //TODO get pop -> to tell the user to either lock them or buy some
         //TODO get locked pop -> to vote or tell the user to lock pop
         //TODO swap the contract provider to signer so the user can vote
@@ -140,7 +118,8 @@ export default function GrantOverview() {
     if (!library) {
       return;
     }
-    if (library?.connection?.url === 'metamask') {
+    //Infura cant connect to the local network which is why we can instantiate the contracts only with metamask
+    if (library?.connection?.url === 'metamask' && chainId === 31337) {
       setGrantRegistry(
         //TODO swap the hardhat addresses with the mainnet
         new Contract(
@@ -161,103 +140,88 @@ export default function GrantOverview() {
   }, [library]);
 
   useEffect(() => {
-    if (grantRegistry && beneficiaryRegistry) {
-      grantRegistry
-        .getActiveGrant(GRANT_TERM.QUARTER)
-        .then((activeGrant) => console.log('active Grant', activeGrant));
-      grantRegistry
-        .getActiveAwardees(GRANT_TERM.QUARTER)
-        .then((activeAwardees) =>
-          console.log('active Awardees', activeAwardees),
-        );
-      beneficiaryRegistry
-        .getBeneficiary('0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
-        .then((res) => console.log('beneficiary', res));
+    if (!grantRegistry && !beneficiaryRegistry) {
+      return;
     }
-    //TODO get data from ipfs
-    setActiveGrants(demoGrants);
-    setMaxVotes(550);
-    setRemainingVotes(540);
+    //ONLY WORKING WITH DEMO / REAL DATA
+    /* grantRegistry
+      .getActiveGrant(GRANT_TERM.QUARTER)
+      .then((activeGrant) => console.log('active Grant', activeGrant));
+    grantRegistry
+      .getActiveAwardees(GRANT_TERM.QUARTER)
+      .then((activeAwardees) => console.log('active Awardees', activeAwardees));
+    beneficiaryRegistry
+      .getBeneficiary('0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
+      .then((res) => console.log('beneficiary', res)); */
   }, [grantRegistry, beneficiaryRegistry]);
-
-  useEffect(() => {
-    if (activeGrants.length) {
-      setRemainingVotes(
-        (prevState) =>
-          maxVotes -
-          activeGrants.reduce(
-            (accumulator, currentValue) =>
-              accumulator + currentValue.votesAssignedByUser,
-            0,
-          ),
-      );
-    }
-  }, [activeGrants]);
 
   function connectWallet() {
     activate(connectors.Injected);
   }
 
-  function submitVotes() {}
+  function submitVotes() {
+    console.log('SUBMIT VOTES');
+    console.log(
+      votes.map((election) =>
+        election.map((awardee) => [awardee.address, awardee.votes]),
+      ),
+    );
+    console.log('__________________');
+  }
 
-  function assignVotes(id: string, votes: number): void {
-    const activeGrantsCopy = [...activeGrants];
-    const grantIndex = activeGrantsCopy.findIndex((grant) => grant.id === id);
-    const updatedGrant = {
-      ...activeGrantsCopy.find((grant) => grant.id === id),
-      votesAssignedByUser: votes,
-    };
-    activeGrantsCopy.splice(grantIndex, 1, updatedGrant);
-    setActiveGrants(activeGrantsCopy);
+  function assignVotes(grantTerm: number, vote: IVote): void {
+    console.log('grantTerm', grantTerm);
+    console.log('vote', vote);
+    const votesCopy = [...votes];
+    const updatedElection = [
+      ...votesCopy[grantTerm].filter(
+        (awardee) => awardee.address !== vote.address,
+      ),
+      vote,
+    ];
+    votesCopy.splice(grantTerm, 1, updatedElection);
+    setVotes(votesCopy);
   }
 
   return (
-    <div className="w-screen">
-      <header className="w-full h-10 bg-white"></header>
-      <div className="w-screen flex flex-row mt-4">
-        <div className="w-2/12 flex flex-col items-center">
-          <Sidebar
-            remainingVotes={remainingVotes}
+    <div className="w-full">
+      <header className="w-full h-10 bg-white mb-8"></header>
+      {[...activeGrantElections, ...closedGrantElections]
+        .filter(
+          (election) =>
+            (election.active && grantRoundFilter.active) ||
+            (!election.active && grantRoundFilter.closed),
+        )
+        .sort(
+          (election1, election2) =>
+            Number(election2.startTime) - Number(election1.startTime),
+        )
+        .map((election) => (
+          <ElectionSection
+            key={election.id}
+            id={election.id}
+            title={createElectionName(election)}
+            description={election.description}
+            grantTerm={election.grantTerm}
+            isActiveElection={election.active}
+            beneficiaries={getBeneficiariesForElection(
+              beneficiaries,
+              election.awardees,
+            )}
             maxVotes={maxVotes}
-            grantRounds={[
-              {
-                name: 'Quaterly',
-                address: '0',
-                active: true,
-                year: 2021,
-              },
-              {
-                name: 'Monthly',
-                address: '1',
-                active: false,
-                year: 2021,
-              },
-              {
-                name: 'Yearly',
-                address: '2',
-                active: false,
-                year: 2020,
-              },
-            ]}
+            votes={election.active ? votes[election.grantTerm] : null}
+            grantRounds={createGrantRounds(activeElections, closedElections)}
             isWalletConnected={library?.connection?.url === 'metamask'}
+            grantRoundFilter={grantRoundFilter}
+            assignVotes={assignVotes}
             connectWallet={connectWallet}
             submitVotes={submitVotes}
             scrollToGrantRound={scrollToGrantRound}
+            setGrantRoundFilter={setGrantRoundFilter}
+            scrollToMe={election.id === activeGrantRound}
+            quadratic={false}
           />
-        </div>
-        <div className="w-10/12 flex flex-col">
-          <GrantRound
-            id="2021"
-            title="Yearly Grant - 2021"
-            description="DescriptionText"
-            active={true}
-            grants={activeGrants}
-            assignVotes={assignVotes}
-            remainingVotes={remainingVotes}
-            scrollTo={false} //{grantRound.address === activeGrantRound}
-          />
-        </div>
-      </div>
+        ))}
     </div>
   );
 }
