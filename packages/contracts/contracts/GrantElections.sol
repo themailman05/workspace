@@ -110,13 +110,13 @@ contract GrantElections {
     function refreshElectionState(ElectionTerm _electionTerm) public {
         Election storage election = elections[uint8(_electionTerm)];
         if (
-            block.timestamp >= election.startTime.add(election.electionConfiguration.registrationPeriod)
-        ) {
-            election.electionState = ElectionState.Voting;
-        } else if (
             block.timestamp >= election.startTime.add(election.electionConfiguration.registrationPeriod).add(election.electionConfiguration.votingPeriod)
         ) {
             election.electionState = ElectionState.Closed;
+        } else if (
+            block.timestamp >= election.startTime.add(election.electionConfiguration.registrationPeriod)
+        ) {
+            election.electionState = ElectionState.Voting;
         } else if (
             block.timestamp >= election.startTime
         ) {
@@ -126,10 +126,10 @@ contract GrantElections {
 
     function vote(address[] memory _beneficiaries, uint8[] memory _voiceCredits, ElectionTerm _electionTerm) public {
         Election storage election = elections[uint8(_electionTerm)];
-        refreshElectionState(_electionTerm);
-        require(election.electionState == ElectionState.Voting, "Election not open for voting");
         require(_voiceCredits.length > 0, "Voice credits are required");
         require(_beneficiaries.length > 0, "Beneficiaries are required");
+        refreshElectionState(_electionTerm);
+        require(election.electionState == ElectionState.Voting, "Election not open for voting");
 
         uint256 _usedVoiceCredits = 0;
         uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);

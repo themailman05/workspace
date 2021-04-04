@@ -33,9 +33,6 @@ describe('GrantElections', function () {
         });
 
         it("should require election open for voting", async function () {
-            // set election term state to "voting"
-            ethers.provider.send("evm_increaseTime", [70 * 86400]);
-            ethers.provider.send("evm_mine");
             await expect(
                 this.contract.vote([beneficiary.address], [1], 0)
             ).to.be.revertedWith("Election not open for voting");
