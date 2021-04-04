@@ -65,7 +65,7 @@ contract GrantElections {
         Election storage _election = elections[_term];
 
         if (_election.exists == true) {
-            require(_election.electionState == ElectionState.Closed);
+            require(_election.electionState == ElectionState.Closed, "election not yet closed");
             require(
                 _election.electionConfiguration.cooldownPeriod >= block.timestamp.sub(_election.startTime), 
                 "can't start new election, not enough time elapsed since last election"
