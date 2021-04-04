@@ -1,4 +1,3 @@
-import Sidebar from '../containers/Grants/Sidebar/Sidebar';
 import Modal from '../containers/modal';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
@@ -8,6 +7,7 @@ import { connectors } from '../containers/Web3/connectors';
 import LockPopSlider from '../containers/lockPopSlider';
 import Staking from '../../contracts/artifacts/contracts/Staking.sol/Staking.json';
 import MockPop from '../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
+import { utils } from 'ethers';
 
 export default function LockPop() {
 
@@ -32,12 +32,19 @@ export default function LockPop() {
     const stakingAddress = process.env.ADDR_STAKING;
     const mockERCAddress = process.env.ADDR_POP;
     console.log("addresses", stakingAddress, mockERCAddress)
+    
+    const ONE_WEEK = 604800;
+    const lockPeriods = { 
+      '1 week': ONE_WEEK, 
+      '1 month': ONE_WEEK * 4, 
+      '3 months': ONE_WEEK * 4 * 3, 
+      '6 months': ONE_WEEK * 4 * 6, 
+      '1 year': ONE_WEEK * 52, 
+      '4 years': ONE_WEEK * 52 * 4 
+    };
 
-    const timeToSeconds = { '1 week': 604800, '1 month': 2635200, '3 months': 7905600, '6 months': 15811200, '1 year': 31622400, '4 years': 126489600 };
-
-    function submitVotes() {}
-
-    async function lockPop(amountToLock, amountOfTime = timeToSeconds['1 week']) {
+    async function lockPop(amountToLock) {
+      amountToLock = utils.parseEther(amountToLock.toString());
       const signer = library.getSigner();
 
       const connected = await mockERC.connect(signer)
@@ -47,7 +54,7 @@ export default function LockPop() {
       .catch(err => console.log('err', err));
 
       const connectedStaking = await staking.connect(signer);
-      await connectedStaking.stake(amountToLock, amountOfTime)
+      await connectedStaking.stake(amountToLock, lockPeriods[duration])
       .then(rez => {
         console.log('successfully staked',rez);
         setConfirmModal('invisible');
@@ -87,7 +94,7 @@ export default function LockPop() {
 
   async function getBalance() {
     const PopBalance = await mockERC.balanceOf(account);
-    setPopBalance(PopBalance.toNumber());
+    setPopBalance(+utils.formatEther(PopBalance.toString()));
   }
 
   useEffect(() => {
@@ -188,12 +195,12 @@ export default function LockPop() {
               <p className="lockpop-small">Locking tokens for a longer period of time will give you more voting power.</p>
               
               <select className="select-time" value={duration} onChange={(v) => setDuration(v.target.value)}>
-                {['1 week', '1 month', '3 months', '6 months', '1 year', '4 years'].map(duration => <option key={duration} value={duration}>{duration}</option>)}
+                {Object.keys(lockPeriods).map(duration => <option key={duration} value={duration}>{duration}</option>)}
               </select>
               {/* <p>Voting power = POP locked * duration / maximum duration</p> */}
               <div className='voting-power-div'>
                 <p>Voice Credits (voting power): </p>
-                <p className="bold "> {votes * (timeToSeconds[duration] / timeToSeconds['4 years']) }</p>
+                <p className="bold "> {votes * (lockPeriods[duration] / lockPeriods['4 years']) }</p>
               </div>
               <button disabled={!votes || !duration} className="button-1 lock-pop-button" onClick={() => setConfirmModal('visible')}>Lock POP</button>          
             </div>

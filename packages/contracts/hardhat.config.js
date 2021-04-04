@@ -1,6 +1,8 @@
 require("@nomiclabs/hardhat-waffle");
-const { parseEther } = require("ethers/lib/utils");
+const { utils } = require("ethers");
+
 const mockERC20ABI = require('./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json').abi;
+const StakingABI = require('./artifacts/contracts/Staking.sol/Staking.json').abi;
 
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
@@ -18,7 +20,7 @@ task("POP:mint", "mint amount for recipient",)
     const [signer] = await ethers.getSigners();
     const { contractaddress, recipient, amount } = args;
     const mockPOP = new ethers.Contract(contractaddress, mockERC20ABI, signer);
-    const result = await mockPOP.mint(recipient, amount);
+    const result = await mockPOP.mint(recipient, utils.parseEther(amount));
     console.log("Done: ", result);
 });
 
@@ -30,8 +32,20 @@ task("POP:balanceOf", "get balance of POP for address",)
     const { contractaddress, address } = args;
     const mockPOP = new ethers.Contract(contractaddress, mockERC20ABI, signer);
     const result = await mockPOP.balanceOf(address);
-    console.log("Result: ", result.toNumber());
+    console.log(`Balance of ${address}: `, utils.formatEther(result.toString()));
 });
+
+task("staking:getVoiceCredits", "get voice credit balance of address",)
+  .addParam("contractaddress", "staking contract address")
+  .addParam("address", "address to check balance of")
+  .setAction(async (args, hre) => {
+    const [signer] = await ethers.getSigners();
+    const { contractaddress, address } = args;
+    const Staking = new ethers.Contract(contractaddress, StakingABI, signer);
+    const result = await Staking.getVoiceCredits(address);
+    console.log(`Voice credits of ${address}: `, utils.formatEther(result.toString()));
+});
+
 
 
 /**
