@@ -57,5 +57,26 @@ describe('GrantElections', function () {
                 this.contract.vote([beneficiary.address], [1], 0)
             ).to.be.revertedWith("must have voice credits from staking");
         });
+
+        it("should require eligible beneficiary", async function () {
+            await this.contract.initialize(0);
+            ethers.provider.send("evm_increaseTime", [7 * 86400]);
+            ethers.provider.send("evm_mine");
+            await this.mockStaking.mock.getVoiceCredits.returns(10);
+            await expect(
+                this.contract.vote([beneficiary.address], [1], 0)
+            ).to.be.revertedWith("ineligible beneficiary");
+        });
+
+        it("should vote successfully", async function () {
+            await this.contract.initialize(0);
+            ethers.provider.send("evm_increaseTime", [7 * 86400]);
+            ethers.provider.send("evm_mine");
+            await this.mockStaking.mock.getVoiceCredits.returns(10);
+            await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+            await this.contract.registerForElection(beneficiary.address, 0);
+            const result = await this.contract.vote([beneficiary.address], [1], 0)
+            // todo test more stuff?
+        });
     });
 });
