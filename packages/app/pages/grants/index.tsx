@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
 import Sidebar from '../../containers/Grants/Sidebar/Sidebar';
 import GrantRound from 'containers/Grants/GrantRound';
-import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { Web3Provider } from '@ethersproject/providers';
 import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
 import GrantRegistryAbi from '../../abis/GrantRegistry.json';
@@ -123,7 +123,7 @@ export default function GrantOverview() {
       setGrantRegistry(
         //TODO swap the hardhat addresses with the mainnet
         new Contract(
-          '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+          process.env.ADDR_GRANT_REGISTRY,
           GrantRegistryAbi.abi,
           library,
         ),
@@ -131,7 +131,7 @@ export default function GrantOverview() {
       setBeneficiaryRegistry(
         //TODO swap the hardhat addresses with the mainnet
         new Contract(
-          '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+          process.env.ADDR_BENEFICIARY_REGISTRY,
           BeneficiaryRegistryAbi.abi,
           library,
         ),
