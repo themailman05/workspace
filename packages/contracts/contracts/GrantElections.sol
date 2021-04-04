@@ -44,7 +44,7 @@ contract GrantElections {
     mapping(ElectionTerm => ElectionConfiguration) electionConfigurations;
     mapping(ElectionTerm => mapping(uint8 => address)) electionRanking;
 
-    ElectionConfiguration[3] private electionDefaults;  
+    ElectionConfiguration[3] private electionDefaults;
 
     IStaking staking;
     IBeneficiaryRegistry beneficiaryRegistry;
@@ -62,12 +62,13 @@ contract GrantElections {
     // todo: mint POP for caller to incentivize calling function
     function initialize(ElectionTerm _grantTerm) public {
         uint8 _term = uint8(_grantTerm);
+        refreshElectionState(_grantTerm);
         Election storage _election = elections[_term];
         require(_election.exists && _election.electionState == ElectionState.Closed, "election can't be started yet");
 
         if (_election.exists && _election.electionState == ElectionState.Closed) {
             require(
-                _election.electionConfiguration.cooldownPeriod >= block.timestamp.sub(_election.startTime), 
+                _election.electionConfiguration.cooldownPeriod >= block.timestamp.sub(_election.startTime),
                 "can't start new election, not enough time elapsed since last election"
             );
         }
@@ -81,8 +82,6 @@ contract GrantElections {
         e.startTime = block.timestamp;
         e.exists = true;
     }
-
-    
 
     function getRegisteredBeneficiaries(ElectionTerm _term) external returns (address[] memory) {
         return elections[uint8(_term)].registeredBeneficiariesList;
@@ -108,8 +107,27 @@ contract GrantElections {
         return elections[uint8(_term)].registeredBeneficiaries[_beneficiary] && beneficiaryRegistry.beneficiaryExists(_beneficiary);
     }
 
+    function refreshElectionState(ElectionTerm _electionTerm) public {
+        Election storage election = elections[uint8(_electionTerm)];
+        if (
+            block.timestamp >= election.startTime.add(election.electionConfiguration.registrationPeriod)
+        ) {
+            election.electionState = ElectionState.Voting;
+        } else if (
+            block.timestamp >= election.startTime.add(election.electionConfiguration.registrationPeriod).add(election.electionConfiguration.votingPeriod)
+        ) {
+            election.electionState = ElectionState.Closed;
+        } else if (
+            block.timestamp >= election.startTime
+        ) {
+            election.electionState = ElectionState.Registration;
+        }
+    }
+
     function vote(address[] memory _beneficiaries, uint8[] memory _voiceCredits, ElectionTerm _electionTerm) public {
-        require(elections[uint8(_electionTerm)].electionState == ElectionState.Voting, "Election not open for voting");
+        Election storage election = elections[uint8(_electionTerm)];
+        refreshElectionState(_electionTerm);
+        require(election.electionState == ElectionState.Voting, "Election not open for voting");
         require(_voiceCredits.length > 0, "Voice credits are required");
         require(_beneficiaries.length > 0, "Beneficiaries are required");
 
@@ -132,7 +150,7 @@ contract GrantElections {
                weight: _sqredVoiceCredits
             });
 
-            elections[uint8(_electionTerm)].votes.push(_vote);
+            election.votes.push(_vote);
             beneficiaryVotes[_electionTerm][_beneficiaries[i]] = beneficiaryVotes[_electionTerm][_beneficiaries[i]].add(_sqredVoiceCredits);
         }
         require(_usedVoiceCredits <= _stakedVoiceCredits, "Insufficient voice credits");
@@ -163,7 +181,7 @@ contract GrantElections {
         monthlyDefaults.useChainLinkVRF = true;
         monthlyDefaults.votingPeriod = 7 * ONE_DAY;
         monthlyDefaults.registrationPeriod = 7 * ONE_DAY;
-        monthlyDefaults.cooldownPeriod = 21 * ONE_DAY; 
+        monthlyDefaults.cooldownPeriod = 21 * ONE_DAY;
 
         ElectionConfiguration storage quarterlyDefaults = electionDefaults[uint(ElectionTerm.Quarterly)];
         quarterlyDefaults.awardees = 2;
@@ -171,7 +189,7 @@ contract GrantElections {
         monthlyDefaults.useChainLinkVRF = true;
         quarterlyDefaults.votingPeriod = 14 * ONE_DAY;
         quarterlyDefaults.registrationPeriod = 14 * ONE_DAY;
-        quarterlyDefaults.cooldownPeriod = 83 * ONE_DAY; 
+        quarterlyDefaults.cooldownPeriod = 83 * ONE_DAY;
 
         ElectionConfiguration storage yearlyDefaults = electionDefaults[uint(ElectionTerm.Yearly)];
         yearlyDefaults.awardees = 3;
