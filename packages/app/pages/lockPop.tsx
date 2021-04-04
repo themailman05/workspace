@@ -8,8 +8,6 @@ import { connectors } from '../containers/Web3/connectors';
 import LockPopSlider from '../containers/lockPopSlider';
 import Staking from '../../contracts/artifacts/contracts/Staking.sol/Staking.json';
 import MockPop from '../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
-const { BigNumber } = require('@ethersproject/bignumber');
-
 
 export default function LockPop() {
 
@@ -27,7 +25,7 @@ export default function LockPop() {
     const [mockERC, setMockERC] = useState<Contract>(); 
     const [votes, setVotes] = useState<number>(0);
     const [duration, setDuration] = useState<string>('1 week');
-    const [pop, setPop] = useState<number>(0);
+    const [popBalance, setPopBalance] = useState<number>(0);
     const [confirmModal, setConfirmModal] = useState<string>('invisible');
     const [connectModal, setConnectModal] = useState<string>('invisible');
     const [completeModal, setCompleteModal] = useState<string>('invisible');
@@ -47,8 +45,8 @@ export default function LockPop() {
 
       const connected = await mockERC.connect(signer)
       console.log(connected);
-      // let parsedAmount = amou;ntToLock
-      await connected.approve(stakingAddress, 1).then(res => console.log('approved', res))
+
+      await connected.approve(stakingAddress, amountToLock).then(res => console.log('approved', res))
       .catch(err => console.log('err', err));
 
       const connectedStaking = await staking.connect(signer);
@@ -61,7 +59,7 @@ export default function LockPop() {
       .catch(err => {
         console.log(err, 'err');
         setErrorModal('visible');
-        setErrorMsg(err);
+        setErrorMsg(err.data?.message);
       });
 
       
@@ -92,9 +90,7 @@ export default function LockPop() {
 
   async function getBalance() {
     const PopBalance = await mockERC.balanceOf(account);
-    const number = BigNumber.from(PopBalance).toNumber();
-    console.log('popBalance is ', number);
-    if (number) setPop(number);
+    setPopBalance(PopBalance.toNumber());
   }
 
   useEffect(() => {
@@ -107,9 +103,7 @@ export default function LockPop() {
       if (!library) {
         return
       }
-      // if (library?.connection?.url === 'metamask') {
       setStaking(
-        //TODO swap the hardhat addresses with the mainnet
         new Contract(
           stakingAddress,
           Staking.abi,
@@ -118,7 +112,6 @@ export default function LockPop() {
       );
 
       setMockERC(
-        //TODO swap the hardhat addresses with the mainnet
         new Contract(
           mockERCAddress,
           MockPop.abi,
@@ -214,12 +207,11 @@ export default function LockPop() {
               </p>
 
               <div className="pop-available-div">
-                <p>You have {pop} POP tokens available to lock</p>
-                <button className="button-1">Purchase more POP</button>
+                <p>You have {popBalance} POP tokens available to lock</p>
               </div>
 
               <div className="slider-div">
-                <LockPopSlider id="lock-pop-slider" assignVotes={assignVotes} maxVotes={pop} totalVotes={votes} votesAssignedByUser={votes} />    
+                <LockPopSlider id="lock-pop-slider" assignVotes={assignVotes} maxVotes={popBalance} totalVotes={votes} votesAssignedByUser={votes} />    
               </div>
               {/* <p>Click below to stake {votes} Pop</p> */}
 
@@ -232,8 +224,8 @@ export default function LockPop() {
               </select>
               {/* <p>Voting power = POP locked * duration / maximum duration</p> */}
               <div className='voting-power-div'>
-                <p>Voting power: </p>
-                <p className="bold ">{votes * (timeToSeconds[duration] / timeToSeconds['4 years']) }</p>
+                <p>Voice Credits (voting power): </p>
+                <p className="bold "> {votes * (timeToSeconds[duration] / timeToSeconds['4 years']) }</p>
               </div>
               <button disabled={!votes || !duration} className="button-1 lock-pop-button" onClick={() => setConfirmModal('visible')}>Lock POP</button>          
             </div>
