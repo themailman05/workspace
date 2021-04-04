@@ -20,19 +20,19 @@ export default function LockPop() {
     } = context;
     const [staking, setStaking] = useState<Contract>();
     const [mockERC, setMockERC] = useState<Contract>(); 
-    const [votes, setVotes] = useState<number>(0);
-    const [duration, setDuration] = useState<string>('1 week');
-    const [popBalance, setPopBalance] = useState<number>(0);
-    const [confirmModal, setConfirmModal] = useState<string>('invisible');
-    const [connectModal, setConnectModal] = useState<string>('invisible');
-    const [completeModal, setCompleteModal] = useState<string>('invisible');
-    const [errorModal, setErrorModal] = useState<string>('invisible');
-    const [errorMsg, setErrorMsg] = useState<string>('');
+    const [popToLock, setPopToLock] = useState(0);
+    const [duration, setDuration] = useState('1 week');
+    const [popBalance, setPopBalance] = useState(0);
+    const [confirmModal, setConfirmModal] = useState('invisible');
+    const [connectModal, setConnectModal] = useState('invisible');
+    const [completeModal, setCompleteModal] = useState('invisible');
+    const [errorModal, setErrorModal] = useState('invisible');
+    const [errorMsg, setErrorMsg] = useState('');
 
     const stakingAddress = process.env.ADDR_STAKING;
     const mockERCAddress = process.env.ADDR_POP;
     console.log("addresses", stakingAddress, mockERCAddress)
-    
+
     const ONE_WEEK = 604800;
     const lockPeriods = { 
       '1 week': ONE_WEEK, 
@@ -125,18 +125,16 @@ export default function LockPop() {
   
     }, [library, active])
 
-    function assignVotes(id, votes) {
-      console.log(id, votes, 'idv')
-      setVotes(votes);
+    function updatePopToLock(id, amount) {
+      setPopToLock(amount);
     }
 
     function CompleteModal() {
       return (
         <Modal visible={completeModal}>
-            <p>You have successfully locked {votes} POP for {duration}</p>
+            <p>You have successfully locked {popToLock} POP for {duration}</p>
             <div className="button-modal-holder">
-              <button onClick={() => setCompleteModal('invisible')} className="button-1">Lock more POP</button>
-              <button className='button-1' onClick={() => setCompleteModal('invisible')}>Vote in Grant</button>
+              <button onClick={() => setCompleteModal('invisible')} className="button-1">OK Great!</button>
             </div>
           </Modal>
       )
@@ -157,9 +155,9 @@ export default function LockPop() {
   return (
         <div className="w-screen">
           <Modal visible={confirmModal}>
-            <p>Are you sure you want to lock {votes} POP for {duration} ?</p>
+            <p>Are you sure you want to lock {popToLock} POP for {duration} ?</p>
             <div className="button-modal-holder">
-              <button onClick={() => lockPop(votes)} className="button-1">Confirm</button>
+              <button onClick={() => lockPop(popToLock)} className="button-1">Confirm</button>
               <button className='button-1' onClick={() => setConfirmModal('invisible')}>Cancel</button>
             </div>
           </Modal>
@@ -186,23 +184,22 @@ export default function LockPop() {
               </div>
 
               <div className="slider-div">
-                <LockPopSlider id="lock-pop-slider" assignVotes={assignVotes} maxVotes={popBalance} totalVotes={votes} votesAssignedByUser={votes} />    
+                <LockPopSlider id="lock-pop-slider" assignVotes={updatePopToLock} maxVotes={popBalance} totalVotes={popToLock} votesAssignedByUser={popToLock} />    
               </div>
-              {/* <p>Click below to stake {votes} Pop</p> */}
-
-              <p className="lockpop-time">how long do you want to lock your POP for? </p>
+              <p className="lockpop-time">How long do you want to lock your POP for? </p>
           
               <p className="lockpop-small">Locking tokens for a longer period of time will give you more voting power.</p>
               
               <select className="select-time" value={duration} onChange={(v) => setDuration(v.target.value)}>
                 {Object.keys(lockPeriods).map(duration => <option key={duration} value={duration}>{duration}</option>)}
               </select>
+
               {/* <p>Voting power = POP locked * duration / maximum duration</p> */}
               <div className='voting-power-div'>
                 <p>Voice Credits (voting power): </p>
-                <p className="bold "> {votes * (lockPeriods[duration] / lockPeriods['4 years']) }</p>
+                <p className="bold "> {popToLock * (lockPeriods[duration] / lockPeriods['4 years']) }</p>
               </div>
-              <button disabled={!votes || !duration} className="button-1 lock-pop-button" onClick={() => setConfirmModal('visible')}>Lock POP</button>          
+              <button disabled={!popToLock || !duration} className="button-1 lock-pop-button" onClick={() => setConfirmModal('visible')}>Lock POP</button>          
             </div>
             </div>
             </div>
