@@ -52,10 +52,7 @@ contract GrantElections {
 
   event BeneficiaryRegistered(address _beneficiary, ElectionTerm _term);
   event UserVoted(address _user, ElectionTerm _term);
-  event ElectionInitialized(
-    ElectionTerm _term,
-    uint256 _startTime
-  );
+  event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
 
   constructor(IStaking _staking, IBeneficiaryRegistry _beneficiaryRegistry) {
     staking = _staking;
@@ -90,10 +87,7 @@ contract GrantElections {
     e.startTime = block.timestamp;
     e.exists = true;
 
-    emit ElectionInitialized(
-      e.electionTerm,
-      e.startTime
-    );
+    emit ElectionInitialized(e.electionTerm, e.startTime);
   }
 
   function getElectionMetadata(ElectionTerm _grantTerm)
@@ -168,17 +162,41 @@ contract GrantElections {
       beneficiaryRegistry.beneficiaryExists(_beneficiary);
   }
 
+
+
+  function refreshElectionState(ElectionTerm _electionTerm) public {
+    Election storage election = elections[uint8(_electionTerm)];
+    if (
+      block.timestamp >=
+      election
+        .startTime
+        .add(election.electionConfiguration.registrationPeriod)
+        .add(election.electionConfiguration.votingPeriod)
+    ) {
+      election.electionState = ElectionState.Closed;
+    } else if (
+      block.timestamp >=
+      election.startTime.add(election.electionConfiguration.registrationPeriod)
+    ) {
+      election.electionState = ElectionState.Voting;
+    } else if (block.timestamp >= election.startTime) {
+      election.electionState = ElectionState.Registration;
+    }
+  }
+
   function vote(
     address[] memory _beneficiaries,
     uint8[] memory _voiceCredits,
     ElectionTerm _electionTerm
   ) public {
-    require(
-      elections[uint8(_electionTerm)].electionState == ElectionState.Voting,
-      "Election not open for voting"
-    );
+    Election storage election = elections[uint8(_electionTerm)];
     require(_voiceCredits.length > 0, "Voice credits are required");
     require(_beneficiaries.length > 0, "Beneficiaries are required");
+    refreshElectionState(_electionTerm);
+    require(
+      election.electionState == ElectionState.Voting,
+      "Election not open for voting"
+    );
 
     uint256 _usedVoiceCredits = 0;
     uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);
@@ -202,7 +220,7 @@ contract GrantElections {
           weight: _sqredVoiceCredits
         });
 
-      elections[uint8(_electionTerm)].votes.push(_vote);
+      election.votes.push(_vote);
       beneficiaryVotes[_electionTerm][_beneficiaries[i]] = beneficiaryVotes[
         _electionTerm
       ][_beneficiaries[i]]
