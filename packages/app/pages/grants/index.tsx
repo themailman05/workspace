@@ -144,7 +144,7 @@ export default function GrantOverview() {
       setGrantRegistry(
         //TODO swap the hardhat addresses with the mainnet
         new Contract(
-          '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+          process.env.ADDR_GRANT_REGISTRY,
           GrantRegistryAbi.abi,
           library,
         ),
