@@ -63,9 +63,9 @@ contract GrantElections {
     function initialize(ElectionTerm _grantTerm) public {
         uint8 _term = uint8(_grantTerm);
         Election storage _election = elections[_term];
-        require(_election.exists && _election.electionState == ElectionState.Closed, "election can't be started yet");
 
-        if (_election.exists && _election.electionState == ElectionState.Closed) {
+        if (_election.exists == true) {
+            require(_election.electionState == ElectionState.Closed);
             require(
                 _election.electionConfiguration.cooldownPeriod >= block.timestamp.sub(_election.startTime), 
                 "can't start new election, not enough time elapsed since last election"
