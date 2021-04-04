@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { useEffect } from 'react';
 import { useWeb3React } from '@web3-react/core';
-import Sidebar from '../../containers/Grants/Sidebar/Sidebar';
-import GrantRound from 'containers/Grants/GrantRound';
 import { Web3Provider } from '@ethersproject/providers';
 import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
@@ -12,11 +10,10 @@ import beneficiaryFixture from '../../fixtures/beneficiaries.json';
 import activeElections from '../../fixtures/activeElections.json';
 import closedElections from '../../fixtures/closedElections.json';
 import createGrantRounds from 'utils/createGrantRounds';
-import ElectionSection from 'containers/Grants/ElectionSection';
+import ElectionSection from 'containers/GrantElections/ElectionSection';
 import createElectionName from 'utils/createElectionName';
 import getBeneficiariesForElection from 'utils/getBeneficiariesForElection';
-
-const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
+import Navbar from 'components/Navbar';
 
 interface GrantElection {
   id: string;
@@ -105,11 +102,11 @@ export default function GrantOverview() {
   useEffect(() => {
     if (!active) {
       activate(connectors.Network);
-      if (library?.connection?.url === 'metamask' && chainId === 31337) {
+      if (library?.connection?.url === 'metamask') {
         //TODO get pop -> to tell the user to either lock them or buy some
         //TODO get locked pop -> to vote or tell the user to lock pop
         //TODO swap the contract provider to signer so the user can vote
-        //grantRegistry.connect(library.getSigner());
+        grantRegistry.connect(library.getSigner());
       }
     }
   }, [active]);
@@ -118,10 +115,7 @@ export default function GrantOverview() {
     if (!library) {
       return;
     }
-    //Infura cant connect to the local network which is why we can instantiate the contracts only with metamask
-    if (library?.connection?.url === 'metamask' && chainId === 31337) {
       setGrantRegistry(
-        //TODO swap the hardhat addresses with the mainnet
         new Contract(
           process.env.ADDR_GRANT_REGISTRY,
           GrantRegistryAbi.abi,
@@ -129,31 +123,61 @@ export default function GrantOverview() {
         ),
       );
       setBeneficiaryRegistry(
-        //TODO swap the hardhat addresses with the mainnet
         new Contract(
           process.env.ADDR_BENEFICIARY_REGISTRY,
           BeneficiaryRegistryAbi.abi,
           library,
         ),
       );
-    }
   }, [library]);
+
+  useEffect(() => {
+    if (!grantRoundFilter.active && !grantRoundFilter.closed) {
+      setGrantRoundFilter({ active: true, closed: true });
+    }
+  }, [grantRoundFilter]);
 
   useEffect(() => {
     if (!grantRegistry && !beneficiaryRegistry) {
       return;
     }
-    //ONLY WORKING WITH DEMO / REAL DATA
-    /* grantRegistry
-      .getActiveGrant(GRANT_TERM.QUARTER)
-      .then((activeGrant) => console.log('active Grant', activeGrant));
-    grantRegistry
-      .getActiveAwardees(GRANT_TERM.QUARTER)
-      .then((activeAwardees) => console.log('active Awardees', activeAwardees));
-    beneficiaryRegistry
-      .getBeneficiary('0x70997970C51812dc3A010C7d01b50e0d17dc79C8')
-      .then((res) => console.log('beneficiary', res)); */
+    //DEMOING Contracts
+    grantRegistry.getActiveGrant(1).then((activeGrant) => {
+      console.log(activeGrant[0].toNumber());
+      setClosedGrantElections([
+        {
+          startTime: String(activeGrant[0].toNumber()),
+          endTime: String(activeGrant[1].toNumber()),
+          id: `closed-1-${activeGrant[0].toNumber() * 1000}`,
+          grantTerm: 1,
+          grantShareType: activeGrant[3],
+          awardees: [''],
+          awardeesCount: activeGrant[4],
+          description: 'A description that will later be pulled from IPFS',
+          active: false,
+        },
+      ]);
+    });
+    grantRegistry.getActiveAwardees(1).then((activeAwardees) =>
+      setClosedGrantElections((prevState) => [
+        ...prevState.filter((election) => election.grantTerm !== 1),
+        {
+          ...prevState.find((election) => election.grantTerm === 1),
+          awardees: activeAwardees,
+        },
+      ]),
+    );
   }, [grantRegistry, beneficiaryRegistry]);
+
+  useEffect(() => {
+    if (!beneficiaryRegistry) {
+      return;
+    }
+    //Go through each election and call the function per beneficiary
+    beneficiaryRegistry
+      .getBeneficiary('0x22f5413C075Ccd56D575A54763831C4c27A37Bdb')
+      .then((res) => console.log('beneficiary ipfs-hash', res));
+  }, [activeGrantElections, closedGrantElections]);
 
   function connectWallet() {
     activate(connectors.Injected);
@@ -185,7 +209,7 @@ export default function GrantOverview() {
 
   return (
     <div className="w-full">
-      <header className="w-full h-10 bg-white mb-8"></header>
+      <Navbar />
       {[...activeGrantElections, ...closedGrantElections]
         .filter(
           (election) =>
