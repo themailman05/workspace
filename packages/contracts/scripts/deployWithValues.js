@@ -60,11 +60,16 @@ async function main() {
   this.stakingContract = await Staking.deploy(this.mockPop.address);
   await this.stakingContract.deployed();
 
+  const GrantElections = await ethers.getContractFactory('GrantElections');
+  this.grantElectionContract = await GrantElections.deploy(this.stakingContract.address, beneficiaryRegistry.address );
+  await this.grantElectionContract.deployed();
+
   console.log('active awardees: ', activeAwardees);
   console.log("MOCKPOP deployed to:", this.mockPop.address);
   console.log("StakingContract deployed to:", this.stakingContract.address);
   console.log("BeneficiaryRegistry deployed to:", beneficiaryRegistry.address);
   console.log("GrantRegistry deployed to:", grantRegistry.address);
+  console.log("GrantElections deployed to:", this.grantElectionContract.address);
 
   return { beneficiaryRegistryAddress: beneficiaryRegistry.address, grantRegistryAddress: grantRegistry.address}
 }
