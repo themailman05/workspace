@@ -42,11 +42,11 @@ p {
   }
 
   .button-primary {
-    @apply bg-primary text-gray-700 transition duration-150 ease-in-out;
+    @apply bg-primary text-white transition duration-150 ease-in-out;
   }
 
   .button-primary:hover {
-    @apply bg-primaryLight shadow-lg transform scale-102 text-gray-600 font-bold text-lg;
+    @apply bg-primaryLight shadow-lg transform scale-102 text-white font-bold text-lg;
   }
 }
 
