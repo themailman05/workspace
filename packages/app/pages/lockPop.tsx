@@ -1,15 +1,13 @@
 import Sidebar from '../containers/Grants/Sidebar/Sidebar';
 import Modal from '../containers/modal';
 import { useWeb3React } from '@web3-react/core';
-import { JsonRpcSigner, Web3Provider } from '@ethersproject/providers';
+import { Web3Provider } from '@ethersproject/providers';
 import { useState, useEffect } from 'react';
 import { Contract } from '@ethersproject/contracts';
 import { connectors } from '../containers/Web3/connectors';
 import LockPopSlider from '../containers/lockPopSlider';
 import Staking from '../../contracts/artifacts/contracts/Staking.sol/Staking.json';
 import MockPop from '../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
-import { ethers } from 'ethers';
-const { parseEther } = require("ethers/lib/utils");
 const { BigNumber } = require('@ethersproject/bignumber');
 
 
@@ -17,21 +15,14 @@ export default function LockPop() {
 
   const context = useWeb3React<Web3Provider>();
     const {
-      connector,
       library,
-      chainId,
       account,
       activate,
-      deactivate,
       active,
-      error,
     } = context;
-    const [maxVotes, setMaxVotes] = useState<number>(0);
-    const [remainingVotes, setRemainingVotes] = useState<number>(0);
-    const [activeGrants, setActiveGrants] = useState([]);
-    const [grantRegistry, setGrantRegistry] = useState<Contract>();
-    const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
-    const [activeGrantRound, scrollToGrantRound] = useState<string>();
+    const [maxVotes, ] = useState<number>(0);
+    const [remainingVotes, ] = useState<number>(0);
+    const [, scrollToGrantRound] = useState<string>();
     const [staking, setStaking] = useState<Contract>();
     const [mockERC, setMockERC] = useState<Contract>(); 
     const [votes, setVotes] = useState<number>(0);
@@ -43,13 +34,15 @@ export default function LockPop() {
     const [errorModal, setErrorModal] = useState<string>('invisible');
     const [errorMsg, setErrorMsg] = useState<string>('');
 
-    const stakingAddress = '0xa513E6E4b8f2a923D98304ec87F64353C4D5C853';
-    const mockERCAddress = '0x5FC8d32690cc91D4c39d9d3abcBD16989F875707';
+    const stakingAddress = process.env.ADDR_STAKING;
+    const mockERCAddress = process.env.ADDR_POP;
+    console.log("addresses", stakingAddress, mockERCAddress)
+
     const timeToSeconds = { '1 week': 604800, '1 month': 2635200, '3 months': 7905600, '6 months': 15811200, '1 year': 31622400, '4 years': 126489600 };
 
     function submitVotes() {}
 
-    async function lockPop(amountToLock, amountOfTime = 606666) {
+    async function lockPop(amountToLock, amountOfTime = timeToSeconds['1 week']) {
       const signer = library.getSigner();
 
       const connected = await mockERC.connect(signer)
@@ -59,7 +52,7 @@ export default function LockPop() {
       .catch(err => console.log('err', err));
 
       const connectedStaking = await staking.connect(signer);
-      await connectedStaking.stake(1, amountOfTime)
+      await connectedStaking.stake(amountToLock, amountOfTime)
       .then(rez => {
         console.log('successfully staked',rez);
         setConfirmModal('invisible');
@@ -235,7 +228,7 @@ export default function LockPop() {
               <p className="lockpop-small">Locking tokens for a longer period of time will give you more voting power.</p>
               
               <select className="select-time" value={duration} onChange={(v) => setDuration(v.target.value)}>
-                {['1 week', '1 month', '3 months', '6 months', '1 year', '4 years'].map(duration => <option value={duration}>{duration}</option>)}
+                {['1 week', '1 month', '3 months', '6 months', '1 year', '4 years'].map(duration => <option key={duration} value={duration}>{duration}</option>)}
               </select>
               {/* <p>Voting power = POP locked * duration / maximum duration</p> */}
               <div className='voting-power-div'>
