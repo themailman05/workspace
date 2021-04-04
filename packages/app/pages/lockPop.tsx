@@ -18,9 +18,6 @@ export default function LockPop() {
       activate,
       active,
     } = context;
-    const [maxVotes, ] = useState<number>(0);
-    const [remainingVotes, ] = useState<number>(0);
-    const [, scrollToGrantRound] = useState<string>();
     const [staking, setStaking] = useState<Contract>();
     const [mockERC, setMockERC] = useState<Contract>(); 
     const [votes, setVotes] = useState<number>(0);
@@ -150,7 +147,6 @@ export default function LockPop() {
       )
     }
 
-  console.log(library, active, account, mockERC)
   return (
         <div className="w-screen">
           <Modal visible={confirmModal}>
@@ -170,35 +166,7 @@ export default function LockPop() {
             <header className="w-full h-10 bg-white"></header>
             <div className="lockpop-page-container">
               <div className="w-2/12 flex flex-col items-center">
-                <Sidebar
-                  remainingVotes={remainingVotes}
-                  maxVotes={maxVotes}
-                  grantRounds={[
-                    {
-                      name: 'Quaterly',
-                      address: '0',
-                      active: true,
-                      year: 2021,
-                    },
-                    {
-                      name: 'Monthly',
-                      address: '1',
-                      active: false,
-                      year: 2021,
-                    },
-                    {
-                      name: 'Yearly',
-                      address: '2',
-                      active: false,
-                      year: 2020,
-                    },
-                  ]}
-                  isWalletConnected={library?.connection?.url === 'metamask'}
-                  connectWallet={connectWallet}
-                  submitVotes={submitVotes}
-                  scrollToGrantRound={scrollToGrantRound}
-                  minimal
-                />
+
             </div>
           <div className="lockpop-content-div">
             <div className="lockpop-form-div">
