@@ -134,6 +134,7 @@ contract GrantElections {
     public
     view
     returns (
+      Vote[] memory votes_,
       ElectionTerm term_,
       address[] memory registeredBeneficiaries_,
       ElectionState state_,
@@ -145,6 +146,7 @@ contract GrantElections {
   {
     Election storage e = elections[uint8(_grantTerm)];
 
+    votes_ = e.votes;
     term_ = e.electionTerm;
     registeredBeneficiaries_ = e.registeredBeneficiariesList;
     state_ = e.electionState;
