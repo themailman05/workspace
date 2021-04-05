@@ -88,6 +88,7 @@ describe("GrantElections", function () {
       ).getElectionMetadata(GRANT_TERM.QUARTER);
 
       expect(metadata).to.deep.equal({
+        votes: [],
         electionTerm: GRANT_TERM.QUARTER,
         registeredBeneficiaries: [],
         electionState: ElectionState.Registration,
@@ -174,8 +175,17 @@ describe("GrantElections", function () {
       await this.mockStaking.mock.getVoiceCredits.returns(10);
       await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
       await this.contract.registerForElection(beneficiary.address, GRANT_TERM.MONTH);
-      const result = await this.contract.vote([beneficiary.address], [1], GRANT_TERM.MONTH);
-      // todo test more stuff?
+      await this.contract.vote([beneficiary.address], [5], GRANT_TERM.MONTH);
+      const metadata = await GrantElectionAdapter(
+        this.contract
+      ).getElectionMetadata(GRANT_TERM.MONTH);
+      expect(metadata["votes"]).deep.to.eq([
+        {
+          voter: owner.address,
+          beneficiary: beneficiary.address,
+          weight: Math.round(Math.sqrt(5)),
+        }
+      ]);
     });
   });
 });
