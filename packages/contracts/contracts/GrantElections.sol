@@ -251,18 +251,18 @@ contract GrantElections {
     address _beneficiary,
     uint256 weight
   ) internal {
-    Election storage election = elections[uint8(_electionTerm)];
+    Election storage _election = elections[uint8(_electionTerm)];
     if (
       weight >
       beneficiaryVotes[_electionTerm][
         electionRanking[_electionTerm][
-          election.electionConfiguration.ranking - 1
+          _election.electionConfiguration.ranking - 1
         ]
       ]
     ) {
       // If weight is bigger than the last in the ranking for the election term, take its position
       electionRanking[_electionTerm][
-        election.electionConfiguration.ranking - 1
+        _election.electionConfiguration.ranking - 1
       ] = _beneficiary;
     } else {
       // Otherwise, no need to recalculate ranking
@@ -270,7 +270,7 @@ contract GrantElections {
     }
 
     // traverse inverted ranking
-    for (uint8 i = election.electionConfiguration.ranking; i > 0; i--) {
+    for (uint8 i = _election.electionConfiguration.ranking; i > 0; i--) {
       // if the votes are higher than the next one in the ranking, swap them
       if (
         beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] >
