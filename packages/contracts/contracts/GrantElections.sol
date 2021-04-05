@@ -162,8 +162,6 @@ contract GrantElections {
       beneficiaryRegistry.beneficiaryExists(_beneficiary);
   }
 
-
-
   function refreshElectionState(ElectionTerm _electionTerm) public {
     Election storage election = elections[uint8(_electionTerm)];
     if (

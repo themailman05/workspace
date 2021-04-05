@@ -27,6 +27,7 @@ describe("GrantElections", function () {
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address
        );
+    await this.contract.initialize(GRANT_TERM.MONTH);
   });
 
   describe("defaults", function () {
@@ -72,7 +73,7 @@ describe("GrantElections", function () {
     });
   });
   describe("initialization", function () {
-    it("should succesfully initialize an election if one hasn't already been created", async function () {
+    it("should successfully initialize an election if one hasn't already been created", async function () {
       await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
       await ethers.provider.send("evm_mine");
 
@@ -128,52 +129,52 @@ describe("GrantElections", function () {
     });
 
     it("should require voice credits", async function () {
-      await expect(this.contract.vote([], [], 0)).to.be.revertedWith(
+      await expect(this.contract.vote([], [], GRANT_TERM.MONTH)).to.be.revertedWith(
         "Voice credits are required"
       );
     });
 
     it("should require beneficiaries", async function () {
-      await expect(this.contract.vote([], [1], 0)).to.be.revertedWith(
+      await expect(this.contract.vote([], [1], GRANT_TERM.MONTH)).to.be.revertedWith(
         "Beneficiaries are required"
       );
     });
 
     it("should require election open for voting", async function () {
-      await this.contract.initialize(0);
+      await this.contract.initialize(GRANT_TERM.MONTH);
       await expect(
-        this.contract.vote([beneficiary.address], [1], 0)
+        this.contract.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
       ).to.be.revertedWith("Election not open for voting");
     });
 
     it("should require staked voice credits", async function () {
-      await this.contract.initialize(0);
+      await this.contract.initialize(GRANT_TERM.MONTH);
       ethers.provider.send("evm_increaseTime", [7 * 86400]);
       ethers.provider.send("evm_mine");
       await this.mockStaking.mock.getVoiceCredits.returns(0);
       await expect(
-        this.contract.vote([beneficiary.address], [1], 0)
+        this.contract.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
       ).to.be.revertedWith("must have voice credits from staking");
     });
 
     it("should require eligible beneficiary", async function () {
-      await this.contract.initialize(0);
+      await this.contract.initialize(GRANT_TERM.MONTH);
       ethers.provider.send("evm_increaseTime", [7 * 86400]);
       ethers.provider.send("evm_mine");
       await this.mockStaking.mock.getVoiceCredits.returns(10);
       await expect(
-        this.contract.vote([beneficiary.address], [1], 0)
+        this.contract.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
       ).to.be.revertedWith("ineligible beneficiary");
     });
 
     it("should vote successfully", async function () {
-      await this.contract.initialize(0);
+      await this.contract.initialize(GRANT_TERM.MONTH);
       ethers.provider.send("evm_increaseTime", [7 * 86400]);
       ethers.provider.send("evm_mine");
       await this.mockStaking.mock.getVoiceCredits.returns(10);
       await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
-      await this.contract.registerForElection(beneficiary.address, 0);
-      const result = await this.contract.vote([beneficiary.address], [1], 0);
+      await this.contract.registerForElection(beneficiary.address, GRANT_TERM.MONTH);
+      const result = await this.contract.vote([beneficiary.address], [1], GRANT_TERM.MONTH);
       // todo test more stuff?
     });
   });
