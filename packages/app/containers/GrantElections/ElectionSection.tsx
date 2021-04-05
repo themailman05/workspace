@@ -23,9 +23,6 @@ interface IElectionSection {
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
   scrollToMe: boolean;
   quadratic: boolean;
-  userIsEligibleBeneficiary?: boolean;
-  registerForElection: (grant_term: number) => void;
-  alreadyRegistered: boolean;
 }
 
 export default function ElectionSection({
@@ -47,9 +44,6 @@ export default function ElectionSection({
   setGrantRoundFilter,
   scrollToMe,
   quadratic,
-  userIsEligibleBeneficiary,
-  registerForElection,
-  alreadyRegistered,
 }: IElectionSection): JSX.Element {
   return (
     <div className="flex flex-row">
@@ -80,9 +74,6 @@ export default function ElectionSection({
           maxVotes={maxVotes}
           scrollToMe={scrollToMe}
           quadratic={quadratic}
-          userIsEligibleBeneficiary={userIsEligibleBeneficiary}
-          registerForElection={registerForElection}
-          alreadyRegistered={alreadyRegistered}
         />
       </div>
     </div>
