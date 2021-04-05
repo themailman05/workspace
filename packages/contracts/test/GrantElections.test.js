@@ -383,6 +383,7 @@ describe("GrantElections", function () {
       await this.mockPop
         .connect(beneficiary)
         .approve(this.contract.address, registrationBondMonth);
+
       await this.mockStaking.mock.getVoiceCredits.returns(10);
       await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
       await this.contract
