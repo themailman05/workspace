@@ -130,6 +130,19 @@ contract GrantElections {
     return elections[uint8(_term)].registeredBeneficiariesList;
   }
 
+  function getCurrentRanking(ElectionTerm _term)
+    external
+    view
+    returns (address[] memory)
+  {
+    uint8 _rankingSize = elections[uint8(_term)].electionConfiguration.ranking;
+    address[] memory _ranking = new address[](_rankingSize);
+    for (uint8 i = 0; i < _rankingSize; i++) {
+      _ranking[i] = electionRanking[_term][i];
+    }
+    return _ranking;
+  }
+
   /**
    * todo: use POP for bond
    * todo: check beneficiary is not registered for another non-closed election
@@ -225,6 +238,7 @@ contract GrantElections {
         _electionTerm
       ][_beneficiaries[i]]
         .add(_sqredVoiceCredits);
+      _recalculateRanking(_electionTerm, _beneficiaries[i], _sqredVoiceCredits);
     }
     require(
       _usedVoiceCredits <= _stakedVoiceCredits,
@@ -237,17 +251,18 @@ contract GrantElections {
     address _beneficiary,
     uint256 weight
   ) internal {
+    Election storage election = elections[uint8(_electionTerm)];
     if (
       weight >
       beneficiaryVotes[_electionTerm][
         electionRanking[_electionTerm][
-          electionConfigurations[_electionTerm].ranking - 1
+          election.electionConfiguration.ranking - 1
         ]
       ]
     ) {
       // If weight is bigger than the last in the ranking for the election term, take its position
       electionRanking[_electionTerm][
-        electionConfigurations[_electionTerm].ranking - 1
+        election.electionConfiguration.ranking - 1
       ] = _beneficiary;
     } else {
       // Otherwise, no need to recalculate ranking
@@ -255,17 +270,17 @@ contract GrantElections {
     }
 
     // traverse inverted ranking
-    for (uint8 i = electionConfigurations[_electionTerm].ranking; i > 0; i--) {
+    for (uint8 i = election.electionConfiguration.ranking; i > 0; i--) {
       // if the votes are higher than the next one in the ranking, swap them
       if (
         beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] >
-        beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] + 1
+        beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i - 1]]
       ) {
         (
           electionRanking[_electionTerm][i],
-          electionRanking[_electionTerm][i + 1]
+          electionRanking[_electionTerm][i - 1]
         ) = (
-          electionRanking[_electionTerm][i + 1],
+          electionRanking[_electionTerm][i - 1],
           electionRanking[_electionTerm][i]
         );
       }

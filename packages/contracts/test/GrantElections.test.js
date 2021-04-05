@@ -188,4 +188,47 @@ describe("GrantElections", function () {
       ]);
     });
   });
+
+  describe("getCurrentRanking", function () {
+    beforeEach(async function () {
+      const Staking = await ethers.getContractFactory("Staking");
+      this.mockStaking = await waffle.deployMockContract(owner, Staking.interface.format());
+
+      const BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
+      this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
+
+      const GrantElections = await ethers.getContractFactory('GrantElections');
+      this.contract = await GrantElections.deploy(
+          this.mockStaking.address,
+          this.mockBeneficiaryRegistry.address
+         );
+      await this.contract.deployed();
+    });
+
+    it("return current ranking", async function () {
+      await this.contract.initialize(GRANT_TERM.MONTH);
+      ethers.provider.send("evm_increaseTime", [7 * 86400]);
+      ethers.provider.send("evm_mine");
+      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await this.contract.registerForElection(beneficiary.address, GRANT_TERM.MONTH);
+      await this.contract.registerForElection(nonOwner.address, GRANT_TERM.MONTH);
+      await this.mockStaking.mock.getVoiceCredits.returns(20);
+      await this.contract.vote([beneficiary.address], [5], GRANT_TERM.MONTH);
+      expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
+        [
+          beneficiary.address,
+          '0x0000000000000000000000000000000000000000',
+          '0x0000000000000000000000000000000000000000',
+        ]
+      );
+      await this.contract.vote([nonOwner.address], [10], GRANT_TERM.MONTH);
+      expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
+        [
+          nonOwner.address,
+          beneficiary.address,
+          '0x0000000000000000000000000000000000000000',
+        ]
+      );
+    });
+  });
 });
