@@ -1,6 +1,6 @@
-import GrantRound from './GrantRound';
-import Sidebar from './Sidebar/Sidebar';
-import { IGrantRound } from './Sidebar/GrantRoundLink';
+import GrantRound from '../../components/Grants/GrantRound';
+import Sidebar from '../../components/Sidebar/Sidebar';
+import { IGrantRound } from '../../components/Sidebar/GrantRoundLink';
 import { IGrantRoundFilter, IVote } from 'pages/grants';
 import { Dispatch } from 'react';
 
@@ -53,7 +53,6 @@ export default function ElectionSection({
           maxVotes={maxVotes}
           grantRounds={grantRounds}
           isWalletConnected={isWalletConnected}
-          grantTerm={grantTerm}
           grantRoundFilter={grantRoundFilter}
           isActiveElection={isActiveElection}
           connectWallet={connectWallet}
