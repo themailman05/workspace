@@ -27,6 +27,7 @@ contract GrantElections {
   struct Election {
     Vote[] votes;
     mapping(address => bool) registeredBeneficiaries;
+    mapping(address => bool) voters;
     address[] registeredBeneficiariesList;
     ElectionTerm electionTerm;
     ElectionState electionState;
@@ -51,6 +52,7 @@ contract GrantElections {
   mapping(ElectionTerm => mapping(address => uint256)) beneficiaryVotes;
   mapping(ElectionTerm => ElectionConfiguration) electionConfigurations;
   mapping(ElectionTerm => mapping(uint8 => address)) electionRanking;
+  mapping(ElectionTerm => mapping(address => bool)) electionRankingAddresses;
 
   ElectionConfiguration[3] public electionDefaults;
 
@@ -279,6 +281,10 @@ contract GrantElections {
       election.electionState == ElectionState.Voting,
       "Election not open for voting"
     );
+    require(
+      !election.voters[msg.sender],
+      "address already voted for election term"
+    );
 
     uint256 _usedVoiceCredits = 0;
     uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);
@@ -303,6 +309,7 @@ contract GrantElections {
         });
 
       election.votes.push(_vote);
+      election.voters[msg.sender] = true;
       beneficiaryVotes[_electionTerm][_beneficiaries[i]] = beneficiaryVotes[
         _electionTerm
       ][_beneficiaries[i]]
@@ -321,25 +328,35 @@ contract GrantElections {
     uint256 weight
   ) internal {
     Election storage _election = elections[uint8(_electionTerm)];
-    if (
-      weight >
-      beneficiaryVotes[_electionTerm][
+    // If beneficiary already in ranking skip inserting it and go to sorting
+    if (!electionRankingAddresses[_electionTerm][_beneficiary]) {
+      if (
+        weight >
+        beneficiaryVotes[_electionTerm][
+          electionRanking[_electionTerm][
+            _election.electionConfiguration.ranking - 1
+          ]
+        ]
+      ) {
+        // If weight is bigger than the last in the ranking for the election term, take its position
+        // Remove the current last one from the ranking
+        electionRankingAddresses[_electionTerm][
+          electionRanking[_electionTerm][
+            _election.electionConfiguration.ranking - 1
+          ]
+        ] = false;
         electionRanking[_electionTerm][
           _election.electionConfiguration.ranking - 1
-        ]
-      ]
-    ) {
-      // If weight is bigger than the last in the ranking for the election term, take its position
-      electionRanking[_electionTerm][
-        _election.electionConfiguration.ranking - 1
-      ] = _beneficiary;
-    } else {
-      // Otherwise, no need to recalculate ranking
-      return;
+        ] = _beneficiary;
+        electionRankingAddresses[_electionTerm][_beneficiary] = true;
+      } else {
+        // Otherwise, no need to recalculate ranking
+        return;
+      }
     }
 
     // traverse inverted ranking
-    for (uint8 i = _election.electionConfiguration.ranking; i > 0; i--) {
+    for (uint8 i = _election.electionConfiguration.ranking - 1; i > 0; i--) {
       // if the votes are higher than the next one in the ranking, swap them
       if (
         beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] >
