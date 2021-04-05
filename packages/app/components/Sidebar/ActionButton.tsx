@@ -32,7 +32,7 @@ export default function SidebarActionButton({
     return (
       <button
         className="button button-primary w-full"
-        onClick={() => router.push('/stake')}
+        onClick={() => router.push('/staking')}
       >
         Lock POP
       </button>

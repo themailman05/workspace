@@ -6,6 +6,8 @@ import { connectors } from '../../containers/Web3/connectors';
 import { Contract } from '@ethersproject/contracts';
 import GrantRegistryAbi from '../../abis/GrantRegistry.json';
 import BeneficiaryRegistryAbi from '../../abis/BeneficiaryRegistry.json';
+import Staking from '../../../contracts/artifacts/contracts/Staking.sol/Staking.json';
+import MockPop from '../../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
 import beneficiaryFixture from '../../fixtures/beneficiaries.json';
 import activeElections from '../../fixtures/activeElections.json';
 import closedElections from '../../fixtures/closedElections.json';
@@ -14,6 +16,7 @@ import ElectionSection from 'containers/GrantElections/ElectionSection';
 import createElectionName from 'utils/createElectionName';
 import getBeneficiariesForElection from 'utils/getBeneficiariesForElection';
 import Navbar from 'components/Navbar';
+import { utils } from 'ethers';
 
 interface GrantElection {
   id: string;
@@ -64,6 +67,8 @@ export default function GrantOverview() {
   const [beneficiaries, setBeneficiaries] = useState([]);
   const [grantRegistry, setGrantRegistry] = useState<Contract>();
   const [beneficiaryRegistry, setBeneficiaryRegistry] = useState<Contract>();
+  const [stakingContract, setStakingContract] = useState<Contract>();
+  const [popContract, setPopContract] = useState<Contract>();
   const [activeGrantRound, scrollToGrantRound] = useState<string>();
   const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
     active: true,
@@ -102,12 +107,18 @@ export default function GrantOverview() {
   useEffect(() => {
     if (!active) {
       activate(connectors.Network);
-      if (library?.connection?.url === 'metamask') {
-        //TODO get pop -> to tell the user to either lock them or buy some
-        //TODO get locked pop -> to vote or tell the user to lock pop
-        //TODO swap the contract provider to signer so the user can vote
-        grantRegistry.connect(library.getSigner());
-      }
+    }
+    if (library?.connection?.url === 'metamask') {
+      setStakingContract(
+        new Contract(
+          process.env.ADDR_STAKING,
+          Staking.abi,
+          library.getSigner(),
+        ),
+      );
+      setPopContract(
+        new Contract(process.env.ADDR_POP, MockPop.abi, library.getSigner()),
+      );
     }
   }, [active]);
 
@@ -115,21 +126,40 @@ export default function GrantOverview() {
     if (!library) {
       return;
     }
-      setGrantRegistry(
-        new Contract(
-          process.env.ADDR_GRANT_REGISTRY,
-          GrantRegistryAbi.abi,
-          library,
-        ),
-      );
-      setBeneficiaryRegistry(
-        new Contract(
-          process.env.ADDR_BENEFICIARY_REGISTRY,
-          BeneficiaryRegistryAbi.abi,
-          library,
-        ),
-      );
+    setGrantRegistry(
+      new Contract(
+        process.env.ADDR_GRANT_REGISTRY,
+        GrantRegistryAbi.abi,
+        library,
+      ),
+    );
+    setBeneficiaryRegistry(
+      new Contract(
+        process.env.ADDR_BENEFICIARY_REGISTRY,
+        BeneficiaryRegistryAbi.abi,
+        library,
+      ),
+    );
   }, [library]);
+
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+    popContract
+      .balanceOf(account)
+      .then((res) => console.log('POP Balance: ', res));
+  }, [popContract]);
+
+  useEffect(() => {
+    if (!active) {
+      return;
+    }
+    stakingContract.getVoiceCredits(account).then((res) => {
+      console.log('Voice Credits: ', utils.formatEther(res));
+      setMaxVotes(Number(utils.formatEther(res)));
+    });
+  }, [stakingContract]);
 
   useEffect(() => {
     if (!grantRoundFilter.active && !grantRoundFilter.closed) {
@@ -142,31 +172,24 @@ export default function GrantOverview() {
       return;
     }
     //DEMOING Contracts
+    const rinkebyClosedElection = [];
     grantRegistry.getActiveGrant(1).then((activeGrant) => {
-      console.log(activeGrant[0].toNumber());
-      setClosedGrantElections([
-        {
-          startTime: String(activeGrant[0].toNumber()),
-          endTime: String(activeGrant[1].toNumber()),
-          id: `closed-1-${activeGrant[0].toNumber() * 1000}`,
-          grantTerm: 1,
-          grantShareType: activeGrant[3],
-          awardees: [''],
-          awardeesCount: activeGrant[4],
-          description: 'A description that will later be pulled from IPFS',
-          active: false,
-        },
-      ]);
+      rinkebyClosedElection.push({
+        startTime: String(activeGrant[0].toNumber()),
+        endTime: String(activeGrant[1].toNumber()),
+        id: `closed-1-${activeGrant[0].toNumber() * 1000}`,
+        grantTerm: 1,
+        grantShareType: activeGrant[3],
+        awardees: [''],
+        awardeesCount: activeGrant[4],
+        description: 'A description that will later be pulled from IPFS',
+        active: false,
+      });
     });
-    grantRegistry.getActiveAwardees(1).then((activeAwardees) =>
-      setClosedGrantElections((prevState) => [
-        ...prevState.filter((election) => election.grantTerm !== 1),
-        {
-          ...prevState.find((election) => election.grantTerm === 1),
-          awardees: activeAwardees,
-        },
-      ]),
-    );
+    grantRegistry.getActiveAwardees(1).then((activeAwardees) => {
+      rinkebyClosedElection[0]['awardees'] = activeAwardees;
+      setClosedGrantElections(rinkebyClosedElection);
+    });
   }, [grantRegistry, beneficiaryRegistry]);
 
   useEffect(() => {
@@ -194,8 +217,6 @@ export default function GrantOverview() {
   }
 
   function assignVotes(grantTerm: number, vote: IVote): void {
-    console.log('grantTerm', grantTerm);
-    console.log('vote', vote);
     const votesCopy = [...votes];
     const updatedElection = [
       ...votesCopy[grantTerm].filter(
@@ -210,42 +231,44 @@ export default function GrantOverview() {
   return (
     <div className="w-full">
       <Navbar />
-      {[...activeGrantElections, ...closedGrantElections]
-        .filter(
-          (election) =>
-            (election.active && grantRoundFilter.active) ||
-            (!election.active && grantRoundFilter.closed),
-        )
-        .sort(
-          (election1, election2) =>
-            Number(election2.startTime) - Number(election1.startTime),
-        )
-        .map((election) => (
-          <ElectionSection
-            key={election.id}
-            id={election.id}
-            title={createElectionName(election)}
-            description={election.description}
-            grantTerm={election.grantTerm}
-            isActiveElection={election.active}
-            beneficiaries={getBeneficiariesForElection(
-              beneficiaries,
-              election.awardees,
-            )}
-            maxVotes={maxVotes}
-            votes={election.active ? votes[election.grantTerm] : null}
-            grantRounds={createGrantRounds(activeElections, closedElections)}
-            isWalletConnected={library?.connection?.url === 'metamask'}
-            grantRoundFilter={grantRoundFilter}
-            assignVotes={assignVotes}
-            connectWallet={connectWallet}
-            submitVotes={submitVotes}
-            scrollToGrantRound={scrollToGrantRound}
-            setGrantRoundFilter={setGrantRoundFilter}
-            scrollToMe={election.id === activeGrantRound}
-            quadratic={false}
-          />
-        ))}
+      <div className="w-10/12 mx-auto">
+        {[...activeGrantElections, ...closedGrantElections]
+          .filter(
+            (election) =>
+              (election.active && grantRoundFilter.active) ||
+              (!election.active && grantRoundFilter.closed),
+          )
+          .sort(
+            (election1, election2) =>
+              Number(election2.startTime) - Number(election1.startTime),
+          )
+          .map((election) => (
+            <ElectionSection
+              key={election.id}
+              id={election.id}
+              title={createElectionName(election)}
+              description={election.description}
+              grantTerm={election.grantTerm}
+              isActiveElection={election.active}
+              beneficiaries={getBeneficiariesForElection(
+                beneficiaries,
+                election.awardees,
+              )}
+              maxVotes={maxVotes}
+              votes={election.active ? votes[election.grantTerm] : null}
+              grantRounds={createGrantRounds(activeElections, closedElections)}
+              isWalletConnected={library?.connection?.url === 'metamask'}
+              grantRoundFilter={grantRoundFilter}
+              assignVotes={assignVotes}
+              connectWallet={connectWallet}
+              submitVotes={submitVotes}
+              scrollToGrantRound={scrollToGrantRound}
+              setGrantRoundFilter={setGrantRoundFilter}
+              scrollToMe={election.id === activeGrantRound}
+              quadratic={false}
+            />
+          ))}
+      </div>
     </div>
   );
 }
