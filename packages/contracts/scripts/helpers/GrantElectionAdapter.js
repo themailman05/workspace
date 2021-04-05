@@ -10,6 +10,8 @@ module.exports = {
           registrationPeriod: response.registrationPeriod.toNumber(),
           votingPeriod: response.votingPeriod.toNumber(),
           cooldownPeriod: response.cooldownPeriod.toNumber(),
+          registrationBondRequired: response.registrationBondRequired,
+          registrationBond: response.registrationBond,
         }
       },
 
