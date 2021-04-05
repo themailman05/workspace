@@ -23,6 +23,7 @@ interface IGrantRound {
   alreadyRegistered: boolean;
 }
 
+
 export default function GrantRound({
   id,
   title,

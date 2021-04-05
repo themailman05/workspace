@@ -1,6 +1,7 @@
 const { expect } = require('chai');
 const { parseEther } = require("ethers/lib/utils");
 
+
 let contract;
 
 describe('GrantElections', function () {

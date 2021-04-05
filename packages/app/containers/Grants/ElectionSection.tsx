@@ -28,6 +28,7 @@ interface IElectionSection {
   alreadyRegistered: boolean;
 }
 
+
 export default function ElectionSection({
   id,
   title,

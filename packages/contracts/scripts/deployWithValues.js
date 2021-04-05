@@ -44,8 +44,6 @@ async function main() {
       [firstBeneficiaryAddress, secondBeneficiaryAddress],
       [1,2]
     )
-  // }
-  // addGrant()
 
 
   

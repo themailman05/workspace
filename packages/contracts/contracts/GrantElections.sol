@@ -4,6 +4,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 
+
 contract GrantElections {
     using SafeMath for uint256;
 

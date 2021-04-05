@@ -140,6 +140,7 @@ export default function GrantOverview() {
         })
     }
   }, [grantElection])
+  
 
   useEffect(() => {
     // call to see if we are an eligible beneficiary

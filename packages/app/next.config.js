@@ -1,6 +1,7 @@
 const { join } = require('path');
 require('dotenv').config();
 
+
 const workspace = join(__dirname, '..');
 
 module.exports = {
