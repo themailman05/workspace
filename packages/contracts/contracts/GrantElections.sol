@@ -142,7 +142,9 @@ contract GrantElections {
       uint8[2] memory awardeesRanking_,
       bool useChainLinkVRF_,
       uint256[3] memory periods_,
-      uint256 startTime_
+      uint256 startTime_,
+      bool registrationBondRequired_,
+      uint256 registrationBond_
     )
   {
     Election storage e = elections[uint8(_grantTerm)];
@@ -162,6 +164,10 @@ contract GrantElections {
       e.electionConfiguration.votingPeriod
     ];
     startTime_ = e.startTime;
+    registrationBondRequired_ = e
+      .electionConfiguration
+      .registrationBondRequired;
+    registrationBond_ = e.electionConfiguration.registrationBond;
   }
 
   function getRegisteredBeneficiaries(ElectionTerm _term)

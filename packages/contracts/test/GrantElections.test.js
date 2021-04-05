@@ -97,6 +97,8 @@ describe("GrantElections", function () {
         electionTerm: GRANT_TERM.QUARTER,
         registeredBeneficiaries: [],
         electionState: ElectionState.Registration,
+        registrationBond: parseEther('100'),
+        registrationBondRequired: true,
         configuration: {
           awardees: 2,
           ranking: 5,

@@ -61,6 +61,8 @@ module.exports = {
             }),
           ],
           ["startTime", (value) => value.toNumber()],
+          ["registrationBondRequired", (value) => value],
+          ["registrationBond", (value) => value],
         ];
         return (await contract.getElectionMetadata(grantTerm)).reduce(
           (metadata, value, i) => {
