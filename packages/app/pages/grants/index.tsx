@@ -197,26 +197,6 @@ export default function GrantOverview() {
     if (!library) {
       return;
     }
-<<<<<<< HEAD
-<<<<<<< HEAD
-  }, [grantElection])
-  
-=======
-    setGrantRegistry(
-      new Contract(
-        process.env.ADDR_GRANT_REGISTRY,
-        GrantRegistryAbi.abi,
-        library,
-      ),
-    );
-    setBeneficiaryRegistry(
-      new Contract(
-        process.env.ADDR_BENEFICIARY_REGISTRY,
-        BeneficiaryRegistryAbi.abi,
-        library,
-      ),
-    );
-=======
     //Infura cant connect to the local network which is why we can instantiate the contracts only with metamask
     if (library?.connection?.url === 'metamask') {
       setGrantRegistry(
@@ -244,9 +224,7 @@ export default function GrantOverview() {
         )
       )
     }
->>>>>>> parent of d08b306... Revert "Register for grant elections if eligible on grants page"
   }, [library]);
->>>>>>> 7c1e142284f594d52afb0547e46b0ea8bb627163
 
 
   useEffect(() => {

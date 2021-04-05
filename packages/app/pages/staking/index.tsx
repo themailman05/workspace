@@ -8,10 +8,7 @@ import LockPopSlider from '../../containers/lockPopSlider';
 import Staking from '../../../contracts/artifacts/contracts/Staking.sol/Staking.json';
 import MockPop from '../../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
 import { utils } from 'ethers';
-<<<<<<< HEAD
-=======
-import Navbar from '../../components/Navbar';
->>>>>>> 7c1e142284f594d52afb0547e46b0ea8bb627163
+import Navbar from '../../components/NavBar';
 
 export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
