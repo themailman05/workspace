@@ -2,11 +2,16 @@ pragma solidity >=0.7.0 <=0.8.3;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 
 contract GrantElections {
   using SafeMath for uint256;
+  using SafeERC20 for IERC20;
+
+  IERC20 public immutable POP;
+  address public governance;
 
   struct Vote {
     address voter;
@@ -37,6 +42,8 @@ contract GrantElections {
     uint256 registrationPeriod;
     uint256 votingPeriod;
     uint256 cooldownPeriod;
+    uint256 registrationBond;
+    bool registrationBondRequired;
   }
 
   // mapping of election terms and beneficiary total votes
@@ -50,18 +57,52 @@ contract GrantElections {
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
 
+  modifier onlyGovernance {
+    require(msg.sender == governance, "!governance");
+    _;
+  }
+  modifier validAddress(address _address) {
+    require(_address == address(_address), "invalid address");
+    _;
+  }
+
   event BeneficiaryRegistered(address _beneficiary, ElectionTerm _term);
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
 
-  constructor(IStaking _staking, IBeneficiaryRegistry _beneficiaryRegistry) {
+  event GovernanceUpdated(
+    address indexed _oldAddress,
+    address indexed _newAddress
+  );
+
+  constructor(
+    IStaking _staking,
+    IBeneficiaryRegistry _beneficiaryRegistry,
+    IERC20 _pop,
+    address _governance
+  ) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
-
+    POP = _pop;
+    governance = _governance;
     _setDefaults();
   }
 
+  /**
+   * @notice sets governance to address provided
+   */
+  function setGovernance(address _address)
+    external
+    onlyGovernance
+    validAddress(_address)
+  {
+    address _previousGovernance = governance;
+    governance = _address;
+    emit GovernanceUpdated(_previousGovernance, _address);
+  }
+
   // todo: mint POP for caller to incentivize calling function
+  // todo: use bonds to incentivize callers instead of minting
   function initialize(ElectionTerm _grantTerm) public {
     uint8 _term = uint8(_grantTerm);
     Election storage _election = elections[_term];
@@ -130,6 +171,16 @@ contract GrantElections {
     return elections[uint8(_term)].registeredBeneficiariesList;
   }
 
+  function toggleRegistrationBondRequirement(ElectionTerm _term)
+    external
+    onlyGovernance
+  {
+    electionDefaults[uint8(_term)].registrationBondRequired = !electionDefaults[
+      uint8(_term)
+    ]
+      .registrationBondRequired;
+  }
+
   function getCurrentRanking(ElectionTerm _term)
     external
     view
@@ -144,27 +195,45 @@ contract GrantElections {
   }
 
   /**
-   * todo: use POP for bond
    * todo: check beneficiary is not registered for another non-closed election
    * todo: check beneficiary is not currently awarded a grant
+   * todo: add claimBond function for beneficiary to receive their bond after the election period has closed
    */
   function registerForElection(address _beneficiary, ElectionTerm _grantTerm)
     public
   {
-    uint8 _term = uint8(_grantTerm);
+    Election storage _election = elections[uint8(_grantTerm)];
+
     require(
-      elections[_term].electionState == ElectionState.Registration,
+      _election.electionState == ElectionState.Registration,
       "election not open for registration"
     );
     require(
       beneficiaryRegistry.beneficiaryExists(_beneficiary),
       "address is not eligible for registration"
     );
+    _collectRegistrationBond(_election);
 
-    elections[_term].registeredBeneficiaries[_beneficiary] = true;
-    elections[_term].registeredBeneficiariesList.push(_beneficiary);
+    _election.registeredBeneficiaries[_beneficiary] = true;
+    _election.registeredBeneficiariesList.push(_beneficiary);
 
     emit BeneficiaryRegistered(_beneficiary, _grantTerm);
+  }
+
+  function _collectRegistrationBond(Election storage _election) internal {
+    if (_election.electionConfiguration.registrationBondRequired == true) {
+      require(
+        POP.balanceOf(msg.sender) >=
+          _election.electionConfiguration.registrationBond,
+        "insufficient registration bond balance"
+      );
+
+      POP.safeTransferFrom(
+        msg.sender,
+        address(this),
+        _election.electionConfiguration.registrationBond
+      );
+    }
   }
 
   function _isEligibleBeneficiary(address _beneficiary, ElectionTerm _term)
@@ -293,6 +362,8 @@ contract GrantElections {
     monthlyDefaults.awardees = 1;
     monthlyDefaults.ranking = 3;
     monthlyDefaults.useChainLinkVRF = true;
+    monthlyDefaults.registrationBondRequired = true;
+    monthlyDefaults.registrationBond = 50e18;
     monthlyDefaults.votingPeriod = 7 * ONE_DAY;
     monthlyDefaults.registrationPeriod = 7 * ONE_DAY;
     monthlyDefaults.cooldownPeriod = 21 * ONE_DAY;
@@ -302,6 +373,8 @@ contract GrantElections {
     quarterlyDefaults.awardees = 2;
     quarterlyDefaults.ranking = 5;
     quarterlyDefaults.useChainLinkVRF = true;
+    quarterlyDefaults.registrationBondRequired = true;
+    quarterlyDefaults.registrationBond = 100e18;
     quarterlyDefaults.votingPeriod = 14 * ONE_DAY;
     quarterlyDefaults.registrationPeriod = 14 * ONE_DAY;
     quarterlyDefaults.cooldownPeriod = 83 * ONE_DAY;
@@ -311,6 +384,8 @@ contract GrantElections {
     yearlyDefaults.awardees = 3;
     yearlyDefaults.ranking = 7;
     yearlyDefaults.useChainLinkVRF = true;
+    yearlyDefaults.registrationBondRequired = true;
+    yearlyDefaults.registrationBond = 1000e18;
     yearlyDefaults.votingPeriod = 30 * ONE_DAY;
     yearlyDefaults.registrationPeriod = 30 * ONE_DAY;
     yearlyDefaults.cooldownPeriod = 358 * ONE_DAY;

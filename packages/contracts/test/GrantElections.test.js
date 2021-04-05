@@ -4,9 +4,10 @@ const {
   GrantElectionAdapter,
 } = require("../scripts/helpers/GrantElectionAdapter");
 
-let owner, nonOwner, beneficiary;
+let owner, nonOwner, beneficiary, governance;
 const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
 const ElectionState = { Registration: 0, Voting: 1, Closed: 2 };
+const registrationBondMonth = parseEther('50');
 
 describe("GrantElections", function () {
   before(async function () {
@@ -18,11 +19,17 @@ describe("GrantElections", function () {
       beneficiary3,
       beneficiary4,
       beneficiary5,
+      governance,
     ] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
     this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
-    await this.mockPop.mint(owner.address, parseEther("10"));
+    await this.mockPop.mint(owner.address, parseEther("50"));
+    await this.mockPop.mint(beneficiary.address, parseEther("50"));
+    await this.mockPop.mint(beneficiary2.address, parseEther("50"));
+    await this.mockPop.mint(beneficiary3.address, parseEther("50"));
+    await this.mockPop.mint(beneficiary4.address, parseEther("50"));
+    await this.mockPop.mint(beneficiary5.address, parseEther("50"));
 
     const Staking = await ethers.getContractFactory("Staking");
     this.mockStaking = await waffle.deployMockContract(owner, Staking.interface.format());
@@ -33,7 +40,9 @@ describe("GrantElections", function () {
     const GrantElections = await ethers.getContractFactory('GrantElections');
     this.contract = await GrantElections.deploy(
         this.mockStaking.address,
-        this.mockBeneficiaryRegistry.address
+        this.mockBeneficiaryRegistry.address,
+        this.mockPop.address,
+        governance.address,
        );
     await this.contract.initialize(GRANT_TERM.MONTH);
   });
@@ -80,6 +89,8 @@ describe("GrantElections", function () {
       });
     });
   });
+
+
   describe("initialization", function () {
     it("should successfully initialize an election if one hasn't already been created", async function () {
       await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
@@ -129,10 +140,16 @@ describe("GrantElections", function () {
       const BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
       this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
 
+      MockERC20 = await ethers.getContractFactory("MockERC20");
+      this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+      await this.mockPop.mint(beneficiary.address, parseEther("50"));
+
       const GrantElections = await ethers.getContractFactory('GrantElections');
       this.contract = await GrantElections.deploy(
           this.mockStaking.address,
-          this.mockBeneficiaryRegistry.address
+          this.mockBeneficiaryRegistry.address,
+          this.mockPop.address,
+          governance.address,
          );
       await this.contract.deployed();
     });
@@ -180,9 +197,11 @@ describe("GrantElections", function () {
       await this.contract.initialize(GRANT_TERM.MONTH);
       ethers.provider.send("evm_increaseTime", [7 * 86400]);
       ethers.provider.send("evm_mine");
+
+      await this.mockPop.connect(beneficiary).approve(this.contract.address, registrationBondMonth);
       await this.mockStaking.mock.getVoiceCredits.returns(10);
       await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
-      await this.contract.registerForElection(beneficiary.address, GRANT_TERM.MONTH);
+      await this.contract.connect(beneficiary).registerForElection(beneficiary.address, GRANT_TERM.MONTH);
       await this.contract.vote([beneficiary.address], [5], GRANT_TERM.MONTH);
       const metadata = await GrantElectionAdapter(
         this.contract
@@ -207,9 +226,11 @@ describe("GrantElections", function () {
 
       const GrantElections = await ethers.getContractFactory('GrantElections');
       this.contract = await GrantElections.deploy(
-          this.mockStaking.address,
-          this.mockBeneficiaryRegistry.address
-         );
+        this.mockStaking.address,
+        this.mockBeneficiaryRegistry.address,
+        this.mockPop.address,
+        governance.address,
+      );
       await this.contract.deployed();
     });
 
@@ -218,11 +239,16 @@ describe("GrantElections", function () {
       ethers.provider.send("evm_increaseTime", [7 * 86400]);
       ethers.provider.send("evm_mine");
       await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
-      await this.contract.registerForElection(beneficiary.address, GRANT_TERM.MONTH);
-      await this.contract.registerForElection(beneficiary2.address, GRANT_TERM.MONTH);
-      await this.contract.registerForElection(beneficiary3.address, GRANT_TERM.MONTH);
-      await this.contract.registerForElection(beneficiary4.address, GRANT_TERM.MONTH);
-      await this.contract.registerForElection(beneficiary5.address, GRANT_TERM.MONTH);
+      await this.mockPop.connect(beneficiary).approve(this.contract.address, registrationBondMonth);
+      await this.contract.connect(beneficiary).registerForElection(beneficiary.address, GRANT_TERM.MONTH);
+      await this.mockPop.connect(beneficiary2).approve(this.contract.address, registrationBondMonth);
+      await this.contract.connect(beneficiary2).registerForElection(beneficiary2.address, GRANT_TERM.MONTH);
+      await this.mockPop.connect(beneficiary3).approve(this.contract.address, registrationBondMonth);
+      await this.contract.connect(beneficiary3).registerForElection(beneficiary3.address, GRANT_TERM.MONTH);
+      await this.mockPop.connect(beneficiary4).approve(this.contract.address, registrationBondMonth);
+      await this.contract.connect(beneficiary4).registerForElection(beneficiary4.address, GRANT_TERM.MONTH);
+      await this.mockPop.connect(beneficiary5).approve(this.contract.address, registrationBondMonth);
+      await this.contract.connect(beneficiary5).registerForElection(beneficiary5.address, GRANT_TERM.MONTH);
       await this.mockStaking.mock.getVoiceCredits.returns(1000);
       await this.contract.vote([beneficiary.address], [50], GRANT_TERM.MONTH);
       expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
