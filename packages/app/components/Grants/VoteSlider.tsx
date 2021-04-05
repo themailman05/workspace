@@ -29,7 +29,7 @@ export default function VoteSlider({
   ];
   const sliderMarks = {};
   sliderSteps.forEach(function (step) {
-    sliderMarks[step[0]] = step[1];
+    sliderMarks[step[0]] = { style: { color: '#374151' }, label: step[1] };
   });
 
   function handleSliderChange(value: number) {
@@ -61,6 +61,16 @@ export default function VoteSlider({
             max={maxVotes}
             step={1}
             marks={sliderMarks}
+            dotStyle={{ backgroundColor: '#93C5FD', border: '#93C5FD' }}
+            activeDotStyle={{ backgroundColor: '#3B82F6', border: '#3B82F6' }}
+            railStyle={{ backgroundColor: '#93C5FD', height: '4px' }}
+            trackStyle={{ backgroundColor: '#3B82F6', height: '4px' }}
+            /* handleStyle={{
+              border: '#F29F05',
+              backgroundColor: '#fff',
+              height: '14px',
+              width: '14px',
+            }} */
           />
         </div>
       )}

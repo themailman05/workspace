@@ -30,6 +30,7 @@ export default function FilterGrantRounds({
             id={`show-${key}-elections`}
             type="checkbox"
             checked={grantRoundFilter[key]}
+            readOnly
           />
           <p>{key}</p>
         </label>
