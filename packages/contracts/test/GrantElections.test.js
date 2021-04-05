@@ -71,6 +71,8 @@ describe("GrantElections", function () {
       });
     });
   });
+
+
   describe("initialization", function () {
     it("should succesfully initialize an election if one hasn't already been created", async function () {
       await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
