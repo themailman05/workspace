@@ -19,6 +19,12 @@ describe("GrantElections", function () {
       beneficiary3,
       beneficiary4,
       beneficiary5,
+      voter1,
+      voter2,
+      voter3,
+      voter4,
+      voter5,
+      voter6,
       governance,
     ] = await ethers.getSigners();
 
@@ -214,6 +220,20 @@ describe("GrantElections", function () {
         }
       ]);
     });
+
+    it("should not allow to vote twice for same address and grant term", async function () {
+      await this.contract.initialize(GRANT_TERM.MONTH);
+      ethers.provider.send("evm_increaseTime", [7 * 86400]);
+      ethers.provider.send("evm_mine");
+      await this.mockPop.connect(beneficiary).approve(this.contract.address, registrationBondMonth);
+      await this.mockStaking.mock.getVoiceCredits.returns(10);
+      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await this.contract.connect(beneficiary).registerForElection(beneficiary.address, GRANT_TERM.MONTH);
+      await this.contract.vote([beneficiary.address], [5], GRANT_TERM.MONTH);
+      await expect(
+        this.contract.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
+      ).to.be.revertedWith("address already voted for election term");
+    });
   });
 
   describe("getCurrentRanking", function () {
@@ -250,7 +270,7 @@ describe("GrantElections", function () {
       await this.mockPop.connect(beneficiary5).approve(this.contract.address, registrationBondMonth);
       await this.contract.connect(beneficiary5).registerForElection(beneficiary5.address, GRANT_TERM.MONTH);
       await this.mockStaking.mock.getVoiceCredits.returns(1000);
-      await this.contract.vote([beneficiary.address], [50], GRANT_TERM.MONTH);
+      await this.contract.connect(voter1).vote([beneficiary.address], [50], GRANT_TERM.MONTH);
       expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
         [
           beneficiary.address,
@@ -258,7 +278,7 @@ describe("GrantElections", function () {
           '0x0000000000000000000000000000000000000000',
         ]
       );
-      await this.contract.vote([beneficiary2.address], [100], GRANT_TERM.MONTH);
+      await this.contract.connect(voter2).vote([beneficiary2.address], [100], GRANT_TERM.MONTH);
       expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
         [
           beneficiary2.address,
@@ -266,7 +286,7 @@ describe("GrantElections", function () {
           '0x0000000000000000000000000000000000000000',
         ]
       );
-      await this.contract.vote([beneficiary3.address], [70], GRANT_TERM.MONTH);
+      await this.contract.connect(voter3).vote([beneficiary3.address], [70], GRANT_TERM.MONTH);
       expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
         [
           beneficiary2.address,
@@ -274,7 +294,7 @@ describe("GrantElections", function () {
           beneficiary.address,
         ]
       );
-      await this.contract.vote([beneficiary4.address], [100], GRANT_TERM.MONTH);
+      await this.contract.connect(voter4).vote([beneficiary4.address], [100], GRANT_TERM.MONTH);
       expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
         [
           beneficiary2.address,
@@ -282,7 +302,7 @@ describe("GrantElections", function () {
           beneficiary3.address,
         ]
       );
-      await this.contract.vote([beneficiary5.address], [10], GRANT_TERM.MONTH);
+      await this.contract.connect(voter5).vote([beneficiary5.address], [10], GRANT_TERM.MONTH);
       expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
         [
           beneficiary2.address,
@@ -290,7 +310,7 @@ describe("GrantElections", function () {
           beneficiary3.address,
         ]
       );
-      await this.contract.vote(
+      await this.contract.connect(voter6).vote(
         [beneficiary4.address, beneficiary5.address, beneficiary3.address],
         [10, 200, 20],
         GRANT_TERM.MONTH,

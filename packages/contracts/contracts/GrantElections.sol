@@ -27,6 +27,7 @@ contract GrantElections {
   struct Election {
     Vote[] votes;
     mapping(address => bool) registeredBeneficiaries;
+    mapping(address => bool) voters;
     address[] registeredBeneficiariesList;
     ElectionTerm electionTerm;
     ElectionState electionState;
@@ -280,6 +281,10 @@ contract GrantElections {
       election.electionState == ElectionState.Voting,
       "Election not open for voting"
     );
+    require(
+      !election.voters[msg.sender],
+      "address already voted for election term"
+    );
 
     uint256 _usedVoiceCredits = 0;
     uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);
@@ -304,6 +309,7 @@ contract GrantElections {
         });
 
       election.votes.push(_vote);
+      election.voters[msg.sender] = true;
       beneficiaryVotes[_electionTerm][_beneficiaries[i]] = beneficiaryVotes[
         _electionTerm
       ][_beneficiaries[i]]
