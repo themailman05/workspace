@@ -67,10 +67,10 @@ module.exports = {
     },
   },
   solidity: "0.7.3",
-  networks: {
-    rinkeby: {
-      url: process.env.RPC_URL,
-      accounts: [`0x${process.env.PRIVATE_KEY}`],
-    },
-  },
+  // networks: {
+  //   rinkeby: {
+  //     url: process.env.RPC_URL,
+  //     accounts: [`0x${process.env.PRIVATE_KEY}`],
+  //   },
+  // },
 };
