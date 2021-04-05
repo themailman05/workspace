@@ -4,7 +4,10 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of d08b306... Revert "Register for grant elections if eligible on grants page"
 contract GrantElections {
     using SafeMath for uint256;
 

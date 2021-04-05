@@ -1,7 +1,10 @@
 const { expect } = require('chai');
 const { parseEther } = require("ethers/lib/utils");
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of d08b306... Revert "Register for grant elections if eligible on grants page"
 let contract;
 
 describe('GrantElections', function () {

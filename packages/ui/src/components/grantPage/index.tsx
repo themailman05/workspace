@@ -1,6 +1,9 @@
 import styled from "styled-components";
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> parent of d08b306... Revert "Register for grant elections if eligible on grants page"
 export const RegisterHolder = styled.div`
   display: flex;
   flex-direction: row;
