@@ -26,9 +26,9 @@ module.exports = {
         102: '1.02',
       },
       colors: {
-        primary: '#FC923D',
-        primaryLight: '#FCAF45',
-        primaryDark: '#FD4428',
+        primary: '#F28705',
+        primaryLight: '#F29F05',
+        primaryDark: '#BF4904',
 
         secondary: '#B72E73',
         secondaryLight: '#D5264E',

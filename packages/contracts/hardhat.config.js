@@ -1,8 +1,6 @@
+require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
 const { utils } = require("ethers");
-
-const mockERC20ABI = require('./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json').abi;
-const StakingABI = require('./artifacts/contracts/Staking.sol/Staking.json').abi;
 
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
@@ -12,50 +10,67 @@ task("accounts", "Prints the list of accounts", async () => {
   }
 });
 
-task("POP:mint", "mint amount for recipient",)
-  .addParam("contractaddress", "mock POP contract address")
+task("POP:mint", "mint amount for recipient")
   .addParam("recipient", "address to receive POP")
   .addParam("amount", "amount to receive")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
-    const { contractaddress, recipient, amount } = args;
-    const mockPOP = new ethers.Contract(contractaddress, mockERC20ABI, signer);
+    const { recipient, amount } = args;
+    const abi = require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi;
+    const mockPOP = new ethers.Contract(
+      process.env.ADDR_POP,
+      abi,
+      signer
+    );
     const result = await mockPOP.mint(recipient, utils.parseEther(amount));
     console.log("Done: ", result);
-});
+  });
 
-task("POP:balanceOf", "get balance of POP for address",)
-  .addParam("contractaddress", "mock POP contract address")
+task("POP:balanceOf", "get balance of POP for address")
   .addParam("address", "amount to receive")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
-    const { contractaddress, address } = args;
-    const mockPOP = new ethers.Contract(contractaddress, mockERC20ABI, signer);
+    const { address } = args;
+    const mockPOP = new ethers.Contract(
+      process.env.ADDR_POP,
+      require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
+      signer
+    );
     const result = await mockPOP.balanceOf(address);
-    console.log(`Balance of ${address}: `, utils.formatEther(result.toString()));
-});
+    console.log(
+      `Balance of ${address}: `,
+      utils.formatEther(result.toString())
+    );
+  });
 
-task("staking:getVoiceCredits", "get voice credit balance of address",)
-  .addParam("contractaddress", "staking contract address")
+task("staking:getVoiceCredits", "get voice credit balance of address")
   .addParam("address", "address to check balance of")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
-    const { contractaddress, address } = args;
-    const Staking = new ethers.Contract(contractaddress, StakingABI, signer);
+    const { address } = args;
+    const Staking = new ethers.Contract(
+      process.env.ADDR_STAKING,
+      require("./artifacts/contracts/Staking.sol/Staking.json").abi,
+      signer
+    );
     const result = await Staking.getVoiceCredits(address);
-    console.log(`Voice credits of ${address}: `, utils.formatEther(result.toString()));
-});
+    console.log(
+      `Voice credits of ${address}: `,
+      utils.formatEther(result.toString())
+    );
+  });
 
-
-
-/**
- * @type import('hardhat/config').HardhatUserConfig
- */
 module.exports = {
   networks: {
-  hardhat: {
-    chainId: 1337
+    hardhat: {
+      chainId: +process.env.CHAIN_ID,
+    },
   },
-},
   solidity: "0.7.3",
+  networks: {
+    rinkeby: {
+      url: process.env.RPC_URL,
+      accounts: [`0x${process.env.PRIVATE_KEY}`],
+    },
+  },
 };
