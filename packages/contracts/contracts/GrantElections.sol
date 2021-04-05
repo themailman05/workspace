@@ -270,7 +270,7 @@ contract GrantElections {
     }
 
     // traverse inverted ranking
-    for (uint8 i = _election.electionConfiguration.ranking; i > 0; i--) {
+    for (uint8 i = _election.electionConfiguration.ranking - 1; i > 0; i--) {
       // if the votes are higher than the next one in the ranking, swap them
       if (
         beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] >
