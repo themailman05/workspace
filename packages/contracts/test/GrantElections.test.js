@@ -290,6 +290,18 @@ describe("GrantElections", function () {
           beneficiary3.address,
         ]
       );
+      await this.contract.vote(
+        [beneficiary4.address, beneficiary5.address, beneficiary3.address],
+        [10, 200, 20],
+        GRANT_TERM.MONTH,
+      );
+      expect(await this.contract.getCurrentRanking(GRANT_TERM.MONTH)).deep.to.eq(
+        [
+          beneficiary5.address,
+          beneficiary4.address,
+          beneficiary2.address,
+        ]
+      );
     });
   });
 });
