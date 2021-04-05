@@ -102,6 +102,7 @@ contract GrantElections {
   }
 
   // todo: mint POP for caller to incentivize calling function
+  // todo: use bonds to incentivize callers instead of minting
   function initialize(ElectionTerm _grantTerm) public {
     uint8 _term = uint8(_grantTerm);
     Election storage _election = elections[_term];
@@ -183,6 +184,7 @@ contract GrantElections {
   /**
    * todo: check beneficiary is not registered for another non-closed election
    * todo: check beneficiary is not currently awarded a grant
+   * todo: add claimBond function for beneficiary to receive their bond after the election period has closed
    */
   function registerForElection(address _beneficiary, ElectionTerm _grantTerm)
     public
