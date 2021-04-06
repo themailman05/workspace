@@ -143,7 +143,7 @@ export default function LockPop() {
   }
 
   return (
-    <div className="w-full">
+    <div className="justify-center align-center flex flex-col">
       <Navbar />
       <Modal visible={confirmModal}>
         <p>
@@ -170,7 +170,6 @@ export default function LockPop() {
         </button>
       </Modal>
       <div className="lockpop-page-container">
-        <div className="w-2/12 flex flex-col items-center"></div>
         <div className="lockpop-content-div">
           <div className="lockpop-form-div">
             <h1 className="lock-pop-title">Lock your POP</h1>
