@@ -130,23 +130,20 @@ export default function GrantOverview() {
     }
   }, [active]);
 
+  async function IsUserAlreadyRegistered() {
+    const connected = grantElection.connect(library.getSigner());
+    const elections = [
+      await connected._isEligibleBeneficiary(account, GRANT_TERM.MONTH),
+      await connected._isEligibleBeneficiary(account, GRANT_TERM.QUARTER),
+      await connected._isEligibleBeneficiary(account, GRANT_TERM.YEAR),
+    ]
+    setElectionsSignedUpFor(elections);
+  }
+
   useEffect(() => {
     // Call to see if user has already registered for election
     if (grantElection) {
-      let connected = grantElection.connect(library.getSigner());
-      connected._isEligibleBeneficiary(account, GRANT_TERM.MONTH)
-        .then(res => {
-          console.log(res);
-          connected._isEligibleBeneficiary(account, GRANT_TERM.QUARTER)
-            .then(resQuarter => {
-              console.log(resQuarter);
-              connected._isEligibleBeneficiary(account, GRANT_TERM.YEAR)
-                .then(resYear => {
-                  console.log([res, resQuarter, resYear], 'haha');
-                  setElectionsSignedUpFor([res, resQuarter, resYear]);
-                })
-            })
-        })
+      IsUserAlreadyRegistered();
     }
   }, [grantElection])
 
