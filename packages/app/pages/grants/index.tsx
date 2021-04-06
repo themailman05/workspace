@@ -228,19 +228,23 @@ export default function GrantOverview() {
     if (!active) {
       return;
     }
+    if (popContract) {
     popContract
       .balanceOf(account)
       .then((res) => console.log('POP Balance: ', res));
+    }
   }, [popContract]);
 
   useEffect(() => {
     if (!active) {
       return;
     }
-    stakingContract.getVoiceCredits(account).then((res) => {
-      console.log('Voice Credits: ', utils.formatEther(res));
-      setMaxVotes(Number(utils.formatEther(res)));
-    });
+    if (stakingContract) {
+      stakingContract.getVoiceCredits(account).then((res) => {
+        console.log('Voice Credits: ', utils.formatEther(res));
+        setMaxVotes(Number(utils.formatEther(res)));
+      });
+    }
   }, [stakingContract]);
 
   useEffect(() => {
