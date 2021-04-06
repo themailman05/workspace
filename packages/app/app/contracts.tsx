@@ -43,7 +43,7 @@ export default function ContractsWrapper({
   const [contracts, setContracts] = useState<Contracts>();
 
   useEffect(() => {
-    if (!library) {
+    if (!library || !active) {
       return;
     }
     const beneficiaryContract = new Contract(
@@ -57,7 +57,7 @@ export default function ContractsWrapper({
       library,
     );
     const electionContract = new Contract(
-      process.env.ADDR_GRANT_REGISTRY,
+      process.env.ADDR_GRANT_ELECTION,
       GrantElections.abi,
       library,
     );
@@ -72,7 +72,7 @@ export default function ContractsWrapper({
       election: electionContract,
       pop: popContract,
     });
-  }, [library]);
+  }, [library, active]);
 
   return (
     <ContractsContext.Provider

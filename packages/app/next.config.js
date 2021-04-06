@@ -10,6 +10,7 @@ module.exports = {
     ADDR_POP: process.env.ADDR_POP,
     ADDR_GRANT_REGISTRY: process.env.ADDR_GRANT_REGISTRY,
     ADDR_BENEFICIARY_REGISTRY: process.env.ADDR_BENEFICIARY_REGISTRY,
+    ADDR_GRANT_ELECTION: process.env.ADDR_GRANT_ELECTION,
   },
   poweredByHeader: false,
   webpack: (config, options) => {
