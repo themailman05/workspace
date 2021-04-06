@@ -11,6 +11,7 @@ import createElectionName from 'utils/createElectionName';
 import NavBar from './../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
 import { utils } from 'ethers';
+import GrantElectionAdapter from '../../../../packages/contracts/scripts/helpers/GrantElectionAdapter.js';
 
 interface GrantElection {
   id: string;
@@ -73,14 +74,18 @@ export default function GrantOverview() {
   }, [active]);
 
   useEffect(() => {
+    if (!contracts) {
+      return;
+    }
     if (account) {
-      contracts?.pop?.balanceOf(account);
+      /* contracts?.pop?.balanceOf(account);
       contracts?.staking
         ?.getVoiceCredits(account)
-        .then((res) => setMaxVotes(Number(utils.formatEther(res))));
+        .then((res) => setMaxVotes(Number(utils.formatEther(res)))); */
     }
-    //Only works on localhost
-    contracts?.election?.getElectionMetadata(1).then((res) => console.log(res));
+    GrantElectionAdapter.GrantElectionAdapter(contracts?.election)
+      .getElectionMetadata(1)
+      .then((res) => console.log(res));
   }, [contracts]);
 
   useEffect(() => {
