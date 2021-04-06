@@ -47,7 +47,7 @@ export default function Sidebar({
   }, []);
 
   return (
-    <div className="w-8/12 mx-auto">
+    <div className="w-9/12 mx-auto">
       {isActiveElection && (
         <>
           <VoteCounter

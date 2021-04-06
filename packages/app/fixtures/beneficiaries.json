@@ -1,23 +1,23 @@
 [
   {
-    "address": "0x22f5413C075Ccd56D575A54763831C4c27A37Bdb",
-    "title": "Handshake Development Fund (Panvala League)",
-    "image": "",
-    "description": "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
+    "address": "0xAA220d46bD7266687331967edDB36E9765bffe71",
+    "title": "Pencils of Promise",
+    "image": "https://images.unsplash.com/photo-1573894998033-c0cef4ed722b?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80",
+    "description": "Pencils of Promise believes every child should have access to quality education. We create schools, programs and global communities around the common goal of education for all.",
     "totalVotes": 10
   },
   {
-    "address": "1",
-    "title": "Handshake",
-    "image": "",
-    "description": "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
+    "address": "0xC79c87cA137Be98D52e6344c18112cc656A2Ebf8",
+    "title": "UNICEF - SURGE",
+    "image": "https://www.unicef.org/innovation/sites/unicef.org.innovation/files/styles/media_banner/public/Artboard%2022.png?itok=DZsB9j7c",
+    "description": "SURGE is an immersive series of events that invites youth to learn new skills, while at the same time exploring where blockchain could play a role in addressing global challenges.",
     "totalVotes": 40
   },
   {
-    "address": "2",
-    "title": "Handshake Development Fund (Panvala League)",
-    "image": "",
-    "description": "Handshake is a completely community-run decentralized blockchain built to dismantle ICANN's monopoly on top-level domains (.com, .net, .org, etc. are all top-level domains controlled by ICANN, who charges an $185,000 evaluation fee.",
+    "address": "0x24DbA2C68294508FA87973171B8A652959B2DF5A",
+    "title": "UNICEF - Giga",
+    "image": "https://gigaconnect.org/wp-content/uploads/elementor/thumbs/UN0367723-ozde64qzd0mfp54nbz9b29agz37xzm11zpfyrfi7xc.jpg",
+    "description": "Giga is a global initiative to connect every school to the internet and every young person to information, opportunity, and choice.",
     "totalVotes": 200
   },
   {
