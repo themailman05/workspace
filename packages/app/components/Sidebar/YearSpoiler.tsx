@@ -27,7 +27,7 @@ export default function YearSpoiler({
   return (
     <div>
       <a
-        className="text-white text-base cursor-pointer"
+        className="text-base cursor-pointer"
         onClick={() => setGrantVisibility((prevState) => !prevState)}
       >
         {year}

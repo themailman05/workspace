@@ -14,8 +14,7 @@ import closedElections from '../../fixtures/closedElections.json';
 import createGrantRounds from 'utils/createGrantRounds';
 import ElectionSection from 'containers/GrantElections/ElectionSection';
 import createElectionName from 'utils/createElectionName';
-import getBeneficiariesForElection from 'utils/getBeneficiariesForElection';
-import Navbar from 'components/Navbar';
+import NavBar from './../../containers/NavBar/NavBar';
 import { utils } from 'ethers';
 
 interface GrantElection {
@@ -230,7 +229,7 @@ export default function GrantOverview() {
 
   return (
     <div className="w-full">
-      <Navbar />
+      <NavBar />
       <div className="w-10/12 mx-auto">
         {[...activeGrantElections, ...closedGrantElections]
           .filter(
@@ -250,10 +249,7 @@ export default function GrantOverview() {
               description={election.description}
               grantTerm={election.grantTerm}
               isActiveElection={election.active}
-              beneficiaries={getBeneficiariesForElection(
-                beneficiaries,
-                election.awardees,
-              )}
+              beneficiaries={beneficiaries}
               maxVotes={maxVotes}
               votes={election.active ? votes[election.grantTerm] : null}
               grantRounds={createGrantRounds(activeElections, closedElections)}

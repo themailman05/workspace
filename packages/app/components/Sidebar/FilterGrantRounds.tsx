@@ -17,7 +17,7 @@ export default function FilterGrantRounds({
   }
 
   return (
-    <span className="flex flex-row items-center space-x-2 text-white">
+    <span className="flex flex-row items-center space-x-2">
       <p>Show:</p>
       {Object.keys(grantRoundFilter)?.map((key) => (
         <label

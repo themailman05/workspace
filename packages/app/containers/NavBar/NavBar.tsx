@@ -3,7 +3,9 @@ import { useWeb3React } from '@web3-react/core';
 import { connectors } from 'containers/Web3/connectors';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import React, { useState } from 'react';
 import NavbarLink from './NavbarLinks';
+import { GrantsMenu } from './GrantsMenu';
 
 export default function Navbar(): JSX.Element {
   const context = useWeb3React<Web3Provider>();
@@ -18,7 +20,13 @@ export default function Navbar(): JSX.Element {
     error,
   } = context;
   const router = useRouter();
+  const [showGrants, setShowGrants] = useState(false);
+  const hideSubMenu = () => {
+    setShowGrants(false);
+  }
+  
   return (
+    <>
     <nav
       className="flex shadow-md py-3 mb-8 px-14"
       style={{
@@ -40,7 +48,7 @@ export default function Navbar(): JSX.Element {
       <ul className="flex flex-row items-center mx-auto space-x-4">
         <NavbarLink
           label="Grants"
-          url="/grants"
+          onClick={() => setShowGrants(!showGrants)}
           isActive={router.pathname === '/grants'}
         />
         <NavbarLink
@@ -59,5 +67,7 @@ export default function Navbar(): JSX.Element {
         )}
       </button>
     </nav>
+    <GrantsMenu visible={showGrants} toggleSubMenu={() => setShowGrants(!showGrants)} />
+    </>
   );
 }

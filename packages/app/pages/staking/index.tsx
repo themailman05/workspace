@@ -8,7 +8,7 @@ import LockPopSlider from '../../containers/lockPopSlider';
 import Staking from '../../../contracts/artifacts/contracts/Staking.sol/Staking.json';
 import MockPop from '../../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
 import { utils } from 'ethers';
-import Navbar from '../../components/Navbar';
+import NavBar from '../../containers/NavBar/NavBar';
 
 export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
@@ -144,7 +144,7 @@ export default function LockPop() {
 
   return (
     <div className="w-full">
-      <Navbar />
+      <NavBar />
       <Modal visible={confirmModal}>
         <p>
           Are you sure you want to lock {popToLock} POP for {duration} ?
