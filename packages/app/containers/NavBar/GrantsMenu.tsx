@@ -13,7 +13,6 @@ export const GrantsMenu: React.FC<Props> = ({visible, toggleSubMenu}) => {
   <div className="absolute z-10 inset-x-0 transform shadow-lg">
   <div className="absolute inset-0 flex" aria-hidden="true">
     <div className="bg-white w-1/2"></div>
-    <div className="bg-gray-50 w-1/2"></div>
   </div>
   <div className="relative max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2">
     <nav className="grid gap-y-10 px-4 py-8 bg-white sm:grid-cols-2 sm:gap-x-8 sm:py-12 sm:px-6 lg:px-8 xl:pr-12" aria-labelledby="solutionsHeading">

@@ -7,6 +7,7 @@ import MockPop from '../../contracts/artifacts/contracts/mocks/MockERC20.sol/Moc
 import Staking from '../../contracts/artifacts/contracts/Staking.sol/Staking.json';
 import GrantElections from '../../contracts/artifacts/contracts/GrantElections.sol/GrantElections.json';
 import BeneficiaryRegistry from '../../contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
+import { connectors } from '../containers/Web3/connectors';
 
 export interface Contracts {
   staking: Contract;
@@ -43,34 +44,36 @@ export default function ContractsWrapper({
   const [contracts, setContracts] = useState<Contracts>();
 
   useEffect(() => {
-    if (!library || !active) {
+    if (!active) {
+      activate(connectors.Network);
+    }
+  }, [active]);
+
+  useEffect(() => {
+    if (!library) {
       return;
     }
-    const beneficiaryContract = new Contract(
-      process.env.ADDR_BENEFICIARY_REGISTRY,
-      BeneficiaryRegistry.abi,
-      library,
-    );
-    const stakingContract = new Contract(
-      process.env.ADDR_STAKING,
-      Staking.abi,
-      library,
-    );
-    const electionContract = new Contract(
-      process.env.ADDR_GRANT_ELECTION,
-      GrantElections.abi,
-      library,
-    );
-    const popContract = new Contract(
-      process.env.ADDR_POP,
-      MockPop.abi,
-      library,
-    );
     setContracts({
-      staking: stakingContract,
-      beneficiary: beneficiaryContract,
-      election: electionContract,
-      pop: popContract,
+      staking: new Contract(
+        process.env.ADDR_STAKING,
+        Staking.abi,
+        library,
+      ),
+      beneficiary: new Contract(
+        process.env.ADDR_BENEFICIARY_REGISTRY,
+        BeneficiaryRegistry.abi,
+        library,
+      ),
+      election: new Contract(
+        process.env.ADDR_GRANT_ELECTION,
+        GrantElections.abi,
+        library,
+      ),
+      pop: new Contract(
+        process.env.ADDR_POP,
+        MockPop.abi,
+        library,
+      ),
     });
   }, [library, active]);
 

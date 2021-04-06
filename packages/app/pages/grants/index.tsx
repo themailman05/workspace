@@ -51,7 +51,7 @@ export default function GrantOverview() {
     active,
     error,
   } = context;
-  const { contracts, setContracts } = useContext(ContractsContext);
+  const { contracts } = useContext(ContractsContext);
   const [maxVotes, setMaxVotes] = useState<number>(0);
   const [votes, setVotes] = useState<any[]>([]);
   const [activeGrantElections, setActiveGrantElections] = useState<
@@ -67,15 +67,10 @@ export default function GrantOverview() {
     closed: true,
   });
 
-  useEffect(() => {
-    if (!active) {
-      activate(connectors.Network);
-    }
-  }, [active]);
-
   const getElectionMetadata = async () => {
     const metadata = await GrantElectionAdapter(contracts?.election)
       .getElectionMetadata(1)
+      setActiveGrantElections([metadata])
       console.log("metadata", metadata);
   }
 
@@ -83,13 +78,7 @@ export default function GrantOverview() {
     if (!contracts) {
       return;
     }
-    if (account) {
-      /* contracts?.pop?.balanceOf(account);
-      contracts?.staking
-        ?.getVoiceCredits(account)
-        .then((res) => setMaxVotes(Number(utils.formatEther(res)))); */
-    }
-   getElectionMetadata();
+    getElectionMetadata();
   }, [contracts]);
 
   useEffect(() => {
