@@ -173,8 +173,9 @@ contract GrantElections {
   }
 
   function getRegisteredBeneficiaries(ElectionTerm _term)
-    external
-    returns (address[] memory)
+    public
+    view
+    returns (address[] memory beneficiaries)
   {
     return elections[uint8(_term)].registeredBeneficiariesList;
   }
@@ -412,6 +413,28 @@ contract GrantElections {
     yearlyDefaults.votingPeriod = 30 * ONE_DAY;
     yearlyDefaults.registrationPeriod = 30 * ONE_DAY;
     yearlyDefaults.cooldownPeriod = 358 * ONE_DAY;
+  }
+
+  function setConfiguration(
+    ElectionTerm _term,
+    uint8 _awardees,
+    uint8 _ranking,
+    bool _useChainLinkVRF,
+    bool _registrationBondRequired,
+    uint256 _registrationBond,
+    uint256 _votingPeriod,
+    uint256 _registrationPeriod,
+    uint256 _cooldownPeriod
+  ) public onlyGovernance {
+    ElectionConfiguration storage _defaults = electionDefaults[uint8(_term)];
+    _defaults.awardees = _awardees;
+    _defaults.ranking = _ranking;
+    _defaults.useChainLinkVRF = _useChainLinkVRF;
+    _defaults.registrationBondRequired = _registrationBondRequired;
+    _defaults.registrationBond = _registrationBond;
+    _defaults.votingPeriod = _votingPeriod;
+    _defaults.registrationPeriod = _registrationPeriod;
+    _defaults.cooldownPeriod = _cooldownPeriod;
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {
