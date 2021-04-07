@@ -21,7 +21,7 @@ contract GrantElections {
   }
 
   enum ElectionTerm {Monthly, Quarterly, Yearly}
-  enum ElectionState {Registration, Voting, Closed}
+  enum ElectionState {Registration, Voting, Closed, Finalized}
 
   uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
@@ -386,6 +386,10 @@ contract GrantElections {
     require(
       _election.electionState == ElectionState.Closed,
       "election not yet closed"
+    );
+    require(
+      _election.electionState != ElectionState.Finalized,
+      "election already finalized"
     );
     address[] memory _ranking = getCurrentRanking(_electionTerm);
 
