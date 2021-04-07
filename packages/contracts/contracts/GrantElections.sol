@@ -403,14 +403,14 @@ contract GrantElections {
     uint256[] memory _shares;
 
     if (
-      _awardees.length > 1 && _election.electionConfiguration.useChainLinkVRF
+      _ranking.length > 1 && _election.electionConfiguration.useChainLinkVRF
     ) {
       randomNumberConsumer.getRandomNumber(
         uint256(keccak256(abi.encode(block.timestamp, blockhash(block.number))))
       );
       uint256 _randomNumber = randomNumberConsumer.randomResult();
 
-      _awardees = shuffle(_awardees, _randomNumber);
+      _ranking = shuffle(_ranking, _randomNumber);
     }
 
     for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
