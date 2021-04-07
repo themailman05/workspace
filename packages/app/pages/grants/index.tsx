@@ -11,6 +11,7 @@ import createElectionName from 'utils/createElectionName';
 import NavBar from './../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
 import { GrantElectionAdapter, ElectionMetadata, ElectionState, ElectionTerm } from "@popcorn/utils/Contracts";
+import { utils } from 'ethers';
 
 
 export interface IGrantRoundFilter {
@@ -61,12 +62,20 @@ export default function GrantOverview() {
     setGrantElections([monthly, quarterly, yearly]);
   }
 
+  const getVoiceCredits = async (account) => {
+    if (!account) return;
+    const maxVotes = await contracts.staking.getVoiceCredits(account);
+    setMaxVotes(+utils.formatEther(maxVotes).toString().split('.')[0]);
+  }
+
   useEffect(() => {
     if (!contracts) {
       return;
     }
     getElectionMetadata();
-  }, [contracts]);
+    getVoiceCredits(account);
+
+  }, [contracts, account]);
 
   useEffect(() => {
     if (!grantRoundFilter.active && !grantRoundFilter.closed) {
