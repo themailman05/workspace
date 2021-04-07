@@ -6,12 +6,12 @@ const bluebird = require("bluebird");
 // Run this instead of the normal deploy.js script
 async function main() {
   
-  const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
+  const GrantTerm = { Month: 0, Quarter: 1, Year: 2 };
   const GrantTermMap = { 0: 'Monthly', 1: 'Quarterly', 2: 'Yearly'};
 
   const setSigners = async () => {
     this.accounts = await ethers.getSigners();
-    this.bennies = this.accounts.slice(1,10);
+    this.bennies = this.accounts.slice(1,20);
   }
 
   const deployContracts = async () => {
@@ -44,22 +44,41 @@ async function main() {
 
   const initializeElectionWithFastVotingEnabled = async (grantTerm) => {
     console.log(`initializing ${GrantTermMap[grantTerm]} election with fast voting enabled ...`)
-    await this.grantElections.setConfiguration(grantTerm, 10, 10, true, false, 0, 86400 * 30, 60, 100);
+    await this.grantElections.setConfiguration(grantTerm, 10, 10, true, false, 0, 86400 * 30, 10, 100);
     await this.grantElections.initialize(grantTerm);
     console.log(await GrantElectionAdapter(this.grantElections).electionDefaults(grantTerm));
   }
 
-  const registerBeneficiariesForElection = async (grantTerm) => {
+  const registerBeneficiariesForElection = async (grantTerm, bennies) => {
     console.log(`registering beneficiaries for election (${GrantTermMap[grantTerm]}) ...`);
-    await bluebird.map(this.bennies, async(beneficiary) => {
+    await bluebird.map(bennies, async(beneficiary) => {
       return this.grantElections.registerForElection(beneficiary.address, grantTerm);
     }, {concurrency: 1});
   }
   const displayElectionMetadata = async (grantTerm) => {
     console.log(`${GrantTermMap[grantTerm]} metadata: `, await GrantElectionAdapter(this.grantElections).getElectionMetadata(grantTerm));
   }
-  
 
+  const initializeMonthlyElection =  async () => {
+    await initializeElectionWithFastVotingEnabled(GrantTerm.Month);
+    await registerBeneficiariesForElection(GrantTerm.Month, this.bennies.slice(0,6));
+    await displayElectionMetadata(GrantTerm.Month);
+  }
+
+  const initializeQuarterlyElection = async () => {
+    await initializeElectionWithFastVotingEnabled(GrantTerm.Quarter);
+    await registerBeneficiariesForElection(GrantTerm.Quarter, this.bennies.slice(7,14));
+    await displayElectionMetadata(GrantTerm.Quarter);
+  }
+
+  const initializeYearlyElection = async () => {
+    console.log("initializing yearly election ...");
+    await this.grantElections.setConfiguration(GrantTerm.Year, 10, 10, true, false, 0, 86400 * 30, 86400 * 30, 86400 * 30);
+    await this.grantElections.initialize(GrantTerm.Year);
+    await registerBeneficiariesForElection(GrantTerm.Year, this.bennies.slice(14,20));
+    await displayElectionMetadata(GrantTerm.Year);
+  }
+  
   const logResults = async () => {
     console.log({
       contracts: {
@@ -72,13 +91,14 @@ async function main() {
     });
   }
 
+
   await setSigners();
   await deployContracts();
   await addBeneficiariesToRegistry();
   await mintPOP();
-  await initializeElectionWithFastVotingEnabled(GRANT_TERM.QUARTER);
-  await registerBeneficiariesForElection(GRANT_TERM.QUARTER);
-  await displayElectionMetadata(GRANT_TERM.QUARTER);
+  await initializeMonthlyElection();
+  await initializeQuarterlyElection();
+  await initializeYearlyElection();
   await logResults();
   
 }
