@@ -388,7 +388,7 @@ contract GrantElections {
     }
   }
 
-  function finalize(ElectionTerm _electionTerm) public onlyGovernance {
+  function finalize(ElectionTerm _electionTerm) public {
     Election storage _election = elections[uint8(_electionTerm)];
     require(
       _election.electionState == ElectionState.Closed,
