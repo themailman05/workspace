@@ -13,10 +13,9 @@
     "pretify": "prettier --write ."
   },
   "dependencies": {
-    "@chainlink/contracts": "^0.1.6",
+    "yarn": "^1.22.10",
     "lerna": "3.22.1",
-    "typescript": "^4.1.2",
-    "yarn": "^1.22.10"
+    "typescript": "^4.1.2"
   },
   "devDependencies": {
     "@babel/core": "^7.10.3",
