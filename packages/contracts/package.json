@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "yarn hardhat node",
-    "deployDev": "yarn hardhat run --network localhost scripts/deployWithValues.js",
+    "dev:deploy": "yarn hardhat dev:deploy --network localhost",
     "prettier": "prettier --write 'contracts/**/*.sol'"
   },
   "dependencies": {

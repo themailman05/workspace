@@ -1,10 +1,8 @@
 require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
+const { deploy } = require('./scripts/deployWithValues');
 const { GrantElectionAdapter } = require('./scripts/helpers/GrantElectionAdapter');
 const { utils } = require("ethers");
-
-
-
 
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
@@ -13,6 +11,11 @@ task("accounts", "Prints the list of accounts", async () => {
     console.log(account.address);
   }
 });
+
+task('dev:deploy')
+  .setAction(async (args) => {
+    await deploy(ethers);
+  });
 
 task("elections:getElectionMetadata")
   .addParam("term", "grant term (int)")

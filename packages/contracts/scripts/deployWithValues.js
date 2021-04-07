@@ -4,7 +4,7 @@ const bluebird = require("bluebird");
 
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
-async function main() {
+async function deploy(ethers) {
   
   const GrantTerm = { Month: 0, Quarter: 1, Year: 2 };
   const GrantTermMap = { 0: 'Monthly', 1: 'Quarterly', 2: 'Yearly'};
@@ -38,8 +38,11 @@ async function main() {
   const mintPOP = async () => {
     console.log("giving everyone POP (yay!) ...")
     await bluebird.map(this.accounts, async(account) => {
-      return this.mockPop.mint(account.address, parseEther("1000"));
-    });
+      return this.mockPop.mint(account.address, parseEther("10000"));
+    }, {concurrency: 1});
+    await bluebird.map(this.accounts, async(account) => {
+        return this.mockPop.connect(account).approve(this.grantElections.address, parseEther("10000"));
+    }, {concurrency: 1});
   }
 
   const initializeElectionWithFastVotingEnabled = async (grantTerm) => {
@@ -73,7 +76,6 @@ async function main() {
 
   const initializeYearlyElection = async () => {
     console.log("initializing yearly election ...");
-    await this.grantElections.setConfiguration(GrantTerm.Year, 10, 10, true, false, 0, 86400 * 30, 86400 * 30, 86400 * 30);
     await this.grantElections.initialize(GrantTerm.Year);
     await registerBeneficiariesForElection(GrantTerm.Year, this.bennies.slice(14,20));
     await displayElectionMetadata(GrantTerm.Year);
@@ -103,9 +105,6 @@ async function main() {
   
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+module.exports = {
+  deploy
+}
