@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./RandomNumberConsumer.sol";
 
 contract GrantElections {
   using SafeMath for uint256;
@@ -191,7 +192,7 @@ contract GrantElections {
   }
 
   function getCurrentRanking(ElectionTerm _term)
-    external
+    public
     view
     returns (address[] memory)
   {
@@ -380,6 +381,25 @@ contract GrantElections {
     }
   }
 
+  function finalize(ElectionTerm _electionTerm) external onlyGovernance {
+    Election storage _election = elections[uint8(_electionTerm)];
+    address[] memory _ranking = getCurrentRanking(_electionTerm);
+
+    if (_election.electionConfiguration.useChainLinkVRF) {
+      uint256 _randomNumber =
+        getRandomNumber(
+          uint256(
+            keccak256(abi.encode(block.timestamp, blockhash(block.number)))
+          )
+        );
+      _ranking = shuffle(_ranking, _randomNumber);
+    }
+
+    for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
+      // reward each awardee...
+    }
+  }
+
   function _setDefaults() internal {
     ElectionConfiguration storage monthlyDefaults =
       electionDefaults[uint8(ElectionTerm.Monthly)];
@@ -435,6 +455,19 @@ contract GrantElections {
     _defaults.votingPeriod = _votingPeriod;
     _defaults.registrationPeriod = _registrationPeriod;
     _defaults.cooldownPeriod = _cooldownPeriod;
+  }
+
+  // Shuffle a list of address based on a randonNumber Fisher-Yates algorithm
+  // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
+  function shuffle(address[] memory addresses, uint256 randomNumber)
+    public
+    returns (address[] memory)
+  {
+    for (uint256 i = 0; i < addresses.length; i++) {
+      uint256 n = i + (randomNumber % (addresses.length - i));
+      (addresses[n], addresses[i]) = (addresses[i], addresses[n]);
+    }
+    return addresses;
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {
