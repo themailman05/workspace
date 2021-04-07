@@ -5,6 +5,8 @@
   "types": "dist/index.d.js",
   "scripts": {
     "build": "tsc",
+    "dev": "yarn hardhat node",
+    "deployDev": "yarn hardhat run --network localhost scripts/deployWithValues.js", 
     "prettier": "prettier --write 'contracts/**/*.sol'"
   },
   "dependencies": {

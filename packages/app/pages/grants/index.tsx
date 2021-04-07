@@ -11,6 +11,7 @@ import createElectionName from 'utils/createElectionName';
 import NavBar from './../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
 import { utils } from 'ethers';
+import { GrantElectionAdapter } from '../../../../packages/contracts/scripts/helpers/GrantElectionAdapter.js';
 
 interface GrantElection {
   id: string;
@@ -50,7 +51,7 @@ export default function GrantOverview() {
     active,
     error,
   } = context;
-  const { contracts, setContracts } = useContext(ContractsContext);
+  const { contracts } = useContext(ContractsContext);
   const [maxVotes, setMaxVotes] = useState<number>(0);
   const [votes, setVotes] = useState<any[]>([]);
   const [activeGrantElections, setActiveGrantElections] = useState<
@@ -66,21 +67,18 @@ export default function GrantOverview() {
     closed: true,
   });
 
-  useEffect(() => {
-    if (!active) {
-      activate(connectors.Network);
-    }
-  }, [active]);
+  const getElectionMetadata = async () => {
+    const metadata = await GrantElectionAdapter(contracts?.election)
+      .getElectionMetadata(1)
+      setActiveGrantElections([metadata])
+      console.log("metadata", metadata);
+  }
 
   useEffect(() => {
-    if (account) {
-      contracts?.pop?.balanceOf(account);
-      contracts?.staking
-        ?.getVoiceCredits(account)
-        .then((res) => setMaxVotes(Number(utils.formatEther(res))));
+    if (!contracts) {
+      return;
     }
-    //Only works on localhost
-    contracts?.election?.getElectionMetadata(1).then((res) => console.log(res));
+    getElectionMetadata();
   }, [contracts]);
 
   useEffect(() => {
@@ -118,7 +116,7 @@ export default function GrantOverview() {
   return (
     <div className="w-full">
       <NavBar />
-      <div className="w-10/12 mx-auto">
+      <div className="w-10/12 mx-auto mt-8">
         {[...activeGrantElections, ...closedGrantElections]
           .filter(
             (election) =>
@@ -131,7 +129,7 @@ export default function GrantOverview() {
           )
           .map((election) => (
             <ElectionSection
-              key={election.id}
+              key={election.electionTerm}
               id={election.id}
               title={createElectionName(election)}
               description={election.description}
