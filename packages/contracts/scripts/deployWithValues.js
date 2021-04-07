@@ -1,68 +1,86 @@
 const { parseEther } = require("ethers/lib/utils");
+const { GrantElectionAdapter } = require('./helpers/GrantElectionAdapter');
+const bluebird = require("bluebird");
 
-const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 }
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 async function main() {
-  // We get the contract to deploy
-  const accounts = await ethers.getSigners();
-  const deployer = accounts[0].address;
-  console.log("deployer", deployer);
-  const BeneficiaryRegistry = await ethers.getContractFactory(
-    "BeneficiaryRegistry"
-  );
-  const beneficiaryRegistry = await BeneficiaryRegistry.deploy(); //issue without address?
-  const BeneficiaryRegistercontract = await beneficiaryRegistry.deployed();
+  
+  const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
+  const GrantTermMap = { 0: 'Monthly', 1: 'Quarterly', 2: 'Yearly'};
 
-  let firstBeneficiaryAddress = accounts[1].address;
-  let secondBeneficiaryAddress = accounts[2].address;
+  const setSigners = async () => {
+    this.accounts = await ethers.getSigners();
+    this.bennies = this.accounts.slice(1,10);
+  }
 
-      await BeneficiaryRegistercontract.addBeneficiary(
-        firstBeneficiaryAddress,
-        ethers.utils.formatBytes32String('Beneficiary Amir')
-      ).then(response => console.log(response)).catch(err => console.log(err));
+  const deployContracts = async () => {
+    console.log("deploying contracts ...")
+    this.beneficiaryRegistry = (await (await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()).deployed());
+    this.grantRegistry = (await (await (await ethers.getContractFactory("GrantRegistry")).deploy(beneficiaryRegistry.address)).deployed());
+    this.mockPop = (await (await (await ethers.getContractFactory("MockERC20")).deploy("TestPOP", "TPOP")).deployed());
+    this.staking = (await (await (await ethers.getContractFactory("Staking")).deploy(this.mockPop.address)).deployed());
+    this.grantElections = (await (await (await ethers.getContractFactory("GrantElections")).deploy(
+      this.staking.address,
+      this.beneficiaryRegistry.address,
+      this.mockPop.address,
+      this.accounts[0].address
+    )).deployed());
+  }
 
-      await BeneficiaryRegistercontract.addBeneficiary(
-        secondBeneficiaryAddress,
-        ethers.utils.formatBytes32String('Beneficiary Leon')
-      ).then(response => console.log(response)).catch(err => console.log(err));
+  const addBeneficiariesToRegistry = async () => {
+    console.log("adding beneficiaries to registry ...")
+    await bluebird.map(this.bennies, async(beneficiary) => {
+      return this.beneficiaryRegistry.addBeneficiary(beneficiary.address, ethers.utils.formatBytes32String('1234'));
+    }, {concurrency: 1});
+  }
 
-      const beneficiaryExists = await BeneficiaryRegistercontract.beneficiaryExists(firstBeneficiaryAddress);
-      console.log('beneficiary exists:', beneficiaryExists);
+  const mintPOP = async () => {
+    console.log("giving everyone POP (yay!) ...")
+    await bluebird.map(this.accounts, async(account) => {
+      return this.mockPop.mint(account.address, parseEther("1000"));
+    });
+  }
 
-    const GrantRegistry = await ethers.getContractFactory("GrantRegistry");
-    const grantRegistry = await GrantRegistry.deploy(beneficiaryRegistry.address);
-    const GrantRegistryContract = await grantRegistry.deployed();
+  const initializeElectionWithFastVotingEnabled = async (grantTerm) => {
+    console.log(`initializing ${GrantTermMap[grantTerm]} election with fast voting enabled ...`)
+    await this.grantElections.setConfiguration(grantTerm, 10, 10, true, false, 0, 86400 * 30, 60, 100);
+    await this.grantElections.initialize(grantTerm);
+    console.log(await GrantElectionAdapter(this.grantElections).electionDefaults(grantTerm));
+  }
 
-    await GrantRegistryContract.createGrant(
-      GRANT_TERM.QUARTER,
-      [firstBeneficiaryAddress, secondBeneficiaryAddress],
-      [1,2]
-    )
+  const registerBeneficiariesForElection = async (grantTerm) => {
+    console.log(`registering beneficiaries for election (${GrantTermMap[grantTerm]}) ...`);
+    await bluebird.map(this.bennies, async(beneficiary) => {
+      return this.grantElections.registerForElection(beneficiary.address, grantTerm);
+    }, {concurrency: 1});
+  }
+  const displayElectionMetadata = async (grantTerm) => {
+    console.log(await GrantElectionAdapter(this.grantElections).getElectionMetadata(grantTerm));
+  }
+  
 
-  const activeAwardees = await GrantRegistryContract.getActiveAwardees(
-    GRANT_TERM.QUARTER
-  );
-  console.log("active awardees: ", activeAwardees);
+  const logResults = async () => {
+    console.log({
+      contracts: {
+        beneficiaryRegistry: this.beneficiaryRegistry.address,
+        grantRegistry: this.grantRegistry.address,
+        mockPop: this.mockPop.address,
+        staking: this.staking.address,
+        elections: this.grantElections.address,
+      }
+    });
+  }
 
-  const MockERC20 = await ethers.getContractFactory('MockERC20');
-  this.mockPop = await MockERC20.deploy('TestPOP', 'TPOP');
-  await this.mockPop.mint(deployer, parseEther('1000')); //deployer has 1000 ethers worth of pop
-
-  const Staking = await ethers.getContractFactory('Staking');
-  this.stakingContract = await Staking.deploy(this.mockPop.address);
-  await this.stakingContract.deployed();
-
-  console.log('active awardees: ', activeAwardees);
-  console.log("MOCKPOP deployed to:", this.mockPop.address);
-  console.log("StakingContract deployed to:", this.stakingContract.address);
-  console.log("BeneficiaryRegistry deployed to:", beneficiaryRegistry.address);
-  console.log("GrantRegistry deployed to:", grantRegistry.address);
-
-  return {
-    beneficiaryRegistryAddress: beneficiaryRegistry.address,
-    grantRegistryAddress: grantRegistry.address,
-  };
+  await setSigners();
+  await deployContracts();
+  await addBeneficiariesToRegistry();
+  await mintPOP();
+  await initializeElectionWithFastVotingEnabled(GRANT_TERM.QUARTER);
+  await registerBeneficiariesForElection(GRANT_TERM.QUARTER);
+  await displayElectionMetadata(GRANT_TERM.QUARTER);
+  await logResults();
+  
 }
 
 main()
