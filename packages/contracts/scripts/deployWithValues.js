@@ -56,7 +56,7 @@ async function main() {
     }, {concurrency: 1});
   }
   const displayElectionMetadata = async (grantTerm) => {
-    console.log(await GrantElectionAdapter(this.grantElections).getElectionMetadata(grantTerm));
+    console.log(`${GrantTermMap[grantTerm]} metadata: `, await GrantElectionAdapter(this.grantElections).getElectionMetadata(grantTerm));
   }
   
 
