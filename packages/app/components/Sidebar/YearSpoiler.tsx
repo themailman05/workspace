@@ -6,7 +6,7 @@ import GrantRoundLink, { IGrantRound } from './GrantRoundLink';
 interface IYearSpoiler {
   year: number;
   grantRounds: IGrantRound[];
-  scrollToGrantRound: (grantId: string) => void;
+  scrollToGrantRound: (grantId: number) => void;
   grantRoundFilter: IGrantRoundFilter;
   opened?: boolean;
 }

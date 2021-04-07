@@ -10,20 +10,8 @@ import ElectionSection from 'containers/GrantElections/ElectionSection';
 import createElectionName from 'utils/createElectionName';
 import NavBar from './../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
-import { utils } from 'ethers';
-import { GrantElectionAdapter } from '../../../../packages/contracts/scripts/helpers/GrantElectionAdapter.js';
+import { GrantElectionAdapter, ElectionMetadata, ElectionState, ElectionTerm } from "@popcorn/utils/Contracts";
 
-interface GrantElection {
-  id: string;
-  startTime: string;
-  endTime: string;
-  grantTerm: number;
-  grantShareType: string;
-  awardeesCount: number;
-  awardees: string[];
-  description: string;
-  active: boolean;
-}
 
 export interface IGrantRoundFilter {
   active: boolean;
@@ -54,24 +42,23 @@ export default function GrantOverview() {
   const { contracts } = useContext(ContractsContext);
   const [maxVotes, setMaxVotes] = useState<number>(0);
   const [votes, setVotes] = useState<any[]>([]);
-  const [activeGrantElections, setActiveGrantElections] = useState<
-    GrantElection[]
+  const [grantElections, setGrantElections] = useState<
+  ElectionMetadata[]
   >([]);
-  const [closedGrantElections, setClosedGrantElections] = useState<
-    GrantElection[]
-  >([]);
+
   const [beneficiaries, setBeneficiaries] = useState([]);
-  const [activeGrantRound, scrollToGrantRound] = useState<string>();
+  const [activeGrantRound, scrollToGrantRound] = useState<number>();
   const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
     active: true,
     closed: true,
   });
 
   const getElectionMetadata = async () => {
-    const metadata = await GrantElectionAdapter(contracts?.election)
-      .getElectionMetadata(1)
-      setActiveGrantElections([metadata])
-      console.log("metadata", metadata);
+    const monthly = await GrantElectionAdapter(contracts?.election)
+      .getElectionMetadata(0);
+    const quarterly = await GrantElectionAdapter(contracts?.election).getElectionMetadata(1);
+    const yearly = await GrantElectionAdapter(contracts?.election).getElectionMetadata(2);
+    setGrantElections([monthly, quarterly, yearly]);
   }
 
   useEffect(() => {
@@ -117,11 +104,11 @@ export default function GrantOverview() {
     <div className="w-full">
       <NavBar />
       <div className="w-10/12 mx-auto mt-8">
-        {[...activeGrantElections, ...closedGrantElections]
+        {[...grantElections]
           .filter(
             (election) =>
-              (election.active && grantRoundFilter.active) ||
-              (!election.active && grantRoundFilter.closed),
+              (GrantElectionAdapter().isActive(election) && grantRoundFilter.active) ||
+              (!GrantElectionAdapter().isActive(election) && grantRoundFilter.closed),
           )
           .sort(
             (election1, election2) =>
@@ -129,15 +116,15 @@ export default function GrantOverview() {
           )
           .map((election) => (
             <ElectionSection
-              key={election.electionTerm}
-              id={election.id}
+              key={election?.electionTerm}
+              id={election?.electionTerm}
               title={createElectionName(election)}
-              description={election.description}
-              grantTerm={election.grantTerm}
-              isActiveElection={election.active}
-              beneficiaries={beneficiaries}
+              description={''}
+              grantTerm={election?.electionTerm}
+              isActiveElection={GrantElectionAdapter().isActive(election)}
+              beneficiaries={election?.registeredBeneficiaries}
               maxVotes={maxVotes}
-              votes={election.active ? votes[election.grantTerm] : null}
+              votes={GrantElectionAdapter().isActive(election) ? votes[election.electionTerm] : null}
               grantRounds={createGrantRounds(activeElections, closedElections)}
               isWalletConnected={library?.connection?.url === 'metamask'}
               grantRoundFilter={grantRoundFilter}
@@ -146,7 +133,7 @@ export default function GrantOverview() {
               submitVotes={submitVotes}
               scrollToGrantRound={scrollToGrantRound}
               setGrantRoundFilter={setGrantRoundFilter}
-              scrollToMe={election.id === activeGrantRound}
+              scrollToMe={election.electionTerm === activeGrantRound}
               quadratic={false}
             />
           ))}

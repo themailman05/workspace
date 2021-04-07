@@ -5,7 +5,7 @@ import { IGrantRoundFilter, IVote } from 'pages/grants';
 import { Dispatch } from 'react';
 
 interface IElectionSection {
-  id: string;
+  id: number;
   title: string;
   description: string;
   grantTerm: number;
@@ -19,7 +19,7 @@ interface IElectionSection {
   assignVotes: (grantTerm: number, vote: IVote) => void;
   connectWallet: () => void;
   submitVotes: () => void;
-  scrollToGrantRound: (grantId: string) => void;
+  scrollToGrantRound: (grantId: number) => void;
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
   scrollToMe: boolean;
   quadratic: boolean;

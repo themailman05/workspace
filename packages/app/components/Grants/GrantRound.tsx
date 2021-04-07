@@ -4,9 +4,10 @@ import { useRef } from 'react';
 import { Check, Lock } from 'react-feather';
 import calculateRemainingVotes from 'utils/calculateRemainingVotes';
 import BeneficiaryCard from './BeneficiaryCard';
+import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
 
 interface IGrantRound {
-  id: string;
+  id: number;
   title: string;
   description: string;
   grantTerm: number;
@@ -55,18 +56,18 @@ export default function GrantRound({
       <p className="w-10/12">{description}</p>
       <div className="w-full flex flex-row flex-wrap items-center mt-4">
         {
-          beneficiaries && beneficiaries?.map((beneficiary) => (
+          beneficiaries && beneficiaries?.map((address) => (
             <BeneficiaryCard
-              key={beneficiary.address}
-              beneficiary={beneficiary}
+              key={address}
+              beneficiary={beneficiariesHashMap[address]}
               votesAssignedByUser={
-                votes?.find((vote) => vote.address === beneficiary.address)?.votes || 0
+                votes?.find((vote) => vote.address === address)?.votes || 0
               }
               assignVotes={assignVotes}
               maxVotes={
                 votes &&
                 (calculateRemainingVotes(maxVotes, votes) +
-                  (votes.find((vote) => vote.address === beneficiary.address)
+                  (votes.find((vote) => vote.address === address)
                     ?.votes || 0))
               }
               active={isActiveElection}

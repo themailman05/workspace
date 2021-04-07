@@ -17,7 +17,7 @@ interface ISideBar {
   isActiveElection: boolean;
   connectWallet: () => void;
   submitVotes: () => void;
-  scrollToGrantRound: (grantId: string) => void;
+  scrollToGrantRound: (grantId: number) => void;
   grantRoundFilter: IGrantRoundFilter;
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
 }
