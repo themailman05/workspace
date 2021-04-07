@@ -1,3 +1,6 @@
+import { Web3Provider } from "@ethersproject/providers";
+import { useWeb3React } from "@web3-react/core";
+
 interface IVoteCounter {
   remainingVotes: number;
   maxVotes: number;
@@ -7,6 +10,14 @@ export default function VoteCounter({
   remainingVotes,
   maxVotes,
 }: IVoteCounter): JSX.Element {
+  const context = useWeb3React<Web3Provider>();
+  const {
+    account,
+    active
+  } = context;
+  if (!active || !account) {
+    return <></>;
+  }
   return (
     <div
       className="w-full h-24 rounded-lg p-3 mb-2"
