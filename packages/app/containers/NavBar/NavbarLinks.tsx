@@ -8,7 +8,6 @@ interface NavbarLinkProps {
   onClick?: Function;
 }
 
-
 export default function NavbarLink({
   label,
   url,
