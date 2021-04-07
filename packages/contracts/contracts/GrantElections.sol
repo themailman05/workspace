@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
-import "./GrantRegistry.sol";
+import "./IGrantRegistry.sol";
 import "./RandomNumberConsumer.sol";
 
 contract GrantElections {
@@ -60,6 +60,7 @@ contract GrantElections {
 
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
+  IGrantRegistry grantRegistry;
 
   modifier onlyGovernance {
     require(msg.sender == governance, "!governance");
@@ -82,11 +83,13 @@ contract GrantElections {
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
+    IGrantRegistry _grantRegistry,
     IERC20 _pop,
     address _governance
   ) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
+    grantRegistry = _grantRegistry;
     POP = _pop;
     governance = _governance;
     _setDefaults();
@@ -392,9 +395,13 @@ contract GrantElections {
       _election.electionState != ElectionState.Finalized,
       "election already finalized"
     );
-    address[] memory _awardees = getCurrentRanking(_electionTerm);
+    address[] memory _awardees = getCurrentRanking(
+      _electionTerm
+     )[:_election.electionConfiguration.awardees - 1];
 
-    if (_election.electionConfiguration.useChainLinkVRF) {
+    if (
+      _awardees.length > 1 && _election.electionConfiguration.useChainLinkVRF
+     ) {
       uint256 _randomNumber =
         getRandomNumber(
           uint256(
@@ -405,7 +412,7 @@ contract GrantElections {
     }
 
     uint256 _shares = 100e18 / _awardees.length;
-    createGrant(_term, _awardees, _shares);
+    grantRegistry.createGrant(_term, _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
   }
 
