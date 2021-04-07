@@ -2,6 +2,7 @@ const { parseEther } = require("ethers/lib/utils");
 const { GrantElectionAdapter } = require('./helpers/GrantElectionAdapter');
 const bluebird = require("bluebird");
 
+
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 async function deploy(ethers) {
@@ -68,6 +69,7 @@ async function deploy(ethers) {
     await displayElectionMetadata(GrantTerm.Month);
   }
 
+
   const initializeQuarterlyElection = async () => {
     await initializeElectionWithFastVotingEnabled(GrantTerm.Quarter);
     await registerBeneficiariesForElection(GrantTerm.Quarter, this.bennies.slice(7,14));
@@ -92,7 +94,6 @@ async function deploy(ethers) {
       }
     });
   }
-
 
   await setSigners();
   await deployContracts();

@@ -8,7 +8,6 @@ interface NavbarLinkProps {
   onClick?: Function;
 }
 
-
 export default function NavbarLink({
   label,
   url,
@@ -23,8 +22,7 @@ export default function NavbarLink({
   `;
 
   return (
-    <li>
-      <Link href={url || ''} passHref>
+      <Link href={url || '#'} passHref>
         <a
           className={className}
           onClick={(e) => {  onClick && onClick(); }}
@@ -32,5 +30,5 @@ export default function NavbarLink({
           {label}
         </a>
       </Link>
-    </li>);
+    );
 }
