@@ -1,4 +1,4 @@
-pragma solidity >=0.7.0 <=0.8.3;
+pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 import "./IGrantRegistry.sol";
-import "./RandomNumberConsumer.sol";
+import "./IRandomNumberConsumer.sol";
 
 contract GrantElections {
   using SafeMath for uint256;
@@ -61,6 +61,7 @@ contract GrantElections {
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
   IGrantRegistry grantRegistry;
+  IRandomNumberConsumer randomNumberConsumer;
 
   modifier onlyGovernance {
     require(msg.sender == governance, "!governance");
@@ -84,12 +85,14 @@ contract GrantElections {
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
     IGrantRegistry _grantRegistry,
+    IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
   ) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     grantRegistry = _grantRegistry;
+    randomNumberConsumer = _randomNumberConsumer;
     POP = _pop;
     governance = _governance;
     _setDefaults();
@@ -395,24 +398,25 @@ contract GrantElections {
       _election.electionState != ElectionState.Finalized,
       "election already finalized"
     );
-    address[] memory _awardees = getCurrentRanking(
-      _electionTerm
-     )[:_election.electionConfiguration.awardees - 1];
+    address[] memory _ranking = getCurrentRanking(_electionTerm);
+    address[] memory _awardees;
+    uint256[] memory _shares;
+    for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
+      _shares[i] = 100e18 / _awardees.length;
+      _awardees[i] = _ranking[i];
+    }
 
     if (
       _awardees.length > 1 && _election.electionConfiguration.useChainLinkVRF
-     ) {
-      uint256 _randomNumber =
-        getRandomNumber(
-          uint256(
-            keccak256(abi.encode(block.timestamp, blockhash(block.number)))
-          )
-        );
-      _awardees = shuffle(_ranking, _randomNumber);
-    }
+    ) {
+      randomNumberConsumer.getRandomNumber(
+        uint256(keccak256(abi.encode(block.timestamp, blockhash(block.number))))
+      );
+      uint256 _randomNumber = randomNumberConsumer.randomResult();
 
-    uint256 _shares = 100e18 / _awardees.length;
-    grantRegistry.createGrant(_term, _awardees, _shares);
+      _awardees = shuffle(_awardees, _randomNumber);
+    }
+    grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
   }
 

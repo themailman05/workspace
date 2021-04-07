@@ -1,8 +1,12 @@
-pragma solidity 0.6.6;
+pragma solidity ^0.7.0;
 
-import "@chainlink/contracts/src/v0.6/VRFConsumerBase.sol";
+import "@chainlink/contracts/src/v0.7/dev/VRFConsumerBase.sol";
 
 contract RandomNumberConsumer is VRFConsumerBase {
+  address public VRFCoordinator;
+  // rinkeby: 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B
+  address public LinkToken;
+  // rinkeby: 0x01BE23585060835E02B77ef475b0Cc51aA1e0709a
   bytes32 internal keyHash;
   uint256 internal fee;
 
@@ -11,20 +15,18 @@ contract RandomNumberConsumer is VRFConsumerBase {
   /**
    * Constructor inherits VRFConsumerBase
    *
-   * Network: Kovan
-   * Chainlink VRF Coordinator address: 0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9
-   * LINK token address:                0xa36085F69e2889c224210F603D836748e7dC0088
-   * Key Hash: 0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4
+   * Network: Rinkeby
+   * Chainlink VRF Coordinator address: 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B
+   * LINK token address:                0x01be23585060835e02b77ef475b0cc51aa1e0709
+   * Key Hash: 0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311
    */
-  constructor()
-    public
-    VRFConsumerBase(
-      0xdD3782915140c8f3b190B5D67eAc6dc5760C46E9, // VRF Coordinator
-      0xa36085F69e2889c224210F603D836748e7dC0088 // LINK Token
-    )
-  {
-    keyHash = 0x6c3699283bda56ad74f6b855546325b68d482e983852a7a82979cc4807b641f4;
-    fee = 0.1 * 10**18; // 0.1 LINK (varies by network)
+  constructor(
+    address _VRFCoordinator,
+    address _LinkToken,
+    bytes32 _keyHash
+  ) public VRFConsumerBase(_VRFCoordinator, _LinkToken) {
+    keyHash = _keyHash;
+    fee = 0.1 * 10**18; // 0.1 LINK
   }
 
   /**

@@ -45,10 +45,18 @@ describe("GrantElections", function () {
     const BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
     this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
 
+    const GrantRegistry = await ethers.getContractFactory("GrantRegistry");
+    this.mockGrantRegistry = await waffle.deployMockContract(owner, GrantRegistry.interface.format());
+
+    const RandomNumberConsumer = await ethers.getContractFactory("RandomNumberConsumer");
+    this.mockRandomNumberConsumer = await waffle.deployMockContract(owner, RandomNumberConsumer.interface.format());
+
     const GrantElections = await ethers.getContractFactory('GrantElections');
     this.contract = await GrantElections.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
+        this.mockGrantRegistry.address,
+        this.mockRandomNumberConsumer.address,
         this.mockPop.address,
         governance.address,
        );
@@ -161,6 +169,8 @@ describe("GrantElections", function () {
       this.contract = await GrantElections.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
+        this.mockGrantRegistry.address,
+        this.mockRandomNumberConsumer.address,
         this.mockPop.address,
         governance.address
       );
@@ -259,6 +269,8 @@ describe("GrantElections", function () {
       this.contract = await GrantElections.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
+        this.mockGrantRegistry.address,
+        this.mockRandomNumberConsumer.address,
         this.mockPop.address,
         governance.address
       );
@@ -330,6 +342,8 @@ describe("GrantElections", function () {
       this.contract = await GrantElections.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
+        this.mockGrantRegistry.address,
+        this.mockRandomNumberConsumer.address,
         this.mockPop.address,
         governance.address
       );
@@ -430,6 +444,8 @@ describe("GrantElections", function () {
       this.contract = await GrantElections.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
+        this.mockGrantRegistry.address,
+        this.mockRandomNumberConsumer.address,
         this.mockPop.address,
         governance.address,
       );
