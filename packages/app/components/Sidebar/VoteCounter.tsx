@@ -21,7 +21,7 @@ export default function VoteCounter({
   } = context;
   if (!active || !account || !voiceCredits) {
     return (
-    <figure className="bg-gray-200 rounded-xl p-6 mb-8">
+    <figure className="bg-gray-100 rounded-xl p-6 mb-8">
         <div className="pt-6 space-y-4">
           <blockquote>
             <p className="text-lg font-semibold">

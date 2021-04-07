@@ -31,7 +31,7 @@ export default function BeneficiaryCard({
 }: IBeneficiaryCard): JSX.Element {
   return (
     <div
-      className="shadow-sm w-80 h-100 rounded-lg mr-6 mb-6 bg-gray-200"
+      className="shadow-sm w-80 h-100 rounded-lg mr-6 mb-6 bg-gray-100"
 
     >
 
