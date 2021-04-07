@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./GrantRegistry.sol";
 import "./RandomNumberConsumer.sol";
 
 contract GrantElections {
@@ -391,7 +392,7 @@ contract GrantElections {
       _election.electionState != ElectionState.Finalized,
       "election already finalized"
     );
-    address[] memory _ranking = getCurrentRanking(_electionTerm);
+    address[] memory _awardees = getCurrentRanking(_electionTerm);
 
     if (_election.electionConfiguration.useChainLinkVRF) {
       uint256 _randomNumber =
@@ -400,12 +401,12 @@ contract GrantElections {
             keccak256(abi.encode(block.timestamp, blockhash(block.number)))
           )
         );
-      _ranking = shuffle(_ranking, _randomNumber);
+      _awardees = shuffle(_ranking, _randomNumber);
     }
 
-    for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
-      // reward each awardee...
-    }
+    uint256 _shares = 100e18 / _awardees.length;
+    createGrant(_term, _awardees, _shares);
+    _election.electionState = ElectionState.Finalized;
   }
 
   function _setDefaults() internal {
