@@ -10,7 +10,7 @@ import ElectionSection from 'containers/GrantElections/ElectionSection';
 import createElectionName from 'utils/createElectionName';
 import NavBar from './../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
-import { GrantElectionAdapter, ElectionMetadata, ElectionState, ElectionTerm } from "@popcorn/utils/Contracts";
+import { GrantElectionAdapter, ElectionMetadata } from "@popcorn/utils/Contracts";
 import { utils } from 'ethers';
 
 
@@ -92,7 +92,7 @@ export default function GrantOverview() {
   function assignVotes(grantTerm: number, vote: IVote): void {
     const votesCopy = [...votes];
     const updatedElection = [
-      ...votesCopy[grantTerm].filter(
+      ...votesCopy[grantTerm]?.filter(
         (awardee) => awardee.address !== vote.address,
       ),
       vote,
