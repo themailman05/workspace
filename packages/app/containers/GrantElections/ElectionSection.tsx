@@ -12,6 +12,7 @@ interface IElectionSection {
   isActiveElection: boolean;
   beneficiaries: any[];
   maxVotes: number;
+  voiceCredits: number;
   votes?: IVote[];
   grantRounds: IGrantRound[];
   isWalletConnected: boolean;
@@ -33,6 +34,7 @@ export default function ElectionSection({
   isActiveElection,
   beneficiaries,
   maxVotes,
+  voiceCredits,
   votes,
   grantRounds,
   isWalletConnected,
@@ -50,6 +52,7 @@ export default function ElectionSection({
       <div className="top-10 w-2/12 h-full sticky">
         <Sidebar
           votes={votes}
+          voiceCredits={voiceCredits}
           maxVotes={maxVotes}
           grantRounds={grantRounds}
           isWalletConnected={isWalletConnected}
@@ -66,6 +69,7 @@ export default function ElectionSection({
           id={id}
           title={title}
           description={description}
+          voiceCredits={voiceCredits}
           grantTerm={grantTerm}
           isActiveElection={isActiveElection}
           beneficiaries={beneficiaries}

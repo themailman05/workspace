@@ -64,6 +64,7 @@ export default function BeneficiaryCard({
         <div className="">
           {active ? (
             <VoteSlider
+              key={beneficiary?.address}
               address={beneficiary?.address}
               totalVotes={beneficiary?.totalVotes}
               votesAssignedByUser={votesAssignedByUser}

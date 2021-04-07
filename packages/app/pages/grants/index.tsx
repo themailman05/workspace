@@ -46,8 +46,8 @@ export default function GrantOverview() {
   const [grantElections, setGrantElections] = useState<
   ElectionMetadata[]
   >([]);
+  const [voiceCredits, setVoiceCredits] = useState(0);
 
-  const [beneficiaries, setBeneficiaries] = useState([]);
   const [activeGrantRound, scrollToGrantRound] = useState<number>();
   const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
     active: true,
@@ -64,8 +64,10 @@ export default function GrantOverview() {
 
   const getVoiceCredits = async (account) => {
     if (!account) return;
-    const maxVotes = await contracts.staking.getVoiceCredits(account);
-    setMaxVotes(+utils.formatEther(maxVotes).toString().split('.')[0]);
+    const vCredits = await contracts.staking.getVoiceCredits(account);
+    const vCreditsFormatted = +utils.formatEther(vCredits).toString().split('.')[0];
+    setMaxVotes(vCreditsFormatted);
+    setVoiceCredits(vCreditsFormatted);
   }
 
   useEffect(() => {
@@ -133,6 +135,7 @@ export default function GrantOverview() {
               isActiveElection={GrantElectionAdapter().isActive(election)}
               beneficiaries={election?.registeredBeneficiaries}
               maxVotes={maxVotes}
+              voiceCredits={voiceCredits}
               votes={GrantElectionAdapter().isActive(election) ? votes[election.electionTerm] : null}
               grantRounds={createGrantRounds(activeElections, closedElections)}
               isWalletConnected={library?.connection?.url === 'metamask'}
