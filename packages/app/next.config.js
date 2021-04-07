@@ -6,6 +6,7 @@ const workspace = join(__dirname, '..');
 module.exports = {
   env: {
     RPC_URL: process.env.RPC_URL,
+    CHAIN_ID: process.env.CHAIN_ID,
     ADDR_STAKING: process.env.ADDR_STAKING,
     ADDR_POP: process.env.ADDR_POP,
     ADDR_GRANT_REGISTRY: process.env.ADDR_GRANT_REGISTRY,

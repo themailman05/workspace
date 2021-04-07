@@ -21,14 +21,11 @@ export default function Navbar(): JSX.Element {
   } = context;
   const router = useRouter();
   const [showGrants, setShowGrants] = useState(false);
-  const hideSubMenu = () => {
-    setShowGrants(false);
-  }
   
   return (
     <>
     <nav
-      className="flex shadow-md py-3 mb-8 px-14"
+      className="flex shadow-md py-3 px-14"
       style={{
         background: 'rgba(255, 255, 255, .5)',
         backdropFilter: 'blur(10px)',
@@ -46,16 +43,22 @@ export default function Navbar(): JSX.Element {
         </Link>
       </div>
       <ul className="flex flex-row items-center mx-auto space-x-4">
-        <NavbarLink
-          label="Grants"
-          onClick={() => setShowGrants(!showGrants)}
-          isActive={router.pathname === '/grants'}
-        />
-        <NavbarLink
-          label="Staking"
-          url="/staking"
-          isActive={router.pathname === '/staking'}
-        />
+        <li>
+          <NavbarLink
+            label="Grants"
+            onClick={() => setShowGrants(!showGrants)}
+            isActive={router.pathname === '/grants'}
+          />
+        </li>
+        <li>
+          <NavbarLink
+            label="Staking"
+            url="/staking"
+            isActive={router.pathname === '/staking'}
+          />
+        </li>
+
+
       </ul>
       <button
         className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-gray-50"

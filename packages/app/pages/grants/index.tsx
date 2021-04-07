@@ -116,7 +116,7 @@ export default function GrantOverview() {
   return (
     <div className="w-full">
       <NavBar />
-      <div className="w-10/12 mx-auto">
+      <div className="w-10/12 mx-auto mt-8">
         {[...activeGrantElections, ...closedGrantElections]
           .filter(
             (election) =>
@@ -129,7 +129,7 @@ export default function GrantOverview() {
           )
           .map((election) => (
             <ElectionSection
-              key={election.id}
+              key={election.electionTerm}
               id={election.id}
               title={createElectionName(election)}
               description={election.description}
