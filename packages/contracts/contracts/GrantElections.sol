@@ -401,10 +401,6 @@ contract GrantElections {
     address[] memory _ranking = getCurrentRanking(_electionTerm);
     address[] memory _awardees;
     uint256[] memory _shares;
-    for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
-      _shares[i] = 100e18 / _awardees.length;
-      _awardees[i] = _ranking[i];
-    }
 
     if (
       _awardees.length > 1 && _election.electionConfiguration.useChainLinkVRF
@@ -416,6 +412,12 @@ contract GrantElections {
 
       _awardees = shuffle(_awardees, _randomNumber);
     }
+
+    for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
+      _shares[i] = 100e18 / _awardees.length;
+      _awardees[i] = _ranking[i];
+    }
+
     grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
   }
