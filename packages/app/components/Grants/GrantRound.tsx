@@ -5,12 +5,14 @@ import { Check, Lock } from 'react-feather';
 import calculateRemainingVotes from 'utils/calculateRemainingVotes';
 import BeneficiaryCard from './BeneficiaryCard';
 import { RegisterButton, RegisterHolder} from '../../../../packages/ui/src/components/grantPage';
+import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
 
 interface IGrantRound {
-  id: string;
+  id: number;
   title: string;
   description: string;
   grantTerm: number;
+  voiceCredits: number;
   maxVotes: number;
   isActiveElection: boolean;
   beneficiaries: any[];
@@ -30,6 +32,7 @@ export default function GrantRound({
   description,
   grantTerm,
   maxVotes,
+  voiceCredits,
   isActiveElection,
   beneficiaries,
   votes,
@@ -72,37 +75,33 @@ export default function GrantRound({
   return (
     <div ref={ref} className="mb-16 w-full">
       <span className="flex flex-row flex-wrap items-center mb-4">
-        <div className="h-8 w-8 mr-2 rounded-full border-4 border-white flex items-center justify-center flex-shrink-0">
+        <div className="h-8 w-8 mr-2 flex items-center justify-center flex-shrink-0">
           {isActiveElection ? (
-            <Check size={20} className="text-white" />
+            '🟢'
           ) : (
-            <Lock size={16} className="text-white" />
+           '🔒' 
           )}
         </div>
-        <h2 className="text-3xl font-bold text-white mr-10">{title}</h2>
+        <h2 className="text-3xl font-bold">🏆 {title}</h2>
         {isActiveElection && returnButtons()}
       </span>
-      <p className="text-white w-10/12">{description}</p>
+      <p className="w-10/12">{description}</p>
       <div className="w-full flex flex-row flex-wrap items-center mt-4">
-        {beneficiaries.length &&
-          beneficiaries.map((beneficiary) => (
+        {
+          beneficiaries && beneficiaries?.map((address) => (
             <BeneficiaryCard
-              key={beneficiary.address}
-              address={beneficiary.address}
-              title={beneficiary.title}
-              description={beneficiary.description}
-              totalVotes={beneficiary.totalVotes}
+              key={address}
+              beneficiary={beneficiariesHashMap[address]}
               votesAssignedByUser={
-                votes &&
-                votes.find((vote) => vote.address === beneficiary.address).votes
+                votes?.find((vote) => vote.address === address)?.votes || 0
               }
               assignVotes={assignVotes}
               maxVotes={
                 votes &&
-                calculateRemainingVotes(maxVotes, votes) +
-                  votes.find((vote) => vote.address === beneficiary.address)
-                    .votes
-              } //+ beneficiary.votesAssignedByUser
+                (calculateRemainingVotes(maxVotes, votes) +
+                  (votes.find((vote) => vote.address === address)
+                    ?.votes || 0))
+              }
               active={isActiveElection}
               grantTerm={grantTerm}
               quadratic={quadratic}

@@ -1,5 +1,7 @@
 require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
+const { deploy } = require('./scripts/deployWithValues');
+const { GrantElectionAdapter } = require('./scripts/helpers/GrantElectionAdapter');
 const { utils } = require("ethers");
 
 task("accounts", "Prints the list of accounts", async () => {
@@ -10,16 +12,45 @@ task("accounts", "Prints the list of accounts", async () => {
   }
 });
 
+task('dev:deploy')
+  .setAction(async (args) => {
+    await deploy(ethers);
+  });
+
+task("elections:getElectionMetadata")
+  .addParam("term", "grant term (int)")
+  .setAction(async (args) => {
+    const [signer] = await ethers.getSigners();
+    const contract = new ethers.Contract(
+      process.env.ADDR_GRANT_ELECTION,
+      require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
+      signer
+    );
+    console.log(await GrantElectionAdapter(contract).getElectionMetadata(Number(args.term)));
+  });
+
+  task("elections:refreshElectionState")
+  .addParam("term", "grant term (int)")
+  .setAction(async (args) => {
+    const [signer] = await ethers.getSigners();
+    const contract = new ethers.Contract(
+      process.env.ADDR_GRANT_ELECTION,
+      require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
+      signer
+    );
+    await contract.refreshElectionState(Number(args.term));
+    console.log(await GrantElectionAdapter(contract).getElectionMetadata(Number(args.term)));
+  });
+
 task("POP:mint", "mint amount for recipient")
   .addParam("recipient", "address to receive POP")
   .addParam("amount", "amount to receive")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
     const { recipient, amount } = args;
-    const abi = require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi;
     const mockPOP = new ethers.Contract(
       process.env.ADDR_POP,
-      abi,
+      require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
       signer
     );
     const result = await mockPOP.mint(recipient, utils.parseEther(amount));

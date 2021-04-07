@@ -8,8 +8,9 @@ import '../styles/globals.css';
 import Router from 'next/router';
 import { GlobalLinearProgress } from 'containers/GlobalLinearProgress';
 import { StateProvider } from 'app/store';
-import { Web3ReactProvider} from '@web3-react/core';
+import { Web3ReactProvider } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
+import ContractsWrapper from 'app/contracts';
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -63,9 +64,11 @@ export default function MyApp(props) {
             <CssBaseline />
             <GlobalLinearProgress visible={loading} />
             <Web3ReactProvider getLibrary={getLibrary}>
-              <StateProvider>
-                <Component {...pageProps} />
-              </StateProvider>
+              <ContractsWrapper>
+                <StateProvider>
+                  <Component {...pageProps} />
+                </StateProvider>
+              </ContractsWrapper>
             </Web3ReactProvider>
           </ThemeProvider>
         </MuiThemeProvider>

@@ -1,17 +1,19 @@
 import Modal from '../../containers/modal';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Contract } from '@ethersproject/contracts';
 import { connectors } from '../../containers/Web3/connectors';
 import LockPopSlider from '../../containers/lockPopSlider';
 import Staking from '../../../contracts/artifacts/contracts/Staking.sol/Staking.json';
 import MockPop from '../../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
+import { ContractsContext } from '../../app/contracts';
 import { utils } from 'ethers';
-import Navbar from '../../components/NavBar';
+import NavBar from '../../containers/NavBar/NavBar';
 
 export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
+  const { contracts } = useContext(ContractsContext);
   const { library, account, activate, active } = context;
   const [staking, setStaking] = useState<Contract>();
   const [mockERC, setMockERC] = useState<Contract>();
@@ -41,14 +43,14 @@ export default function LockPop() {
     amountToLock = utils.parseEther(amountToLock.toString());
     const signer = library.getSigner();
 
-    const connected = await mockERC.connect(signer);
+    const connected = await contracts.pop.connect(signer);
 
     await connected
       .approve(stakingAddress, amountToLock)
       .then((res) => console.log('approved', res))
       .catch((err) => console.log('err', err));
 
-    const connectedStaking = await staking.connect(signer);
+    const connectedStaking = await contracts.staking.connect(signer);
     await connectedStaking
       .stake(amountToLock, lockPeriods[duration])
       .then((rez) => {
@@ -74,37 +76,17 @@ export default function LockPop() {
     }
   }, []);
 
-  useEffect(() => {
-    if (!active) {
-      activate(connectors.Network);
-      if (library?.connection?.url === 'metamask') {
-        //TODO get pop -> to tell the user to either lock them or buy some
-        //TODO get locked pop -> to vote or tell the user to lock pop
-        //TODO swap the contract provider to signer so the user can vote
-        //grantRegistry.connect(library.getSigner());
-      }
-    }
-  }, [active]);
-
   async function getBalance() {
-    const PopBalance = await mockERC.balanceOf(account);
+    const PopBalance = await contracts.pop.balanceOf(account);
     setPopBalance(+utils.formatEther(PopBalance.toString()));
   }
 
   useEffect(() => {
-    if (account && mockERC && confirmModal === 'invisible') {
+    if (account && contracts?.pop && confirmModal === 'invisible') {
       getBalance();
     }
-  }, [account, mockERC, confirmModal, completeModal]);
+  }, [contracts, account]);
 
-  useEffect(() => {
-    if (!library) {
-      return;
-    }
-    setStaking(new Contract(stakingAddress, Staking.abi, library));
-
-    setMockERC(new Contract(mockERCAddress, MockPop.abi, library));
-  }, [library, active]);
 
   function updatePopToLock(id, amount) {
     setPopToLock(amount);
@@ -144,7 +126,7 @@ export default function LockPop() {
 
   return (
     <div className="justify-center align-center flex flex-col">
-      <Navbar />
+      <NavBar />
       <Modal visible={confirmModal}>
         <p>
           Are you sure you want to lock {popToLock} POP for {duration} ?

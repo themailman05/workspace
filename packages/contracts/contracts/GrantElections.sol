@@ -411,6 +411,9 @@ contract GrantElections {
   {
     Election storage _election = elections[uint8(_grantTerm)];
 
+    // todo: refresh election state & update tests
+    // refreshElectionState(_grantTerm);
+
     require(
       _election.electionState == ElectionState.Registration,
       "election not open for registration"

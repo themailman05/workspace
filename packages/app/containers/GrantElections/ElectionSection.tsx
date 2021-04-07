@@ -5,13 +5,14 @@ import { IGrantRoundFilter, IVote } from 'pages/grants';
 import { Dispatch } from 'react';
 
 interface IElectionSection {
-  id: string;
+  id: number;
   title: string;
   description: string;
   grantTerm: number;
   isActiveElection: boolean;
   beneficiaries: any[];
   maxVotes: number;
+  voiceCredits: number;
   votes?: IVote[];
   grantRounds: IGrantRound[];
   isWalletConnected: boolean;
@@ -19,7 +20,7 @@ interface IElectionSection {
   assignVotes: (grantTerm: number, vote: IVote) => void;
   connectWallet: () => void;
   submitVotes: () => void;
-  scrollToGrantRound: (grantId: string) => void;
+  scrollToGrantRound: (grantId: number) => void;
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
   scrollToMe: boolean;
   quadratic: boolean;
@@ -37,6 +38,7 @@ export default function ElectionSection({
   isActiveElection,
   beneficiaries,
   maxVotes,
+  voiceCredits,
   votes,
   grantRounds,
   isWalletConnected,
@@ -57,6 +59,7 @@ export default function ElectionSection({
       <div className="top-10 w-2/12 h-full sticky">
         <Sidebar
           votes={votes}
+          voiceCredits={voiceCredits}
           maxVotes={maxVotes}
           grantRounds={grantRounds}
           isWalletConnected={isWalletConnected}
@@ -73,6 +76,7 @@ export default function ElectionSection({
           id={id}
           title={title}
           description={description}
+          voiceCredits={voiceCredits}
           grantTerm={grantTerm}
           isActiveElection={isActiveElection}
           beneficiaries={beneficiaries}
