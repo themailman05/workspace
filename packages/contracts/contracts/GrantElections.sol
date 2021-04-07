@@ -381,8 +381,12 @@ contract GrantElections {
     }
   }
 
-  function finalize(ElectionTerm _electionTerm) external onlyGovernance {
+  function finalize(ElectionTerm _electionTerm) public onlyGovernance {
     Election storage _election = elections[uint8(_electionTerm)];
+    require(
+      _election.electionState == ElectionState.Closed,
+      "election not yet closed"
+    );
     address[] memory _ranking = getCurrentRanking(_electionTerm);
 
     if (_election.electionConfiguration.useChainLinkVRF) {
@@ -459,15 +463,15 @@ contract GrantElections {
 
   // Shuffle a list of address based on a randonNumber Fisher-Yates algorithm
   // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
-  function shuffle(address[] memory addresses, uint256 randomNumber)
+  function shuffle(address[] memory _addresses, uint256 _randomNumber)
     public
     returns (address[] memory)
   {
-    for (uint256 i = 0; i < addresses.length; i++) {
-      uint256 n = i + (randomNumber % (addresses.length - i));
-      (addresses[n], addresses[i]) = (addresses[i], addresses[n]);
+    for (uint256 i = 0; i < _addresses.length; i++) {
+      uint256 n = i + (_randomNumber % (_addresses.length - i));
+      (_addresses[n], _addresses[i]) = (_addresses[i], _addresses[n]);
     }
-    return addresses;
+    return _addresses;
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {
