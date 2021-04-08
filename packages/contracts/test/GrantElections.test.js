@@ -631,10 +631,10 @@ describe("GrantElections", function () {
       ethers.provider.send("evm_increaseTime", [14 * ONE_DAY]);
       ethers.provider.send("evm_mine");
       await this.contract.connect(voter1).vote([beneficiary.address], [10], GRANT_TERM.QUARTER);
-      await this.contract.connect(voter2).vote([beneficiary2.address], [20], GRANT_TERM.QUARTER);
+      await this.contract.connect(voter2).vote([beneficiary2.address], [40], GRANT_TERM.QUARTER);
       await this.contract.connect(voter3).vote([beneficiary3.address], [30], GRANT_TERM.QUARTER);
-      await this.contract.connect(voter4).vote([beneficiary4.address], [40], GRANT_TERM.QUARTER);
-      await this.contract.connect(voter5).vote([beneficiary5.address], [50], GRANT_TERM.QUARTER);
+      await this.contract.connect(voter4).vote([beneficiary4.address], [50], GRANT_TERM.QUARTER);
+      await this.contract.connect(voter5).vote([beneficiary5.address], [10], GRANT_TERM.QUARTER);
       // finalization
       ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
       ethers.provider.send("evm_mine");
@@ -644,7 +644,7 @@ describe("GrantElections", function () {
         .to.emit(this.contract, "GrantCreated")
         .withArgs(
           GRANT_TERM.QUARTER,
-          [beneficiary5.address, beneficiary4.address],
+          [beneficiary4.address, beneficiary2.address],
           [parseEther("50"), parseEther("50")],
         );
     });
