@@ -1,4 +1,4 @@
-import { IGrantRoundFilter } from 'pages/grants';
+import { IGrantRoundFilter } from 'pages/grant-elections';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import GrantRoundLink, { IGrantRound } from './GrantRoundLink';
@@ -6,7 +6,7 @@ import GrantRoundLink, { IGrantRound } from './GrantRoundLink';
 interface IYearSpoiler {
   year: number;
   grantRounds: IGrantRound[];
-  scrollToGrantRound: (grantId: string) => void;
+  scrollToGrantRound: (grantId: number) => void;
   grantRoundFilter: IGrantRoundFilter;
   opened?: boolean;
 }

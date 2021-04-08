@@ -1,4 +1,4 @@
-import { IGrantRoundFilter, IVote } from 'pages/grants';
+import { IGrantRoundFilter, IVote } from 'pages/grant-elections';
 import { useState } from 'react';
 import { Dispatch } from 'react';
 import { useEffect } from 'react';
@@ -7,17 +7,17 @@ import ActionButton from './ActionButton';
 import FilterGrantRounds from './FilterGrantRounds';
 import { IGrantRound } from './GrantRoundLink';
 import VoteCounter from './VoteCounter';
-import YearSpoiler from './YearSpoiler';
 
 interface ISideBar {
   votes?: IVote[];
   maxVotes: number;
+  voiceCredits: number;
   grantRounds: IGrantRound[];
   isWalletConnected: boolean;
   isActiveElection: boolean;
   connectWallet: () => void;
   submitVotes: () => void;
-  scrollToGrantRound: (grantId: string) => void;
+  scrollToGrantRound: (grantId: number) => void;
   grantRoundFilter: IGrantRoundFilter;
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
 }
@@ -25,6 +25,7 @@ interface ISideBar {
 export default function Sidebar({
   votes,
   maxVotes,
+  voiceCredits,
   grantRounds,
   isWalletConnected,
   isActiveElection,
@@ -53,9 +54,10 @@ export default function Sidebar({
           <VoteCounter
             remainingVotes={votes && calculateRemainingVotes(maxVotes, votes)}
             maxVotes={maxVotes}
+            voiceCredits={voiceCredits}
           />
           <ActionButton
-            hasLockedPop={maxVotes > 0}
+            hasLockedPop={voiceCredits > 0}
             isWalletConnected={isWalletConnected}
             connectWallet={connectWallet}
             submitVotes={submitVotes}
@@ -63,6 +65,7 @@ export default function Sidebar({
         </>
       )}
       <ul className="mt-4">
+        {/** 
         {grantYears?.map((grantYear, i) => (
           <YearSpoiler
             key={grantYear}
@@ -75,6 +78,7 @@ export default function Sidebar({
             grantRoundFilter={grantRoundFilter}
           />
         ))}
+            **/}
       </ul>
       <FilterGrantRounds
         grantRoundFilter={grantRoundFilter}

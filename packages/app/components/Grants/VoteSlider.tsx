@@ -1,4 +1,4 @@
-import { IVote } from 'pages/grants';
+import { IVote } from 'pages/grant-elections';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
@@ -21,6 +21,8 @@ export default function VoteSlider({
   assignVotes,
   quadratic,
 }: IVoteSlider): JSX.Element {
+  if (typeof maxVotes !== 'number') { maxVotes = 100 };
+
   const sliderSteps = [
     [maxVotes * 0.25, '25%'],
     [maxVotes * 0.5, '50%'],
@@ -54,6 +56,7 @@ export default function VoteSlider({
       {assignVotes && (
         <div className="w-11/12 ml-1">
           <Slider
+            key={address}
             className="mt-2"
             value={votesAssignedByUser}
             onChange={(value) => handleSliderChange(value)}

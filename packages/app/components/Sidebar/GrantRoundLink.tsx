@@ -2,14 +2,14 @@ import { Check, Lock } from 'react-feather';
 
 export interface IGrantRound {
   name: string;
-  id: string;
+  id: number;
   active: boolean;
   year: number;
 }
 
 interface IGrantRoundLink {
   grantRound: IGrantRound;
-  scrollToGrantRound: (grantId: string) => void;
+  scrollToGrantRound: (grantId: number) => void;
 }
 
 export default function GrantRoundLink({

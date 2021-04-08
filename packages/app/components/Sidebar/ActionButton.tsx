@@ -18,7 +18,7 @@ export default function SidebarActionButton({
   if (!isWalletConnected) {
     return (
       <button className="button button-primary w-full" onClick={connectWallet}>
-        Connect Wallet
+        Connect Wallet to Vote
       </button>
     );
   }
@@ -34,7 +34,7 @@ export default function SidebarActionButton({
         className="button button-primary w-full"
         onClick={() => router.push('/staking')}
       >
-        Lock POP
+        Lock POP to Vote
       </button>
     );
   }
