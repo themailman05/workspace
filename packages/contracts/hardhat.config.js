@@ -95,7 +95,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
-    const { address } = args;
+    const { term } = args;
     const GrantElections = new ethers.Contract(
       process.env.ADDR_STAKING,
       process.env.ADDR_BENEFICIARY_REGISTRY,
@@ -108,7 +108,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.getVoiceCredits(address);
+    await GrantElections.finalize(term);
   });
 
   module.exports = {
