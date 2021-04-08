@@ -28,6 +28,7 @@ async function deploy(ethers) {
     this.grantElections = (await (await (await ethers.getContractFactory("GrantElections")).deploy(
       this.staking.address,
       this.beneficiaryRegistry.address,
+      this.grantRegistry.address,
       this.randomNumberConsumer.address,
       this.mockPop.address,
       this.accounts[0].address
