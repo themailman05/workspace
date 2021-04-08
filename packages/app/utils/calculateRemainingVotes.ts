@@ -1,4 +1,4 @@
-import { IVote } from 'pages/grants';
+import { IVote } from 'pages/grant-elections';
 
 export default function calculateRemainingVotes(
   maxVotes: number,

@@ -21,14 +21,23 @@ export default function NavbarLink({
     hover:text-primaryLight cursor-pointer
   `;
 
+  if (!url) {
+    return (<a
+      className={className}
+      onClick={(e) => { onClick && onClick(); }}
+    >
+      {label}
+    </a>)
+  }
+
   return (
-      <Link href={url || '#'} passHref>
-        <a
-          className={className}
-          onClick={(e) => {  onClick && onClick(); }}
-        >
-          {label}
-        </a>
-      </Link>
-    );
+    <Link href={url || ''} passHref>
+      <a
+        className={className}
+        onClick={(e) => { onClick && onClick(); }}
+      >
+        {label}
+      </a>
+    </Link>
+  );
 }

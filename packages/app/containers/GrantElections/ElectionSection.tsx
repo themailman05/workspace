@@ -1,7 +1,7 @@
 import GrantRound from '../../components/Grants/GrantRound';
 import Sidebar from '../../components/Sidebar/Sidebar';
 import { IGrantRound } from '../../components/Sidebar/GrantRoundLink';
-import { IGrantRoundFilter, IVote } from 'pages/grants';
+import { IGrantRoundFilter, IVote } from 'pages/grant-elections';
 import { Dispatch } from 'react';
 
 interface IElectionSection {

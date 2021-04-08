@@ -1,12 +1,10 @@
-import { Homepage } from 'containers/Homepage/Homepage';
 import React from 'react';
+import { LandingPage } from '../components/Grants/LandingPage';
 
 const IndexPage = () => {
 
   return (
-    <>
-    <Homepage></Homepage>
-    </>
+    <LandingPage />
   );
 };
 

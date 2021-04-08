@@ -1,7 +1,7 @@
 export enum ElectionTerm {
-  Month,
-  Quarter,
-  Year,
+  Monthly,
+  Quarterly,
+  Yearly,
 }
 export enum ElectionState {
   Registration,
@@ -12,6 +12,12 @@ interface Vote {
   voter: string;
   beneficiary: string;
   weight: number;
+}
+
+export const ElectionTermIntToName = {
+  0: 'monthly',
+  1: 'quarterly',
+  2: 'yearly',
 }
 
 export interface ElectionMetadata {
