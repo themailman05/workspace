@@ -17,24 +17,23 @@ export default function VoteSlider({
   assignVotes,
 }: IVoteSlider): JSX.Element {
   return (
-    <>
+    <div className="w-full">
       <span className="flex flex-row justify-between">
-        <p className="">POP locked</p>
-        <span className="text-base text-gray-500 flex flex-row">
-          <p className="">{totalVotes}</p>
-          {/* <p className="">
-            {votesAssignedByUser}
-          </p> */}
+        <p className="text-gray-600">Locked Pop</p>
+        <span className="text-gray-600 flex flex-row">
+          <p className="">
+            {votesAssignedByUser}/{maxVotes}
+          </p>
         </span>
       </span>
       <Slider
-        className="mt-2"
+        className="mt-2 w-10/12"
         value={votesAssignedByUser}
         onChange={(val) => assignVotes(id, val)}
         min={0}
         max={maxVotes}
         step={1}
       />
-    </>
+    </div>
   );
 }
