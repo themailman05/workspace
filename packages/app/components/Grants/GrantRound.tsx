@@ -1,6 +1,7 @@
 import { IVote } from 'pages/grant-elections';
 import { useEffect } from 'react';
 import { useRef } from 'react';
+import { Check } from 'react-feather';
 import calculateRemainingVotes from 'utils/calculateRemainingVotes';
 import BeneficiaryCard from './BeneficiaryCard';
 import { RegisterButton, RegisterHolder} from '../../../../packages/ui/src/components/grantPage';
@@ -53,10 +54,10 @@ export default function GrantRound({
   function returnButtons() {
     if (alreadyRegistered) {
       return (
-          <span className="flex flex-row items-center justify-center">
-              <p className="text-lg text-black-700 font-bold mr-4 ml-15">Registered for this election</p>
-            <div className="h-10 w-10 mr-2 rounded-full border-4 border-black flex items-center justify-center flex-shrink-0">
-              <Check size={32} className="text-black black" />
+          <span className="flex flex-row items-center justify-center ml-10">
+              <p className="text-lg text-black-700 font-bold mr-4 ml-15 gray-color">Registered</p>
+            <div className="h-10 w-10 mr-2 rounded-full border-4 gray-color flex items-center justify-center flex-shrink-0">
+              <Check size={32} className='gray-color' />
             </div>
           </span>
       )
@@ -64,7 +65,7 @@ export default function GrantRound({
     if (userIsEligibleBeneficiary) {
       return (
       <RegisterHolder >
-          <RegisterButton onClick={() => registerForElection(grantTerm)}>Register for election</RegisterButton>
+          <button onClick={() => registerForElection(grantTerm)} className="button button-primary button-custom">Register for election</button>
         </RegisterHolder>
       );
     }
