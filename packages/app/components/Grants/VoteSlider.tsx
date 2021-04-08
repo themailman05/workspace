@@ -1,33 +1,33 @@
-import { IVote } from 'pages/grant-elections';
+import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { useState } from 'react';
+import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
+import { BeneficiaryMetadata } from './BeneficiaryCard';
 
-interface IVoteSlider {
-  address: string;
-  totalVotes: number;
-  votesAssignedByUser: number;
-  maxVotes: number;
-  grantTerm: number;
-  assignVotes?: (grantTerm: number, vote: IVote) => void;
-  quadratic: boolean;
+interface VoteSlider {
+  beneficiary: BeneficiaryMetadata;
+  election: ElectionMetadata;
+  assignVotes?: (grantTerm: number, vote: Vote) => void;
+  voiceCredits?: number;
+  pendingVotes: PendingVotes;
 }
 
 export default function VoteSlider({
-  address,
-  totalVotes,
-  votesAssignedByUser,
-  maxVotes,
-  grantTerm,
+  beneficiary,
+  election,
   assignVotes,
-  quadratic,
-}: IVoteSlider): JSX.Element {
-  if (typeof maxVotes !== 'number') { maxVotes = 100 };
+  voiceCredits,
+  pendingVotes,
+}: VoteSlider): JSX.Element {
+  const [votesAssignedByuser, setVotesAssignedByUser] = useState(0);
 
   const sliderSteps = [
-    [maxVotes * 0.25, '25%'],
-    [maxVotes * 0.5, '50%'],
-    [maxVotes * 0.75, '75%'],
-    [maxVotes, '100%'],
+    [0, '0%'],
+    [voiceCredits * 0.25, '25%'],
+    [voiceCredits * 0.5, '50%'],
+    [voiceCredits * 0.75, '75%'],
+    [voiceCredits, '100%'],
   ];
   const sliderMarks = {};
   sliderSteps.forEach(function (step) {
@@ -35,11 +35,15 @@ export default function VoteSlider({
   });
 
   function handleSliderChange(value: number) {
-    if (quadratic) {
-      assignVotes(grantTerm, { address: address, votes: value ** 2 });
-    } else {
-      assignVotes(grantTerm, { address: address, votes: value });
-    }
+      if (((voiceCredits - (pendingVotes[election.electionTerm].total)) <= 0)) {
+        if (pendingVotes[election.electionTerm].addresses[beneficiary.address] > value) {
+          setVotesAssignedByUser(value);
+          assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
+        }
+        return;
+      }
+      setVotesAssignedByUser(value);
+     assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
   }
 
   return (
@@ -47,21 +51,21 @@ export default function VoteSlider({
       <span className="flex flex-row justify-between">
         <p className="text-lg font-medium text-gray-700">Votes</p>
         <span className="text-base text-gray-700 flex flex-row">
-          <p className="font-medium">{totalVotes}</p>
+          <p className="font-medium">{beneficiary.totalVotes || 0}</p>
           <p className="mr-4">
-            {votesAssignedByUser > 0 && `+${votesAssignedByUser}`}
+            {votesAssignedByuser > 0 && `+${votesAssignedByuser}`} 
           </p>
         </span>
       </span>
-      {assignVotes && (
-        <div className="w-11/12 ml-1">
+      {assignVotes && voiceCredits > 0 && (
+        <div className="w-11/12 ml-1 pb-3">
           <Slider
-            key={address}
+            key={beneficiary?.address}
             className="mt-2"
-            value={votesAssignedByUser}
+            value={votesAssignedByuser}
             onChange={(value) => handleSliderChange(value)}
             min={0}
-            max={maxVotes}
+            max={voiceCredits}
             step={1}
             marks={sliderMarks}
             dotStyle={{ backgroundColor: '#93C5FD', border: '#93C5FD' }}

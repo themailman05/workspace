@@ -1,4 +1,4 @@
-import { IGrantRoundFilter } from 'pages/grant-elections';
+import { IGrantRoundFilter } from 'pages/grant-elections/[type]';
 import { Dispatch } from 'react';
 
 interface IFilterGrantRounds {

@@ -1,7 +1,7 @@
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 
-interface IVoteSlider {
+interface VoteSlider {
   id: string;
   totalVotes: number;
   votesAssignedByUser: number;
@@ -15,7 +15,7 @@ export default function VoteSlider({
   votesAssignedByUser,
   maxVotes,
   assignVotes,
-}: IVoteSlider): JSX.Element {
+}: VoteSlider): JSX.Element {
   return (
     <>
       <span className="flex flex-row justify-between">
