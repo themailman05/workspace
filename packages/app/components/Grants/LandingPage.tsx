@@ -56,7 +56,7 @@ export const LandingPage = () => {
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Vote for your favorite social impact organizations to receive a share of fees earned this month
-                      </p>
+                            </p>
                           </li>
 
                           <li className="flex items-start">
@@ -267,7 +267,7 @@ export const LandingPage = () => {
                 <div className="flow-root self-center mt-8 lg:mt-0">
                   <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img className="h-12" src="/images/partners/olpc.svg" alt="One Laptop Per Child" />
+                      <img className="h-12" src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760a499b56c47b8fa74fbb_chainlink-logo.svg" alt="Chainlink" />
                     </div>
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
                       <img className="h-12" src="/images/partners/the_ocean_cleanup.svg" alt="The Ocean Cleanup" />
