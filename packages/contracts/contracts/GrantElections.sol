@@ -75,6 +75,11 @@ contract GrantElections {
   event BeneficiaryRegistered(address _beneficiary, ElectionTerm _term);
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
+  event GrantCreated(
+    ElectionTerm _term,
+    address[] _beneficiaries,
+    uint256[] _shares
+  );
 
   event GovernanceUpdated(
     address indexed _oldAddress,
@@ -399,8 +404,10 @@ contract GrantElections {
       "election not yet closed"
     );
     address[] memory _ranking = getCurrentRanking(_electionTerm);
-    address[] memory _awardees;
-    uint256[] memory _shares;
+    address[] memory _awardees =
+      new address[](_election.electionConfiguration.awardees);
+    uint256[] memory _shares =
+      new uint256[](_election.electionConfiguration.awardees);
 
     if (
       _ranking.length > 1 && _election.electionConfiguration.useChainLinkVRF
@@ -414,11 +421,12 @@ contract GrantElections {
     }
 
     for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
-      _shares[i] = 100e18 / _awardees.length;
+      _shares[i] = 100e18 / _election.electionConfiguration.awardees;
       _awardees[i] = _ranking[i];
     }
 
     grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
+    emit GrantCreated(_electionTerm, _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
   }
 

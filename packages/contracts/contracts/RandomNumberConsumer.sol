@@ -32,15 +32,12 @@ contract RandomNumberConsumer is VRFConsumerBase {
   /**
    * Requests randomness from a user-provided seed
    */
-  function getRandomNumber(uint256 userProvidedSeed)
-    public
-    returns (bytes32 requestId)
-  {
+  function getRandomNumber(uint256 userProvidedSeed) public {
     require(
       LINK.balanceOf(address(this)) >= fee,
-      "Not enough LINK - fill contract with faucet"
+      "Not enough LINK"
     );
-    return requestRandomness(keyHash, fee, userProvidedSeed);
+    requestRandomness(keyHash, fee, userProvidedSeed);
   }
 
   /**
