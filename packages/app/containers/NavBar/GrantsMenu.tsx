@@ -29,7 +29,7 @@ export const GrantsMenu: React.FC<Props> = ({visible, toggleSubMenu}) => {
               <span className="ml-4"> 
                 <NavbarLink
                   label="View All Grants"
-                  url="/grants"
+                  url="/grant-elections/all"
                   onClick={toggleSubMenu}
                   isActive={router.pathname === '/grants'}
                 />
