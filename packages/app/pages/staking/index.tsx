@@ -9,6 +9,10 @@ import DropdownSelect from 'components/DropdownSelect';
 import { ContractsContext } from 'app/contracts';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
+import { Router, useRouter } from 'next/router';
+import { connect } from 'node:http2';
+import MainActionButton from 'components/MainActionButton';
+import StakingResponseModal from 'components/Staking/StakingResponseModal';
 
 const ONE_WEEK = 604800;
 const lockPeriods = [
@@ -24,12 +28,16 @@ export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
   const { library, account, activate, active } = context;
   const { contracts } = useContext(ContractsContext);
+  const router = useRouter();
   const [popToLock, setPopToLock] = useState<number>(0);
   const [lockDuration, setLockDuration] = useState<number>(ONE_WEEK);
   const [popBalance, setPopBalance] = useState(0);
   const [voiceCredits, setVoiceCredits] = useState<number>(0);
   const [approved, setApproval] = useState<number>(0);
   const [wait, setWait] = useState<boolean>(false);
+  const [stakeStatus, setStakeStatus] = useState<
+    'error' | 'success' | 'none'
+  >();
 
   useEffect(() => {
     setVoiceCredits(popToLock * (lockDuration / (ONE_WEEK * 52 * 4)));
@@ -56,18 +64,17 @@ export default function LockPop() {
     await connectedStaking
       .stake(lockedPopInEth, lockDuration)
       .then((res) => {
-        console.log('successfully staked', res);
-        //Show Success Modal
+        setStakeStatus('success');
       })
       .catch((err) => {
-        console.log(err, 'err');
-        //Show Error Modal
+        setStakeStatus('error');
       });
+    setWait(false);
   }
 
   async function approve(): Promise<void> {
     setWait(true);
-    const lockedPopInEth = utils.parseEther(popToLock.toString());
+    const lockedPopInEth = utils.parseEther('100000000');
     const connected = await contracts.pop.connect(library.getSigner());
     await connected
       .approve(contracts.staking.address, lockedPopInEth)
@@ -79,33 +86,24 @@ export default function LockPop() {
   return (
     <div className="w-full bg-gray-900 h-screen">
       <NavBar />
-      {!account && (
-        <Modal>
-          <div>
-            <div className="mt-3 text-center sm:mt-5">
-              <h3
-                className="text-lg leading-6 font-medium text-gray-900"
-                id="modal-title"
-              >
-                Connect Wallet
-              </h3>
-              <div className="mt-2">
-                <p className="text-sm text-gray-500">
-                  You must connect your wallet in order to lock POP.
-                </p>
-              </div>
-            </div>
-            <div className="mt-5 sm:mt-6">
-              <button
-                type="button"
-                className="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-                onClick={() => activate(connectors.Injected)}
-              >
-                Connect
-              </button>
-            </div>
-          </div>
-        </Modal>
+      {stakeStatus === 'error' && (
+        <StakingResponseModal
+          title={'Error'}
+          text={'Something went wrong...'}
+          handleClick={() => setStakeStatus('none')}
+        />
+      )}
+      {stakeStatus === 'success' && (
+        <StakingResponseModal
+          title={'Success'}
+          text={`You got now ${voiceCredits.toFixed(
+            2,
+          )} voice Credits to vote with.`}
+          handleClick={() => {
+            setStakeStatus('none');
+            router.push('/grant-elections/all');
+          }}
+        />
       )}
       <div className="bg-gray-900">
         <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
@@ -137,7 +135,7 @@ export default function LockPop() {
                           Voice Credits
                         </h3>
                         <p className="px-3 text-center my-4 text-6xl font-black tracking-tight text-gray-900 sm:text-6xl">
-                          {voiceCredits}
+                          {voiceCredits.toFixed(2)}
                         </p>
                         <div className="w-10/12 mx-auto">
                           <div className="w-full">
@@ -183,24 +181,25 @@ export default function LockPop() {
                         more voting power. (POP * duration / max duration)
                       </p>
                       <div className="rounded-lg shadow-md">
-                        {approved !== 0 && approved >= popToLock ? (
-                          <button
-                            type="button"
-                            className="block w-full text-center rounded-lg border border-transparent bg-indigo-600 px-6 py-4 text-xl leading-6 font-medium text-white hover:bg-indigo-700"
-                            onClick={lockPop}
+                        {!account && (
+                          <MainActionButton
+                            label={'Connect Wallet'}
+                            handleClick={() => activate(connectors.Injected)}
+                          />
+                        )}
+                        {account && approved >= popToLock && (
+                          <MainActionButton
+                            label={'Stake POP'}
+                            handleClick={lockPop}
                             disabled={wait || popToLock === 0}
-                          >
-                            Stake POP
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="block w-full text-center rounded-lg border border-transparent bg-indigo-600 px-6 py-4 text-xl leading-6 font-medium text-white hover:bg-indigo-700"
-                            onClick={approve}
+                          />
+                        )}
+                        {account && approved < popToLock && (
+                          <MainActionButton
+                            label={'Approve'}
+                            handleClick={approve}
                             disabled={wait || popToLock === 0}
-                          >
-                            Approve POP
-                          </button>
+                          />
                         )}
                       </div>
                     </div>
