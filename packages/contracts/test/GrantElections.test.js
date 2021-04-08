@@ -612,7 +612,7 @@ describe("GrantElections", function () {
 
     it("finalizes an election without randomization", async function () {
       await this.contract.connect(governance).setConfiguration(
-        GRANT_TERM.QUARTER, 2, 5, false, false, 0, 14 * ONE_DAY, 14 *ONE_DAY, 83* ONE_DAY
+        GRANT_TERM.QUARTER, 4, 5, false, false, 0, 14 * ONE_DAY, 14 *ONE_DAY, 83* ONE_DAY
       );
       await this.contract.initialize(GRANT_TERM.QUARTER);
       // voting
@@ -630,7 +630,7 @@ describe("GrantElections", function () {
       await this.mockStaking.mock.getVoiceCredits.returns(1000);
       ethers.provider.send("evm_increaseTime", [14 * ONE_DAY]);
       ethers.provider.send("evm_mine");
-      await this.contract.connect(voter1).vote([beneficiary.address], [10], GRANT_TERM.QUARTER);
+      await this.contract.connect(voter1).vote([beneficiary.address], [5], GRANT_TERM.QUARTER);
       await this.contract.connect(voter2).vote([beneficiary2.address], [40], GRANT_TERM.QUARTER);
       await this.contract.connect(voter3).vote([beneficiary3.address], [30], GRANT_TERM.QUARTER);
       await this.contract.connect(voter4).vote([beneficiary4.address], [50], GRANT_TERM.QUARTER);
@@ -644,8 +644,8 @@ describe("GrantElections", function () {
         .to.emit(this.contract, "GrantCreated")
         .withArgs(
           GRANT_TERM.QUARTER,
-          [beneficiary4.address, beneficiary2.address],
-          [parseEther("50"), parseEther("50")],
+          [beneficiary4.address, beneficiary2.address, beneficiary3.address, beneficiary5.address],
+          [parseEther("25"), parseEther("25"), parseEther("25"), parseEther("25")],
         );
     });
    });
