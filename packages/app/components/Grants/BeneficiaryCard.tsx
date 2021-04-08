@@ -1,7 +1,7 @@
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
 import Link from 'next/link';
-import { IVote } from 'pages/grants';
+import { IVote } from 'pages/grant-elections';
 
 interface Beneficiary {
   address: string,

@@ -1,4 +1,4 @@
-import { IVote } from 'pages/grants';
+import { IVote } from 'pages/grant-elections';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 

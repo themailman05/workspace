@@ -1,4 +1,4 @@
-import { IGrantRoundFilter, IVote } from 'pages/grants';
+import { IGrantRoundFilter, IVote } from 'pages/grant-elections';
 import { useState } from 'react';
 import { Dispatch } from 'react';
 import { useEffect } from 'react';

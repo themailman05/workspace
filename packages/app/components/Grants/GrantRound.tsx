@@ -1,7 +1,6 @@
-import { IVote } from 'pages/grants';
+import { IVote } from 'pages/grant-elections';
 import { useEffect } from 'react';
 import { useRef } from 'react';
-import { Check, Lock } from 'react-feather';
 import calculateRemainingVotes from 'utils/calculateRemainingVotes';
 import BeneficiaryCard from './BeneficiaryCard';
 import { RegisterButton, RegisterHolder} from '../../../../packages/ui/src/components/grantPage';

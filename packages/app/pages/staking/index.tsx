@@ -100,7 +100,10 @@ export default function LockPop() {
         </p>
         <div className="button-modal-holder">
           <button
-            onClick={() => setCompleteModal('invisible')}
+            onClick={() => {
+              setCompleteModal('invisible');
+              setPopToLock(popBalance - popToLock);
+            }}
             className="button-1"
           >
             OK Great!
