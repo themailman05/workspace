@@ -275,6 +275,9 @@ export const LandingPage = () => {
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
                       <img className="h-12" src="/images/partners/unicef.svg" alt="UNICEF" />
                     </div>
+                    <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
+                      <img className="h-12" src="/images/partners/olpc.svg" alt="One Laptop Per Child" />
+                    </div>
                   </div>
                 </div>
               </div>
