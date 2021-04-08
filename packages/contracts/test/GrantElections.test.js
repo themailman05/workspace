@@ -522,4 +522,43 @@ describe("GrantElections", function () {
       );
     });
   });
+
+  describe("finalize", function () {
+    beforeEach(async function () {
+      const Staking = await ethers.getContractFactory("Staking");
+      this.mockStaking = await waffle.deployMockContract(owner, Staking.interface.format());
+
+      const BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
+      this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
+
+      const GrantElections = await ethers.getContractFactory('GrantElections');
+      this.contract = await GrantElections.deploy(
+        this.mockStaking.address,
+        this.mockBeneficiaryRegistry.address,
+        this.mockGrantRegistry.address,
+        this.mockRandomNumberConsumer.address,
+        this.mockPop.address,
+        governance.address,
+      );
+      await this.contract.deployed();
+    });
+
+    it("require election closed", async function () {
+      await expect(
+        this.contract.finalize(GRANT_TERM.QUARTER)
+      ).to.be.revertedWith("election not yet closed");
+    });
+
+    it("require not finalized", async function () {
+      await this.contract.initialize(GRANT_TERM.MONTH);
+      ethers.provider.send("evm_increaseTime", [30 * 86400]);
+      ethers.provider.send("evm_mine");
+      await this.contract.refreshElectionState(GRANT_TERM.QUARTER);
+      await this.mockGrantRegistry.mock.createGrant.returns();
+      await this.contract.finalize(GRANT_TERM.QUARTER);
+      await expect(
+        this.contract.finalize(GRANT_TERM.QUARTER)
+      ).to.be.revertedWith("election already finalized");
+    });
+   });
 });

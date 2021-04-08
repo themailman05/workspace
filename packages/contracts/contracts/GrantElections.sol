@@ -391,12 +391,12 @@ contract GrantElections {
   function finalize(ElectionTerm _electionTerm) public {
     Election storage _election = elections[uint8(_electionTerm)];
     require(
-      _election.electionState == ElectionState.Closed,
-      "election not yet closed"
-    );
-    require(
       _election.electionState != ElectionState.Finalized,
       "election already finalized"
+    );
+    require(
+      _election.electionState == ElectionState.Closed,
+      "election not yet closed"
     );
     address[] memory _ranking = getCurrentRanking(_electionTerm);
     address[] memory _awardees;
