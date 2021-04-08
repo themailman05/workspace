@@ -21,56 +21,51 @@ export default function Navbar(): JSX.Element {
   } = context;
   const router = useRouter();
   const [showGrants, setShowGrants] = useState(false);
-  
+
   return (
     <>
-    <nav
-      className="flex shadow-md py-3 px-14"
-      style={{
-        background: 'rgba(255, 255, 255, .5)',
-        backdropFilter: 'blur(10px)',
-      }}
-    >
-      <div>
-        <Link href="/" passHref>
-          <a>
-            <img
-              src="/images/popcorn_v1_dark_bg.png"
-              alt="Logo"
-              className="w-8 h-8"
-            ></img>
-          </a>
-        </Link>
-      </div>
-      <ul className="flex flex-row items-center mx-auto space-x-4">
-        <li>
-          <NavbarLink
-            label="Grants"
-            onClick={() => setShowGrants(!showGrants)}
-            isActive={router.pathname === '/grants'}
-          />
-        </li>
-        <li>
-          <NavbarLink
-            label="Staking"
-            url="/staking"
-            isActive={router.pathname === '/staking'}
-          />
-        </li>
-
-
-      </ul>
-      <button
-        className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-gray-50"
-        onClick={() => activate(connectors.Injected)}
-      >
-        <p>Connect{account && 'ed'}</p>
-        {account && (
-          <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
-        )}
-      </button>
-    </nav>
-    <GrantsMenu visible={showGrants} toggleSubMenu={() => setShowGrants(!showGrants)} />
+      <nav className="flex shadow-md py-3 px-14 bg-white">
+        <div>
+          <Link href="/" passHref>
+            <a>
+              <img
+                src="/images/popcorn_v1_dark_bg.png"
+                alt="Logo"
+                className="w-8 h-8"
+              ></img>
+            </a>
+          </Link>
+        </div>
+        <ul className="flex flex-row items-center mx-auto space-x-4">
+          <li>
+            <NavbarLink
+              label="Grants"
+              onClick={() => setShowGrants(!showGrants)}
+              isActive={router.pathname === '/grants'}
+            />
+            <GrantsMenu
+              visible={showGrants}
+              toggleSubMenu={() => setShowGrants(!showGrants)}
+            />
+          </li>
+          <li>
+            <NavbarLink
+              label="Staking"
+              url="/staking"
+              isActive={router.pathname === '/staking'}
+            />
+          </li>
+        </ul>
+        <button
+          className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-gray-50"
+          onClick={() => activate(connectors.Injected)}
+        >
+          <p>Connect{account && 'ed'}</p>
+          {account && (
+            <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
+          )}
+        </button>
+      </nav>
     </>
   );
 }
