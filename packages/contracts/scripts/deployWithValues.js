@@ -5,7 +5,7 @@ const bluebird = require("bluebird");
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 async function deploy(ethers) {
-  
+
   const GrantTerm = { Month: 0, Quarter: 1, Year: 2 };
   const GrantTermMap = { 0: 'Monthly', 1: 'Quarterly', 2: 'Yearly'};
 
@@ -20,9 +20,15 @@ async function deploy(ethers) {
     this.grantRegistry = (await (await (await ethers.getContractFactory("GrantRegistry")).deploy(beneficiaryRegistry.address)).deployed());
     this.mockPop = (await (await (await ethers.getContractFactory("MockERC20")).deploy("TestPOP", "TPOP")).deployed());
     this.staking = (await (await (await ethers.getContractFactory("Staking")).deploy(this.mockPop.address)).deployed());
+    this.randomNumberConsumer = (await (await (await ethers.getContractFactory("RandomNumberConsumer")).deploy(
+      "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B",
+      "0x01be23585060835e02b77ef475b0cc51aa1e0709",
+      "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311",
+    )).deployed());
     this.grantElections = (await (await (await ethers.getContractFactory("GrantElections")).deploy(
       this.staking.address,
       this.beneficiaryRegistry.address,
+      this.randomNumberConsumer.address,
       this.mockPop.address,
       this.accounts[0].address
     )).deployed());
@@ -81,7 +87,7 @@ async function deploy(ethers) {
     await registerBeneficiariesForElection(GrantTerm.Year, this.bennies.slice(14,20));
     await displayElectionMetadata(GrantTerm.Year);
   }
-  
+
   const logResults = async () => {
     console.log({
       contracts: {
@@ -102,7 +108,7 @@ async function deploy(ethers) {
   await initializeQuarterlyElection();
   await initializeYearlyElection();
   await logResults();
-  
+
 }
 
 module.exports = {
