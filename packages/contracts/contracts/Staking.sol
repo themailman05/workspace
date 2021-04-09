@@ -35,7 +35,11 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     POP = _pop;
   }
 
-  function stake(uint256 amount, uint256 lengthOfTime) external override nonReentrant {
+  function stake(uint256 amount, uint256 lengthOfTime)
+    external
+    override
+    nonReentrant
+  {
     require(amount > 0, "amount must be greater than 0");
     require(
       lengthOfTime >= SECONDS_IN_A_WEEK,
@@ -64,7 +68,6 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     emit StakingDeposited(msg.sender, amount);
   }
 
-
   function withdraw(uint256 amount) external override nonReentrant {
     require(amount > 0, "amount must be greater than 0");
     require(balances[msg.sender] > 0, "insufficient balance");
@@ -79,18 +82,21 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     emit StakingWithdrawn(msg.sender, amount);
   }
 
+  // todo: multiply voice credits by 10000 to deal with exponent math
   function _recalculateVoiceCredits() internal {
     uint256 _voiceCredits = 0;
-    for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
+    for (uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
-      _voiceCredits = _voiceCredits.add(_locked._balance.mul(_locked._time).div(MAX_LOCK_TIME));
+      _voiceCredits = _voiceCredits.add(
+        _locked._balance.mul(_locked._time).div(MAX_LOCK_TIME)
+      );
     }
     voiceCredits[msg.sender] = _voiceCredits;
   }
 
   function _clearWithdrawnFromLocked(uint256 _amount) internal {
     uint256 _currentTime = block.timestamp;
-    for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
+    for (uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
         if (_amount == _locked._balance) {
@@ -103,21 +109,28 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
           continue;
         }
         if (_amount < _locked._balance) {
-          lockedBalances[msg.sender][i]._balance = _locked._balance.sub(_amount);
+          lockedBalances[msg.sender][i]._balance = _locked._balance.sub(
+            _amount
+          );
           return;
         }
       }
     }
   }
 
-  function getVoiceCredits(address _address) public view override returns (uint256) {
+  function getVoiceCredits(address _address)
+    public
+    view
+    override
+    returns (uint256)
+  {
     return voiceCredits[_address];
   }
 
   function getWithdrawableBalance() public view override returns (uint256) {
     uint256 _withdrawable = 0;
     uint256 _currentTime = block.timestamp;
-    for(uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
+    for (uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
       if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
         _withdrawable = _withdrawable.add(_locked._balance);

@@ -1,6 +1,7 @@
 const { parseEther } = require("ethers/lib/utils");
 const { GrantElectionAdapter } = require('./helpers/GrantElectionAdapter');
 const bluebird = require("bluebird");
+const { utils} = require('ethers');
 
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
@@ -80,6 +81,13 @@ async function deploy(ethers) {
     await registerBeneficiariesForElection(GrantTerm.Year, this.bennies.slice(14,18));
     await displayElectionMetadata(GrantTerm.Year);
   }
+
+  const approveForStaking = async () => {
+    console.log('approving all accounts for staking ...');
+      await bluebird.map(accounts, async(account) => {
+        return this.mockPop.connect(account).approve(this.staking.address, utils.parseEther('100000000'));
+      }, {concurrency: 1})
+  }
   
   const logResults = async () => {
     console.log({
@@ -100,6 +108,7 @@ async function deploy(ethers) {
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
+  await approveForStaking();
   await logResults();
   
 }
