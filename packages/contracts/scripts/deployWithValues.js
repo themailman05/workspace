@@ -256,8 +256,19 @@ async function deploy(ethers) {
         staking: this.staking.address,
         randomNumberConsumer: this.randomNumberConsumer.address,
         grantElections: this.grantElections.address,
-      }
+      },
     });
+    console.log(`
+Paste this into your .env file:
+
+ADDR_BENEFICIARY_REGISTRY=${this.beneficiaryRegistry.address}
+ADDR_GRANT_REGISTRY=${this.grantRegistry.address}
+ADDR_POP=${this.mockPop.address}
+ADDR_STAKING=${this.staking.address}
+ADDR_RANDOM_NUMBER=${this.randomNumberConsumer.address}
+ADDR_GOVERNANCE=${this.accounts[0].address}
+ADDR_GRANT_ELECTION=${this.grantElections.address}
+    `);
   };
 
   await setSigners();
