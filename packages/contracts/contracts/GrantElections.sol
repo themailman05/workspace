@@ -204,6 +204,7 @@ contract GrantElections {
   }
 
   /**
+   * todo: check beneficiary not already registered for this election
    * todo: check beneficiary is not registered for another non-closed election
    * todo: check beneficiary is not currently awarded a grant
    * todo: add claimBond function for beneficiary to receive their bond after the election period has closed
@@ -224,6 +225,7 @@ contract GrantElections {
       beneficiaryRegistry.beneficiaryExists(_beneficiary),
       "address is not eligible for registration"
     );
+    // todo: check beneficiary not already registered for election
     _collectRegistrationBond(_election);
 
     _election.registeredBeneficiaries[_beneficiary] = true;

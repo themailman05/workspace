@@ -23,6 +23,7 @@ import SingleActionModal, {
   DefaultSingleActionModalProps,
 } from 'components/Modal/SingleActionModal';
 
+
 export interface IGrantRoundFilter {
   active: boolean;
   closed: boolean;
@@ -97,6 +98,77 @@ export default function AllGrants() {
     active: true,
     closed: true,
   });
+  const [electionsSignedUpFor, setElectionsSignedUpFor] = useState<boolean[]>([
+    false,
+    false,
+    false,
+  ]);
+  const [beneficiaryExists, setBeneficiaryExists] = useState<boolean>(false);
+
+  async function IsUserAlreadyRegistered() {
+    const connected = contracts.election.connect(library.getSigner());
+    const elections = [
+      await connected._isEligibleBeneficiary(account, ElectionTerm.Monthly),
+      await connected._isEligibleBeneficiary(account, ElectionTerm.Quarterly),
+      await connected._isEligibleBeneficiary(account, ElectionTerm.Yearly),
+    ];
+    setElectionsSignedUpFor(elections);
+  }
+
+  useEffect(() => {
+    // Call to see if user has already registered for election
+    if (contracts?.election && account) {
+
+      IsUserAlreadyRegistered();
+    }
+  }, [contracts, account]);
+
+  useEffect(() => {
+    // call to see if we are an eligible beneficiary
+    if (contracts?.beneficiary && account) {
+      let connected = contracts.beneficiary.connect(library.getSigner());
+      connected
+        .beneficiaryExists(account)
+        .then((response) => setBeneficiaryExists(response))
+        .catch((err) => console.log(err, 'beneficiary doesnt exist'));
+    }
+  }, [contracts, account]);
+
+  function registerForElection(grant_term) {
+    // Register for selected election
+    let connected = contracts.election.connect(library.getSigner());
+    connected
+      .registerForElection(account, grant_term)
+      .then((res) => {
+        setSingleActionModal({
+          content: `You have successfully registered for this grant election`,
+          title: 'Success!',
+          visible: true,
+          type: 'info',
+          onConfirm: {
+            label: 'Done',
+            onClick: () =>
+              setSingleActionModal({ ...DefaultSingleActionModalProps }),
+          },
+        });
+        let newElectionSignedUpForArray = electionsSignedUpFor;
+        newElectionSignedUpForArray[grant_term] = true;
+        setElectionsSignedUpFor(newElectionSignedUpForArray);
+      })
+      .catch((err) => {
+        setSingleActionModal({
+          content: `There was an error registering you for this election: ${err.message}`,
+          title: 'Error',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Go Back',
+            onClick: () =>
+              setSingleActionModal({ ...DefaultSingleActionModalProps }),
+          },
+        });
+      });
+  }
   const [selectedGrantTerms, setSelectedGrantTerms] = useState<number[]>([]);
 
   const DefaultVoteConfirmationModal = {
@@ -137,6 +209,14 @@ export default function AllGrants() {
       .split('.')[0];
     setVoiceCredits(vCreditsFormatted);
   };
+  
+  useEffect(() => {
+    if (contracts?.pop && account) {
+      contracts.pop
+        .balanceOf(account)
+        .then((res) => console.log('POP Balance: ', res));
+    }
+  }, [contracts, account]);
 
   useEffect(() => {
     if (!contracts || !selectedGrantTerms.length) {
@@ -192,6 +272,7 @@ export default function AllGrants() {
     setPendingVotes({ ...pendingVotes });
   }
 
+
   const submitVotes = async (grantTerm: ElectionTerm) => {
     setVoteConfirmationModal({...voteConfirmationModal, visible: true, progress: true});
     const txArgs = Object.keys(pendingVotes[grantTerm].votes).reduce<
@@ -204,6 +285,7 @@ export default function AllGrants() {
       },
       [[], [], grantTerm],
     );
+    
     try {
       await contracts.election
         .connect(library.getSigner())
@@ -303,6 +385,9 @@ export default function AllGrants() {
               scrollToGrantRound={scrollToGrantRound}
               setGrantRoundFilter={setGrantRoundFilter}
               scrollToMe={election.electionTerm === activeGrantRound}
+              userIsEligibleBeneficiary={beneficiaryExists}
+              registerForElection={registerForElection}
+              alreadyRegistered={electionsSignedUpFor[election.electionTerm]}
             />
           ))}
       </div>
