@@ -57,7 +57,7 @@ export default function Navbar(): JSX.Element {
           </li>
         </ul>
         <button
-          className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-gray-50"
+          className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-indigo-400 hover:text-white"
           onClick={() => activate(connectors.Injected)}
         >
           <p>Connect{account && 'ed'}</p>

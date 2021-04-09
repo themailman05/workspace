@@ -98,10 +98,7 @@ export default function LockPop() {
           text={`You got now ${voiceCredits.toFixed(
             2,
           )} voice Credits to vote with.`}
-          handleClick={() => {
-            setStakeStatus('none');
-            router.push('/grant-elections/all');
-          }}
+          handleClick={() => setStakeStatus('none')}
         />
       )}
       <div className="bg-gray-900">
