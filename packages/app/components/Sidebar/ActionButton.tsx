@@ -1,13 +1,16 @@
 import { useRouter } from 'next/router';
+import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
 
 interface ISidebarActionButton {
+  election: ElectionMetadata;
   hasLockedPop: boolean;
   isWalletConnected: boolean;
   connectWallet: () => void;
-  submitVotes: () => void;
+  submitVotes: Function;
 }
 
 export default function SidebarActionButton({
+  election,
   hasLockedPop,
   isWalletConnected,
   connectWallet,
@@ -24,7 +27,7 @@ export default function SidebarActionButton({
   }
   if (hasLockedPop) {
     return (
-      <button className="button button-primary w-full" onClick={submitVotes}>
+      <button className="button button-primary w-full" onClick={() => submitVotes(election.electionTerm)}>
         Vote
       </button>
     );

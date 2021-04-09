@@ -1,62 +1,41 @@
-import { IGrantRoundFilter, IVote } from 'pages/grant-elections';
-import { useState } from 'react';
-import { Dispatch } from 'react';
-import { useEffect } from 'react';
+import { ElectionMetadata, GrantElectionAdapter } from '@popcorn/utils/Contracts';
 import calculateRemainingVotes from 'utils/calculateRemainingVotes';
 import ActionButton from './ActionButton';
-import FilterGrantRounds from './FilterGrantRounds';
-import { IGrantRound } from './GrantRoundLink';
 import VoteCounter from './VoteCounter';
+import { PendingVotes } from '../../pages/grant-elections/[type]';
 
 interface ISideBar {
-  votes?: IVote[];
-  maxVotes: number;
+  election?: ElectionMetadata;
+  pendingVotes: PendingVotes;
   voiceCredits: number;
-  grantRounds: IGrantRound[];
   isWalletConnected: boolean;
-  isActiveElection: boolean;
   connectWallet: () => void;
-  submitVotes: () => void;
+  submitVotes: Function;
   scrollToGrantRound: (grantId: number) => void;
-  grantRoundFilter: IGrantRoundFilter;
-  setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
 }
 
 export default function Sidebar({
-  votes,
-  maxVotes,
+  election,
+  pendingVotes,
   voiceCredits,
-  grantRounds,
   isWalletConnected,
-  isActiveElection,
   connectWallet,
   submitVotes,
   scrollToGrantRound,
-  grantRoundFilter,
-  setGrantRoundFilter,
 }: ISideBar): JSX.Element {
-  const [grantYears, setGrantYears] = useState<number[]>([]);
-
-  useEffect(() => {
-    const years = [];
-    grantRounds?.forEach(
-      (grantRound) =>
-        !years.includes(grantRound?.year) && years.push(grantRound?.year),
-    );
-    years.sort().reverse();
-    setGrantYears(years);
-  }, []);
 
   return (
     <div className="w-9/12 mx-auto">
-      {isActiveElection && (
+      {election && GrantElectionAdapter().isActive(election) && (
         <>
           <VoteCounter
-            remainingVotes={votes && calculateRemainingVotes(maxVotes, votes)}
-            maxVotes={maxVotes}
+            election={election}
+            maxVotes={voiceCredits}
+            pendingVotes={pendingVotes}
             voiceCredits={voiceCredits}
           />
           <ActionButton
+            election={election}
             hasLockedPop={voiceCredits > 0}
             isWalletConnected={isWalletConnected}
             connectWallet={connectWallet}
@@ -80,10 +59,7 @@ export default function Sidebar({
         ))}
             **/}
       </ul>
-      <FilterGrantRounds
-        grantRoundFilter={grantRoundFilter}
-        setGrantRoundFilter={setGrantRoundFilter}
-      />
+      
     </div>
   );
 }
