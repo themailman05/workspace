@@ -436,7 +436,7 @@ describe("GrantElections", function () {
       await this.contract.deployed();
     });
 
-    it.only("return current ranking", async function () {
+    it("return current ranking", async function () {
       await this.contract.initialize(GRANT_TERM.MONTH);
       ethers.provider.send("evm_increaseTime", [7 * 86400]);
       ethers.provider.send("evm_mine");
