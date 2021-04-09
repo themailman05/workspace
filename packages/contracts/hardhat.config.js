@@ -97,14 +97,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     const [signer] = await ethers.getSigners();
     const { term } = args;
     const GrantElections = new ethers.Contract(
-      process.env.ADDR_STAKING,
-      process.env.ADDR_BENEFICIARY_REGISTRY,
-      process.env.ADDR_GRANT_REGISTRY,
-      process.env.ADDR_CHAINLINK_VRF_COORDINATOR,
-      process.env.ADDR_CHAINLINK_LINK_TOKEN,
-      process.env.ADDR_CHAINLINK_KEY_HASH,
-      process.env.ADDR_POP,
-      process.env.ADDR_GOVERNANCE,
+      process.env.ADDR_GRANT_ELECTION,
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
@@ -120,8 +113,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
   solidity: "0.7.3",
   networks: {
     rinkeby: {
-      url: process.env.RPC_URL,
-      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      accounts: [process.env.PRIVATE_KEY],
     },
   },
 };

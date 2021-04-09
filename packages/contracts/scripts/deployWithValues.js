@@ -96,7 +96,8 @@ async function deploy(ethers) {
         grantRegistry: this.grantRegistry.address,
         mockPop: this.mockPop.address,
         staking: this.staking.address,
-        elections: this.grantElections.address,
+        randomNumberConsumer: this.randomNumberConsumer.address,
+        grantElections: this.grantElections.address,
       }
     });
   }
