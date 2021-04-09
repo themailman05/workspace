@@ -136,16 +136,17 @@ async function deploy(ethers) {
     await displayElectionMetadata(GrantTerm.Month);
   };
 
-  const stakePOP = async (beneficiaries) => {
+  const stakePOP = async (voters) => {
     console.log('voters are staking POP ...')
-    await bluebird.map(beneficiaries, async () => {
-      return this.staking.stake(utils.parseEther("1000"), 604800 * 52 * 4);
+    await bluebird.map(voters, async (voter) => {
+      return this.staking.connect(voter).stake(utils.parseEther("1000"), 604800 * 52 * 4);
     });
   };
 
   const voteForElection = async (term, voters, beneficiaries) => {
     await stakePOP(voters);
     
+    console.log(`${voters.length} voting for ${beneficiaries.length} bennies`)
     console.log('voters are voting in election ...');
     await bluebird.map(voters, async (voter) => {
       if (!voter) return;
@@ -197,8 +198,8 @@ async function deploy(ethers) {
 
     await voteForElection(
       GrantTerm.Quarter,
-      this.accounts.slice(5, 7),
-      this.bennies.slice(7, 14).map((beneficiary) => beneficiary.address)
+      this.accounts.slice(5, 8),
+      this.bennies.slice(7, 11),
     );
 
     console.log("refreshing election state");
