@@ -98,7 +98,6 @@ export default function AllGrants() {
     active: true,
     closed: true,
   });
-  const [registered, setRegistered] = useState<boolean>(false);
   const [electionsSignedUpFor, setElectionsSignedUpFor] = useState<boolean[]>([
     false,
     false,
@@ -109,9 +108,9 @@ export default function AllGrants() {
   async function IsUserAlreadyRegistered() {
     const connected = contracts.election.connect(library.getSigner());
     const elections = [
-      await connected._isEligibleBeneficiary(account, GRANT_TERM.MONTH),
-      await connected._isEligibleBeneficiary(account, GRANT_TERM.QUARTER),
-      await connected._isEligibleBeneficiary(account, GRANT_TERM.YEAR),
+      await connected._isEligibleBeneficiary(account, ElectionTerm.Monthly),
+      await connected._isEligibleBeneficiary(account, ElectionTerm.Quarterly),
+      await connected._isEligibleBeneficiary(account, ElectionTerm.Yearly),
     ];
     setElectionsSignedUpFor(elections);
   }
@@ -119,6 +118,7 @@ export default function AllGrants() {
   useEffect(() => {
     // Call to see if user has already registered for election
     if (contracts?.election && account) {
+
       IsUserAlreadyRegistered();
     }
   }, [contracts, account]);
@@ -140,14 +140,33 @@ export default function AllGrants() {
     connected
       .registerForElection(account, grant_term)
       .then((res) => {
-        setRegistered(true);
+        setSingleActionModal({
+          content: `You have successfully registered for this grant election`,
+          title: 'Success!',
+          visible: true,
+          type: 'info',
+          onConfirm: {
+            label: 'Done',
+            onClick: () =>
+              setSingleActionModal({ ...DefaultSingleActionModalProps }),
+          },
+        });
         let newElectionSignedUpForArray = electionsSignedUpFor;
         newElectionSignedUpForArray[grant_term] = true;
         setElectionsSignedUpFor(newElectionSignedUpForArray);
       })
       .catch((err) => {
-        console.log(err);
-        setRegistered(false);
+        setSingleActionModal({
+          content: `There was an error registering you for this election: ${err.message}`,
+          title: 'Error',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Go Back',
+            onClick: () =>
+              setSingleActionModal({ ...DefaultSingleActionModalProps }),
+          },
+        });
       });
   }
   const [selectedGrantTerms, setSelectedGrantTerms] = useState<number[]>([]);
@@ -254,19 +273,6 @@ export default function AllGrants() {
   }
 
 
-  function registeredModal() {
-    return (
-      <Modal visible={registered === true ? 'visible' : 'invisible'}>
-        <p>You have successfully registered for this grant election</p>
-        <div className="button-modal-holder">
-          <button onClick={() => setRegistered(false)} className="button-1">
-            Done
-          </button>
-        </div>
-      </Modal>
-    );
-  }
-
   const submitVotes = async (grantTerm: ElectionTerm) => {
     setVoteConfirmationModal({...voteConfirmationModal, visible: true, progress: true});
     const txArgs = Object.keys(pendingVotes[grantTerm].votes).reduce<
@@ -311,7 +317,6 @@ export default function AllGrants() {
 
   return (
     <div className="w-full">
-      {registeredModal()}
       <NavBar />
       <DualActionModal
         visible={voteConfirmationModal.visible}

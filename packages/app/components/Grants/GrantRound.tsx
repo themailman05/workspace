@@ -86,7 +86,7 @@ export default function GrantRound({
     if (userIsEligibleBeneficiary) {
       return (
       <RegisterHolder >
-          <button onClick={() => registerForElection(grantTerm)} className="button button-primary button-custom">Register for election</button>
+          <button onClick={() => registerForElection(election.electionTerm)} className="button button-primary button-custom">Register for election</button>
         </RegisterHolder>
       );
     }
@@ -104,7 +104,7 @@ export default function GrantRound({
           )}
         </div>
         <h2 className="text-3xl font-bold">🏆 {createElectionName(election)}</h2>
-         {isActiveElection && returnButtons()}
+         {GrantElectionAdapter().isActive(election) && returnButtons()}
 
       </span>
       <p className="w-10/12">{/* description goes here */}</p>
