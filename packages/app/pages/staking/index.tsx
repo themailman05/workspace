@@ -26,8 +26,8 @@ const lockPeriods = [
 
 export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
-  const { library, account, activate, active } = context;
   const { contracts } = useContext(ContractsContext);
+  const { library, account, activate, active } = context;
   const router = useRouter();
   const [popToLock, setPopToLock] = useState<number>(0);
   const [lockDuration, setLockDuration] = useState<number>(ONE_WEEK);
@@ -59,7 +59,6 @@ export default function LockPop() {
     setWait(true);
     const lockedPopInEth = utils.parseEther(popToLock.toString());
     const signer = library.getSigner();
-
     const connectedStaking = await contracts.staking.connect(signer);
     await connectedStaking
       .stake(lockedPopInEth, lockDuration)
