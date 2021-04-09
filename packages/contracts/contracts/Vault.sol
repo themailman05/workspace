@@ -9,15 +9,24 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 
 interface YearnVault is IERC20 {
   function token() external view returns (address);
-  function deposit() external returns (uint256);
+  function deposit(uint256 amount) external returns (uint256);
   function withdraw() external returns (uint256);
+  function pricePerShare() external view returns (uint256);
+}
+
+interface UniswapRouter {
+  function swapExactTokensForTokens(
+    uint256 amountIn,
+    uint256 amountOutMin,
+    address[] calldata path,
+    address to,
+    uint256 deadline
+  ) external returns (uint[] memory amounts);
 }
 
 interface DAI is IERC20 {}
 
 interface USDX is IERC20 {}
-
-interface UniswapRouter {}
 
 contract Vault is ERC20 {
 
@@ -41,8 +50,35 @@ contract Vault is ERC20 {
     uniswapRouter = uniswapRouter_;
   }
 
+  function totalAssets() external view returns (uint256) {
+    uint256 daiBalance = dai.balanceOf(address(this));
+    uint256 yearnBalance = yearnVault.balanceOf(address(this));
+    uint256 yearnValue = yearnVault.pricePerShare() * yearnBalance;
+    return daiBalance + yearnValue;
+  }
+
   function deposit(uint256 amount) external returns (uint256) {
+    _mint(msg.sender, amount);
+
     dai.transferFrom(msg.sender, address(this), amount);
+    dai.approve(address(uniswapRouter), amount);
+
+    address[] memory path = new address[](2);
+    path[0] = address(dai);
+    path[1] = address(usdx);
+
+    uniswapRouter.swapExactTokensForTokens(
+      amount,
+      0,
+      path,
+      address(this),
+      block.timestamp + 10 minutes
+    );
+
+    usdx.approve(address(yearnVault), amount);
+    yearnVault.deposit(amount);
+
     return dai.balanceOf(address(this));
   }
+
 }
