@@ -77,7 +77,7 @@ async function deploy(ethers) {
   const initializeYearlyElection = async () => {
     console.log("initializing yearly election ...");
     await this.grantElections.initialize(GrantTerm.Year);
-    await registerBeneficiariesForElection(GrantTerm.Year, this.bennies.slice(14,20));
+    await registerBeneficiariesForElection(GrantTerm.Year, this.bennies.slice(14,18));
     await displayElectionMetadata(GrantTerm.Year);
   }
   
