@@ -28,7 +28,6 @@ export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
   const { contracts } = useContext(ContractsContext);
   const { library, account, activate, active } = context;
-  const { contracts } = useContext(ContractsContext);
   const router = useRouter();
   const [popToLock, setPopToLock] = useState<number>(0);
   const [lockDuration, setLockDuration] = useState<number>(ONE_WEEK);
