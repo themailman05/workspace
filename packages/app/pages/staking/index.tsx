@@ -1,233 +1,208 @@
-import Modal from '../../containers/modal';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-import { useState, useEffect } from 'react';
-import { Contract } from '@ethersproject/contracts';
+import { useState, useEffect, useContext } from 'react';
 import { connectors } from '../../containers/Web3/connectors';
-import LockPopSlider from '../../containers/lockPopSlider';
-import Staking from '../../../contracts/artifacts/contracts/Staking.sol/Staking.json';
-import MockPop from '../../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
 import { utils } from 'ethers';
 import NavBar from '../../containers/NavBar/NavBar';
+import Modal from 'components/Modal';
+import DropdownSelect from 'components/DropdownSelect';
+import { ContractsContext } from 'app/contracts';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
+import { Router, useRouter } from 'next/router';
+import { connect } from 'node:http2';
+import MainActionButton from 'components/MainActionButton';
+import StakingResponseModal from 'components/Staking/StakingResponseModal';
+
+const ONE_WEEK = 604800;
+const lockPeriods = [
+  { label: '1 week', value: ONE_WEEK },
+  { label: '1 month', value: ONE_WEEK * 4 },
+  { label: '3 months', value: ONE_WEEK * 4 * 3 },
+  { label: '6 months', value: ONE_WEEK * 4 * 6 },
+  { label: '1 year', value: ONE_WEEK * 52 },
+  { label: '4 years', value: ONE_WEEK * 52 * 4 },
+];
 
 export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
+  const { contracts } = useContext(ContractsContext);
   const { library, account, activate, active } = context;
-  const [staking, setStaking] = useState<Contract>();
-  const [mockERC, setMockERC] = useState<Contract>();
-  const [popToLock, setPopToLock] = useState(0);
-  const [duration, setDuration] = useState('1 week');
+  const router = useRouter();
+  const [popToLock, setPopToLock] = useState<number>(0);
+  const [lockDuration, setLockDuration] = useState<number>(ONE_WEEK);
   const [popBalance, setPopBalance] = useState(0);
-  const [confirmModal, setConfirmModal] = useState('invisible');
-  const [connectModal, setConnectModal] = useState('invisible');
-  const [completeModal, setCompleteModal] = useState('invisible');
-  const [errorModal, setErrorModal] = useState('invisible');
-  const [errorMsg, setErrorMsg] = useState('');
+  const [voiceCredits, setVoiceCredits] = useState<number>(0);
+  const [approved, setApproval] = useState<number>(0);
+  const [wait, setWait] = useState<boolean>(false);
+  const [stakeStatus, setStakeStatus] = useState<
+    'error' | 'success' | 'none'
+  >();
 
-  const stakingAddress = process.env.ADDR_STAKING;
-  const mockERCAddress = process.env.ADDR_POP;
-
-  const ONE_WEEK = 604800;
-  const lockPeriods = {
-    '1 week': ONE_WEEK,
-    '1 month': ONE_WEEK * 4,
-    '3 months': ONE_WEEK * 4 * 3,
-    '6 months': ONE_WEEK * 4 * 6,
-    '1 year': ONE_WEEK * 52,
-    '4 years': ONE_WEEK * 52 * 4,
-  };
-
-  async function lockPop(amountToLock) {
-    amountToLock = utils.parseEther(amountToLock.toString());
-    const signer = library.getSigner();
-
-    const connected = await mockERC.connect(signer);
-
-    await connected
-      .approve(stakingAddress, amountToLock)
-      .then((res) => console.log('approved', res))
-      .catch((err) => console.log('err', err));
-
-    const connectedStaking = await staking.connect(signer);
-    await connectedStaking
-      .stake(amountToLock, lockPeriods[duration])
-      .then((rez) => {
-        console.log('successfully staked', rez);
-        setConfirmModal('invisible');
-        setCompleteModal('visible');
-      })
-      .catch((err) => {
-        console.log(err, 'err');
-        setErrorModal('visible');
-        setErrorMsg(err.data?.message);
-      });
-  }
-
-  function connectWallet() {
-    activate(connectors.Injected);
-    setConnectModal('invisible');
-  }
+  useEffect(() => {
+    setVoiceCredits(popToLock * (lockDuration / (ONE_WEEK * 52 * 4)));
+  }, [lockDuration, popToLock]);
 
   useEffect(() => {
     if (!account) {
-      setConnectModal('visible');
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!active) {
-      activate(connectors.Network);
-      if (library?.connection?.url === 'metamask') {
-        //TODO get pop -> to tell the user to either lock them or buy some
-        //TODO get locked pop -> to vote or tell the user to lock pop
-        //TODO swap the contract provider to signer so the user can vote
-        //grantRegistry.connect(library.getSigner());
-      }
-    }
-  }, [active]);
-
-  async function getBalance() {
-    const PopBalance = await mockERC.balanceOf(account);
-    setPopBalance(+utils.formatEther(PopBalance.toString()));
-  }
-
-  useEffect(() => {
-    if (account && mockERC && confirmModal === 'invisible') {
-      getBalance();
-    }
-  }, [account, mockERC, confirmModal, completeModal]);
-
-  useEffect(() => {
-    if (!library) {
       return;
     }
-    setStaking(new Contract(stakingAddress, Staking.abi, library));
+    contracts.pop
+      .balanceOf(account)
+      .then((res) => setPopBalance(Number(utils.formatEther(res))));
+    contracts.pop
+      .allowance(account, contracts.staking.address)
+      .then((res) => setApproval(Number(utils.formatEther(res))));
+  }, [account]);
 
-    setMockERC(new Contract(mockERCAddress, MockPop.abi, library));
-  }, [library, active]);
-
-  function updatePopToLock(id, amount) {
-    setPopToLock(amount);
+  async function lockPop(): Promise<void> {
+    setWait(true);
+    const lockedPopInEth = utils.parseEther(popToLock.toString());
+    const signer = library.getSigner();
+    const connectedStaking = await contracts.staking.connect(signer);
+    await connectedStaking
+      .stake(lockedPopInEth, lockDuration)
+      .then((res) => {
+        setStakeStatus('success');
+      })
+      .catch((err) => {
+        setStakeStatus('error');
+      });
+    setWait(false);
   }
 
-  function CompleteModal() {
-    return (
-      <Modal visible={completeModal}>
-        <p>
-          You have successfully locked {popToLock} POP for {duration}
-        </p>
-        <div className="button-modal-holder">
-          <button
-            onClick={() => setCompleteModal('invisible')}
-            className="button-1"
-          >
-            OK Great!
-          </button>
-        </div>
-      </Modal>
-    );
-  }
-
-  function ErrorModal() {
-    return (
-      <Modal visible={errorModal}>
-        <p>There was an error</p>
-        <p>{errorMsg}</p>
-        <div className="button-modal-holder">
-          <button onClick={() => setErrorMsg('invisible')} className="button-1">
-            Try again
-          </button>
-        </div>
-      </Modal>
-    );
+  async function approve(): Promise<void> {
+    setWait(true);
+    const lockedPopInEth = utils.parseEther('100000000');
+    const connected = await contracts.pop.connect(library.getSigner());
+    await connected
+      .approve(contracts.staking.address, lockedPopInEth)
+      .then((res) => console.log('approved', res))
+      .catch((err) => console.log('err', err));
+    setWait(false);
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-gray-900 h-screen">
       <NavBar />
-      <Modal visible={confirmModal}>
-        <p>
-          Are you sure you want to lock {popToLock} POP for {duration} ?
-        </p>
-        <div className="button-modal-holder">
-          <button onClick={() => lockPop(popToLock)} className="button-1">
-            Confirm
-          </button>
-          <button
-            className="button-1"
-            onClick={() => setConfirmModal('invisible')}
-          >
-            Cancel
-          </button>
-        </div>
-      </Modal>
-      {CompleteModal()}
-      {ErrorModal()}
-      <Modal visible={connectModal}>
-        <p>You must connect your wallet to be able to lock any POP</p>
-        <button onClick={connectWallet} className="button-1">
-          Connect Wallet
-        </button>
-      </Modal>
-      <div className="lockpop-page-container">
-        <div className="w-2/12 flex flex-col items-center"></div>
-        <div className="lockpop-content-div">
-          <div className="lockpop-form-div">
-            <h1 className="lock-pop-title">Lock your POP</h1>
-            <p className="lockpop-explanation">
+      {stakeStatus === 'error' && (
+        <StakingResponseModal
+          title={'Error'}
+          text={'Something went wrong...'}
+          handleClick={() => setStakeStatus('none')}
+        />
+      )}
+      {stakeStatus === 'success' && (
+        <StakingResponseModal
+          title={'Success'}
+          text={`You got now ${voiceCredits.toFixed(
+            2,
+          )} voice Credits to vote with.`}
+          handleClick={() => setStakeStatus('none')}
+        />
+      )}
+      <div className="bg-gray-900">
+        <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
+          <div className="text-center">
+            <h2 className="text-lg leading-6 font-semibold text-gray-300 uppercase tracking-wider"></h2>
+            <p className="mt-2 text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl">
+              POP Staking
+            </p>
+            <p className="mt-3 max-w-4xl mx-auto text-xl text-gray-300 sm:mt-5 sm:text-2xl">
               In order to participate in the selection of beneficiaries and
-              awarding grants to beneficiaries, you must first lock your tokens.
+              awarding grants to beneficiaries, you need voice credits. Stake
+              your POP to gain voice credits.
             </p>
+          </div>
+        </div>
 
-            <div className="pop-available-div">
-              <p>You have {popBalance} POP tokens available to lock</p>
+        <div className="mt-16 pb-12 lg:mt-20 lg:pb-20">
+          <div className="relative z-0">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="relative lg:grid lg:grid-cols-7">
+                <div className="mt-10 max-w-lg mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-start-3 lg:col-end-6 lg:row-start-1 lg:row-end-4">
+                  <div className="relative z-10 rounded-lg shadow-xl">
+                    <div className="bg-white rounded-t-lg px-6 pt-12 pb-10">
+                      <div className="flex flex-col">
+                        <h3
+                          className="text-center text-3xl font-semibold text-gray-900 sm:-mx-6"
+                          id="tier-growth"
+                        >
+                          Voice Credits
+                        </h3>
+                        <p className="px-3 text-center my-4 text-6xl font-black tracking-tight text-gray-900 sm:text-6xl">
+                          {voiceCredits.toFixed(2)}
+                        </p>
+                        <div className="w-10/12 mx-auto">
+                          <div className="w-full">
+                            <span className="flex flex-row justify-between">
+                              <p className="text-gray-600">Locked Pop</p>
+                              <span className="text-gray-600 flex flex-row">
+                                <p className="">
+                                  {popToLock}/{popBalance}
+                                </p>
+                              </span>
+                            </span>
+                            <Slider
+                              className="mt-2 w-10/12"
+                              value={popToLock}
+                              onChange={(val) => setPopToLock(Number(val))}
+                              min={0}
+                              max={popBalance}
+                              step={1}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="border-t-2 border-gray-100 rounded-b-lg pt-10 pb-8 px-6 bg-gray-50 space-y-4 sm:px-10 sm:py-10">
+                      <span className="flex flex-row items-center justify-between">
+                        <p className="">
+                          For how long do you want to lock your POP?
+                        </p>
+                        <DropdownSelect
+                          label={'Time Period'}
+                          selectedValue={
+                            lockPeriods.find(
+                              (period) =>
+                                Number(period.value) === Number(lockDuration),
+                            ).label
+                          }
+                          selectOptions={lockPeriods}
+                          selectOption={setLockDuration}
+                        />
+                      </span>
+                      <p className="text-sm text-gray-500">
+                        Locking tokens for a longer period of time will give you
+                        more voting power. (POP * duration / max duration)
+                      </p>
+                      <div className="rounded-lg shadow-md">
+                        {!account && (
+                          <MainActionButton
+                            label={'Connect Wallet'}
+                            handleClick={() => activate(connectors.Injected)}
+                          />
+                        )}
+                        {account && approved >= popToLock && (
+                          <MainActionButton
+                            label={'Stake POP'}
+                            handleClick={lockPop}
+                            disabled={wait || popToLock === 0}
+                          />
+                        )}
+                        {account && approved < popToLock && (
+                          <MainActionButton
+                            label={'Approve'}
+                            handleClick={approve}
+                            disabled={wait || popToLock === 0}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <div className="slider-div">
-              <LockPopSlider
-                id="lock-pop-slider"
-                assignVotes={updatePopToLock}
-                maxVotes={popBalance}
-                totalVotes={popToLock}
-                votesAssignedByUser={popToLock}
-              />
-            </div>
-            <p className="lockpop-time">
-              How long do you want to lock your POP for?{' '}
-            </p>
-
-            <p className="lockpop-small">
-              Locking tokens for a longer period of time will give you more
-              voting power.
-            </p>
-
-            <select
-              className="select-time"
-              value={duration}
-              onChange={(v) => setDuration(v.target.value)}
-            >
-              {Object.keys(lockPeriods).map((duration) => (
-                <option key={duration} value={duration}>
-                  {duration}
-                </option>
-              ))}
-            </select>
-
-            {/* <p>Voting power = POP locked * duration / maximum duration</p> */}
-            <div className="voting-power-div">
-              <p>Voice Credits (voting power): </p>
-              <p className="bold ">
-                {' '}
-                {popToLock * (lockPeriods[duration] / lockPeriods['4 years'])}
-              </p>
-            </div>
-            <button
-              disabled={!popToLock || !duration}
-              className="button-1 lock-pop-button"
-              onClick={() => setConfirmModal('visible')}
-            >
-              Lock POP
-            </button>
           </div>
         </div>
       </div>

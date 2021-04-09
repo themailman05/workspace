@@ -1,84 +1,88 @@
 import GrantRound from '../../components/Grants/GrantRound';
 import Sidebar from '../../components/Sidebar/Sidebar';
-import { IGrantRound } from '../../components/Sidebar/GrantRoundLink';
-import { IGrantRoundFilter, IVote } from 'pages/grant-elections';
+import {
+  IGrantRoundFilter,
+  PendingVotes,
+  Vote,
+} from 'pages/grant-elections/[type]';
 import { Dispatch } from 'react';
+import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
+import { GrantElectionAdapter } from '@popcorn/utils/Contracts';
+import createElectionName from 'utils/createElectionName';
+import { RegisterHolder } from '@popcorn/ui/components/grantPage';
+import { Check } from 'react-feather';
 
 interface IElectionSection {
   id: number;
-  title: string;
-  description: string;
-  grantTerm: number;
-  isActiveElection: boolean;
-  beneficiaries: any[];
-  maxVotes: number;
+  election: ElectionMetadata;
   voiceCredits: number;
-  votes?: IVote[];
-  grantRounds: IGrantRound[];
   isWalletConnected: boolean;
   grantRoundFilter: IGrantRoundFilter;
-  assignVotes: (grantTerm: number, vote: IVote) => void;
+  pendingVotes: PendingVotes;
+  assignVotes: (grantTerm: number, vote: Vote) => void;
   connectWallet: () => void;
-  submitVotes: () => void;
+  submitVotes: Function;
   scrollToGrantRound: (grantId: number) => void;
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
   scrollToMe: boolean;
-  quadratic: boolean;
+  userIsEligibleBeneficiary?: boolean;
+  registerForElection: (grant_term: number) => void;
+  alreadyRegistered: boolean;
 }
 
 export default function ElectionSection({
-  id,
-  title,
-  description,
-  grantTerm,
-  isActiveElection,
-  beneficiaries,
-  maxVotes,
+  election,
   voiceCredits,
-  votes,
-  grantRounds,
   isWalletConnected,
-  grantRoundFilter,
+  submitVotes,
+  pendingVotes,
   assignVotes,
   connectWallet,
-  submitVotes,
   scrollToGrantRound,
-  setGrantRoundFilter,
   scrollToMe,
-  quadratic,
+  userIsEligibleBeneficiary,
+  registerForElection,
+  alreadyRegistered,
 }: IElectionSection): JSX.Element {
   return (
-    <div className="flex flex-row">
-      <div className="top-10 w-2/12 h-full sticky">
-        <Sidebar
-          votes={votes}
-          voiceCredits={voiceCredits}
-          maxVotes={maxVotes}
-          grantRounds={grantRounds}
-          isWalletConnected={isWalletConnected}
-          grantRoundFilter={grantRoundFilter}
-          isActiveElection={isActiveElection}
-          connectWallet={connectWallet}
-          submitVotes={submitVotes}
-          scrollToGrantRound={scrollToGrantRound}
-          setGrantRoundFilter={setGrantRoundFilter}
-        />
+    <div className="flex flex-col">
+      <div className="flex flex-row mb-4">
+        <div className="ml-12 w-11/12 border-b border-white">
+          <span className="flex flex-row flex-wrap items-center mb-4 ">
+            <div className="h-8 w-8 mr-2 flex items-center justify-center flex-shrink-0">
+              {GrantElectionAdapter().isActive(election) ? '🟢' : '🔒'}
+            </div>
+            <h2 className="text-3xl font-extrabold text-white">
+              🏆 {createElectionName(election)}
+            </h2>
+          </span>
+          <p className="">{/* description goes here */}</p>
+        </div>
       </div>
-      <div className="w-10/12 mb-16">
-        <GrantRound
-          id={id}
-          title={title}
-          description={description}
-          voiceCredits={voiceCredits}
-          grantTerm={grantTerm}
-          isActiveElection={isActiveElection}
-          beneficiaries={beneficiaries}
-          assignVotes={assignVotes}
-          votes={votes}
-          maxVotes={maxVotes}
-          scrollToMe={scrollToMe}
-          quadratic={quadratic}
-        />
+      <div className="flex flex-row">
+        <div className="top-10 w-3/12 h-full sticky">
+          <Sidebar
+            pendingVotes={pendingVotes}
+            election={election}
+            voiceCredits={voiceCredits}
+            isWalletConnected={isWalletConnected}
+            connectWallet={connectWallet}
+            submitVotes={submitVotes}
+            scrollToGrantRound={scrollToGrantRound}
+            alreadyRegistered={alreadyRegistered}
+            userIsEligibleBeneficiary={userIsEligibleBeneficiary}
+            registerForElection={registerForElection}
+          />
+        </div>
+        <div className="w-9/12 mb-16">
+          <GrantRound
+            election={election}
+            pendingVotes={pendingVotes}
+            voiceCredits={voiceCredits}
+            assignVotes={assignVotes}
+            scrollToMe={scrollToMe}
+          />
+        </div>
       </div>
     </div>
   );

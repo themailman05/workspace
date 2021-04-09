@@ -1,3 +1,5 @@
+import {utils} from "ethers";
+
 export enum ElectionTerm {
   Monthly,
   Quarterly,
@@ -62,13 +64,11 @@ export const GrantElectionAdapter = (contract?) => {
           'votes',
           (value) =>
             value.reduce(
-              (votes, v, i) => [
-                (votes[i] = {
+              (votes, v, i) => [...votes, {
                   voter: v[0],
                   beneficiary: v[1],
-                  weight: v[2].toNumber(),
-                }),
-              ],
+                  weight: v[2],
+                }],
               [],
             ),
         ],

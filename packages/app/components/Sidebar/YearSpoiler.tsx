@@ -1,4 +1,4 @@
-import { IGrantRoundFilter } from 'pages/grant-elections';
+import { IGrantRoundFilter } from 'pages/grant-elections/[type]';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import GrantRoundLink, { IGrantRound } from './GrantRoundLink';

@@ -1,4 +1,4 @@
-import NavBar from "./../../containers/NavBar/NavBar";
+import NavBar from './../../containers/NavBar/NavBar';
 import Link from 'next/link';
 export const LandingPage = () => {
   return (
@@ -7,14 +7,13 @@ export const LandingPage = () => {
       <div className="bg-gray-900">
         <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
           <div className="text-center">
-            <h2 className="text-lg leading-6 font-semibold text-gray-300 uppercase tracking-wider">
-            </h2>
+            <h2 className="text-lg leading-6 font-semibold text-gray-300 uppercase tracking-wider"></h2>
             <p className="mt-2 text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl">
               DeFi for the People.
-      </p>
+            </p>
             <p className="mt-3 max-w-4xl mx-auto text-xl text-gray-300 sm:mt-5 sm:text-2xl">
               Our profits fund social iniatitives. You choose which.
-      </p>
+            </p>
           </div>
         </div>
 
@@ -28,21 +27,22 @@ export const LandingPage = () => {
                     <div className="flex-1 flex flex-col">
                       <div className="bg-white px-6 py-10">
                         <div>
-                          <h3 className="text-center text-2xl font-medium text-gray-900" id="tier-hobby">
+                          <h3
+                            className="text-center text-2xl font-medium text-gray-900"
+                            id="tier-hobby"
+                          >
                             Monthly Grant Election
-                    </h3>
+                          </h3>
                           <div className="mt-4 flex items-center justify-center">
                             <span className="px-3 flex items-start text-6xl tracking-tight text-gray-900">
                               <span className="mt-2 mr-2 text-4xl font-medium">
                                 $
-                        </span>
-                              <span className="font-extrabold">
-                                244,503
-                        </span>
+                              </span>
+                              <span className="font-extrabold">244,503</span>
                             </span>
                             <span className="text-xl font-medium text-gray-500">
                               (est.)
-                      </span>
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -50,30 +50,67 @@ export const LandingPage = () => {
                         <ul className="space-y-4">
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              <svg
+                                className="flex-shrink-0 h-6 w-6 text-green-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 13l4 4L19 7"
+                                />
                               </svg>
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
-                              Vote for your favorite social impact organizations to receive a share of fees earned this month
+                              Vote for your favorite social impact organizations
+                              to receive a share of fees earned this month
                             </p>
                           </li>
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              <svg
+                                className="flex-shrink-0 h-6 w-6 text-green-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 13l4 4L19 7"
+                                />
                               </svg>
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Voting is live now
-                      </p>
+                            </p>
                           </li>
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              <svg
+                                className="flex-shrink-0 h-6 w-6 text-green-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 13l4 4L19 7"
+                                />
                               </svg>
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
@@ -84,9 +121,13 @@ export const LandingPage = () => {
                         <div className="mt-8">
                           <div className="rounded-lg shadow-md">
                             <Link href="/grant-elections/monthly" passHref>
-                              <a href="#" className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50" aria-describedby="tier-hobby">
+                              <a
+                                href="#"
+                                className="button button-secondary bg-white"
+                                aria-describedby="tier-hobby"
+                              >
                                 View Election
-                            </a>
+                              </a>
                             </Link>
                           </div>
                         </div>
@@ -96,30 +137,33 @@ export const LandingPage = () => {
                 </div>
                 <div className="mt-10 max-w-lg mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-start-3 lg:col-end-6 lg:row-start-1 lg:row-end-4">
                   <div className="relative z-10 rounded-lg shadow-xl">
-                    <div className="pointer-events-none absolute inset-0 rounded-lg border-2 border-indigo-600" aria-hidden="true"></div>
+                    <div
+                      className="pointer-events-none absolute inset-0 rounded-lg border-2 border-indigo-600"
+                      aria-hidden="true"
+                    ></div>
                     <div className="absolute inset-x-0 top-0 transform translate-y-px">
                       <div className="flex justify-center transform -translate-y-1/2">
-                        <span className="inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider uppercase text-white">
-                        </span>
+                        <span className="inline-flex rounded-full bg-indigo-600 px-4 py-1 text-sm font-semibold tracking-wider uppercase text-white"></span>
                       </div>
                     </div>
                     <div className="bg-white rounded-t-lg px-6 pt-12 pb-10">
                       <div>
-                        <h3 className="text-center text-3xl font-semibold text-gray-900 sm:-mx-6" id="tier-growth">
+                        <h3
+                          className="text-center text-3xl font-semibold text-gray-900 sm:-mx-6"
+                          id="tier-growth"
+                        >
                           Yearly Grant Election
-                  </h3>
+                        </h3>
                         <div className="mt-4 flex items-center justify-center">
                           <span className="px-3 flex items-start text-6xl tracking-tight text-gray-900 sm:text-6xl">
                             <span className="mt-2 mr-2 text-4xl font-medium">
                               $
-                      </span>
-                            <span className="font-extrabold">
-                              2.9M
-                      </span>
+                            </span>
+                            <span className="font-extrabold">2.9M</span>
                           </span>
                           <span className="text-2xl font-medium text-gray-500">
                             (est.)
-                    </span>
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -127,55 +171,108 @@ export const LandingPage = () => {
                       <ul className="space-y-4">
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            <svg
+                              className="flex-shrink-0 h-6 w-6 text-green-500"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
-                            Our profits this year will fund organizations of <em>your</em> choice
-                             </p>
+                            Our profits this year will fund organizations of{' '}
+                            <em>your</em> choice
+                          </p>
                         </li>
 
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            <svg
+                              className="flex-shrink-0 h-6 w-6 text-green-500"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
                             Voting is live now
-                    </p>
+                          </p>
                         </li>
 
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            <svg
+                              className="flex-shrink-0 h-6 w-6 text-green-500"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
                             Receive POP tokens for participating
-                    </p>
+                          </p>
                         </li>
 
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            <svg
+                              className="flex-shrink-0 h-6 w-6 text-green-500"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
-                            Support the environment, education and open source initiatives globally
+                            Support the environment, education and open source
+                            initiatives globally
                           </p>
                         </li>
-
                       </ul>
                       <div className="mt-10">
                         <div className="rounded-lg shadow-md">
                           <Link href="/grant-elections/yearly" passHref>
-                            <a href="#" className="block w-full text-center rounded-lg border border-transparent bg-indigo-600 px-6 py-4 text-xl leading-6 font-medium text-white hover:bg-indigo-700" aria-describedby="tier-growth">
+                            <a
+                              href="#"
+                              className="button button-primary"
+                              aria-describedby="tier-growth"
+                            >
                               View Election
-                    </a>
+                            </a>
                           </Link>
                         </div>
                       </div>
@@ -187,21 +284,22 @@ export const LandingPage = () => {
                     <div className="flex-1 flex flex-col">
                       <div className="bg-white px-6 py-10">
                         <div>
-                          <h3 className="text-center text-2xl font-medium text-gray-900" id="tier-scale">
+                          <h3
+                            className="text-center text-2xl font-medium text-gray-900"
+                            id="tier-scale"
+                          >
                             Quarterly Grant Election
-                    </h3>
+                          </h3>
                           <div className="mt-4 flex items-center justify-center">
                             <span className="px-3 flex items-start text-6xl tracking-tight text-gray-900">
                               <span className="mt-2 mr-2 text-4xl font-medium">
                                 $
-                        </span>
-                              <span className="font-extrabold">
-                                733,509
-                        </span>
+                              </span>
+                              <span className="font-extrabold">733,509</span>
                             </span>
                             <span className="text-xl font-medium text-gray-500">
                               (est.)
-                      </span>
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -209,30 +307,67 @@ export const LandingPage = () => {
                         <ul className="space-y-4">
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              <svg
+                                className="flex-shrink-0 h-6 w-6 text-green-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 13l4 4L19 7"
+                                />
                               </svg>
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
-                              Vote for your favorite social impact organizations to receive a share of fees earned this quarter
-                      </p>
+                              Vote for your favorite social impact organizations
+                              to receive a share of fees earned this quarter
+                            </p>
                           </li>
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              <svg
+                                className="flex-shrink-0 h-6 w-6 text-green-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 13l4 4L19 7"
+                                />
                               </svg>
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Voting is live now
-                      </p>
+                            </p>
                           </li>
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg className="flex-shrink-0 h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                              <svg
+                                className="flex-shrink-0 h-6 w-6 text-green-500"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                aria-hidden="true"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M5 13l4 4L19 7"
+                                />
                               </svg>
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
@@ -243,9 +378,13 @@ export const LandingPage = () => {
                         <div className="mt-8">
                           <div className="rounded-lg shadow-md">
                             <Link href="/grant-elections/quarterly" passHref>
-                              <a href="#" className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50" aria-describedby="tier-scale">
+                              <a
+                                href="#"
+                                className="button button-secondary bg-white"
+                                aria-describedby="tier-scale"
+                              >
                                 View Election
-                            </a>
+                              </a>
                             </Link>
                           </div>
                         </div>
@@ -260,32 +399,28 @@ export const LandingPage = () => {
             <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
               <div className="lg:grid lg:grid-cols-2 lg:gap-8">
                 <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
-                We're like a philanthropic bank partnering with organizations like:
+                We're like a philanthropic bank partnering* with organizations like:
                 <p className="text-xs">* for demonstration purposes only. no such partnerships exist yet</p>
       </h2>
   
                 <div className="flow-root self-center mt-8 lg:mt-0">
                   <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img className="h-12" src="https://assets-global.website-files.com/5f6b7190899f41fb70882d08/5f760a499b56c47b8fa74fbb_chainlink-logo.svg" alt="Chainlink" />
-                    </div>
-                    <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img className="h-12" src="/images/partners/the_ocean_cleanup.svg" alt="The Ocean Cleanup" />
-                    </div>
-                    <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img className="h-12" src="/images/partners/unicef.svg" alt="UNICEF" />
+                      <img className="h-12" src="/images/partners/chainlink.svg" alt="Chainlink" />
                     </div>
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
                       <img className="h-12" src="/images/partners/olpc.svg" alt="One Laptop Per Child" />
+                    </div>
+                    <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
+                      <img className="h-12" src="/images/partners/unicef.svg" alt="UNICEF" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </div>
-  )
-}
+  );
+};

@@ -1,67 +1,85 @@
-import { IGrantRoundFilter, IVote } from 'pages/grant-elections';
-import { useState } from 'react';
-import { Dispatch } from 'react';
-import { useEffect } from 'react';
+import {
+  ElectionMetadata,
+  GrantElectionAdapter,
+} from '@popcorn/utils/Contracts';
 import calculateRemainingVotes from 'utils/calculateRemainingVotes';
 import ActionButton from './ActionButton';
-import FilterGrantRounds from './FilterGrantRounds';
-import { IGrantRound } from './GrantRoundLink';
 import VoteCounter from './VoteCounter';
+import { PendingVotes } from '../../pages/grant-elections/[type]';
+import { RegisterHolder } from '@popcorn/ui/components/grantPage';
+import { Check } from 'react-feather';
 
 interface ISideBar {
-  votes?: IVote[];
-  maxVotes: number;
+  election?: ElectionMetadata;
+  pendingVotes: PendingVotes;
   voiceCredits: number;
-  grantRounds: IGrantRound[];
   isWalletConnected: boolean;
-  isActiveElection: boolean;
   connectWallet: () => void;
-  submitVotes: () => void;
+  submitVotes: Function;
   scrollToGrantRound: (grantId: number) => void;
-  grantRoundFilter: IGrantRoundFilter;
-  setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
+  userIsEligibleBeneficiary: boolean;
+  alreadyRegistered: boolean;
+  registerForElection: (grant_term: number) => void;
 }
 
 export default function Sidebar({
-  votes,
-  maxVotes,
+  election,
+  pendingVotes,
   voiceCredits,
-  grantRounds,
   isWalletConnected,
-  isActiveElection,
   connectWallet,
   submitVotes,
   scrollToGrantRound,
-  grantRoundFilter,
-  setGrantRoundFilter,
+  userIsEligibleBeneficiary,
+  alreadyRegistered,
+  registerForElection,
 }: ISideBar): JSX.Element {
-  const [grantYears, setGrantYears] = useState<number[]>([]);
-
-  useEffect(() => {
-    const years = [];
-    grantRounds?.forEach(
-      (grantRound) =>
-        !years.includes(grantRound?.year) && years.push(grantRound?.year),
-    );
-    years.sort().reverse();
-    setGrantYears(years);
-  }, []);
+  function returnButtons() {
+    if (alreadyRegistered) {
+      return (
+        <span className="flex flex-row items-center justify-center ml-10">
+          <p className="text-lg text-black-700 font-bold mr-4 ml-15 gray-color">
+            Registered
+          </p>
+          <div className="h-10 w-10 mr-2 rounded-full border-4 gray-color flex items-center justify-center flex-shrink-0">
+            <Check size={32} className="gray-color" />
+          </div>
+        </span>
+      );
+    }
+    if (userIsEligibleBeneficiary) {
+      return (
+        <RegisterHolder>
+          <button
+            onClick={() => registerForElection(election.electionTerm)} //
+            className="button button-secondary w-full mt-4"
+          >
+            Register for election
+          </button>
+        </RegisterHolder>
+      );
+    }
+    return;
+  }
 
   return (
     <div className="w-9/12 mx-auto">
-      {isActiveElection && (
+      {election && GrantElectionAdapter().isActive(election) && (
         <>
           <VoteCounter
-            remainingVotes={votes && calculateRemainingVotes(maxVotes, votes)}
-            maxVotes={maxVotes}
+            election={election}
+            maxVotes={voiceCredits}
+            pendingVotes={pendingVotes}
             voiceCredits={voiceCredits}
           />
           <ActionButton
+            election={election}
             hasLockedPop={voiceCredits > 0}
             isWalletConnected={isWalletConnected}
             connectWallet={connectWallet}
             submitVotes={submitVotes}
           />
+          {returnButtons()}
         </>
       )}
       <ul className="mt-4">
@@ -80,10 +98,6 @@ export default function Sidebar({
         ))}
             **/}
       </ul>
-      <FilterGrantRounds
-        grantRoundFilter={grantRoundFilter}
-        setGrantRoundFilter={setGrantRoundFilter}
-      />
     </div>
   );
 }

@@ -504,6 +504,11 @@ describe("GrantElections", function () {
           beneficiary2.address,
         ]
       );
+      console.log(await GrantElectionAdapter(
+        this.contract
+      ).getElectionMetadata(GRANT_TERM.MONTH));
+      console.log(await this.contract.getElectionMetadata(GRANT_TERM.MONTH));
+      expect(await this.contract.getElectionMetadata(GRANT_TERM.MONTH)).deep.to.eq({});
     });
   });
 });

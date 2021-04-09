@@ -1,82 +1,103 @@
-import { IVote } from 'pages/grant-elections';
-import { useEffect } from 'react';
+import { Votes, Vote, PendingVotes } from 'pages/grant-elections/[type]';
+import { useEffect, useState } from 'react';
 import { useRef } from 'react';
-import calculateRemainingVotes from 'utils/calculateRemainingVotes';
-import BeneficiaryCard from './BeneficiaryCard';
+import { Check } from 'react-feather';
+import {
+  RegisterButton,
+  RegisterHolder,
+} from '../../../../packages/ui/src/components/grantPage';
+import BeneficiaryCard, { BeneficiaryMetadata } from './BeneficiaryCard';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
+import {
+  ElectionMetadata,
+  GrantElectionAdapter,
+} from '@popcorn/utils/Contracts';
+import createElectionName from 'utils/createElectionName';
+import { BigNumber, utils } from 'ethers';
 
 interface IGrantRound {
-  id: number;
-  title: string;
-  description: string;
-  grantTerm: number;
   voiceCredits: number;
-  maxVotes: number;
-  isActiveElection: boolean;
-  beneficiaries: any[];
-  votes?: IVote[];
-  assignVotes?: (grantTerm: number, vote: IVote) => void;
+  votes?: Vote[];
+  assignVotes?: (grantTerm: number, vote: Vote) => void;
   scrollToMe?: boolean;
-  quadratic?: boolean;
+  pendingVotes: PendingVotes;
+  election?: ElectionMetadata;
 }
 
+const convertBlockchainVotesToVoiceCredits = (
+  election: ElectionMetadata,
+): Votes => {
+  return election.votes.reduce(
+    (votes, vote) => {
+      votes[vote.beneficiary] = Number(
+        utils.formatEther(BigNumber.from(vote.weight).pow(2)),
+      ).toFixed(0);
+      return votes;
+    },
+    { total: 0 },
+  );
+};
+
 export default function GrantRound({
-  id,
-  title,
-  description,
-  grantTerm,
-  maxVotes,
   voiceCredits,
-  isActiveElection,
-  beneficiaries,
-  votes,
   assignVotes,
+  pendingVotes,
+  election,
   scrollToMe = false,
-  quadratic = false,
 }: IGrantRound): JSX.Element {
   const ref = useRef(null);
+  const [votes, setVotes] = useState<Votes>({ total: 0 });
+  const [beneficiariesWithMetadata, setBeneficiaries] = useState<
+    BeneficiaryMetadata[]
+  >([]);
+
+  useEffect(() => {
+    if (election) {
+      setVotes(convertBlockchainVotesToVoiceCredits(election));
+    }
+  }, [election]);
+
+  const getBeneficiary = (address: string, votes): BeneficiaryMetadata => {
+    const beneficiary = beneficiariesHashMap[address];
+    beneficiary.totalVotes = votes[address];
+    return beneficiary;
+  };
+
+  useEffect(() => {
+    if (votes && election) {
+      setBeneficiaries(
+        election.registeredBeneficiaries.map((address) =>
+          getBeneficiary(address, votes),
+        ),
+      );
+    }
+  }, [votes, election]);
 
   useEffect(() => {
     if (ref.current && scrollToMe) {
       ref.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }, [scrollToMe]);
+  if (!election) {
+    return <></>;
+  }
 
   return (
-    <div ref={ref} className="mb-16 w-full">
-      <span className="flex flex-row flex-wrap items-center mb-4">
-        <div className="h-8 w-8 mr-2 flex items-center justify-center flex-shrink-0">
-          {isActiveElection ? (
-            '🟢'
-          ) : (
-           '🔒' 
-          )}
-        </div>
-        <h2 className="text-3xl font-bold">🏆 {title}</h2>
-      </span>
-      <p className="w-10/12">{description}</p>
-      <div className="w-full flex flex-row flex-wrap items-center mt-4">
-        {
-          beneficiaries && beneficiaries?.map((address) => (
-            <BeneficiaryCard
-              key={address}
-              beneficiary={beneficiariesHashMap[address]}
-              votesAssignedByUser={
-                votes?.find((vote) => vote.address === address)?.votes || 0
-              }
-              assignVotes={assignVotes}
-              maxVotes={
-                votes &&
-                (calculateRemainingVotes(maxVotes, votes) +
-                  (votes.find((vote) => vote.address === address)
-                    ?.votes || 0))
-              }
-              active={isActiveElection}
-              grantTerm={grantTerm}
-              quadratic={quadratic}
-            />
-          ))}
-      </div>
+    <div
+      ref={ref}
+      className="mb-16 w-full flex flex-row flex-wrap items-center"
+    >
+      {beneficiariesWithMetadata?.map((beneficiary) => (
+        <BeneficiaryCard
+          key={beneficiary.address}
+          election={election}
+          beneficiary={beneficiary}
+          pendingVotes={pendingVotes}
+          voiceCredits={voiceCredits}
+          votesAssignedByUser={0}
+          assignVotes={assignVotes}
+        />
+      ))}
     </div>
   );
 }

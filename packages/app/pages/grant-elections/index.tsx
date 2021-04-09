@@ -6,13 +6,13 @@ export interface IGrantRoundFilter {
   closed: boolean;
 }
 
-export interface IVote {
+export interface Vote {
   address: string;
   votes: number;
 }
 
 export interface IElectionVotes {
-  votes: IVote[];
+  votes: Vote[];
 }
 
 export default function GrantOverview() {
