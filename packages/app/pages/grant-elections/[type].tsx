@@ -316,7 +316,7 @@ export default function AllGrants() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-gray-900">
       <NavBar />
       <DualActionModal
         visible={voteConfirmationModal.visible}
