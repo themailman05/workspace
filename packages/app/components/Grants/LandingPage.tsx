@@ -123,7 +123,7 @@ export const LandingPage = () => {
                             <Link href="/grant-elections/monthly" passHref>
                               <a
                                 href="#"
-                                className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50"
+                                className="button button-secondary bg-white"
                                 aria-describedby="tier-hobby"
                               >
                                 View Election
@@ -268,7 +268,7 @@ export const LandingPage = () => {
                           <Link href="/grant-elections/yearly" passHref>
                             <a
                               href="#"
-                              className="block w-full text-center rounded-lg border border-transparent bg-indigo-600 px-6 py-4 text-xl leading-6 font-medium text-white hover:bg-indigo-700"
+                              className="button button-primary"
                               aria-describedby="tier-growth"
                             >
                               View Election
@@ -380,7 +380,7 @@ export const LandingPage = () => {
                             <Link href="/grant-elections/quarterly" passHref>
                               <a
                                 href="#"
-                                className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50"
+                                className="button button-secondary bg-white"
                                 aria-describedby="tier-scale"
                               >
                                 View Election

@@ -23,7 +23,6 @@ import SingleActionModal, {
   DefaultSingleActionModalProps,
 } from 'components/Modal/SingleActionModal';
 
-
 export interface IGrantRoundFilter {
   active: boolean;
   closed: boolean;
@@ -118,7 +117,6 @@ export default function AllGrants() {
   useEffect(() => {
     // Call to see if user has already registered for election
     if (contracts?.election && account) {
-
       IsUserAlreadyRegistered();
     }
   }, [contracts, account]);
@@ -209,7 +207,7 @@ export default function AllGrants() {
       .split('.')[0];
     setVoiceCredits(vCreditsFormatted);
   };
-  
+
   useEffect(() => {
     if (contracts?.pop && account) {
       contracts.pop
@@ -272,29 +270,33 @@ export default function AllGrants() {
     setPendingVotes({ ...pendingVotes });
   }
 
-
   const submitVotes = async (grantTerm: ElectionTerm) => {
-    setVoteConfirmationModal({...voteConfirmationModal, visible: true, progress: true});
+    setVoteConfirmationModal({
+      ...voteConfirmationModal,
+      visible: true,
+      progress: true,
+    });
     const txArgs = Object.keys(pendingVotes[grantTerm].votes).reduce<
       [string[], BigNumber[], number]
     >(
       (txArgs, address) => {
         txArgs[0].push(address);
-        txArgs[1].push(utils.parseEther(pendingVotes[grantTerm].votes[address].toString()));
+        txArgs[1].push(
+          utils.parseEther(pendingVotes[grantTerm].votes[address].toString()),
+        );
         return txArgs;
       },
       [[], [], grantTerm],
     );
-    
+
     try {
       await contracts.election
         .connect(library.getSigner())
         .vote(txArgs[0], txArgs[1], txArgs[2]);
 
-      setVoteConfirmationModal({...voteConfirmationModal, visible: false });
+      setVoteConfirmationModal({ ...voteConfirmationModal, visible: false });
       // todo: set succesful tx notification
       // setup listener for confirmation
-   
     } catch (err) {
       setVoteConfirmationModal({
         ...DefaultVoteConfirmationModal,
@@ -311,8 +313,7 @@ export default function AllGrants() {
             setSingleActionModal({ ...DefaultSingleActionModalProps }),
         },
       });
-
-    } 
+    }
   };
 
   return (
@@ -368,7 +369,7 @@ export default function AllGrants() {
                   visible: true,
                   onConfirm: {
                     label: 'Confirm Vote',
-                    onClick: () =>  {
+                    onClick: () => {
                       submitVotes(grantTerm);
                     },
                   },
@@ -400,7 +401,7 @@ export default function AllGrants() {
             <div className="w-full border-t border-gray-300"></div>
           </div>
           <div className="relative flex justify-center">
-            <span className="px-3 bg-white text-lg font-medium text-gray-900">
+            <span className="px-3 text-lg font-medium text-gray-800 rounded-md border bg-white">
               Other Grant Elections
             </span>
           </div>
@@ -412,7 +413,7 @@ export default function AllGrants() {
           className="mt-4 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:mt-5"
         >
           <div className="max-w-md mx-auto lg:max-w-5xl">
-            <div className="rounded-lg bg-gray-100 px-6 py-8 sm:p-10 lg:flex lg:items-center">
+            <div className="rounded-lg bg-white px-6 py-8 sm:p-10 lg:flex lg:items-center">
               <div className="flex-1">
                 <div>
                   <h3 className="inline-flex px-4 py-1 rounded-full text-sm font-semibold tracking-wide uppercase bg-white text-gray-800">
@@ -430,10 +431,7 @@ export default function AllGrants() {
                   href={`/grant-elections/${ElectionTermIntToName[election]}`}
                   passHref
                 >
-                  <a
-                    href="#"
-                    className="flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-gray-900 bg-white hover:bg-gray-50"
-                  >
+                  <a href="#" className="button button-secondary">
                     View {ElectionTermIntToName[election]} election
                   </a>
                 </Link>

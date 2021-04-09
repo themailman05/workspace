@@ -15,8 +15,8 @@ export default function NavbarLink({
 }: NavbarLinkProps): JSX.Element {
   const className = `
     font-medium 
-    text-lg ${isActive ? 'text-primary font-medium' : 'text-gray-700'} 
-    hover:text-primaryLight cursor-pointer
+    text-lg ${isActive ? 'text-indigo-500 font-bold' : 'text-gray-700'} 
+    hover:text-indigo-500 cursor-pointer
   `;
 
   if (!url) {
