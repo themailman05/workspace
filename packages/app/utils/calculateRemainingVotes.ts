@@ -1,8 +1,8 @@
-import { IVote } from 'pages/grant-elections';
+import { Vote } from 'pages/grant-elections/[type]';
 
 export default function calculateRemainingVotes(
   maxVotes: number,
-  votes: IVote[] | IVote,
+  votes: Vote[] | Vote,
 ): number {
   return Array.isArray(votes)
     ? maxVotes - votes.reduce((acc, curr) => acc + curr.votes, 0)
