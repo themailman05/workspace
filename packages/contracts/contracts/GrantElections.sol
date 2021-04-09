@@ -217,6 +217,7 @@ contract GrantElections {
   }
 
   /**
+   * todo: check beneficiary not already registered for this election
    * todo: check beneficiary is not registered for another non-closed election
    * todo: check beneficiary is not currently awarded a grant
    * todo: add claimBond function for beneficiary to receive their bond after the election period has closed
@@ -237,6 +238,7 @@ contract GrantElections {
       beneficiaryRegistry.beneficiaryExists(_beneficiary),
       "address is not eligible for registration"
     );
+    // todo: check beneficiary not already registered for election
     _collectRegistrationBond(_election);
 
     _election.registeredBeneficiaries[_beneficiary] = true;
@@ -293,7 +295,7 @@ contract GrantElections {
 
   function vote(
     address[] memory _beneficiaries,
-    uint8[] memory _voiceCredits,
+    uint256[] memory _voiceCredits,
     ElectionTerm _electionTerm
   ) public {
     Election storage election = elections[uint8(_electionTerm)];
@@ -314,7 +316,7 @@ contract GrantElections {
 
     require(_stakedVoiceCredits > 0, "must have voice credits from staking");
 
-    for (uint8 i = 0; i < _beneficiaries.length; i++) {
+    for (uint256 i = 0; i < _beneficiaries.length; i++) {
       // todo: consider skipping iteration instead of throwing since if a beneficiary is removed from the registry during an election, it can prevent votes from being counted
       require(
         _isEligibleBeneficiary(_beneficiaries[i], _electionTerm),

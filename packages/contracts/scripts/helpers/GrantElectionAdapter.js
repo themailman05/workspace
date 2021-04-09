@@ -37,13 +37,12 @@ module.exports = {
        */
         const mapping = [
           ["votes", (value) => value.reduce(
-            (votes, v, i) => [
-              votes[i] = {
-                voter: v[0],
-                beneficiary: v[1],
-                weight: v[2].toNumber(),
-              }
-            ], []
+              (votes, v, i) => [...votes, {
+                  voter: v[0],
+                  beneficiary: v[1],
+                  weight: v[2].toNumber(),
+                }],
+              [],
             )
           ],
           ["electionTerm", (value) => value],

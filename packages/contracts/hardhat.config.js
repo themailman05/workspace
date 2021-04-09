@@ -98,22 +98,23 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     const { term } = args;
     const GrantElections = new ethers.Contract(
       process.env.ADDR_GRANT_ELECTION,
-      require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
+      require(
+        "./artifacts/contracts/GrantElections.sol/GrantElections.json"
+      ).abi,
       signer
     );
     await GrantElections.finalize(term);
   });
 
   module.exports = {
-  networks: {
-    hardhat: {
-      chainId: +process.env.CHAIN_ID,
+    solidity: "0.7.3",
+    networks: {
+      hardhat: {
+        chainId: +process.env.CHAIN_ID,
+      },
+      rinkeby: {
+        url: process.env.RPC_URL,
+        accounts: [process.env.PRIVATE_KEY],
+      },
     },
-  },
-  solidity: "0.7.3",
-  networks: {
-    rinkeby: {
-      accounts: [process.env.PRIVATE_KEY],
-    },
-  },
 };
