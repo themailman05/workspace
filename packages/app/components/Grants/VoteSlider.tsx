@@ -36,7 +36,7 @@ export default function VoteSlider({
 
   function handleSliderChange(value: number) {
       if (((voiceCredits - (pendingVotes[election.electionTerm].total)) <= 0)) {
-        if (pendingVotes[election.electionTerm].addresses[beneficiary.address] > value) {
+        if (pendingVotes[election.electionTerm].votes[beneficiary.address] > value) {
           setVotesAssignedByUser(value);
           assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
         }

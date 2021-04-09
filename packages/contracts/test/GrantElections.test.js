@@ -436,7 +436,7 @@ describe("GrantElections", function () {
       await this.contract.deployed();
     });
 
-    it("return current ranking", async function () {
+    it.only("return current ranking", async function () {
       await this.contract.initialize(GRANT_TERM.MONTH);
       ethers.provider.send("evm_increaseTime", [7 * 86400]);
       ethers.provider.send("evm_mine");
@@ -504,6 +504,11 @@ describe("GrantElections", function () {
           beneficiary2.address,
         ]
       );
+      console.log(await GrantElectionAdapter(
+        this.contract
+      ).getElectionMetadata(GRANT_TERM.MONTH));
+      console.log(await this.contract.getElectionMetadata(GRANT_TERM.MONTH));
+      expect(await this.contract.getElectionMetadata(GRANT_TERM.MONTH)).deep.to.eq({});
     });
   });
 });

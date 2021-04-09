@@ -5,6 +5,7 @@ import BeneficiaryCard, { BeneficiaryMetadata } from './BeneficiaryCard';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
 import { ElectionMetadata, GrantElectionAdapter } from '@popcorn/utils/Contracts';
 import createElectionName from 'utils/createElectionName';
+import { BigNumber, utils } from 'ethers';
 
 
 interface IGrantRound {
@@ -18,7 +19,7 @@ interface IGrantRound {
 
 const convertBlockchainVotesToVoiceCredits = (election: ElectionMetadata): Votes => {
   return election.votes.reduce((votes, vote) => {
-    votes[vote.beneficiary] = Math.pow(vote.weight, 2)
+    votes[vote.beneficiary] = Number(utils.formatEther(BigNumber.from(vote.weight).pow(2))).toFixed(0)
     return votes;
   }, { total: 0 });
 }

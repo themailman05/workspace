@@ -12,13 +12,13 @@ import {
   ElectionMetadata,
   ElectionTerm,
 } from '@popcorn/utils/Contracts';
-import { utils } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import capitalize from '@popcorn/utils/capitalize';
 import { ElectionTermIntToName } from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
 import bluebird from 'bluebird';
-import TwoButtonModal, {
-  DefaultTwoButtonModalProps,
-} from 'components/Modal/TwoButtonModal';
+import DualActionModal, {
+  DefaultDualActionModalProps,
+} from 'components/Modal/DualActionModal';
 import SingleActionModal, {
   DefaultSingleActionModalProps,
 } from 'components/Modal/SingleActionModal';
@@ -43,7 +43,7 @@ export interface PendingVotes {
     total: number;
     lastAddress: string;
     lastAmount: number;
-    addresses: {
+    votes: {
       [key: string]: number;
     };
   };
@@ -55,19 +55,19 @@ const defaultPendingVotes = {
     total: 0,
     lastAddress: '',
     lastAmount: 0,
-    addresses: {},
+    votes: {},
   },
   [ElectionTerm.Quarterly]: {
     total: 0,
     lastAddress: '',
     lastAmount: 0,
-    addresses: {},
+    votes: {},
   },
   [ElectionTerm.Yearly]: {
     total: 0,
     lastAddress: '',
     lastAmount: 0,
-    addresses: {},
+    votes: {},
   },
 };
 
@@ -100,7 +100,7 @@ export default function AllGrants() {
   const [selectedGrantTerms, setSelectedGrantTerms] = useState<number[]>([]);
 
   const DefaultVoteConfirmationModal = {
-    ...DefaultTwoButtonModalProps,
+    ...DefaultDualActionModalProps,
     grantTerm: null,
   };
   const [voteConfirmationModal, setVoteConfirmationModal] = useState(
@@ -164,7 +164,7 @@ export default function AllGrants() {
    * @param vote
    */
   function assignVotes(grantTerm: number, vote: Vote): void {
-    pendingVotes[grantTerm].addresses[vote.address] = vote.votes;
+    pendingVotes[grantTerm].votes[vote.address] = vote.votes;
     if (vote.address == pendingVotes[grantTerm].lastAddress) {
       pendingVotes[grantTerm].total -= pendingVotes[grantTerm].lastAmount;
       pendingVotes[grantTerm].total += vote.votes;
@@ -173,19 +173,19 @@ export default function AllGrants() {
       pendingVotes[grantTerm].lastAddress = vote.address;
       pendingVotes[grantTerm].lastAmount = vote.votes;
       pendingVotes[grantTerm].total = Object.keys(
-        pendingVotes[grantTerm].addresses,
-      ).reduce((total, current) => {
-        total += pendingVotes[grantTerm].addresses[current];
+        pendingVotes[grantTerm].votes,
+      ).reduce((total, address) => {
+        total += pendingVotes[grantTerm].votes[address];
         return total;
       }, 0);
     }
 
     // this handles the case when a fast hand with the slider assigns more votes than allowed
     if (pendingVotes[grantTerm].total > voiceCredits) {
-      pendingVotes[grantTerm].addresses[vote.address] =
+      pendingVotes[grantTerm].votes[vote.address] =
         vote.votes - (pendingVotes[grantTerm].total - voiceCredits);
       pendingVotes[grantTerm].lastAmount =
-        pendingVotes[grantTerm].addresses[vote.address];
+        pendingVotes[grantTerm].votes[vote.address];
       pendingVotes[grantTerm].total = voiceCredits;
     }
 
@@ -193,13 +193,13 @@ export default function AllGrants() {
   }
 
   const submitVotes = async (grantTerm: ElectionTerm) => {
-    setVoteConfirmationModal({...voteConfirmationModal, progress: true});
-    const txArgs = Object.keys(pendingVotes[grantTerm].addresses).reduce<
-      [string[], number[], number]
+    setVoteConfirmationModal({...voteConfirmationModal, visible: true, progress: true});
+    const txArgs = Object.keys(pendingVotes[grantTerm].votes).reduce<
+      [string[], BigNumber[], number]
     >(
       (txArgs, address) => {
         txArgs[0].push(address);
-        txArgs[1].push(pendingVotes[grantTerm].addresses[address]);
+        txArgs[1].push(utils.parseEther(pendingVotes[grantTerm].votes[address].toString()));
         return txArgs;
       },
       [[], [], grantTerm],
@@ -208,10 +208,11 @@ export default function AllGrants() {
       await contracts.election
         .connect(library.getSigner())
         .vote(txArgs[0], txArgs[1], txArgs[2]);
-        setVoteConfirmationModal({
-          ...DefaultVoteConfirmationModal,
-          grantTerm,
-        });
+
+      setVoteConfirmationModal({...voteConfirmationModal, visible: false });
+      // todo: set succesful tx notification
+      // setup listener for confirmation
+   
     } catch (err) {
       setVoteConfirmationModal({
         ...DefaultVoteConfirmationModal,
@@ -235,7 +236,7 @@ export default function AllGrants() {
   return (
     <div className="w-full">
       <NavBar />
-      <TwoButtonModal
+      <DualActionModal
         visible={voteConfirmationModal.visible}
         title={voteConfirmationModal.title}
         content={voteConfirmationModal.content}
@@ -277,6 +278,7 @@ export default function AllGrants() {
               submitVotes={(grantTerm) => {
                 setVoteConfirmationModal({
                   grantTerm,
+                  progress: false,
                   content:
                     'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
                      Confirm to continue.',
@@ -284,7 +286,7 @@ export default function AllGrants() {
                   visible: true,
                   onConfirm: {
                     label: 'Confirm Vote',
-                    onClick: () => {
+                    onClick: () =>  {
                       submitVotes(grantTerm);
                     },
                   },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { CircularProgress } from '@material-ui/core';
-interface Props {
+export interface Props {
   title: string;
   content: React.ReactElement | string;
   visible: boolean;
@@ -9,7 +9,7 @@ interface Props {
   onConfirm: { label: string; onClick: Function };
 }
 
-export const DefaultTwoButtonModalProps = {
+export const DefaultDualActionModalProps = {
   content: '',
   title: '',
   visible: false,
@@ -18,7 +18,7 @@ export const DefaultTwoButtonModalProps = {
   onDismiss: { label: '', onClick: () => {} },
 };
 
-export const TwoButtonModal: React.FC<Props> = ({
+export const DualActionModal: React.FC<Props> = ({
   title,
   content,
   visible,
@@ -48,6 +48,7 @@ export const TwoButtonModal: React.FC<Props> = ({
 
         <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
           <div>
+          {!progress && (
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
               <svg
                 className="h-6 w-6 text-green-600"
@@ -64,7 +65,7 @@ export const TwoButtonModal: React.FC<Props> = ({
                   d="M5 13l4 4L19 7"
                 />
               </svg>
-            </div>
+            </div>)}
             <div className="mt-3 text-center sm:mt-5">
               <h3
                 className="text-lg leading-6 font-medium text-gray-900"
@@ -106,4 +107,4 @@ export const TwoButtonModal: React.FC<Props> = ({
     </div>
   );
 };
-export default TwoButtonModal;
+export default DualActionModal;
