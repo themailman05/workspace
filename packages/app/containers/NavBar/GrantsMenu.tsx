@@ -49,10 +49,7 @@ export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
             </li>
 
             <li className="flow-root">
-              <a
-                href="#"
-                className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150"
-              >
+              <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
                 <svg
                   className="flex-shrink-0 h-6 w-6 text-gray-400"
                   xmlns="http://www.w3.org/2000/svg"
@@ -68,8 +65,15 @@ export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                   />
                 </svg>
-                <span className="ml-4">Register for a Grant</span>
-              </a>
+                <span className="ml-4">
+                  <NavbarLink
+                    label="Register for a Grant"
+                    url="/grant-elections/register"
+                    onClick={toggleSubMenu}
+                    isActive={router.pathname === '/grant-elections/register'}
+                  />
+                </span>
+              </span>
             </li>
           </ul>
         </div>
