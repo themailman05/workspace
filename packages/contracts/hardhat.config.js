@@ -92,16 +92,14 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
   });
 
 module.exports = {
+  solidity: "0.7.3",
   networks: {
     hardhat: {
       chainId: +process.env.CHAIN_ID,
     },
-  },
-  solidity: "0.7.3",
-  networks: {
     rinkeby: {
       url: process.env.RPC_URL,
-      accounts: [`0x${process.env.PRIVATE_KEY}`],
+      accounts: [process.env.PRIVATE_KEY],
     },
   },
 };
