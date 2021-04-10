@@ -21,7 +21,7 @@ async function deploy(ethers) {
     ).deployed();
     this.grantRegistry = await (
       await (await ethers.getContractFactory("GrantRegistry")).deploy(
-        beneficiaryRegistry.address
+        this.beneficiaryRegistry.address
       )
     ).deployed();
     this.mockPop = await (
@@ -33,11 +33,6 @@ async function deploy(ethers) {
     this.staking = await (
       await (await ethers.getContractFactory("Staking")).deploy(
         this.mockPop.address
-      )
-    ).deployed();
-    this.grantRegistry = await (
-      await (await ethers.getContractFactory("GrantRegistry")).deploy(
-        beneficiaryRegistry.address
       )
     ).deployed();
     this.randomNumberConsumer = await (
@@ -175,6 +170,11 @@ async function deploy(ethers) {
   const voteForElection = async (term, voters, beneficiaries) => {
     await stakePOP(voters);
 
+    while (await this.staking.getVoiceCredits(voters[voters.length - 1].address) == 0) {
+      await new Promise(r => setTimeout(r, 1000));
+      console.log("waiting for vote credits to be ready ...");
+    }
+
     console.log(`${voters.length} voting for ${beneficiaries.length} bennies`);
     console.log("voters are voting in election ...");
     await bluebird.map(
@@ -213,8 +213,8 @@ async function deploy(ethers) {
       true,
       false,
       0,
-      10,
-      10,
+      40, // secs for voting period
+      1, // secs for registration period
       100
     );
     await this.grantElections.initialize(GrantTerm.Quarter);
@@ -237,8 +237,18 @@ async function deploy(ethers) {
       this.bennies.slice(7, 11)
     );
 
+    electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
+      GrantTerm.Quarter
+    )
+
     console.log("refreshing election state");
-    await this.grantElections.refreshElectionState(GrantTerm.Quarter);
+    while (electionMetadata.electionState != 2) {
+      await this.grantElections.refreshElectionState(GrantTerm.Quarter);
+      electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
+        GrantTerm.Quarter
+      );
+      console.log("waiting for voting to close...");
+    }
 
     await displayElectionMetadata(GrantTerm.Quarter);
   };
