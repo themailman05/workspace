@@ -399,31 +399,20 @@ export const LandingPage = () => {
             <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
               <div className="lg:grid lg:grid-cols-2 lg:gap-8">
                 <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
-                  We're like a philanthropic bank partnering with organizations
-                  like:
-                </h2>
+                We're like a philanthropic bank partnering* with organizations like:
+                <p className="text-xs">* for demonstration purposes only. no such partnerships exist yet</p>
+      </h2>
+  
                 <div className="flow-root self-center mt-8 lg:mt-0">
                   <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img
-                        className="h-12"
-                        src="https://tailwindui.com/img/logos/workcation-logo-indigo-900.svg"
-                        alt="Workcation"
-                      />
+                      <img className="h-12" src="/images/partners/chainlink.svg" alt="Chainlink" />
                     </div>
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img
-                        className="h-12"
-                        src="https://tailwindui.com/img/logos/tuple-logo-indigo-900.svg"
-                        alt="Tuple"
-                      />
+                      <img className="h-12" src="/images/partners/olpc.svg" alt="One Laptop Per Child" />
                     </div>
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img
-                        className="h-12"
-                        src="https://tailwindui.com/img/logos/level-logo-indigo-900.svg"
-                        alt="Level"
-                      />
+                      <img className="h-12" src="/images/partners/unicef.svg" alt="UNICEF" />
                     </div>
                   </div>
                 </div>

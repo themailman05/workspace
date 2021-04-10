@@ -55,12 +55,11 @@ export default function Register(): JSX.Element {
   }
 
   async function checkRegistrationAllowance(): Promise<void> {
-    const connected = contracts.election.connect(library.getSigner());
     setRegistrationAllowance(
       await Promise.all(
         [0, 1, 2].map(
           async (term) =>
-            (await connected._isEligibleBeneficiary(account, term)) &&
+            (await contracts.beneficiary.beneficiaryExists(account)) &&
             !grantElections[term].registeredBeneficiaries.includes(account),
         ),
       ),
@@ -74,10 +73,10 @@ export default function Register(): JSX.Element {
   }, [contracts]);
 
   useEffect(() => {
-    if (account) {
+    if (account && contracts?.beneficiary) {
       checkRegistrationAllowance();
     }
-  }, [account]);
+  }, [account, contracts]);
 
   return (
     <div className="w-full h-screen">
@@ -105,7 +104,7 @@ export default function Register(): JSX.Element {
                 Register for an Election
               </p>
               <p className="mt-3 max-w-4xl mx-auto text-xl text-gray-300 sm:mt-5 sm:text-2xl">
-                Choose for which grant election you want to register.
+                Choose a grant election to register for.
               </p>
             </div>
           </div>

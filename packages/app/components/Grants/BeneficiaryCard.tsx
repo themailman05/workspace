@@ -30,7 +30,7 @@ export default function BeneficiaryCard({
   voiceCredits,
 }: IBeneficiaryCard): JSX.Element {
   return (
-    <div className="shadow-sm w-80 h-auto rounded-lg mr-6 mb-6 bg-white">
+    <div className="shadow-sm w-80 h-auto rounded-lg mr-8 mb-16 bg-white border-b border-gray-200 ">
       <Link href={`beneficiary/${beneficiary?.address}`} passHref>
         <a>
           <div className="w-full h-32 rounded-t-lg">

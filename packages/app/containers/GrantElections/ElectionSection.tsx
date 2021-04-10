@@ -9,8 +9,6 @@ import { Dispatch } from 'react';
 import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
 import { GrantElectionAdapter } from '@popcorn/utils/Contracts';
 import createElectionName from 'utils/createElectionName';
-import { RegisterHolder } from '@popcorn/ui/components/grantPage';
-import { Check } from 'react-feather';
 
 interface IElectionSection {
   id: number;
@@ -44,13 +42,14 @@ export default function ElectionSection({
   registerForElection,
   alreadyRegistered,
 }: IElectionSection): JSX.Element {
+  const electionOpenForVoting = election.electionState == 1;
   return (
     <div className="flex flex-col">
       <div className="flex flex-row mb-4">
-        <div className="ml-12 w-11/12 border-b border-white">
-          <span className="flex flex-row flex-wrap items-center mb-4 ">
+        <div className="ml-12 w-11/12 border-b border-gray-100 border-opacity-10 mb-8 mt-8">
+          <span className="flex flex-row flex-wrap items-center mb-8 ">
             <div className="h-8 w-8 mr-2 flex items-center justify-center flex-shrink-0">
-              {GrantElectionAdapter().isActive(election) ? '🟢' : '🔒'}
+              { electionOpenForVoting ? '🟢' : '🟡'}
             </div>
             <h2 className="text-3xl font-extrabold text-white">
               🏆 {createElectionName(election)}

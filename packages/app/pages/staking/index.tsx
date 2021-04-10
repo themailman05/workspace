@@ -95,7 +95,7 @@ export default function LockPop() {
       {stakeStatus === 'success' && (
         <StakingResponseModal
           title={'Success'}
-          text={`You got now ${voiceCredits.toFixed(
+          text={`You now have ${voiceCredits.toFixed(
             2,
           )} voice Credits to vote with.`}
           handleClick={() => setStakeStatus('none')}

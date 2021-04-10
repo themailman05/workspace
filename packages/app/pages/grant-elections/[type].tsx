@@ -317,8 +317,31 @@ export default function AllGrants() {
   };
 
   return (
-    <div className="w-full bg-gray-900">
+    
+    <div className="w-full bg-gray-900 pb-16">
       <NavBar />
+      <div className="bg-indigo-200 bg-opacity-100 pt-20 pb-20">
+            <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+              <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+                <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
+                Popcorn's profits fund social and environmental initiatives. 
+              
+      </h2>
+  
+                <div className="flow-root self-center mt-8 lg:mt-0">
+                  <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
+                    <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
+                    <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
+                Your vote helps decide.
+              
+      </h2>
+                    
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
       <DualActionModal
         visible={voteConfirmationModal.visible}
         title={voteConfirmationModal.title}
@@ -398,10 +421,10 @@ export default function AllGrants() {
             className="absolute inset-0 flex items-center"
             aria-hidden="true"
           >
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-100 border-opacity-10"></div>
           </div>
           <div className="relative flex justify-center">
-            <span className="px-3 text-lg font-medium text-gray-800 rounded-md border bg-white">
+            <span className="px-3 text-lg font-medium rounded-md border border-gray-100 border-opacity-10 bg-gray-100">
               Other Grant Elections
             </span>
           </div>
@@ -410,7 +433,7 @@ export default function AllGrants() {
       {getOtherGrantElections(selectedGrantTerms).map((election) => (
         <div
           key={election}
-          className="mt-4 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:mt-5"
+          className="mt-8 pt-8 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:mt-5"
         >
           <div className="max-w-md mx-auto lg:max-w-5xl">
             <div className="rounded-lg bg-white px-6 py-8 sm:p-10 lg:flex lg:items-center">
