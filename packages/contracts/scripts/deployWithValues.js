@@ -36,16 +36,15 @@ async function deploy(ethers) {
       )
     ).deployed();
     this.grantRegistry = await (
-      await (
-        await ethers.getContractFactory("GrantRegistry")).deploy(
-          beneficiaryRegistry.address
-        )
+      await (await ethers.getContractFactory("GrantRegistry")).deploy(
+        beneficiaryRegistry.address
+      )
     ).deployed();
     this.randomNumberConsumer = await (
       await (await ethers.getContractFactory("RandomNumberConsumer")).deploy(
-        "0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B",
-        "0x01be23585060835e02b77ef475b0cc51aa1e0709",
-        "0x2ed0feb3e7fd2022120aa84fab1945545a9f2ffc9076fd6156fa96eaff4c1311",
+        process.env.ADDR_CHAINLINK_VRF_COORDINATOR,
+        process.env.ADDR_CHAINLINK_LINK_TOKEN,
+        process.env.ADDR_CHAINLINK_KEY_HASH
       )
     ).deployed();
     this.grantElections = await (
@@ -53,12 +52,23 @@ async function deploy(ethers) {
         this.staking.address,
         this.beneficiaryRegistry.address,
         this.grantRegistry.address,
-      this.randomNumberConsumer.address,
-      this.mockPop.address,
+        this.randomNumberConsumer.address,
+        this.mockPop.address,
         this.accounts[0].address
       )
     ).deployed();
+    logResults();
   };
+
+  const giveBeneficiariesETH = async () => {
+    console.log("giving ETH to beneficiaries ...")
+    await bluebird.map(this.bennies, async (beneficiary) => {
+      const balance = await ethers.provider.getBalance(beneficiary.address);
+      if (balance.isZero()) {
+        return this.accounts[0].sendTransaction({ to: beneficiary.address, value: utils.parseEther('.02')});
+      }
+    }, {concurrency: 1})
+  }
 
   const addBeneficiariesToRegistry = async () => {
     console.log("adding beneficiaries to registry ...");
@@ -109,6 +119,7 @@ async function deploy(ethers) {
       10,
       100
     );
+
     await this.grantElections.initialize(grantTerm);
     console.log(
       await GrantElectionAdapter(this.grantElections).electionDefaults(
@@ -132,6 +143,7 @@ async function deploy(ethers) {
       { concurrency: 1 }
     );
   };
+
   const displayElectionMetadata = async (grantTerm) => {
     console.log(
       `${GrantTermMap[grantTerm]} metadata: `,
@@ -152,28 +164,36 @@ async function deploy(ethers) {
   };
 
   const stakePOP = async (voters) => {
-    console.log('voters are staking POP ...')
+    console.log("voters are staking POP ...");
     await bluebird.map(voters, async (voter) => {
-      return this.staking.connect(voter).stake(utils.parseEther("1000"), 604800 * 52 * 4);
+      return this.staking
+        .connect(voter)
+        .stake(utils.parseEther("1000"), 604800 * 52 * 4);
     });
   };
 
   const voteForElection = async (term, voters, beneficiaries) => {
     await stakePOP(voters);
 
-    console.log(`${voters.length} voting for ${beneficiaries.length} bennies`)
-    console.log('voters are voting in election ...');
-    await bluebird.map(voters, async (voter) => {
-      if (!voter) return;
-      return this.grantElections
-        .connect(voter)
-        .vote(beneficiaries.map((benny) => benny.address), [
-          utils.parseEther("100"),
-          utils.parseEther("200"),
-          utils.parseEther("300"),
-          utils.parseEther("400"),
-        ], term);
-    }, {concurrency: 1});
+    console.log(`${voters.length} voting for ${beneficiaries.length} bennies`);
+    console.log("voters are voting in election ...");
+    await bluebird.map(
+      voters,
+      async (voter) => {
+        if (!voter) return;
+        return this.grantElections.connect(voter).vote(
+          beneficiaries.map((benny) => benny.address),
+          [
+            utils.parseEther("100"),
+            utils.parseEther("200"),
+            utils.parseEther("300"),
+            utils.parseEther("400"),
+          ],
+          term
+        );
+      },
+      { concurrency: 1 }
+    );
   };
 
   // voting completed: to be finalized
@@ -214,7 +234,7 @@ async function deploy(ethers) {
     await voteForElection(
       GrantTerm.Quarter,
       this.accounts.slice(5, 8),
-      this.bennies.slice(7, 11),
+      this.bennies.slice(7, 11)
     );
 
     console.log("refreshing election state");
@@ -233,6 +253,10 @@ async function deploy(ethers) {
     );
     await displayElectionMetadata(GrantTerm.Year);
   };
+
+  const setElectionContractAsGovernanceForGrantRegistry = async () => {
+    await this.grantRegistry.setGovernance(this.accounts[0].address);
+  }
 
   const approveForStaking = async () => {
     console.log("approving all accounts for staking ...");
@@ -272,6 +296,7 @@ ADDR_GRANT_ELECTION=${this.grantElections.address}
   };
 
   await setSigners();
+  await giveBeneficiariesETH();
   await deployContracts();
   await addBeneficiariesToRegistry();
   await mintPOP();
@@ -279,6 +304,7 @@ ADDR_GRANT_ELECTION=${this.grantElections.address}
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
+  await setElectionContractAsGovernanceForGrantRegistry();
   await logResults();
 }
 
