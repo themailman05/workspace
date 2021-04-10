@@ -19,8 +19,8 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     uint256 _lockedAt;
   }
 
-  mapping(address => uint256) balances;
-  mapping(address => uint256) voiceCredits;
+  mapping(address => uint256) public balances;
+  mapping(address => uint256) public voiceCredits;
   mapping(address => LockedBalance[]) lockedBalances;
   mapping(address => uint256) withdrawnBalances;
 
