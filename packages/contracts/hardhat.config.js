@@ -91,7 +91,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     );
   });
 
-  task("grantElection:finalize", "finalize a grant election")
+  task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
@@ -103,7 +103,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       ).abi,
       signer
     );
-    await GrantElections.finalize(term);
+    await GrantElections.finalize(term, {gasLimit: 3000000});
   });
 
   module.exports = {

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.7.0;
 
 import "@chainlink/contracts/src/v0.7/dev/VRFConsumerBase.sol";
@@ -33,10 +35,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
    * Requests randomness from a user-provided seed
    */
   function getRandomNumber(uint256 userProvidedSeed) public {
-    require(
-      LINK.balanceOf(address(this)) >= fee,
-      "Not enough LINK"
-    );
+    require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
     requestRandomness(keyHash, fee, userProvidedSeed);
   }
 
