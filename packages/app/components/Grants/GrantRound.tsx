@@ -1,18 +1,11 @@
 import { Votes, Vote, PendingVotes } from 'pages/grant-elections/[type]';
 import { useEffect, useState } from 'react';
 import { useRef } from 'react';
-import { Check } from 'react-feather';
-import {
-  RegisterButton,
-  RegisterHolder,
-} from '../../../../packages/ui/src/components/grantPage';
 import BeneficiaryCard, { BeneficiaryMetadata } from './BeneficiaryCard';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
 import {
   ElectionMetadata,
-  GrantElectionAdapter,
 } from '@popcorn/utils/Contracts';
-import createElectionName from 'utils/createElectionName';
 import { BigNumber, utils } from 'ethers';
 
 interface IGrantRound {

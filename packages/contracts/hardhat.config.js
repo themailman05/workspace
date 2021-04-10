@@ -99,7 +99,7 @@ module.exports = {
     },
     rinkeby: {
       url: process.env.RPC_URL,
-      accounts: [process.env.PRIVATE_KEY],
+      accounts: ['0x'+process.env.PRIVATE_KEY],
     },
   },
 };

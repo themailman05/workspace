@@ -16,25 +16,30 @@ async function deploy(ethers) {
 
   const deployContracts = async () => {
     console.log("deploying contracts ...");
+
     this.beneficiaryRegistry = await (
       await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
     ).deployed();
+
     this.grantRegistry = await (
       await (await ethers.getContractFactory("GrantRegistry")).deploy(
         beneficiaryRegistry.address
       )
     ).deployed();
+
     this.mockPop = await (
       await (await ethers.getContractFactory("MockERC20")).deploy(
         "TestPOP",
         "TPOP"
       )
     ).deployed();
+
     this.staking = await (
       await (await ethers.getContractFactory("Staking")).deploy(
         this.mockPop.address
       )
     ).deployed();
+
     this.grantElections = await (
       await (await ethers.getContractFactory("GrantElections")).deploy(
         this.staking.address,
@@ -43,6 +48,7 @@ async function deploy(ethers) {
         this.accounts[0].address
       )
     ).deployed();
+    
   };
 
   const addBeneficiariesToRegistry = async () => {
@@ -234,6 +240,7 @@ async function deploy(ethers) {
 
   const logResults = async () => {
     console.log({
+      eligibleButNotRegistered: this.bennies.slice(18,20).map((bn)=> bn.address),
       contracts: {
         beneficiaryRegistry: this.beneficiaryRegistry.address,
         grantRegistry: this.grantRegistry.address,
