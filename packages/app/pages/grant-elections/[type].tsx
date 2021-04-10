@@ -9,13 +9,12 @@ import NavBar from '../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
 import {
   GrantElectionAdapter,
-  ElectionMetadata,
   ElectionTerm,
 } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
 import capitalize from '@popcorn/utils/capitalize';
 import { ElectionTermIntToName } from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
-import bluebird from 'bluebird';
+import { ElectionsContext } from '../../app/elections';
 import DualActionModal, {
   DefaultDualActionModalProps,
 } from 'components/Modal/DualActionModal';
@@ -87,10 +86,10 @@ export default function AllGrants() {
   const context = useWeb3React<Web3Provider>();
   const { library, account, activate } = context;
   const { contracts } = useContext(ContractsContext);
+  const { elections } = useContext(ElectionsContext);
   const [pendingVotes, setPendingVotes] = useState<PendingVotes>(
     defaultPendingVotes,
   );
-  const [grantElections, setGrantElections] = useState<ElectionMetadata[]>([]);
   const [voiceCredits, setVoiceCredits] = useState(0);
   const [activeGrantRound, scrollToGrantRound] = useState<number>();
   const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
@@ -189,14 +188,6 @@ export default function AllGrants() {
     }
   }, [router]);
 
-  const getElectionMetadata = async () => {
-    const elections = await bluebird.map(selectedGrantTerms, async (term) => {
-      return GrantElectionAdapter(contracts?.election).getElectionMetadata(
-        term,
-      );
-    });
-    setGrantElections(elections);
-  };
 
   const getVoiceCredits = async (account) => {
     if (!account) return;
@@ -220,7 +211,6 @@ export default function AllGrants() {
     if (!contracts || !selectedGrantTerms.length) {
       return;
     }
-    getElectionMetadata();
     getVoiceCredits(account);
   }, [contracts, account, selectedGrantTerms]);
 
@@ -358,7 +348,7 @@ export default function AllGrants() {
         onConfirm={singleActionModal.onConfirm}
       />
       <div className="w-10/12 mx-auto mt-8">
-        {[...grantElections]
+        {[...elections]
           .filter(
             (election) =>
               (GrantElectionAdapter().isActive(election) &&
