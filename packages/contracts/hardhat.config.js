@@ -100,7 +100,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     );
   });
 
-task("grantElection:finalize", "finalize a grant election")
+  task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
@@ -110,7 +110,7 @@ task("grantElection:finalize", "finalize a grant election")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(term, { gasLimit: 2500000 });
+    await GrantElections.finalize(term, {gasLimit: 3000000});
   });
 
 module.exports = {
