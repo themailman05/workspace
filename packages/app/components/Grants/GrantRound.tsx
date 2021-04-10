@@ -51,7 +51,7 @@ export default function GrantRound({
   }, [election]);
 
   const getBeneficiary = (address: string, votes): BeneficiaryMetadata => {
-    const beneficiary = beneficiariesHashMap[address];
+    const beneficiary = beneficiariesHashMap[process.env.CHAIN_ID || '31337'][address.toLowerCase()];
     beneficiary.totalVotes = votes[address];
     return beneficiary;
   };

@@ -1,6 +1,8 @@
 node_modules
 .next
 .env
+.env.rinkeby
+.env.localhost
 dist
 tsconfig.tsbuildinfo
 yarn-error.log
