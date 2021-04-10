@@ -31,7 +31,7 @@ export default function BeneficiaryCard({
 }: IBeneficiaryCard): JSX.Element {
   return (
     <div className="shadow-sm w-80 h-auto rounded-lg mr-8 mb-16 bg-white border-b border-gray-200 ">
-      <Link href={`beneficiary/${beneficiary?.address}`} passHref>
+      <Link href={`/beneficiary/${beneficiary?.address}`} passHref>
         <a>
           <div className="w-full h-32 rounded-t-lg">
             {beneficiary?.image && (
@@ -47,7 +47,7 @@ export default function BeneficiaryCard({
       </Link>
       <div className="w-full px-4 pb-6 pt-6">
         <div className="h-10 mt-3">
-          <Link href={`beneficiary/${beneficiary?.address}`} passHref>
+          <Link href={`/beneficiary/${beneficiary?.address}`} passHref>
             <a>
               <h3 className="text-lg font-bold text-gray-800 leading-snug">
                 {beneficiary?.title}
@@ -56,7 +56,7 @@ export default function BeneficiaryCard({
           </Link>
         </div>
         <div className="h-32">
-          <Link href={`beneficiary/${beneficiary?.address}`} passHref>
+          <Link href={`/beneficiary/${beneficiary?.address}`} passHref>
             <a>
               <p className="text-sm text-gray-700">
                 {beneficiary?.description}

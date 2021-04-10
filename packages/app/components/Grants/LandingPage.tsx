@@ -1,6 +1,10 @@
 import NavBar from './../../containers/NavBar/NavBar';
 import Link from 'next/link';
+import { useContext } from 'react';
+import { ElectionsContext } from '../../app/elections';
+import Icon from 'components/Icon';
 export const LandingPage = () => {
+  const { elections } = useContext(ElectionsContext);
   return (
     <div className="w-full">
       <NavBar />
@@ -74,24 +78,16 @@ export const LandingPage = () => {
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg
-                                className="flex-shrink-0 h-6 w-6 text-green-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
+                              {(elections[0] &&
+                                ['closed', 'finalized'].includes(
+                                  elections[0]?.electionStateStringShort,
+                                  ) && <Icon type="x" /> ) || <Icon type="check" />}
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
-                              Voting is live now
+                              Election is{' '}
+                              {elections &&
+                                elections[0]?.electionStateStringLong}
+                              .
                             </p>
                           </li>
 
@@ -195,24 +191,15 @@ export const LandingPage = () => {
 
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg
-                              className="flex-shrink-0 h-6 w-6 text-green-500"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
+                            {(elections[2] &&
+                              ['closed', 'finalized'].includes(
+                                elections[2]?.electionStateStringShort,
+                              ) && <Icon type="x" />) || <Icon type="check" />}
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
-                            Voting is live now
+                            Election is{' '}
+                            {elections && elections[2]?.electionStateStringLong}
+                            .
                           </p>
                         </li>
 
@@ -331,24 +318,16 @@ export const LandingPage = () => {
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg
-                                className="flex-shrink-0 h-6 w-6 text-green-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
+                              {(elections[1] &&
+                                ['closed', 'finalized'].includes(
+                                  elections[1]?.electionStateStringShort,
+                                  ) && <Icon type="x" /> ) || <Icon type="check" />}
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
-                              Voting is live now
+                              Election is{' '}
+                              {elections &&
+                                elections[1]?.electionStateStringLong}
+                              .
                             </p>
                           </li>
 
@@ -399,20 +378,36 @@ export const LandingPage = () => {
             <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
               <div className="lg:grid lg:grid-cols-2 lg:gap-8">
                 <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
-                We're like a philanthropic bank partnering* with organizations like:
-                <p className="text-xs">* for demonstration purposes only. no such partnerships exist yet</p>
-      </h2>
-  
+                  We're like a philanthropic bank partnering* with organizations
+                  like:
+                  <p className="text-xs">
+                    * for demonstration purposes only. no such partnerships
+                    exist yet
+                  </p>
+                </h2>
+
                 <div className="flow-root self-center mt-8 lg:mt-0">
                   <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img className="h-12" src="/images/partners/chainlink.svg" alt="Chainlink" />
+                      <img
+                        className="h-12"
+                        src="/images/partners/chainlink.svg"
+                        alt="Chainlink"
+                      />
                     </div>
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img className="h-12" src="/images/partners/olpc.svg" alt="One Laptop Per Child" />
+                      <img
+                        className="h-12"
+                        src="/images/partners/olpc.svg"
+                        alt="One Laptop Per Child"
+                      />
                     </div>
                     <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                      <img className="h-12" src="/images/partners/unicef.svg" alt="UNICEF" />
+                      <img
+                        className="h-12"
+                        src="/images/partners/unicef.svg"
+                        alt="UNICEF"
+                      />
                     </div>
                   </div>
                 </div>
