@@ -11,6 +11,7 @@ import { StateProvider } from 'app/store';
 import { Web3ReactProvider } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import ContractsWrapper from 'app/contracts';
+import SwapChainModal from 'app/SwapChainModal';
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -66,6 +67,7 @@ export default function MyApp(props) {
             <Web3ReactProvider getLibrary={getLibrary}>
               <ContractsWrapper>
                 <StateProvider>
+                  <SwapChainModal />
                   <Component {...pageProps} />
                 </StateProvider>
               </ContractsWrapper>
