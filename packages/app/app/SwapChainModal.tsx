@@ -9,7 +9,7 @@ export default function SwapChainModal(): JSX.Element {
   const { library, account, activate, active, chainId } = context;
   const [showModal, setShowModal] = useState<boolean>(false);
   useEffect(() => {
-    if (account && chainId !== 4) {
+    if (account && chainId !== Number(process.env.CHAIN_ID || 31337)) {
       setShowModal(true);
     }
   }, [chainId, account]);
