@@ -130,9 +130,11 @@ async function deploy(ethers) {
     await bluebird.map(
       bennies,
       async (beneficiary) => {
+        console.log(`registering ${beneficiary.address}`);
         return this.grantElections.registerForElection(
           beneficiary.address,
-          grantTerm
+          grantTerm,
+          {gasLimit: 150000}
         );
       },
       { concurrency: 1 }
@@ -213,7 +215,7 @@ async function deploy(ethers) {
       true,
       false,
       0,
-      40, // secs for voting period
+      60, // secs for voting period
       1, // secs for registration period
       100
     );
@@ -228,8 +230,18 @@ async function deploy(ethers) {
       this.bennies.slice(7, 14)
     );
 
+    electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
+      GrantTerm.Quarter
+    )
+
     console.log("refreshing election state");
-    await this.grantElections.refreshElectionState(GrantTerm.Quarter);
+    while (electionMetadata.electionState != 1) {
+      await this.grantElections.refreshElectionState(GrantTerm.Quarter);
+      electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
+        GrantTerm.Quarter
+      );
+      console.log("waiting for election to be ready for voting...");
+    }
 
     await voteForElection(
       GrantTerm.Quarter,
@@ -237,17 +249,13 @@ async function deploy(ethers) {
       this.bennies.slice(7, 11)
     );
 
-    electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
-      GrantTerm.Quarter
-    )
-
     console.log("refreshing election state");
     while (electionMetadata.electionState != 2) {
       await this.grantElections.refreshElectionState(GrantTerm.Quarter);
       electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
         GrantTerm.Quarter
       );
-      console.log("waiting for voting to close...");
+      console.log("waiting for election to close...");
     }
 
     await displayElectionMetadata(GrantTerm.Quarter);
@@ -257,10 +265,13 @@ async function deploy(ethers) {
   const initializeYearlyElection = async () => {
     console.log("initializing yearly election ...");
     await this.grantElections.initialize(GrantTerm.Year);
+    await new Promise(r => setTimeout(r, 20000));
+    console.log("registerBeneficiariesForElection in ...");
     await registerBeneficiariesForElection(
       GrantTerm.Year,
       this.bennies.slice(14, 18)
     );
+    console.log("registerBeneficiariesForElection out ...");
     await displayElectionMetadata(GrantTerm.Year);
   };
 
