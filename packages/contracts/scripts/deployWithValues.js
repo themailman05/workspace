@@ -39,6 +39,7 @@ async function deploy(ethers) {
         this.mockPop.address
       )
     ).deployed();
+
     this.randomNumberConsumer = await (
       await (await ethers.getContractFactory("RandomNumberConsumer")).deploy(
         process.env.ADDR_CHAINLINK_VRF_COORDINATOR,
@@ -46,6 +47,7 @@ async function deploy(ethers) {
         process.env.ADDR_CHAINLINK_KEY_HASH
       )
     ).deployed();
+
     this.grantElections = await (
       await (await ethers.getContractFactory("GrantElections")).deploy(
         this.staking.address,
@@ -56,6 +58,7 @@ async function deploy(ethers) {
         this.accounts[0].address
       )
     ).deployed();
+
     logResults();
   };
 
