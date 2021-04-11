@@ -1,7 +1,9 @@
 require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
-const { deploy } = require('./scripts/deployWithValues');
-const { GrantElectionAdapter } = require('./scripts/helpers/GrantElectionAdapter');
+const { deploy } = require("./scripts/deployWithValues");
+const {
+  GrantElectionAdapter,
+} = require("./scripts/helpers/GrantElectionAdapter");
 const { utils } = require("ethers");
 
 task("accounts", "Prints the list of accounts", async () => {
@@ -12,10 +14,9 @@ task("accounts", "Prints the list of accounts", async () => {
   }
 });
 
-task('dev:deploy')
-  .setAction(async (args) => {
-    await deploy(ethers);
-  });
+task("dev:deploy").setAction(async (args) => {
+  await deploy(ethers);
+});
 
 task("elections:getElectionMetadata")
   .addParam("term", "grant term (int)")
@@ -26,10 +27,14 @@ task("elections:getElectionMetadata")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    console.log(await GrantElectionAdapter(contract).getElectionMetadata(Number(args.term)));
+    console.log(
+      await GrantElectionAdapter(contract).getElectionMetadata(
+        Number(args.term)
+      )
+    );
   });
 
-  task("elections:refreshElectionState")
+task("elections:refreshElectionState")
   .addParam("term", "grant term (int)")
   .setAction(async (args) => {
     const [signer] = await ethers.getSigners();
@@ -39,7 +44,11 @@ task("elections:getElectionMetadata")
       signer
     );
     await contract.refreshElectionState(Number(args.term));
-    console.log(await GrantElectionAdapter(contract).getElectionMetadata(Number(args.term)));
+    console.log(
+      await GrantElectionAdapter(contract).getElectionMetadata(
+        Number(args.term)
+      )
+    );
   });
 
 task("POP:mint", "mint amount for recipient")
@@ -91,6 +100,19 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     );
   });
 
+  task("elections:finalize", "finalize a grant election")
+  .addParam("term", "election term to end")
+  .setAction(async (args, hre) => {
+    const [signer] = await ethers.getSigners();
+    const { term } = args;
+    const GrantElections = new ethers.Contract(
+      process.env.ADDR_GRANT_ELECTION,
+      require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
+      signer
+    );
+    await GrantElections.finalize(term, {gasLimit: 3000000});
+  });
+
 module.exports = {
   solidity: "0.7.3",
   networks: {
@@ -99,7 +121,11 @@ module.exports = {
     },
     rinkeby: {
       url: process.env.RPC_URL,
-      accounts: ['0x'+process.env.PRIVATE_KEY],
+      accounts: [process.env.PRIVATE_KEY].concat(
+        (process.env.BENEFICIARY_PRIVATE_KEYS &&
+          process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
+          []
+      ),
     },
   },
 };
