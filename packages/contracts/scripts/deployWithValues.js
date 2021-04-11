@@ -314,7 +314,7 @@ async function deploy(ethers) {
   const approveForStaking = async () => {
     console.log("approving all accounts for staking ...");
     await bluebird.map(
-      accounts,
+      this.accounts,
       async (account) => {
         return this.mockPop
           .connect(account)
