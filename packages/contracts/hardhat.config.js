@@ -110,7 +110,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(term, {gasLimit: 3000000});
+    await GrantElections.finalize(Number(term), {gasLimit: 10000000});
   });
 
 module.exports = {
