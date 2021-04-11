@@ -63,7 +63,7 @@ async function deploy(ethers) {
     console.log("giving ETH to beneficiaries ...")
     await bluebird.map(this.bennies, async (beneficiary) => {
       const balance = await ethers.provider.getBalance(beneficiary.address);
-      if (balance.isZero()) {
+      if (balance.lt(parseEther('.01'))) {
         return this.accounts[0].sendTransaction({ to: beneficiary.address, value: utils.parseEther('.02')});
       }
     }, {concurrency: 1})
@@ -187,7 +187,6 @@ async function deploy(ethers) {
     await bluebird.map(
       voters,
       async (voter) => {
-        if (!voter) return;
         return this.grantElections.connect(voter).vote(
           beneficiaries.map((benny) => benny.address),
           [
@@ -215,12 +214,12 @@ async function deploy(ethers) {
     );
     await this.grantElections.setConfiguration(
       GrantTerm.Quarter,
-      3,
-      6,
+      1, // 1 awardee
+      3, // 3 qualifying
       true,
       false,
       0,
-      60, // secs for voting period
+      120, // secs for voting period
       1, // secs for registration period
       100
     );
@@ -241,6 +240,7 @@ async function deploy(ethers) {
 
     console.log("refreshing election state");
     while (electionMetadata.electionState != 1) {
+      await new Promise(r => setTimeout(r, 1000));
       await this.grantElections.refreshElectionState(GrantTerm.Quarter);
       electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
         GrantTerm.Quarter
@@ -254,12 +254,21 @@ async function deploy(ethers) {
       this.bennies.slice(7, 11)
     );
 
+    while (electionMetadata.votes.length < 4) {
+      await new Promise(r => setTimeout(r, 1000));
+      electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
+        GrantTerm.Quarter
+      );
+      console.log("waiting for votes to confirm ...");
+    };
+
     console.log("refreshing election state");
     while (electionMetadata.electionState != 2) {
       await this.grantElections.refreshElectionState(GrantTerm.Quarter);
       electionMetadata = await GrantElectionAdapter(this.grantElections).getElectionMetadata(
         GrantTerm.Quarter
       );
+      await new Promise(r => setTimeout(r, 1000));
       console.log("waiting for election to close...");
     }
 

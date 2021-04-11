@@ -410,7 +410,7 @@ export default function AllGrants() {
                 </div>
                 <div className="mt-4 text-lg text-gray-600">
                   The {ElectionTermIntToName[election]} grant election is:{' '}
-                  <span className="font-semibold text-gray-900">live</span>.
+                  <span className="font-semibold text-gray-900">{elections[election]?.electionStateStringLong}</span>.
                 </div>
               </div>
               <div className="mt-6 rounded-md shadow lg:mt-0 lg:ml-10 lg:flex-shrink-0">

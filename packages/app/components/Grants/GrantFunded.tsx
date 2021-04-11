@@ -23,17 +23,13 @@ export default function GrantFunded({  election, beneficiary }: IGrantFunded): J
     }
   }, [contracts]);
 
-  if (!awarded) {
-    return <></>;
-  }
-
   return (
     <span className="flex flex-row">
-      <div className="h-12 w-12 mr-2 rounded-full border-4 border-green-400 flex items-center justify-center flex-shrink-0">
+      {awarded && (<div className="h-12 w-12 mr-2 rounded-full border-4 border-green-400 flex items-center justify-center flex-shrink-0">
         <Check size={38} className="text-green-400" />
-      </div>
+      </div>)}
       <div>
-        <p className="text-lg text-gray-700 font-bold">Funded</p>
+        {awarded && (<p className="text-lg text-gray-700 font-bold">Awarded</p>)}
         <p className="text-gray-700 text-base">{beneficiary?.totalVotes || 0} votes</p>
       </div>
     </span>
