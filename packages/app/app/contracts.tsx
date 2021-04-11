@@ -3,10 +3,11 @@ import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React,  UnsupportedChainIdError } from '@web3-react/core';
 import React, { useEffect } from 'react';
 import { createContext, useState } from 'react';
-import MockPop from '../../contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
-import Staking from '../../contracts/artifacts/contracts/Staking.sol/Staking.json';
-import GrantElections from '../../contracts/artifacts/contracts/GrantElections.sol/GrantElections.json';
-import BeneficiaryRegistry from '../../contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
+import MockPop from '@popcorn/contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
+import Staking from '@popcorn/contracts/artifacts/contracts/Staking.sol/Staking.json';
+import GrantElections from '@popcorn/contracts/artifacts/contracts/GrantElections.sol/GrantElections.json';
+import GrantRegistry from '@popcorn/contracts/artifacts/contracts/GrantRegistry.sol/GrantRegistry.json';
+import BeneficiaryRegistry from '@popcorn/contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
 import { connectors } from '../containers/Web3/connectors';
 import {
   NoEthereumProviderError,
@@ -18,6 +19,7 @@ export interface Contracts {
   beneficiary: Contract;
   election: Contract;
   pop: Contract;
+  grant: Contract
 }
 
 interface ContractsContext {
@@ -100,6 +102,11 @@ export default function ContractsWrapper({
         MockPop.abi,
         library,
       ),
+      grant: new Contract(
+        process.env.ADDR_GRANT_REGISTRY,
+        GrantRegistry.abi,
+        library
+      )
     });
   }, [library, active]);
 
