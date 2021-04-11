@@ -16,17 +16,7 @@ export default function VoteCounter({
 }: VoteCounter): JSX.Element {
   if (!voiceCredits) {
     return (
-      <figure className="bg-white rounded-xl p-6 mb-8">
-        <div className="space-y-4">
-          <blockquote>
-            <p className="text-lg font-semibold">🚀</p>
-            <p className="text-md">Grant elections are currently active! </p>
-          </blockquote>
-          <figcaption className="text-sm">
-            <div>Vote for your favorite organizations to receive funding!</div>
-          </figcaption>
-        </div>
-      </figure>
+   <></> 
     );
   }
   return (

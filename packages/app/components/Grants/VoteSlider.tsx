@@ -45,6 +45,9 @@ export default function VoteSlider({
       setVotesAssignedByUser(value);
      assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
   }
+  if (election.electionStateStringShort !== 'voting') {
+    return <></>
+  }
 
   return (
     <>

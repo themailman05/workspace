@@ -1,8 +1,13 @@
+import { DefaultSingleActionModalProps } from 'components/Modal/SingleActionModal';
 import React, { createContext, useReducer } from 'react';
+import { SingleActionModalProps } from '../components/Modal/SingleActionModal';
+import { DefaultDualActionModalProps, DualActionModalProps } from '../components/Modal/DualActionModal';
 import {
   AppActions,
   DISPLAY_NOTIFICATION,
   TOGGLE_NOTIFICATION,
+  SINGLE_ACTION_MODAL,
+  DUAL_ACTION_MODAL,
 } from './actions';
 
 export interface Notification {
@@ -16,6 +21,8 @@ export interface Notification {
 
 interface DefaultState {
   notifications: Notification;
+  singleActionModal: SingleActionModalProps;
+  dualActionModal: DualActionModalProps;
 }
 
 const initialState: DefaultState = {
@@ -26,6 +33,12 @@ const initialState: DefaultState = {
     isFlash: false,
     backdrop: false,
   },
+  singleActionModal: {
+    ...DefaultSingleActionModalProps,
+  },
+  dualActionModal: {
+    ...DefaultDualActionModalProps,
+  }
 };
 
 const store = createContext(
@@ -53,6 +66,20 @@ const StateProvider = ({ children }) => {
               visible: !state.notifications.visible,
             },
           };
+        case SINGLE_ACTION_MODAL:
+          return {
+            ...state,
+            singleActionModal: {
+                ...action.payload
+            }
+          }
+        case DUAL_ACTION_MODAL:
+          return {
+            ...state,
+            dualActionModal: {
+                ...action.payload
+            }
+          }
         default:
           return {
             ...state,

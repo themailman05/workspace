@@ -12,7 +12,7 @@ export default function GrantFunded({ votes }: IGrantFunded): JSX.Element {
       </div>
       <div>
         <p className="text-lg text-gray-700 font-bold">Funded</p>
-        <p className="text-gray-700 text-base">{votes}</p>
+        <p className="text-gray-700 text-base">{votes || 0} votes</p>
       </div>
     </span>
   );

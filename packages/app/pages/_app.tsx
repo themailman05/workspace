@@ -13,6 +13,8 @@ import { Web3Provider } from '@ethersproject/providers';
 import ContractsWrapper from 'app/contracts';
 import SwapChainModal from 'app/SwapChainModal';
 import ElectionsProvider from '../app/elections';
+import { SingleActionModalContainer } from 'components/Modal/SingleActionModalContainer';
+import { DualActionModalContainer } from 'components/Modal/DualActionModalContainer';
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -70,6 +72,8 @@ export default function MyApp(props) {
                 <ElectionsProvider>
                   <StateProvider>
                     <SwapChainModal />
+                    <SingleActionModalContainer />
+                    <DualActionModalContainer />
                     <Component {...pageProps} />
                   </StateProvider>
                 </ElectionsProvider>

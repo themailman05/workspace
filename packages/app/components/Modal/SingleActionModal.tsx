@@ -1,13 +1,13 @@
 import React from "react";
 
-interface Props {
+export interface SingleActionModalProps {
   title: string;
   content: React.ReactElement | string;
   visible: boolean;
   type?: "info" | "error";
   onConfirm: { label: string, onClick: Function };
 }
-export const DefaultSingleActionModalProps: Props = {
+export const DefaultSingleActionModalProps: SingleActionModalProps = {
   content: '',
   title: '',
   visible: false,
@@ -15,7 +15,7 @@ export const DefaultSingleActionModalProps: Props = {
   onConfirm: { label: '', onClick: () => {} },
 };
 
-export const SingleActionModal: React.FC<Props> = ({ title, type, visible, content, onConfirm }) => {
+export const SingleActionModal: React.FC<SingleActionModalProps> = ({ title, type, visible, content, onConfirm }) => {
   if (!visible)return <></>;
   return (
     <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">

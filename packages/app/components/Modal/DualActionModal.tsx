@@ -1,6 +1,6 @@
 import React from 'react';
 import { CircularProgress } from '@material-ui/core';
-export interface Props {
+export interface DualActionModalProps {
   title: string;
   content: React.ReactElement | string;
   visible: boolean;
@@ -18,7 +18,7 @@ export const DefaultDualActionModalProps = {
   onDismiss: { label: '', onClick: () => {} },
 };
 
-export const DualActionModal: React.FC<Props> = ({
+export const DualActionModal: React.FC<DualActionModalProps> = ({
   title,
   content,
   visible,
