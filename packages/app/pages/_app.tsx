@@ -11,6 +11,8 @@ import { StateProvider } from 'app/store';
 import { Web3ReactProvider } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import ContractsWrapper from 'app/contracts';
+import SwapChainModal from 'app/SwapChainModal';
+import ElectionsProvider from '../app/elections';
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -65,9 +67,12 @@ export default function MyApp(props) {
             <GlobalLinearProgress visible={loading} />
             <Web3ReactProvider getLibrary={getLibrary}>
               <ContractsWrapper>
-                <StateProvider>
-                  <Component {...pageProps} />
-                </StateProvider>
+                <ElectionsProvider>
+                  <StateProvider>
+                    <SwapChainModal />
+                    <Component {...pageProps} />
+                  </StateProvider>
+                </ElectionsProvider>
               </ContractsWrapper>
             </Web3ReactProvider>
           </ThemeProvider>

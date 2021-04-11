@@ -6,10 +6,10 @@ import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import GrantElectionAdapter from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
 
 export interface BeneficiaryMetadata {
-  address: string,
-  title: string,
-  description: string,
-  image: string,
+  address: string;
+  title: string;
+  description: string;
+  image: string;
   totalVotes: number;
 }
 interface IBeneficiaryCard {
@@ -27,23 +27,27 @@ export default function BeneficiaryCard({
   beneficiary,
   pendingVotes,
   assignVotes,
-  voiceCredits
+  voiceCredits,
 }: IBeneficiaryCard): JSX.Element {
   return (
-    <div
-      className="shadow-sm w-80 h-auto rounded-lg mr-6 mb-6 bg-gray-100 mt-8"
-    >
-      <Link href={`beneficiary/${beneficiary?.address}`} passHref>
+    <div className="shadow-sm w-80 h-auto rounded-lg mr-8 mb-16 bg-white border-b border-gray-200 ">
+      <Link href={`/beneficiary/${beneficiary?.address}`} passHref>
         <a>
           <div className="w-full h-32 rounded-t-lg">
             {beneficiary?.image && (
-            <img className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto" src={beneficiary?.image} alt="" style={{objectFit: 'cover', height: '140px' }}  ></img>)}
+              <img
+                className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
+                src={beneficiary?.image}
+                alt=""
+                style={{ objectFit: 'cover', height: '140px' }}
+              ></img>
+            )}
           </div>
         </a>
       </Link>
       <div className="w-full px-4 pb-6 pt-6">
         <div className="h-10 mt-3">
-          <Link href={`beneficiary/${beneficiary?.address}`} passHref>
+          <Link href={`/beneficiary/${beneficiary?.address}`} passHref>
             <a>
               <h3 className="text-lg font-bold text-gray-800 leading-snug">
                 {beneficiary?.title}
@@ -52,9 +56,11 @@ export default function BeneficiaryCard({
           </Link>
         </div>
         <div className="h-32">
-          <Link href={`beneficiary/${beneficiary?.address}`} passHref>
+          <Link href={`/beneficiary/${beneficiary?.address}`} passHref>
             <a>
-              <p className="text-sm text-gray-700">{beneficiary?.description}</p>
+              <p className="text-sm text-gray-700">
+                {beneficiary?.description}
+              </p>
             </a>
           </Link>
         </div>

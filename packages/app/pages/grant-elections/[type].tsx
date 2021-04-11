@@ -9,20 +9,18 @@ import NavBar from '../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
 import {
   GrantElectionAdapter,
-  ElectionMetadata,
   ElectionTerm,
 } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
 import capitalize from '@popcorn/utils/capitalize';
 import { ElectionTermIntToName } from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
-import bluebird from 'bluebird';
+import { ElectionsContext } from '../../app/elections';
 import DualActionModal, {
   DefaultDualActionModalProps,
 } from 'components/Modal/DualActionModal';
 import SingleActionModal, {
   DefaultSingleActionModalProps,
 } from 'components/Modal/SingleActionModal';
-
 
 export interface IGrantRoundFilter {
   active: boolean;
@@ -88,10 +86,10 @@ export default function AllGrants() {
   const context = useWeb3React<Web3Provider>();
   const { library, account, activate } = context;
   const { contracts } = useContext(ContractsContext);
+  const { elections } = useContext(ElectionsContext);
   const [pendingVotes, setPendingVotes] = useState<PendingVotes>(
     defaultPendingVotes,
   );
-  const [grantElections, setGrantElections] = useState<ElectionMetadata[]>([]);
   const [voiceCredits, setVoiceCredits] = useState(0);
   const [activeGrantRound, scrollToGrantRound] = useState<number>();
   const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({
@@ -118,7 +116,6 @@ export default function AllGrants() {
   useEffect(() => {
     // Call to see if user has already registered for election
     if (contracts?.election && account) {
-
       IsUserAlreadyRegistered();
     }
   }, [contracts, account]);
@@ -191,14 +188,6 @@ export default function AllGrants() {
     }
   }, [router]);
 
-  const getElectionMetadata = async () => {
-    const elections = await bluebird.map(selectedGrantTerms, async (term) => {
-      return GrantElectionAdapter(contracts?.election).getElectionMetadata(
-        term,
-      );
-    });
-    setGrantElections(elections);
-  };
 
   const getVoiceCredits = async (account) => {
     if (!account) return;
@@ -209,7 +198,7 @@ export default function AllGrants() {
       .split('.')[0];
     setVoiceCredits(vCreditsFormatted);
   };
-  
+
   useEffect(() => {
     if (contracts?.pop && account) {
       contracts.pop
@@ -222,7 +211,6 @@ export default function AllGrants() {
     if (!contracts || !selectedGrantTerms.length) {
       return;
     }
-    getElectionMetadata();
     getVoiceCredits(account);
   }, [contracts, account, selectedGrantTerms]);
 
@@ -272,29 +260,33 @@ export default function AllGrants() {
     setPendingVotes({ ...pendingVotes });
   }
 
-
   const submitVotes = async (grantTerm: ElectionTerm) => {
-    setVoteConfirmationModal({...voteConfirmationModal, visible: true, progress: true});
+    setVoteConfirmationModal({
+      ...voteConfirmationModal,
+      visible: true,
+      progress: true,
+    });
     const txArgs = Object.keys(pendingVotes[grantTerm].votes).reduce<
       [string[], BigNumber[], number]
     >(
       (txArgs, address) => {
         txArgs[0].push(address);
-        txArgs[1].push(utils.parseEther(pendingVotes[grantTerm].votes[address].toString()));
+        txArgs[1].push(
+          utils.parseEther(pendingVotes[grantTerm].votes[address].toString()),
+        );
         return txArgs;
       },
       [[], [], grantTerm],
     );
-    
+
     try {
       await contracts.election
         .connect(library.getSigner())
         .vote(txArgs[0], txArgs[1], txArgs[2]);
 
-      setVoteConfirmationModal({...voteConfirmationModal, visible: false });
+      setVoteConfirmationModal({ ...voteConfirmationModal, visible: false });
       // todo: set succesful tx notification
       // setup listener for confirmation
-   
     } catch (err) {
       setVoteConfirmationModal({
         ...DefaultVoteConfirmationModal,
@@ -311,13 +303,35 @@ export default function AllGrants() {
             setSingleActionModal({ ...DefaultSingleActionModalProps }),
         },
       });
-
-    } 
+    }
   };
 
   return (
-    <div className="w-full">
+    
+    <div className="w-full bg-gray-900 pb-16">
       <NavBar />
+      <div className="bg-indigo-200 bg-opacity-100 pt-20 pb-20">
+            <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+              <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+                <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
+                Popcorn's profits fund social and environmental initiatives. 
+              
+      </h2>
+  
+                <div className="flow-root self-center mt-8 lg:mt-0">
+                  <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
+                    <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
+                    <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
+                Your vote helps decide which get funded.
+              
+                    </h2>
+                    
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
       <DualActionModal
         visible={voteConfirmationModal.visible}
         title={voteConfirmationModal.title}
@@ -334,7 +348,7 @@ export default function AllGrants() {
         onConfirm={singleActionModal.onConfirm}
       />
       <div className="w-10/12 mx-auto mt-8">
-        {[...grantElections]
+        {[...elections]
           .filter(
             (election) =>
               (GrantElectionAdapter().isActive(election) &&
@@ -368,7 +382,7 @@ export default function AllGrants() {
                   visible: true,
                   onConfirm: {
                     label: 'Confirm Vote',
-                    onClick: () =>  {
+                    onClick: () => {
                       submitVotes(grantTerm);
                     },
                   },
@@ -397,10 +411,10 @@ export default function AllGrants() {
             className="absolute inset-0 flex items-center"
             aria-hidden="true"
           >
-            <div className="w-full border-t border-gray-300"></div>
+            <div className="w-full border-t border-gray-100 border-opacity-10"></div>
           </div>
           <div className="relative flex justify-center">
-            <span className="px-3 bg-white text-lg font-medium text-gray-900">
+            <span className="px-3 text-lg font-medium rounded-md border border-gray-100 border-opacity-10 bg-gray-100">
               Other Grant Elections
             </span>
           </div>
@@ -409,10 +423,10 @@ export default function AllGrants() {
       {getOtherGrantElections(selectedGrantTerms).map((election) => (
         <div
           key={election}
-          className="mt-4 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:mt-5"
+          className="mt-8 pt-8 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:mt-5"
         >
           <div className="max-w-md mx-auto lg:max-w-5xl">
-            <div className="rounded-lg bg-gray-100 px-6 py-8 sm:p-10 lg:flex lg:items-center">
+            <div className="rounded-lg bg-white px-6 py-8 sm:p-10 lg:flex lg:items-center">
               <div className="flex-1">
                 <div>
                   <h3 className="inline-flex px-4 py-1 rounded-full text-sm font-semibold tracking-wide uppercase bg-white text-gray-800">
@@ -430,10 +444,7 @@ export default function AllGrants() {
                   href={`/grant-elections/${ElectionTermIntToName[election]}`}
                   passHref
                 >
-                  <a
-                    href="#"
-                    className="flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-gray-900 bg-white hover:bg-gray-50"
-                  >
+                  <a href="#" className="button button-secondary">
                     View {ElectionTermIntToName[election]} election
                   </a>
                 </Link>

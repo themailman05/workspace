@@ -5,6 +5,7 @@ interface NavbarLinkProps {
   url?: string;
   isActive: boolean;
   onClick?: Function;
+  target?: string;
 }
 
 export default function NavbarLink({
@@ -12,17 +13,19 @@ export default function NavbarLink({
   url,
   isActive,
   onClick,
+  target,
 }: NavbarLinkProps): JSX.Element {
   const className = `
     font-medium 
-    text-lg ${isActive ? 'text-primary font-medium' : 'text-gray-700'} 
-    hover:text-primaryLight cursor-pointer
+    text-lg ${isActive ? 'text-indigo-500 font-bold' : 'text-gray-700'} 
+    hover:text-indigo-500 cursor-pointer
   `;
 
   if (!url) {
     return (
       <a
         className={className}
+        target={target || "_self"}
         onClick={(e) => {
           onClick && onClick();
         }}
@@ -33,9 +36,10 @@ export default function NavbarLink({
   }
 
   return (
-    <Link href={url || ''} passHref>
+    <Link href={url || ''} passHref >
       <a
         className={className}
+        target={target || "_self"}
         onClick={(e) => {
           onClick && onClick();
         }}

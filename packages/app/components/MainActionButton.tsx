@@ -12,7 +12,7 @@ export default function MainActionButton({
   return (
     <button
       type="button"
-      className="block w-full text-center rounded-lg border border-transparent bg-indigo-600 px-6 py-4 text-xl leading-6 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+      className="button button-primary w-full"
       onClick={handleClick}
       disabled={disabled}
     >

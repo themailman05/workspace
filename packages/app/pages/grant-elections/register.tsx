@@ -6,25 +6,20 @@ import { connectors } from 'containers/Web3/connectors';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useContext } from 'react';
-import {
-  GrantElectionAdapter,
-  ElectionMetadata,
-  ElectionTerm,
-} from '@popcorn/utils/Contracts';
 import SingleActionModal, {
-  DefaultSingleActionModalProps,
 } from 'components/Modal/SingleActionModal';
 import Icon from 'components/Icon';
+import { ElectionsContext } from '../../app/elections';
 
 export default function Register(): JSX.Element {
   const context = useWeb3React<Web3Provider>();
   const { library, account, activate } = context;
   const { contracts } = useContext(ContractsContext);
+  const { elections } = useContext(ElectionsContext);
   const [wait, setWait] = useState<boolean>(false);
   const [registerStatus, setRegisterStatus] = useState<
     'success' | 'error' | 'none'
   >('none');
-  const [grantElections, setGrantElections] = useState<ElectionMetadata[]>([]);
   const [allowedToRegister, setRegistrationAllowance] = useState<boolean[]>([
     false,
     false,
@@ -41,43 +36,24 @@ export default function Register(): JSX.Element {
     setWait(false);
   }
 
-  async function getElectionMetaData(): Promise<void> {
-    setGrantElections(
-      await Promise.all(
-        [0, 1, 2].map(
-          async (term) =>
-            await GrantElectionAdapter(contracts?.election).getElectionMetadata(
-              term,
-            ),
-        ),
-      ),
-    );
-  }
-
   async function checkRegistrationAllowance(): Promise<void> {
-    const connected = contracts.election.connect(library.getSigner());
     setRegistrationAllowance(
       await Promise.all(
         [0, 1, 2].map(
           async (term) =>
-            (await connected._isEligibleBeneficiary(account, term)) &&
-            !grantElections[term].registeredBeneficiaries.includes(account),
+            (await contracts.beneficiary.beneficiaryExists(account)) &&
+            !elections[term].registeredBeneficiaries.includes(account),
         ),
       ),
     );
   }
 
-  useEffect(() => {
-    if (contracts?.election) {
-      getElectionMetaData();
-    }
-  }, [contracts]);
 
   useEffect(() => {
-    if (account) {
+    if (account && contracts?.beneficiary) {
       checkRegistrationAllowance();
     }
-  }, [account]);
+  }, [account, contracts]);
 
   return (
     <div className="w-full h-screen">
@@ -96,7 +72,7 @@ export default function Register(): JSX.Element {
         onConfirm={{ label: 'ok', onClick: () => setRegisterStatus('none') }}
       />
       <Navbar />
-      {grantElections.length && (
+      {elections.length && (
         <div className="bg-gray-900 h-full">
           <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
             <div className="text-center">
@@ -105,7 +81,7 @@ export default function Register(): JSX.Element {
                 Register for an Election
               </p>
               <p className="mt-3 max-w-4xl mx-auto text-xl text-gray-300 sm:mt-5 sm:text-2xl">
-                Choose for which grant election you want to register.
+                Choose a grant election to register for.
               </p>
             </div>
           </div>
@@ -140,14 +116,14 @@ export default function Register(): JSX.Element {
                         </div>
                         <div className="flex-1 flex flex-col justify-between border-t-2 border-gray-100 p-6 bg-gray-50 sm:p-10 lg:p-6 xl:p-10">
                           <div className="flex  flex-shrink-0 items-start">
-                            {grantElections[0].electionState === 0 ? (
+                            {elections[0].electionState === 0 ? (
                               <Icon type="check" />
                             ) : (
                               <Icon type="x" />
                             )}
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Registration{' '}
-                              {grantElections[0].electionState === 0
+                              {elections[0].electionState === 0
                                 ? 'Open'
                                 : 'Closed'}
                             </p>
@@ -158,7 +134,7 @@ export default function Register(): JSX.Element {
                                 className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50 disabled:opacity-50"
                                 aria-describedby="tier-scale"
                                 disabled={
-                                  grantElections[0].electionState > 0 ||
+                                  elections[0].electionState > 0 ||
                                   !allowedToRegister[0] ||
                                   wait
                                 }
@@ -200,14 +176,14 @@ export default function Register(): JSX.Element {
                       </div>
                       <div className="border-t-2 border-gray-100 rounded-b-lg pt-10 pb-8 px-6 bg-gray-50 sm:px-10 sm:py-10">
                         <div className="flex  flex-shrink-0 items-start">
-                          {grantElections[2].electionState === 0 ? (
+                          {elections[2].electionState === 0 ? (
                             <Icon type="check" />
                           ) : (
                             <Icon type="x" />
                           )}
                           <p className="ml-3 text-base font-medium text-gray-500">
                             Registration{' '}
-                            {grantElections[2].electionState === 0
+                            {elections[2].electionState === 0
                               ? 'Open'
                               : 'Closed'}
                           </p>
@@ -219,7 +195,7 @@ export default function Register(): JSX.Element {
                                 className="block w-full text-center rounded-lg border border-transparent bg-indigo-600 px-6 py-4 text-xl leading-6 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                                 aria-describedby="tier-growth"
                                 disabled={
-                                  grantElections[2].electionState > 0 ||
+                                  elections[2].electionState > 0 ||
                                   !allowedToRegister[2] ||
                                   wait
                                 }
@@ -267,14 +243,14 @@ export default function Register(): JSX.Element {
                         </div>
                         <div className="flex-1 flex flex-col justify-between border-t-2 border-gray-100 p-6 bg-gray-50 sm:p-10 lg:p-6 xl:p-10">
                           <div className="flex  flex-shrink-0 items-start">
-                            {grantElections[1].electionState === 0 ? (
+                            {elections[1].electionState === 0 ? (
                               <Icon type="check" />
                             ) : (
                               <Icon type="x" />
                             )}
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Registration{' '}
-                              {grantElections[1].electionState === 0
+                              {elections[1].electionState === 0
                                 ? 'Open'
                                 : 'Closed'}
                             </p>
@@ -285,7 +261,7 @@ export default function Register(): JSX.Element {
                                 className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50 disabled:opacity-50"
                                 aria-describedby="tier-scale"
                                 disabled={
-                                  grantElections[1].electionState > 0 ||
+                                  elections[1].electionState > 0 ||
                                   !allowedToRegister[1] ||
                                   wait
                                 }

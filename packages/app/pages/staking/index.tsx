@@ -4,13 +4,10 @@ import { useState, useEffect, useContext } from 'react';
 import { connectors } from '../../containers/Web3/connectors';
 import { utils } from 'ethers';
 import NavBar from '../../containers/NavBar/NavBar';
-import Modal from 'components/Modal';
 import DropdownSelect from 'components/DropdownSelect';
 import { ContractsContext } from 'app/contracts';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { Router, useRouter } from 'next/router';
-import { connect } from 'node:http2';
 import MainActionButton from 'components/MainActionButton';
 import StakingResponseModal from 'components/Staking/StakingResponseModal';
 
@@ -28,10 +25,10 @@ export default function LockPop() {
   const context = useWeb3React<Web3Provider>();
   const { contracts } = useContext(ContractsContext);
   const { library, account, activate, active } = context;
-  const router = useRouter();
   const [popToLock, setPopToLock] = useState<number>(0);
   const [lockDuration, setLockDuration] = useState<number>(ONE_WEEK);
   const [popBalance, setPopBalance] = useState(0);
+  const [lockedPop, setLockedPop] = useState(0);
   const [voiceCredits, setVoiceCredits] = useState<number>(0);
   const [approved, setApproval] = useState<number>(0);
   const [wait, setWait] = useState<boolean>(false);
@@ -54,6 +51,17 @@ export default function LockPop() {
       .allowance(account, contracts.staking.address)
       .then((res) => setApproval(Number(utils.formatEther(res))));
   }, [account]);
+
+  const getLockedPop = async () => {
+    setLockedPop(Number(utils.formatEther(await contracts.staking.balances(account))));
+  }
+
+  useEffect(() => {
+    if (contracts?.staking && account) {
+      getLockedPop();
+    }
+
+  }, [contracts])
 
   async function lockPop(): Promise<void> {
     setWait(true);
@@ -95,13 +103,10 @@ export default function LockPop() {
       {stakeStatus === 'success' && (
         <StakingResponseModal
           title={'Success'}
-          text={`You got now ${voiceCredits.toFixed(
+          text={`You now have ${voiceCredits.toFixed(
             2,
           )} voice Credits to vote with.`}
-          handleClick={() => {
-            setStakeStatus('none');
-            router.push('/grant-elections/all');
-          }}
+          handleClick={() => setStakeStatus('none')}
         />
       )}
       <div className="bg-gray-900">
@@ -119,7 +124,36 @@ export default function LockPop() {
           </div>
         </div>
 
-        <div className="mt-16 pb-12 lg:mt-20 lg:pb-20">
+    {lockedPop && (
+        <div className="mt-2 pb-0 lg:mt-4 lg:pb-0">
+          <div className="relative z-0">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="relative lg:grid lg:grid-cols-7">
+                <div className="max-w-lg mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-start-3 lg:col-end-6 lg:row-start-1 lg:row-end-4">
+                  <div className="relative z-10 rounded-lg shadow-xl">
+           
+                    <div className="border-t-2 rounded-t-lg border-gray-100 rounded-b-lg  bg-gray-100  sm:px-10 sm:py-1">
+                      <span className="flex flex-row items-center justify-between">
+                      <h3
+                          className="text-center text-xl font-extralight text-gray-900 sm:-mx-6"
+                          id="tier-growth"
+                        >
+                          Your Locked POP
+                        </h3>
+                        <p className="px-3 text-center my-4 text-3xl font-black tracking-tight text-gray-900 sm:text-3xl">
+                          {lockedPop.toFixed(2)}
+                        </p>
+                      </span>
+             
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>)}
+
+        <div className="mt-8 pb-12 lg:mt-8 lg:pb-20">
           <div className="relative z-0">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="relative lg:grid lg:grid-cols-7">

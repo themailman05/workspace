@@ -36,10 +36,10 @@ export default function Navbar(): JSX.Element {
             </a>
           </Link>
         </div>
-        <ul className="flex flex-row items-center mx-auto space-x-4">
+        <ul className="flex flex-row items-center mx-auto space-x-16">
           <li>
             <NavbarLink
-              label="Grants"
+              label="Grant Elections"
               onClick={() => setShowGrants(!showGrants)}
               isActive={router.pathname === '/grants'}
             />
@@ -55,9 +55,18 @@ export default function Navbar(): JSX.Element {
               isActive={router.pathname === '/staking'}
             />
           </li>
+          <li>
+            <NavbarLink
+              label="White Paper"
+              url="/docs/Popcorn_whitepaper_v1.pdf"
+              isActive={false}
+              target="_window"
+              />
+              </li>
+        
         </ul>
         <button
-          className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-gray-50"
+          className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-indigo-400 hover:text-white"
           onClick={() => activate(connectors.Injected)}
         >
           <p>Connect{account && 'ed'}</p>
