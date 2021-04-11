@@ -5,19 +5,18 @@ import { Check } from 'react-feather';
 import { BeneficiaryMetadata } from './BeneficiaryCard';
 
 interface IGrantFunded {
-  votes: number;
   beneficiary: BeneficiaryMetadata;
   election: ElectionMetadata;
 }
 
 
-export default function GrantFunded({  election, beneficiary, votes }: IGrantFunded): JSX.Element {
+export default function GrantFunded({  election, beneficiary }: IGrantFunded): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [awarded, setAwarded] = useState(false);
   const isBeneficiaryGrantRecipient = async () =>{
     setAwarded((await contracts.grant.getActiveAwardees(election.electionTerm)).includes(beneficiary.address));
   }
-  
+
   useEffect(() => {
     if (contracts?.grant) {
       isBeneficiaryGrantRecipient();
@@ -35,7 +34,7 @@ export default function GrantFunded({  election, beneficiary, votes }: IGrantFun
       </div>
       <div>
         <p className="text-lg text-gray-700 font-bold">Funded</p>
-        <p className="text-gray-700 text-base">{votes || 0} votes</p>
+        <p className="text-gray-700 text-base">{beneficiary?.totalVotes || 0} votes</p>
       </div>
     </span>
   );
