@@ -139,6 +139,8 @@ module.exports = {
         (process.env.BENEFICIARY_PRIVATE_KEYS &&
           process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
           []
+      ).concat(
+        process.env.VOTER_PRIVATE_KEY && [process.env.VOTER_PRIVATE_KEY] || []
       ),
     },
   },
