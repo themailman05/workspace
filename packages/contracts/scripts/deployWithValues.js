@@ -188,7 +188,7 @@ async function deploy(ethers) {
     await bluebird.map(voters, async (voter) => {
       return this.staking
         .connect(voter)
-        .stake(utils.parseEther("1000"), 604800 * 52 * 4, { gasLimit: 100000 });
+        .stake(utils.parseEther("1000"), 604800 * 52 * 4, { gasLimit: 2000000 });
     }, { concurrency: 1 });
   };
 
