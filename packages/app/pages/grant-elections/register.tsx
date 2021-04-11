@@ -6,16 +6,18 @@ import { connectors } from 'containers/Web3/connectors';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useContext } from 'react';
-import SingleActionModal, {
-} from 'components/Modal/SingleActionModal';
+import SingleActionModal, { DefaultSingleActionModalProps } from 'components/Modal/SingleActionModal';
 import Icon from 'components/Icon';
 import { ElectionsContext } from '../../app/elections';
+import { store } from 'app/store';
+import { setSingleActionModal } from 'app/actions';
 
 export default function Register(): JSX.Element {
   const context = useWeb3React<Web3Provider>();
   const { library, account, activate } = context;
   const { contracts } = useContext(ContractsContext);
   const { elections } = useContext(ElectionsContext);
+  const { dispatch } = useContext(store);
   const [wait, setWait] = useState<boolean>(false);
   const [registerStatus, setRegisterStatus] = useState<
     'success' | 'error' | 'none'
@@ -26,14 +28,41 @@ export default function Register(): JSX.Element {
     false,
   ]);
 
-  async function registerForElection(grantTerm: number): Promise<void> {
+
+  function registerForElection(grant_term) {
+    // Register for selected election
     setWait(true);
-    const connected = await contracts.election.connect(library.getSigner());
-    await connected
-      .registerForElection(account, grantTerm)
-      .then((res) => setRegisterStatus('success'))
-      .catch((err) => setRegisterStatus('error'));
-    setWait(false);
+    let connected = contracts.election.connect(library.getSigner());
+    connected
+      .registerForElection(account, grant_term)
+      .then((res) => {
+        dispatch(setSingleActionModal({
+          content: `You have successfully registered for this grant election`,
+          title: 'Success!',
+          visible: true,
+          type: 'info',
+          onConfirm: {
+            label: 'Done',
+            onClick: () =>
+              dispatch(setSingleActionModal({ ...DefaultSingleActionModalProps })),
+          },
+        }));
+        setWait(false);
+      })
+      .catch((err) => {
+        dispatch(setSingleActionModal({
+          content: `There was an error registering you for this election: ${err.message}`,
+          title: 'Error',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Go Back',
+            onClick: () =>
+              dispatch(setSingleActionModal({ ...DefaultSingleActionModalProps })),
+          },
+        }));
+        setWait(false);
+      });
   }
 
   async function checkRegistrationAllowance(): Promise<void> {
@@ -59,8 +88,8 @@ export default function Register(): JSX.Element {
     <div className="w-full h-screen">
       <SingleActionModal
         visible={registerStatus === 'success'}
-        title={'Success'}
-        content={'You are registered for the election.'}
+        title="=Success"
+        content="You are registered for the election."
         type={'info'}
         onConfirm={{ label: 'ok', onClick: () => setRegisterStatus('none') }}
       />
@@ -133,6 +162,7 @@ export default function Register(): JSX.Element {
                               <button
                                 className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50 disabled:opacity-50"
                                 aria-describedby="tier-scale"
+                                onClick={() => registerForElection(0)}
                                 disabled={
                                   elections[0].electionState > 0 ||
                                   !allowedToRegister[0] ||
@@ -195,7 +225,7 @@ export default function Register(): JSX.Element {
                                 className="block w-full text-center rounded-lg border border-transparent bg-indigo-600 px-6 py-4 text-xl leading-6 font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
                                 aria-describedby="tier-growth"
                                 disabled={
-                                  elections[2].electionState > 0 ||
+                                  elections[2].electionState !== 0 ||
                                   !allowedToRegister[2] ||
                                   wait
                                 }
@@ -260,6 +290,7 @@ export default function Register(): JSX.Element {
                               <button
                                 className="block w-full text-center rounded-lg border border-transparent bg-white px-6 py-3 text-base font-medium text-indigo-600 hover:bg-gray-50 disabled:opacity-50"
                                 aria-describedby="tier-scale"
+                                onClick={() => registerForElection(1)}
                                 disabled={
                                   elections[1].electionState > 0 ||
                                   !allowedToRegister[1] ||

@@ -74,9 +74,9 @@ export default function BeneficiaryCard({
               assignVotes={assignVotes}
               voiceCredits={voiceCredits}
             />
-          ) : (
-            <GrantFunded votes={beneficiary?.totalVotes} />
-          )}
+          ) : (election.electionStateStringShort == "finalized") ? (
+            <GrantFunded beneficiary={beneficiary} election={election} />
+          ) : ''}
         </div>
       </div>
     </div>

@@ -7,7 +7,6 @@ import {
 } from 'pages/grant-elections/[type]';
 import { Dispatch } from 'react';
 import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
-import { GrantElectionAdapter } from '@popcorn/utils/Contracts';
 import createElectionName from 'utils/createElectionName';
 
 interface IElectionSection {
@@ -24,7 +23,6 @@ interface IElectionSection {
   setGrantRoundFilter: Dispatch<IGrantRoundFilter>;
   scrollToMe: boolean;
   userIsEligibleBeneficiary?: boolean;
-  registerForElection: (grant_term: number) => void;
   alreadyRegistered: boolean;
 }
 
@@ -39,7 +37,6 @@ export default function ElectionSection({
   scrollToGrantRound,
   scrollToMe,
   userIsEligibleBeneficiary,
-  registerForElection,
   alreadyRegistered,
 }: IElectionSection): JSX.Element {
   const electionOpenForVoting = election.electionState == 1;
@@ -51,7 +48,7 @@ export default function ElectionSection({
             <div className="h-8 w-8 mr-2 flex items-center justify-center flex-shrink-0">
               { electionOpenForVoting ? '🟢' : '🟡'}
             </div>
-            <h2 className="text-3xl font-extrabold text-white">
+            <h2 className="text-5xl font-extralight text-white">
               🏆 {createElectionName(election)}
             </h2>
           </span>
@@ -70,7 +67,6 @@ export default function ElectionSection({
             scrollToGrantRound={scrollToGrantRound}
             alreadyRegistered={alreadyRegistered}
             userIsEligibleBeneficiary={userIsEligibleBeneficiary}
-            registerForElection={registerForElection}
           />
         </div>
         <div className="w-9/12 mb-16">

@@ -1,13 +1,10 @@
-import {
-  ElectionMetadata,
-  GrantElectionAdapter,
-} from '@popcorn/utils/Contracts';
-import calculateRemainingVotes from 'utils/calculateRemainingVotes';
+import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import ActionButton from './ActionButton';
 import VoteCounter from './VoteCounter';
 import { PendingVotes } from '../../pages/grant-elections/[type]';
 import { RegisterHolder } from '@popcorn/ui/components/grantPage';
 import { Check } from 'react-feather';
+import Link from 'next/link';
 
 interface ISideBar {
   election?: ElectionMetadata;
@@ -19,7 +16,6 @@ interface ISideBar {
   scrollToGrantRound: (grantId: number) => void;
   userIsEligibleBeneficiary: boolean;
   alreadyRegistered: boolean;
-  registerForElection: (grant_term: number) => void;
 }
 
 export default function Sidebar({
@@ -29,42 +25,124 @@ export default function Sidebar({
   isWalletConnected,
   connectWallet,
   submitVotes,
-  scrollToGrantRound,
-  userIsEligibleBeneficiary,
   alreadyRegistered,
-  registerForElection,
 }: ISideBar): JSX.Element {
-  function returnButtons() {
-    if (alreadyRegistered) {
-      return (
-        <span className="flex flex-row items-center justify-center ml-10">
-          <p className="text-lg text-black-700 font-bold mr-4 ml-15 gray-color">
-            Registered
-          </p>
-          <div className="h-10 w-10 mr-2 rounded-full border-4 gray-color flex items-center justify-center flex-shrink-0">
-            <Check size={32} className="gray-color" />
-          </div>
-        </span>
-      );
-    }
-    if (userIsEligibleBeneficiary) {
-      return (
-        <RegisterHolder>
-          <button
-            onClick={() => registerForElection(election.electionTerm)} //
-            className="button button-secondary w-full mt-4"
-          >
-            Register for election
-          </button>
-        </RegisterHolder>
-      );
-    }
-    return;
-  }
-
   return (
     <div className="w-9/12 mx-auto">
-      {election && GrantElectionAdapter().isActive(election) && (
+      {election && 'registration' == election.electionStateStringShort && (
+        <>
+          <figure className="bg-white rounded-xl p-6 mb-4">
+            <div className="space-y-4">
+              <blockquote>
+                <p className="text-lg font-semibold pb-2">🍿</p>
+                <p className="text-md">
+                  This grant is currently open for registration.{' '}
+                </p>
+              </blockquote>
+              <figcaption className="text-sm">
+                <div>
+                  To register, interested organizations must be approved by
+                  token holders.
+                </div>
+              </figcaption>
+            </div>
+          </figure>
+          <span className={`${
+              alreadyRegistered ? 'hidden' : ''
+            }`}
+          >
+          <Link href={'/grant-elections/register'} passHref>
+              <a className="button button-secondary w-full mt-4">
+                Register for Election
+              </a>
+            </Link>
+          </span>
+
+          <span
+            className={`flex flex-row items-center pt-8 ${
+              alreadyRegistered ? '' : 'hidden'
+            }`}
+          >
+            <p className="text-lg text-black-700 font-bold gray-color">
+              You are registered for this election
+            </p>
+            <div className="h-10 w-10 mr-2 rounded-full border-4 gray-color flex items-center justify-center flex-shrink-0">
+              <Check size={32} className="gray-color" />
+            </div>
+          </span>
+        </>
+      )}
+      {election && 'voting' == election.electionStateStringShort && (
+        <figure className="bg-white rounded-xl p-6 mb-8">
+          <div className="space-y-4">
+            <blockquote>
+              <p className="text-lg font-semibold">🚀</p>
+              <p className="text-md">Grant elections are currently active! </p>
+            </blockquote>
+            <figcaption className="text-sm">
+              <div>
+                Vote for your favorite organizations to receive funding!
+              </div>
+            </figcaption>
+          </div>
+        </figure>
+      )}
+      {election && ['closed'].includes(election.electionStateStringShort) && (
+        <figure className="bg-white rounded-xl p-6 mb-8">
+          <div className="space-y-4">
+            <blockquote>
+              <p className="text-lg font-semibold pb-2">
+                <img
+                  src="/images/popcorn_v1_light_bg.png"
+                  width="30"
+                  className="inline-block"
+                />{' '}
+                +{' '}
+                <img
+                  className="h-12 inline-block"
+                  src="/images/partners/chainlink.svg"
+                  alt="Chainlink"
+                  width="85"
+                />{' '}
+              </p>
+              <p className="text-md">
+                This grant election is {election.electionStateStringShort}.{' '}
+              </p>
+            </blockquote>
+            <figcaption className="text-sm">
+              <div>
+                Sit tight, winners will be announced soon using your votes and
+                Chainlink VRF!
+              </div>
+            </figcaption>{' '}
+          </div>
+        </figure>
+      )}
+      {election && ['finalized'].includes(election.electionStateStringShort) && (
+        <figure className="bg-white rounded-xl p-6 mb-8">
+          <div className="space-y-4">
+            <blockquote>
+              <p className="text-lg font-semibold">🏆</p>
+              <p className="text-md">
+                This grant election is {election.electionStateStringShort}.{' '}
+              </p>
+            </blockquote>
+            <figcaption className="text-sm">
+              <div>
+                The winners have been awarded using your votes and Chainlink
+                VRF.
+                <img
+                  className="h-12"
+                  src="/images/partners/chainlink.svg"
+                  alt="Chainlink"
+                  width="100"
+                />
+              </div>
+            </figcaption>
+          </div>
+        </figure>
+      )}
+      {election && 'voting' == election.electionStateStringShort && (
         <>
           <VoteCounter
             election={election}
@@ -79,7 +157,6 @@ export default function Sidebar({
             connectWallet={connectWallet}
             submitVotes={submitVotes}
           />
-          {returnButtons()}
         </>
       )}
       <ul className="mt-4">

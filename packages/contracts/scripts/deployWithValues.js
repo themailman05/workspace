@@ -39,7 +39,7 @@ async function deploy(ethers) {
         this.mockPop.address
       )
     ).deployed();
-    
+
     this.randomNumberConsumer = await (
       await (await ethers.getContractFactory("RandomNumberConsumer")).deploy(
         process.env.ADDR_CHAINLINK_VRF_COORDINATOR,
@@ -79,7 +79,8 @@ async function deploy(ethers) {
       async (beneficiary) => {
         return this.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
-          ethers.utils.formatBytes32String("1234")
+          ethers.utils.formatBytes32String("1234"),
+          {gasLimit: 3000000}
         );
       },
       { concurrency: 1 }
@@ -141,7 +142,7 @@ async function deploy(ethers) {
         return this.grantElections.registerForElection(
           beneficiary.address,
           grantTerm,
-          {gasLimit: 150000}
+          {gasLimit: 3000000}
         );
       },
       { concurrency: 1 }

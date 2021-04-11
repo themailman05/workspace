@@ -7,20 +7,13 @@ import { connectors } from '../../containers/Web3/connectors';
 import ElectionSection from 'containers/GrantElections/ElectionSection';
 import NavBar from '../../containers/NavBar/NavBar';
 import { ContractsContext } from '../../app/contracts';
-import {
-  GrantElectionAdapter,
-  ElectionTerm,
-} from '@popcorn/utils/Contracts';
+import { GrantElectionAdapter, ElectionTerm } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
 import capitalize from '@popcorn/utils/capitalize';
 import { ElectionTermIntToName } from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
 import { ElectionsContext } from '../../app/elections';
-import DualActionModal, {
-  DefaultDualActionModalProps,
-} from 'components/Modal/DualActionModal';
-import SingleActionModal, {
-  DefaultSingleActionModalProps,
-} from 'components/Modal/SingleActionModal';
+import { store } from 'app/store';
+import { setDualActionModal, setSingleActionModal } from '../../app/actions';
 
 export interface IGrantRoundFilter {
   active: boolean;
@@ -87,6 +80,8 @@ export default function AllGrants() {
   const { library, account, activate } = context;
   const { contracts } = useContext(ContractsContext);
   const { elections } = useContext(ElectionsContext);
+  const { dispatch } = useContext(store);
+
   const [pendingVotes, setPendingVotes] = useState<PendingVotes>(
     defaultPendingVotes,
   );
@@ -145,7 +140,7 @@ export default function AllGrants() {
           onConfirm: {
             label: 'Done',
             onClick: () =>
-              setSingleActionModal({ ...DefaultSingleActionModalProps }),
+              setSingleActionModal(false),
           },
         });
         let newElectionSignedUpForArray = electionsSignedUpFor;
@@ -161,24 +156,14 @@ export default function AllGrants() {
           onConfirm: {
             label: 'Go Back',
             onClick: () =>
-              setSingleActionModal({ ...DefaultSingleActionModalProps }),
+              setSingleActionModal(false),
           },
         });
       });
   }
   const [selectedGrantTerms, setSelectedGrantTerms] = useState<number[]>([]);
 
-  const DefaultVoteConfirmationModal = {
-    ...DefaultDualActionModalProps,
-    grantTerm: null,
-  };
-  const [voteConfirmationModal, setVoteConfirmationModal] = useState(
-    DefaultVoteConfirmationModal,
-  );
 
-  const [singleActionModal, setSingleActionModal] = useState(
-    DefaultSingleActionModalProps,
-  );
 
   useEffect(() => {
     if (router?.query?.type) {
@@ -187,7 +172,6 @@ export default function AllGrants() {
       );
     }
   }, [router]);
-
 
   const getVoiceCredits = async (account) => {
     if (!account) return;
@@ -261,11 +245,13 @@ export default function AllGrants() {
   }
 
   const submitVotes = async (grantTerm: ElectionTerm) => {
-    setVoteConfirmationModal({
-      ...voteConfirmationModal,
-      visible: true,
-      progress: true,
-    });
+    dispatch(
+      setDualActionModal({
+        visible: true,
+        progress: true,
+      }),
+    );
+
     const txArgs = Object.keys(pendingVotes[grantTerm].votes).reduce<
       [string[], BigNumber[], number]
     >(
@@ -284,69 +270,61 @@ export default function AllGrants() {
         .connect(library.getSigner())
         .vote(txArgs[0], txArgs[1], txArgs[2]);
 
-      setVoteConfirmationModal({ ...voteConfirmationModal, visible: false });
+      dispatch(setDualActionModal(false));
+      dispatch(setSingleActionModal({
+        title: 'Success!',
+        content: 'You have successfully voted in this election. Thank you!',
+        visible: true,
+        onConfirm: {
+          label: 'Close',
+          onClick: () => { dispatch(setSingleActionModal(false))}
+        }
+      }))
       // todo: set succesful tx notification
       // setup listener for confirmation
     } catch (err) {
-      setVoteConfirmationModal({
-        ...DefaultVoteConfirmationModal,
-        grantTerm,
-      });
-      setSingleActionModal({
-        content: `There was an error processing this transaction: ${err.message}`,
-        title: 'Transaction Failed',
-        visible: true,
-        type: 'error',
-        onConfirm: {
-          label: 'Go Back',
-          onClick: () =>
-            setSingleActionModal({ ...DefaultSingleActionModalProps }),
-        },
-      });
+      dispatch(setDualActionModal(false));
+      dispatch(
+        setSingleActionModal({
+          content: `There was an error processing this transaction: ${err.message}`,
+          title: 'Transaction Failed',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Close',
+            onClick: () =>
+              dispatch(
+                setSingleActionModal(false),
+              ),
+          },
+        }),
+      );
     }
   };
 
   return (
-    
     <div className="w-full bg-gray-900 pb-16">
       <NavBar />
       <div className="bg-indigo-200 bg-opacity-100 pt-20 pb-20">
-            <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
-              <div className="lg:grid lg:grid-cols-2 lg:gap-8">
-                <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
-                Popcorn's profits fund social and environmental initiatives. 
-              
-      </h2>
-  
-                <div className="flow-root self-center mt-8 lg:mt-0">
-                  <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
-                    <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
-                    <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
-                Your vote helps decide which get funded.
-              
-                    </h2>
-                    
-                    </div>
-                  </div>
+        <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-8">
+            <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
+              Popcorn's profits fund social and environmental initiatives.
+            </h2>
+
+            <div className="flow-root self-center mt-8 lg:mt-0">
+              <div className="-mt-4 -ml-8 flex flex-wrap justify-between lg:-ml-4">
+                <div className="mt-4 ml-8 flex flex-grow flex-shrink-0 justify-center lg:flex-grow-0 lg:ml-4">
+                  <h2 className="max-w-md mx-auto text-3xl font-extrabold text-indigo-900 text-center lg:max-w-xl lg:text-left">
+                    Your vote helps decide which get funded.
+                  </h2>
                 </div>
               </div>
             </div>
           </div>
-      <DualActionModal
-        visible={voteConfirmationModal.visible}
-        title={voteConfirmationModal.title}
-        content={voteConfirmationModal.content}
-        progress={voteConfirmationModal.progress}
-        onDismiss={voteConfirmationModal.onDismiss}
-        onConfirm={voteConfirmationModal.onConfirm}
-      />
-      <SingleActionModal
-        visible={singleActionModal.visible}
-        title={singleActionModal.title}
-        content={singleActionModal.content}
-        type={singleActionModal.type}
-        onConfirm={singleActionModal.onConfirm}
-      />
+        </div>
+      </div>
+
       <div className="w-10/12 mx-auto mt-8">
         {[...elections]
           .filter(
@@ -356,14 +334,17 @@ export default function AllGrants() {
               (!GrantElectionAdapter().isActive(election) &&
                 grantRoundFilter.closed),
           )
+          .filter((election) =>
+            selectedGrantTerms.includes(election.electionTerm),
+          )
           .sort(
             (election1, election2) =>
-              Number(election2.startTime) - Number(election1.startTime),
+              Number(election2.startTime) + Number(election1.startTime),
           )
           .map((election) => (
             <ElectionSection
-              id={election?.electionTerm}
-              key={election?.electionTerm}
+              id={election.electionTerm}
+              key={election.electionTerm}
               pendingVotes={pendingVotes}
               election={election}
               voiceCredits={voiceCredits}
@@ -372,14 +353,11 @@ export default function AllGrants() {
               assignVotes={assignVotes}
               connectWallet={connectWallet}
               submitVotes={(grantTerm) => {
-                setVoteConfirmationModal({
-                  grantTerm,
-                  progress: false,
+                dispatch(setDualActionModal({
                   content:
                     'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
                      Confirm to continue.',
                   title: 'Confirm Vote',
-                  visible: true,
                   onConfirm: {
                     label: 'Confirm Vote',
                     onClick: () => {
@@ -389,18 +367,14 @@ export default function AllGrants() {
                   onDismiss: {
                     label: 'Cancel',
                     onClick: () =>
-                      setVoteConfirmationModal({
-                        ...DefaultVoteConfirmationModal,
-                        grantTerm,
-                      }),
+                    setDualActionModal(false),
                   },
-                });
+                }));
               }}
               scrollToGrantRound={scrollToGrantRound}
               setGrantRoundFilter={setGrantRoundFilter}
               scrollToMe={election.electionTerm === activeGrantRound}
               userIsEligibleBeneficiary={beneficiaryExists}
-              registerForElection={registerForElection}
               alreadyRegistered={electionsSignedUpFor[election.electionTerm]}
             />
           ))}
