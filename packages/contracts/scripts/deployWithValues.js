@@ -283,12 +283,10 @@ async function deploy(ethers) {
     console.log("initializing yearly election ...");
     await this.grantElections.initialize(GrantTerm.Year);
     await new Promise(r => setTimeout(r, 20000));
-    console.log("registerBeneficiariesForElection in ...");
     await registerBeneficiariesForElection(
       GrantTerm.Year,
       this.bennies.slice(14, 18)
     );
-    console.log("registerBeneficiariesForElection out ...");
     await displayElectionMetadata(GrantTerm.Year);
   };
 

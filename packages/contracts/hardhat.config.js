@@ -110,7 +110,21 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(term, {gasLimit: 3000000});
+    await GrantElections.finalize(term, {gasLimit: 9500000});
+  });
+
+  task("random", "gets a random number")
+  .addParam("seed", "the seed")
+  .setAction(async (args, hre) => {
+    const [signer] = await ethers.getSigners();
+    const { seed } = args;
+    const RandomNumberConsumer = new ethers.Contract(
+      process.env.ADDR_RANDOM_NUMBER,
+      require("./artifacts/contracts/RandomNumberConsumer.sol/RandomNumberConsumer.json").abi,
+      signer
+    );
+    await RandomNumberConsumer.getRandomNumber(Number(seed));
+    console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
 module.exports = {
