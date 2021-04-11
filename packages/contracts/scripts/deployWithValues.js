@@ -76,7 +76,8 @@ async function deploy(ethers) {
       async (beneficiary) => {
         return this.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
-          ethers.utils.formatBytes32String("1234")
+          ethers.utils.formatBytes32String("1234"),
+          {gasLimit: 3000000}
         );
       },
       { concurrency: 1 }
@@ -138,7 +139,7 @@ async function deploy(ethers) {
         return this.grantElections.registerForElection(
           beneficiary.address,
           grantTerm,
-          {gasLimit: 150000}
+          {gasLimit: 3000000}
         );
       },
       { concurrency: 1 }
