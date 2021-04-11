@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./IGrantRegistry.sol";
+import "./IRandomNumberConsumer.sol";
 
 contract GrantElections {
   using SafeMath for uint256;
@@ -20,7 +22,7 @@ contract GrantElections {
   }
 
   enum ElectionTerm {Monthly, Quarterly, Yearly}
-  enum ElectionState {Registration, Voting, Closed}
+  enum ElectionState {Registration, Voting, Closed, Finalized}
 
   uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
@@ -58,6 +60,8 @@ contract GrantElections {
 
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
+  IGrantRegistry grantRegistry;
+  IRandomNumberConsumer randomNumberConsumer;
 
   modifier onlyGovernance {
     require(msg.sender == governance, "!governance");
@@ -71,6 +75,11 @@ contract GrantElections {
   event BeneficiaryRegistered(address _beneficiary, ElectionTerm _term);
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
+  event GrantCreated(
+    ElectionTerm _term,
+    address[] _beneficiaries,
+    uint256[] _shares
+  );
 
   event GovernanceUpdated(
     address indexed _oldAddress,
@@ -80,11 +89,15 @@ contract GrantElections {
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
+    IGrantRegistry _grantRegistry,
+    IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
   ) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
+    grantRegistry = _grantRegistry;
+    randomNumberConsumer = _randomNumberConsumer;
     POP = _pop;
     governance = _governance;
     _setDefaults();
@@ -191,7 +204,7 @@ contract GrantElections {
   }
 
   function getCurrentRanking(ElectionTerm _term)
-    external
+    public
     view
     returns (address[] memory)
   {
@@ -385,6 +398,43 @@ contract GrantElections {
     }
   }
 
+  function finalize(ElectionTerm _electionTerm) public {
+    Election storage _election = elections[uint8(_electionTerm)];
+    require(
+      _election.electionState != ElectionState.Finalized,
+      "election already finalized"
+    );
+    require(
+      _election.electionState == ElectionState.Closed,
+      "election not yet closed"
+    );
+    address[] memory _ranking = getCurrentRanking(_electionTerm);
+    address[] memory _awardees =
+      new address[](_election.electionConfiguration.awardees);
+    uint256[] memory _shares =
+      new uint256[](_election.electionConfiguration.awardees);
+
+    if (
+      _ranking.length > 1 && _election.electionConfiguration.useChainLinkVRF
+    ) {
+      randomNumberConsumer.getRandomNumber(
+        uint256(keccak256(abi.encode(block.timestamp, blockhash(block.number))))
+      );
+      uint256 _randomNumber = randomNumberConsumer.randomResult();
+
+      _ranking = shuffle(_ranking, _randomNumber);
+    }
+
+    for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
+      _shares[i] = 100e18 / _election.electionConfiguration.awardees;
+      _awardees[i] = _ranking[i];
+    }
+
+    grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
+    emit GrantCreated(_electionTerm, _awardees, _shares);
+    _election.electionState = ElectionState.Finalized;
+  }
+
   function _setDefaults() internal {
     ElectionConfiguration storage monthlyDefaults =
       electionDefaults[uint8(ElectionTerm.Monthly)];
@@ -440,6 +490,19 @@ contract GrantElections {
     _defaults.votingPeriod = _votingPeriod;
     _defaults.registrationPeriod = _registrationPeriod;
     _defaults.cooldownPeriod = _cooldownPeriod;
+  }
+
+  // Shuffle a list of address based on a randonNumber Fisher-Yates algorithm
+  // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
+  function shuffle(address[] memory _addresses, uint256 _randomNumber)
+    public
+    returns (address[] memory)
+  {
+    for (uint256 i = 0; i < _addresses.length; i++) {
+      uint256 n = i + (_randomNumber % (_addresses.length - i));
+      (_addresses[n], _addresses[i]) = (_addresses[i], _addresses[n]);
+    }
+    return _addresses;
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {

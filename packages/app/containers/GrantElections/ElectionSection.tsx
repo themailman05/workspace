@@ -48,7 +48,7 @@ export default function ElectionSection({
             <div className="h-8 w-8 mr-2 flex items-center justify-center flex-shrink-0">
               { electionOpenForVoting ? '🟢' : '🟡'}
             </div>
-            <h2 className="text-3xl font-extrabold text-white">
+            <h2 className="text-5xl font-extralight text-white">
               🏆 {createElectionName(election)}
             </h2>
           </span>

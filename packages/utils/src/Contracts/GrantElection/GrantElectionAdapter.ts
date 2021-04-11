@@ -9,6 +9,7 @@ export enum ElectionState {
   Registration,
   Voting,
   Closed,
+  Finalized,
 }
 interface Vote {
   voter: string;
@@ -22,12 +23,23 @@ export const ElectionTermIntToName = {
   2: 'yearly',
 };
 
+type ElectionStateString = 'registration' | 'voting' | 'closed' | 'finalized';
+interface ElectionStateMap {
+  [key: number]: ElectionStateString;
+}
+const ElectionStateIntToName: ElectionStateMap = {
+  0: 'registration',
+  1: 'voting',
+  2: 'closed',
+  3: 'finalized',
+};
+
 export interface ElectionMetadata {
   votes: Vote[];
   electionTerm: ElectionTerm;
   registeredBeneficiaries: string[];
   electionState: ElectionState;
-  electionStateStringShort: string;
+  electionStateStringShort: ElectionStateString;
   electionStateStringLong: string;
   configuration: {
     awardees: number;
@@ -62,26 +74,17 @@ export const GrantElectionAdapter = function (contract?) {
       };
     },
 
-    getElectionStateStringShort: function (
-      electionState: ElectionState,
-    ): 'voting' | 'registration' | 'closed' | 'finalized' {
-      return ['voting', 'registration', 'closed', 'finalized'][
-        electionState
-      ] as ElectionPeriod;
-    },
-
-    getElectionStateStringLong: function(grantTerm): string {
-      const period = this.getElectionStateStringShort(grantTerm) as ElectionPeriod
-      switch(period) {
-        case "registration":
-          return "open for registration";
-        case "voting":
-          return "open for voting";
-        case "closed":
-        case "finalized":
-          return "closed";
+    getElectionStateStringLong: function (state: ElectionState): string {
+      switch (ElectionStateIntToName[state]) {
+        case 'registration':
+          return 'open for registration';
+        case 'voting':
+          return 'open for voting';
+        case 'closed':
+        case 'finalized':
+          return 'closed';
         default:
-          return "";
+          return '';
       }
     },
 
@@ -129,8 +132,11 @@ export const GrantElectionAdapter = function (contract?) {
         },
         {},
       ) as ElectionMetadata;
-      metadata.electionStateStringShort = this.getElectionStateStringShort(metadata.electionState);
-      metadata.electionStateStringLong = this.getElectionStateStringLong(metadata.electionState);
+      metadata.electionStateStringShort =
+        ElectionStateIntToName[metadata.electionState];
+      metadata.electionStateStringLong = this.getElectionStateStringLong(
+        metadata.electionState,
+      );
       return metadata;
     },
     isActive: function (election: ElectionMetadata): boolean {
