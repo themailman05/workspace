@@ -408,15 +408,16 @@ contract GrantElections {
       _election.electionState == ElectionState.Closed,
       "election not yet closed"
     );
+
     address[] memory _ranking = getCurrentRanking(_electionTerm);
+    require(_ranking.length > 1, "no elegible awardees");
+
     address[] memory _awardees =
       new address[](_election.electionConfiguration.awardees);
     uint256[] memory _shares =
       new uint256[](_election.electionConfiguration.awardees);
 
-    if (
-      _ranking.length > 1 && _election.electionConfiguration.useChainLinkVRF
-    ) {
+    if (_election.electionConfiguration.useChainLinkVRF) {
       randomNumberConsumer.getRandomNumber(
         uint256(keccak256(abi.encode(block.timestamp, blockhash(block.number))))
       );
