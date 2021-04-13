@@ -1,12 +1,10 @@
 const { expect } = require("chai");
 const { waffle } = require("hardhat");
 const { parseEther } = require("ethers/lib/utils");
-const { merklize, makeElement, generateClaims } = require("../scripts/merkle.js");
 const provider = waffle.provider;
 
 describe('Vault', function () {
-  const DepositorInitial = parseEther("100");
-  const UniswapUSDXInitial = parseEther("100000");
+  const DepositorInitial = parseEther("10000");
   let MockERC20
   let depositor, governance, treasury
 
@@ -17,30 +15,30 @@ describe('Vault', function () {
     this.mockDai = await MockERC20.deploy("DAI", "DAI");
     await this.mockDai.mint(depositor.address, DepositorInitial);
 
-    this.mockUSDX = await MockERC20.deploy("USDX", "USDX");
+    this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX");
 
     MockYearnV2Vault = await ethers.getContractFactory("MockYearnV2Vault");
-    this.mockYearnVault = await MockYearnV2Vault.deploy(this.mockUSDX.address);
+    this.mockYearnVault = await MockYearnV2Vault.deploy(this.mockCrvUSDX.address);
+    await this.mockYearnVault.setPricePerShare(parseEther("1.25"));
 
-    MockUniswapRouter = await ethers.getContractFactory("MockUniswapV2Router02");
-    this.mockUniswapRouter = await MockUniswapRouter.deploy();
-    await this.mockUSDX.mint(this.mockUniswapRouter.address, UniswapUSDXInitial);
+    MockCurveDepositZap = await ethers.getContractFactory("MockCurveDepositZap");
+    this.mockCurveDepositZap = await MockCurveDepositZap.deploy(this.mockCrvUSDX.address, this.mockDai.address);
 
     Vault = await ethers.getContractFactory("Vault");
     this.Vault = await Vault.deploy(
       this.mockDai.address,
-      this.mockUSDX.address,
+      this.mockCrvUSDX.address,
       this.mockYearnVault.address,
-      this.mockUniswapRouter.address
+      this.mockCurveDepositZap.address
     );
     await this.Vault.deployed();
   });
 
   it("should be constructed with correct addresses", async function () {
     expect(await this.Vault.dai()).to.equal(this.mockDai.address);
-    expect(await this.Vault.usdx()).to.equal(this.mockUSDX.address);
+    expect(await this.Vault.crvUsdx()).to.equal(this.mockCrvUSDX.address);
     expect(await this.Vault.yearnVault()).to.equal(this.mockYearnVault.address);
-    expect(await this.Vault.uniswapRouter()).to.equal(this.mockUniswapRouter.address);
+    expect(await this.Vault.curveDepositZap()).to.equal(this.mockCurveDepositZap.address);
   });
 
   it("has a token name", async function () {
@@ -57,38 +55,62 @@ describe('Vault', function () {
 
   describe("deposits", async function () {
     xit("accepts DAI deposits", async function () {
-      await this.mockDai.connect(depositor).approve(this.Vault.address, 10);
-      await this.Vault.connect(depositor).deposit(10);
-      expect(await this.mockDai.connect(depositor).balanceOf(this.Vault.address)).to.equal(10);
+      let amount = parseEther("10");
+      await this.mockDai.connect(depositor).approve(this.Vault.address, amount);
+      await this.Vault.connect(depositor).deposit(amount);
+      expect(await this.mockDai.connect(depositor).balanceOf(this.Vault.address)).to.equal(amount);
     });
 
     it("reverts unapproved deposits", async function () {
-      await expect(this.Vault.connect(depositor).deposit(10)).to.be.revertedWith("transfer amount exceeds allowance");
+      let amount = parseEther("10");
+      await expect(this.Vault.connect(depositor).deposit(amount)).to.be.revertedWith("transfer amount exceeds allowance");
     });
 
     it("returns popDAI to depositor", async function () {
-      await this.mockDai.connect(depositor).approve(this.Vault.address, 23);
-      await this.Vault.connect(depositor).deposit(23);
-      expect(await this.Vault.connect(depositor).balanceOf(depositor.address)).to.equal(23);
+      let amount = parseEther("23");
+      await this.mockDai.connect(depositor).approve(this.Vault.address, amount);
+      await this.Vault.connect(depositor).deposit(amount);
+      expect(await this.Vault.connect(depositor).balanceOf(depositor.address)).to.equal(amount);
     });
 
-    it("swaps DAI for USDX", async function () {
-      await this.mockDai.connect(depositor).approve(this.Vault.address, 31);
-      await this.Vault.connect(depositor).deposit(31);
-      expect(await this.mockUSDX.connect(depositor).balanceOf(this.Vault.address)).to.equal(31);
+    xit("deposits DAI to the USDX Curve pool in exchange for crvUSDX", async function () {
+      let amount = parseEther("31");
+      await this.mockDai.connect(depositor).approve(this.Vault.address, amount);
+      await this.Vault.connect(depositor).deposit(amount);
+      expect(await this.mockCrvUSDX.connect(depositor).balanceOf(this.Vault.address)).to.equal(amount);
+    });
+
+    it("deposits crvUSDX to Yearn in exchange for yvUSDX", async function () {
+      let amount = parseEther("20");
+      let shares = amount / parseEther("1.25");
+      await this.mockDai.connect(depositor).approve(this.Vault.address, amount);
+      await this.Vault.connect(depositor).deposit(amount);
+      expect(await this.mockYearnVault.connect(depositor).balanceOf(this.Vault.address)).to.equal(shares);
     });
   });
 
   describe("calculating total assets", async function () {
     it("total assets is DAI balance when Yearn balance is zero", async function () {
-      await this.mockDai.mint(this.Vault.address, 17);
-      expect(await this.Vault.totalAssets()).to.equal(17);
+      let amount = parseEther("17");
+      await this.mockDai.mint(this.Vault.address, amount);
+      expect(await this.Vault.totalAssets()).to.equal(amount);
     });
 
-    xit("total assets is Yearn balance when DAI balance is zero", async function () {
+    it("total assets is Yearn balance when DAI balance is zero", async function () {
+      let amount = parseEther("37");
+      await this.mockDai.connect(depositor).approve(this.Vault.address, amount);
+      await this.Vault.connect(depositor).deposit(amount);
+      expect(await this.Vault.totalAssets()).to.equal(amount);
     });
 
-    xit("total assets is sum of Yearn balance and DAI balance", async function () {
+    it("total assets is sum of Yearn balance and DAI balance", async function () {
+      let daiAmount = parseEther("11");
+      let depositAmount  = parseEther("37");
+      let total = parseEther("48");
+      await this.mockDai.mint(this.Vault.address, daiAmount);
+      await this.mockDai.connect(depositor).approve(this.Vault.address, depositAmount);
+      await this.Vault.connect(depositor).deposit(depositAmount);
+      expect(await this.Vault.totalAssets()).to.equal(total);
     });
   });
 

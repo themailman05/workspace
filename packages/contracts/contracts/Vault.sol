@@ -14,19 +14,13 @@ interface YearnVault is IERC20 {
   function pricePerShare() external view returns (uint256);
 }
 
-interface UniswapRouter {
-  function swapExactTokensForTokens(
-    uint256 amountIn,
-    uint256 amountOutMin,
-    address[] calldata path,
-    address to,
-    uint256 deadline
-  ) external returns (uint[] memory amounts);
+interface CurveDepositZap {
+  function add_liquidity(uint256[4] calldata amounts, uint256 min_mint_amounts) external returns (uint256);
 }
 
 interface DAI is IERC20 {}
 
-interface USDX is IERC20 {}
+interface CrvUSDX is IERC20 {}
 
 contract Vault is ERC20 {
 
@@ -34,20 +28,20 @@ contract Vault is ERC20 {
   using SafeERC20 for IERC20;
 
   DAI public dai;
-  USDX public usdx;
+  CrvUSDX public crvUsdx;
   YearnVault public yearnVault;
-  UniswapRouter public uniswapRouter;
+  CurveDepositZap public curveDepositZap;
 
   constructor(
     DAI dai_,
-    USDX usdx_,
+    CrvUSDX crvUsdx_,
     YearnVault yearnVault_,
-    UniswapRouter uniswapRouter_
+    CurveDepositZap curveDepositZap_
   ) ERC20("Popcorn DAI Vault", "popDAI") {
     dai = dai_;
-    usdx = usdx_;
+    crvUsdx = crvUsdx_;
     yearnVault = yearnVault_;
-    uniswapRouter = uniswapRouter_;
+    curveDepositZap = curveDepositZap_;
   }
 
   function totalAssets() external view returns (uint256) {
@@ -61,24 +55,20 @@ contract Vault is ERC20 {
     _mint(msg.sender, amount);
 
     dai.transferFrom(msg.sender, address(this), amount);
-    dai.approve(address(uniswapRouter), amount);
+    dai.approve(address(curveDepositZap), amount);
 
-    address[] memory path = new address[](2);
-    path[0] = address(dai);
-    path[1] = address(usdx);
+    uint256[4] memory curveDepositAmounts = [
+      0,      // USDX
+      amount, // DAI
+      0,      // USDC
+      0       // USDT
+    ];
+    curveDepositZap.add_liquidity(curveDepositAmounts, 0);
 
-    uniswapRouter.swapExactTokensForTokens(
-      amount,
-      0,
-      path,
-      address(this),
-      block.timestamp + 10 minutes
-    );
-
-    usdx.approve(address(yearnVault), amount);
+    crvUsdx.approve(address(yearnVault), amount);
     yearnVault.deposit(amount);
 
-    return dai.balanceOf(address(this));
+    return yearnVault.balanceOf(address(this));
   }
 
 }
