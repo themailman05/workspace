@@ -2,17 +2,17 @@
 
 pragma solidity >=0.6.0 <0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./MockERC20.sol";
 
-contract MockYearnV2Vault is ERC20 {
+contract MockYearnV2Vault is MockERC20 {
 
-  ERC20 token;
+  MockERC20 token;
   uint256 pricePerShareInToken;
 
   constructor(address token_)
-    ERC20("Mock USDX yVault", "yvUSDX")
+    MockERC20("Mock USDX yVault", "yvUSDX")
   {
-    token = ERC20(token_);
+    token = MockERC20(token_);
   }
 
   function pricePerShare() external view returns (uint256) {
@@ -23,6 +23,13 @@ contract MockYearnV2Vault is ERC20 {
     token.transferFrom(msg.sender, address(this), amount);
     uint256 shares = amount / pricePerShareInToken;
     _mint(msg.sender, shares);
+  }
+
+  function withdraw(uint256 amount) external returns (uint256) {
+    _burn(msg.sender, amount);
+    uint256 tokenAmount = amount * pricePerShareInToken;
+    token.approve(address(this), tokenAmount);
+    token.transferFrom(address(this), msg.sender, tokenAmount);
   }
 
   // Test helpers

@@ -4,16 +4,18 @@ const { parseEther } = require("ethers/lib/utils");
 const provider = waffle.provider;
 
 describe('Vault', function () {
-  const DepositorInitial = parseEther("10000");
+  const DepositorInitial = parseEther("100000");
   let MockERC20
-  let depositor, governance, treasury
+  let depositor, depositor1, depositor2, governance, treasury
 
   beforeEach(async function () {
-    [depositor, governance, treasury] = await ethers.getSigners();
+    [depositor, depositor1, depositor2, governance, treasury] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
     this.mockDai = await MockERC20.deploy("DAI", "DAI");
     await this.mockDai.mint(depositor.address, DepositorInitial);
+    await this.mockDai.mint(depositor1.address, DepositorInitial);
+    await this.mockDai.mint(depositor2.address, DepositorInitial);
 
     this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX");
 
@@ -90,28 +92,103 @@ describe('Vault', function () {
   });
 
   describe("calculating total assets", async function () {
-    it("total assets is DAI balance when Yearn balance is zero", async function () {
-      let amount = parseEther("17");
-      await this.mockDai.mint(this.Vault.address, amount);
-      expect(await this.Vault.totalAssets()).to.equal(amount);
-    });
-
-    it("total assets is Yearn balance when DAI balance is zero", async function () {
-      let amount = parseEther("37");
+    it("total assets is Yearn balance * Yearn price per share", async function () {
+      let amount = parseEther("3700");
       await this.mockDai.connect(depositor).approve(this.Vault.address, amount);
       await this.Vault.connect(depositor).deposit(amount);
       expect(await this.Vault.totalAssets()).to.equal(amount);
     });
+  });
 
-    it("total assets is sum of Yearn balance and DAI balance", async function () {
-      let daiAmount = parseEther("11");
-      let depositAmount  = parseEther("37");
-      let total = parseEther("48");
-      await this.mockDai.mint(this.Vault.address, daiAmount);
+  describe("vault token accounting", async function () {
+    it("depositor earns tokens 1:1 when vault is empty", async function () {
+      let depositAmount  = parseEther("4300");
       await this.mockDai.connect(depositor).approve(this.Vault.address, depositAmount);
       await this.Vault.connect(depositor).deposit(depositAmount);
-      expect(await this.Vault.totalAssets()).to.equal(total);
+      expect(await this.Vault.balanceOf(depositor.address)).to.equal(depositAmount);
     });
+
+    it("depositors earn tokens proportional to contributions", async function () {
+      let deposit1Amount = parseEther("3000");
+      let deposit2Amount = parseEther("7000");
+      let deposit3Amount = parseEther("11000");
+
+      await this.mockDai.connect(depositor1).approve(this.Vault.address, deposit1Amount);
+      await this.Vault.connect(depositor1).deposit(deposit1Amount);
+
+      await this.mockDai.connect(depositor2).approve(this.Vault.address, deposit2Amount);
+      await this.Vault.connect(depositor2).deposit(deposit2Amount);
+      await this.mockDai.connect(depositor2).approve(this.Vault.address, deposit3Amount);
+      await this.Vault.connect(depositor2).deposit(deposit3Amount);
+
+      expect(await this.Vault.balanceOf(depositor1.address)).to.equal(deposit1Amount);
+      expect(await this.Vault.balanceOf(depositor2.address)).to.equal(deposit2Amount.add(deposit3Amount));
+    });
+
+    it("tokens convert 1:1 on withdrawal when Yearn share value is unchanged", async function () {
+      let deposit1Amount = parseEther("3000");
+      let deposit2Amount = parseEther("7000");
+      let deposit3Amount = parseEther("11000");
+
+      await this.mockDai.connect(depositor1).approve(this.Vault.address, deposit1Amount);
+      await this.Vault.connect(depositor1).deposit(deposit1Amount);
+
+      await this.mockDai.connect(depositor2).approve(this.Vault.address, deposit2Amount);
+      await this.Vault.connect(depositor2).deposit(deposit2Amount);
+      await this.mockDai.connect(depositor2).approve(this.Vault.address, deposit3Amount);
+      await this.Vault.connect(depositor2).deposit(deposit3Amount);
+
+      expect(await this.Vault.balanceOf(depositor1.address)).to.equal(deposit1Amount);
+      expect(await this.Vault.balanceOf(depositor2.address)).to.equal(deposit2Amount.add(deposit3Amount));
+
+      let withdrawal1Amount = parseEther("1000");
+      let withdrawal2Amount = parseEther("4000");
+      let withdrawal3Amount = parseEther("12000");
+
+      await this.Vault.connect(depositor1).withdraw(withdrawal1Amount);
+      await this.Vault.connect(depositor2).withdraw(withdrawal2Amount);
+      await this.Vault.connect(depositor2).withdraw(withdrawal3Amount);
+
+      expect(await this.Vault.balanceOf(depositor1.address)).to.equal(parseEther("2000"));
+      expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("98000"));
+
+      expect(await this.Vault.balanceOf(depositor2.address)).to.equal(parseEther("2000"));
+      expect(await this.mockDai.balanceOf(depositor2.address)).to.equal(parseEther("98000"));
+    });
+
+    xit("tokens convert at higher rate  on withdrawal when Yearn share value increases", async function () {
+      let deposit1Amount = parseEther("3000");
+      let deposit2Amount = parseEther("7000");
+      let deposit3Amount = parseEther("11000");
+
+      await this.mockDai.connect(depositor1).approve(this.Vault.address, deposit1Amount);
+      await this.Vault.connect(depositor1).deposit(deposit1Amount);
+
+      await this.mockDai.connect(depositor2).approve(this.Vault.address, deposit2Amount);
+      await this.Vault.connect(depositor2).deposit(deposit2Amount);
+      await this.mockDai.connect(depositor2).approve(this.Vault.address, deposit3Amount);
+      await this.Vault.connect(depositor2).deposit(deposit3Amount);
+
+      expect(await this.Vault.balanceOf(depositor1.address)).to.equal(deposit1Amount);
+      expect(await this.Vault.balanceOf(depositor2.address)).to.equal(deposit2Amount.add(deposit3Amount));
+
+      await this.mockYearnVault.setPricePerShare(parseEther("2.5"));
+
+      let withdrawal1Amount = parseEther("1000");
+      let withdrawal2Amount = parseEther("4000");
+      let withdrawal3Amount = parseEther("12000");
+
+      await this.Vault.connect(depositor1).withdraw(withdrawal1Amount);
+      await this.Vault.connect(depositor2).withdraw(withdrawal2Amount);
+      await this.Vault.connect(depositor2).withdraw(withdrawal3Amount);
+
+      expect(await this.Vault.balanceOf(depositor1.address)).to.equal(parseEther("2000"));
+      expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("98000"));
+
+      expect(await this.Vault.balanceOf(depositor2.address)).to.equal(parseEther("2000"));
+      expect(await this.mockDai.balanceOf(depositor2.address)).to.equal(parseEther("98000"));
+    });
+
   });
 
 });
