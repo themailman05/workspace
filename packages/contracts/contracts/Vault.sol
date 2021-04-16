@@ -49,7 +49,7 @@ contract Vault is ERC20 {
 
   function totalAssets() external view returns (uint256) {
     uint256 yearnBalance = yearnVault.balanceOf(address(this));
-    return yearnVault.pricePerShare() * yearnBalance;
+    return yearnVault.pricePerShare() * yearnBalance / 10 ** 18;
   }
 
   function deposit(uint256 amount) external returns (uint256) {
@@ -76,21 +76,26 @@ contract Vault is ERC20 {
     assert(amount <= this.balanceOf(msg.sender));
 
     uint256 yearnBalance = yearnVault.balanceOf(address(this));
-    console.log("yearnBalance: ", yearnBalance);
-    uint256 share = amount * 1000000 / this.totalSupply();
-    console.log("amount: ", amount);
-    console.log("totalSupply: ", this.totalSupply());
-    console.log("share: ", share);
-    uint256 yvUsdxWithdrawal = yearnBalance * share / 1000000;
-    console.log("yvUsdxWithdrawal: ", yvUsdxWithdrawal);
+    uint256 share = amount * 10 ** 18 / this.totalSupply();
+    uint256 yvUsdxWithdrawal = yearnBalance * share / 10 ** 18;
+
+    //console.log("yvUSDX balance :", yearnBalance);
+    //console.log("popDAI totalSupply: ", this.totalSupply());
+    //console.log("popDAI amount: ", amount);
+    //console.log("share of popDAI supply: ", share);
+    //console.log("yvUSDX withdrawal: ", yvUsdxWithdrawal);
 
     _burn(msg.sender, amount);
 
+    //uint256 crvUsdxBalance = crvUsdx.balanceOf(address(yearnVault));
+    //console.log("crvUSDX balance :", crvUsdxBalance);
     uint256 crvUsdxAmount = yearnVault.withdraw(yvUsdxWithdrawal);
-    console.log("crvUsdxAmount: ", crvUsdxAmount);
-    uint256 daiAmount = curveDepositZap.remove_liquidity_one_coin(crvUsdxAmount, 1, 0);
-    console.log("daiAmount: ", daiAmount);
+    //console.log("crvUSDX withdrawn :", crvUsdxAmount);
+    crvUsdx.approve(address(curveDepositZap), crvUsdxAmount);
 
+    uint256 daiAmount = curveDepositZap.remove_liquidity_one_coin(crvUsdxAmount, 1, 0);
+
+    dai.approve(address(this), daiAmount);
     dai.transferFrom(address(this), msg.sender, daiAmount);
     return daiAmount;
   }
