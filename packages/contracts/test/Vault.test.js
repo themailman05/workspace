@@ -6,10 +6,10 @@ const provider = waffle.provider;
 describe('Vault', function () {
   const DepositorInitial = parseEther("100000");
   let MockERC20
-  let depositor, depositor1, depositor2, depositor3, depositor4, depositor5, governance, treasury
+  let depositor, depositor1, depositor2, depositor3, depositor4, depositor5, rewardsManager
 
   beforeEach(async function () {
-    [depositor, depositor1, depositor2, depositor3, depositor4, depositor5, governance, treasury] = await ethers.getSigners();
+    [depositor, depositor1, depositor2, depositor3, depositor4, depositor5, rewardsManager] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
     this.mockDai = await MockERC20.deploy("DAI", "DAI");
@@ -30,7 +30,8 @@ describe('Vault', function () {
       this.mockDai.address,
       this.mockCrvUSDX.address,
       this.mockYearnVault.address,
-      this.mockCurveDepositZap.address
+      this.mockCurveDepositZap.address,
+      rewardsManager.address
     );
     await this.Vault.deployed();
   });
@@ -40,6 +41,7 @@ describe('Vault', function () {
     expect(await this.Vault.crvUsdx()).to.equal(this.mockCrvUSDX.address);
     expect(await this.Vault.yearnVault()).to.equal(this.mockYearnVault.address);
     expect(await this.Vault.curveDepositZap()).to.equal(this.mockCurveDepositZap.address);
+    expect(await this.Vault.rewardsManager()).to.equal(rewardsManager.address);
   });
 
   it("has a token name", async function () {

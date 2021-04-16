@@ -34,17 +34,22 @@ contract Vault is ERC20 {
   CrvUSDX public crvUsdx;
   YearnVault public yearnVault;
   CurveDepositZap public curveDepositZap;
+  address public rewardsManager;
+
+  uint256 WITHDRAWAL_FEE_BPS = 50;
 
   constructor(
     DAI dai_,
     CrvUSDX crvUsdx_,
     YearnVault yearnVault_,
-    CurveDepositZap curveDepositZap_
+    CurveDepositZap curveDepositZap_,
+    address rewardsManager_
   ) ERC20("Popcorn DAI Vault", "popDAI") {
     dai = dai_;
     crvUsdx = crvUsdx_;
     yearnVault = yearnVault_;
     curveDepositZap = curveDepositZap_;
+    rewardsManager = rewardsManager_;
   }
 
   function totalAssets() external view returns (uint256) {
@@ -79,25 +84,22 @@ contract Vault is ERC20 {
     uint256 share = amount * 10 ** 18 / this.totalSupply();
     uint256 yvUsdxWithdrawal = yearnBalance * share / 10 ** 18;
 
-    //console.log("yvUSDX balance :", yearnBalance);
-    //console.log("popDAI totalSupply: ", this.totalSupply());
-    //console.log("popDAI amount: ", amount);
-    //console.log("share of popDAI supply: ", share);
-    //console.log("yvUSDX withdrawal: ", yvUsdxWithdrawal);
-
     _burn(msg.sender, amount);
 
-    //uint256 crvUsdxBalance = crvUsdx.balanceOf(address(yearnVault));
-    //console.log("crvUSDX balance :", crvUsdxBalance);
     uint256 crvUsdxAmount = yearnVault.withdraw(yvUsdxWithdrawal);
-    //console.log("crvUSDX withdrawn :", crvUsdxAmount);
     crvUsdx.approve(address(curveDepositZap), crvUsdxAmount);
 
     uint256 daiAmount = curveDepositZap.remove_liquidity_one_coin(crvUsdxAmount, 1, 0);
 
-    dai.approve(address(this), daiAmount);
-    dai.transferFrom(address(this), msg.sender, daiAmount);
-    return daiAmount;
+    uint256 withdrawalFee = daiAmount * WITHDRAWAL_FEE_BPS / 10000;
+    uint256 withdrawalAmount = daiAmount - withdrawalFee;
+
+    dai.approve(address(this), withdrawalFee);
+    dai.transferFrom(address(this), rewardsManager, withdrawalFee);
+
+    dai.approve(address(this), withdrawalAmount);
+    dai.transferFrom(address(this), msg.sender, withdrawalAmount);
+    return withdrawalAmount;
   }
 
 }
