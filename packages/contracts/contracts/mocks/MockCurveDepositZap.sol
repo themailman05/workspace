@@ -10,6 +10,9 @@ contract MockCurveDepositZap {
 
   MockERC20 lpToken;
   MockERC20 dai;
+  uint256 withdrawalSlippageBps = 10;
+
+  uint256 BPS_DENOMINATOR = 10000;
 
   constructor(address lpToken_, address dai_)  {
     lpToken = MockERC20(lpToken_);
@@ -32,10 +35,29 @@ contract MockCurveDepositZap {
     uint256 min_underlying_amount
   ) external returns (uint256) {
     lpToken.transferFrom(msg.sender, address(this), amount);
-    dai.approve(address(this), amount);
-    dai.mint(address(this), amount);
-    dai.transferFrom(address(this), msg.sender, amount);
-    return amount;
+
+    uint256 slippage = amount * withdrawalSlippageBps / 10000;
+    uint256 transferOut = amount - slippage;
+
+    dai.approve(address(this), transferOut);
+    dai.mint(address(this), transferOut);
+    dai.transferFrom(address(this), msg.sender, transferOut);
+    return transferOut;
+  }
+
+  function calc_withdraw_one_coin(
+    uint256 amount,
+    int128 i
+  ) external view returns (uint256) {
+    uint256 slippage = amount * withdrawalSlippageBps / 10000;
+    uint256 transferOut = amount - slippage;
+    return transferOut;
+  }
+
+  // Test helpers
+
+  function setWithdrawalSlippage(uint256 withdrawalSlippageBps_) external {
+    withdrawalSlippageBps = withdrawalSlippageBps_;
   }
 
 }

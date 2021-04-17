@@ -16,9 +16,18 @@ interface YearnVault is IERC20 {
   function pricePerShare() external view returns (uint256);
 }
 
+interface CurveAddressProvider {
+  function get_registry() external view returns (address);
+}
+
+interface CurveRegistry {
+  function get_pool_from_lp_token(address lp_token) external view returns (address);
+}
+
 interface CurveDepositZap {
   function add_liquidity(uint256[4] calldata amounts, uint256 min_mint_amounts) external returns (uint256);
   function remove_liquidity_one_coin(uint256 amount, int128 i, uint256 min_underlying_amount) external returns (uint256);
+  function calc_withdraw_one_coin(uint256 amount, int128 i) external view returns (uint256);
 }
 
 interface DAI is IERC20 {}
@@ -37,6 +46,7 @@ contract Pool is ERC20 {
   address public rewardsManager;
 
   uint256 WITHDRAWAL_FEE_BPS = 50;
+  uint256 MANAGEMENT_FEE_BPS = 200;
   uint256 BPS_DENOMINATOR = 10000;
   uint256 YEARN_PRECISION = 10 ** 18;
 
@@ -51,14 +61,13 @@ contract Pool is ERC20 {
 
   constructor(
     DAI dai_,
-    CrvLPToken crvLPToken_,
     YearnVault yearnVault_,
     CurveDepositZap curveDepositZap_,
     address rewardsManager_
   ) ERC20("Popcorn DAI Pool", "popDAI") {
     dai = dai_;
-    crvLPToken = crvLPToken_;
     yearnVault = yearnVault_;
+    crvLPToken = CrvLPToken(yearnVault.token());
     curveDepositZap = curveDepositZap_;
     rewardsManager = rewardsManager_;
     deployedAt = block.number;
@@ -68,8 +77,9 @@ contract Pool is ERC20 {
   }
 
   function totalAssets() external view returns (uint256) {
-    uint256 yearnBalance = yearnVault.balanceOf(address(this));
-    return yearnVault.pricePerShare() * yearnBalance / 10 ** 18;
+    uint256 yvShareBalance = yearnVault.balanceOf(address(this));
+    uint256 crvLPTokenBalance = yearnVault.pricePerShare() * yvShareBalance / YEARN_PRECISION;
+    return curveDepositZap.calc_withdraw_one_coin(crvLPTokenBalance, 1);
   }
 
   function deposit(uint256 amount) external returns (uint256) {
@@ -78,7 +88,7 @@ contract Pool is ERC20 {
 
     dai.transferFrom(msg.sender, address(this), amount);
     uint256 crvLPTokenAmount = _sendToCurve(amount);
-    uint256 yvShareAmount = _sendToYearn(crvLPTokenAmount);
+    _sendToYearn(crvLPTokenAmount);
 
     return this.balanceOf(msg.sender);
   }
@@ -117,11 +127,10 @@ contract Pool is ERC20 {
     return yearnVault.deposit(amount);
   }
 
-
   function _yearnSharesFor(uint256 poolTokenAmount) internal view returns (uint256){
     uint256 yearnBalance = yearnVault.balanceOf(address(this));
-    uint256 share = poolTokenAmount * 10 ** 18 / this.totalSupply();
-    return yearnBalance * share / 10 ** 18;
+    uint256 share = poolTokenAmount * YEARN_PRECISION / this.totalSupply();
+    return yearnBalance * share / YEARN_PRECISION;
   }
 
   function _withdrawFromYearn(uint256 yvShares) internal returns (uint256) {
