@@ -68,16 +68,16 @@ export default function MyApp(props) {
             <CssBaseline />
             <GlobalLinearProgress visible={loading} />
             <Web3ReactProvider getLibrary={getLibrary}>
-              <ContractsWrapper>
-                <ElectionsProvider>
-                  <StateProvider>
+              <StateProvider>
+                <ContractsWrapper>
+                  <ElectionsProvider>
                     <SwapChainModal />
                     <SingleActionModalContainer />
                     <DualActionModalContainer />
                     <Component {...pageProps} />
-                  </StateProvider>
-                </ElectionsProvider>
-              </ContractsWrapper>
+                  </ElectionsProvider>
+                </ContractsWrapper>
+              </StateProvider>
             </Web3ReactProvider>
           </ThemeProvider>
         </MuiThemeProvider>

@@ -1,6 +1,8 @@
 require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
 const { deploy } = require("./scripts/deployWithValues");
+const { deployPrivateSale } = require("./scripts/deployPrivateSale");
+
 const {
   GrantElectionAdapter,
 } = require("./scripts/helpers/GrantElectionAdapter");
@@ -16,6 +18,10 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 
 task("dev:deploy").setAction(async (args) => {
   await deploy(ethers);
+});
+
+task("dev:deployPrivateSale").setAction(async (args, hre) => {
+  await deployPrivateSale(ethers, hre);
 });
 
 task("elections:getElectionMetadata")
@@ -100,7 +106,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     );
   });
 
-  task("elections:finalize", "finalize a grant election")
+task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
@@ -110,10 +116,10 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(Number(term), {gasLimit: 10000000});
+    await GrantElections.finalize(Number(term), { gasLimit: 10000000 });
   });
 
-  task("random", "gets a random number")
+task("random", "gets a random number")
   .addParam("seed", "the seed")
   .setAction(async (args, hre) => {
     const [signer] = await ethers.getSigners();
@@ -127,15 +133,48 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
+task("sale:allow", "Allow address and amount")
+  .addParam("participant", "address to allow")
+  .addParam("amount", "amount to allow for address")
+  .setAction(async (args, hre) => {
+    const [signer] = await ethers.getSigners();
+    const { participant, amount } = args;
+    const privateSale = new ethers.Contract(
+      process.env.ADDR_PRIVATE_SALE,
+      require("./artifacts/contracts/PrivateSale.sol/PrivateSale.json").abi,
+      signer
+    );
+    const result = await privateSale.allowParticipant(
+      participant,
+      parseFixed(amount, 6)
+    );
+    console.log("Done: ", result);
+  });
+
+task("POPUSDC:mint", "Allow address and amount")
+  .addParam("recipient", "address to receive POPUSDC")
+  .addParam("amount", "amount to receive")
+  .setAction(async (args, hre) => {
+    const [signer] = await ethers.getSigners();
+    const { recipient, amount } = args;
+    const mockUSDC = new ethers.Contract(
+      contractaddress,
+      require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
+      signer
+    );
+    const result = await mockUSDC.mint(recipient, parseFixed(amount, 6));
+    console.log("Done: ", result);
+  });
+
 module.exports = {
-  solidity:{
+  solidity: {
     version: "0.7.3",
     settings: {
       optimizer: {
         enabled: true,
-        runs: 200
-      }
-    }
+        runs: 200,
+      },
+    },
   },
   networks: {
     hardhat: {
@@ -143,13 +182,16 @@ module.exports = {
     },
     rinkeby: {
       url: process.env.RPC_URL,
-      accounts: [process.env.PRIVATE_KEY].concat(
-        (process.env.BENEFICIARY_PRIVATE_KEYS &&
-          process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
-          []
-      ).concat(
-        process.env.VOTER_PRIVATE_KEY && [process.env.VOTER_PRIVATE_KEY] || []
-      ),
+      accounts: [process.env.PRIVATE_KEY]
+        .concat(
+          (process.env.BENEFICIARY_PRIVATE_KEYS &&
+            process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
+            []
+        )
+        .concat(
+          (process.env.VOTER_PRIVATE_KEY && [process.env.VOTER_PRIVATE_KEY]) ||
+            []
+        ),
     },
   },
 };

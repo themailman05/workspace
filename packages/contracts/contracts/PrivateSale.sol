@@ -61,7 +61,10 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     emit SupplyChanged(_previousSupply, supply);
   }
 
-  function allowParticipant(address participant_, uint256 allowance_) external onlyOwner {
+  function allowParticipant(address participant_, uint256 allowance_)
+    external
+    onlyOwner
+  {
     require(allowance_ >= minimumPurchase, "Allowance too low");
     participants[participant_] = true;
     allowances[participant_] = allowance_;
