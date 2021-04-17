@@ -23,6 +23,7 @@ contract MockCurveDepositZap {
     dai.transferFrom(msg.sender, address(this), amounts[1]);
     assert(amounts[1]  > min_mint_amounts);
     lpToken.mint(msg.sender, amounts[1]);
+    return amounts[1];
   }
 
   function remove_liquidity_one_coin(

@@ -26,7 +26,7 @@ contract MockYearnV2Vault is MockERC20 {
 
   function deposit(uint256 amount) external returns (uint256) {
     token.transferFrom(msg.sender, address(this), amount);
-    _issueSharesForAmount(msg.sender, amount);
+    return _issueSharesForAmount(msg.sender, amount);
   }
 
   function withdraw(uint256 amount) external returns (uint256) {
@@ -45,6 +45,7 @@ contract MockYearnV2Vault is MockERC20 {
       shares = amount * this.totalSupply() / this.totalAssets();
     }
     _mint(to, shares);
+    return shares;
   }
 
   function _shareValue(uint256 shares) internal view returns (uint256)  {
