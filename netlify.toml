@@ -27,6 +27,7 @@
     ADDR_TREASURY = "0xc8299a954d8B012d77de9CC401155B309Ca36584"
     PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
 
+
 [context.rinkeby.environment]
   # this is a random private key needed for hardhat compile to work
   PRIVATE_KEY = "31c18a7e6aaf93d1548ec9ae1b322c75400cb39627ae82bd1bb761ea79224a7d"
