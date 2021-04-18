@@ -2,7 +2,7 @@
   package = "@netlify/plugin-nextjs"
 
 [context.production]
-  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; mv out ../../"
+  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../;"
   publish = "out"
   [context.production.environment]
     CHAIN_ID = "1"
