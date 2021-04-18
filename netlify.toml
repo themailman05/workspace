@@ -1,6 +1,6 @@
 [context.production]
-
-  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; cd ../../; mv packages/app/* ."
+  base = "packages/app"
+  command = "cd ../contracts; yarn install; hardhat compile; cd ../app; yarn build;"
   publish = "out"
 
   [context.production.environment]
