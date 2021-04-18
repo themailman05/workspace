@@ -1,10 +1,11 @@
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-  package = 'netlify-plugin-contextual-env'
 
+[[plugins]]
+  package = 'netlify-plugin-contextual-env'
   [plugins.inputs]
     mode = 'prefix'
-
+    
 [context.production]
   command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
   publish = "packages/app/out"
