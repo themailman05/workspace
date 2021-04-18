@@ -2,7 +2,7 @@
   package = "@netlify/plugin-nextjs"
 
 [context.production]
-  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; cd ../../ "
+  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
   publish = "packages/app/out"
 
   [context.production.environment]
@@ -20,3 +20,4 @@
     ADDR_TOKEN_MANAGER = "0x50a7c5a2aa566eb8aafc80ffc62e984bfece334f"
     ADDR_TREASURY = "0x6BE8ef6207b4114A52ae5011FE8846dA2Af8F281"
     PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
+
