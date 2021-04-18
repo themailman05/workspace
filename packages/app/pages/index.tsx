@@ -1,17 +1,10 @@
-import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
-import { LandingPage } from '../components/Grants/LandingPage';
+import Purchase from 'containers/Purchase/Purchase';
+import React from 'react';
 
 const IndexPage = () => {
-  const router = useRouter();
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.location.pathname !== "/") {
-      router.replace(window.location.pathname);
-    }
-  }, [router.pathname]);
 
   return (
-    <LandingPage />
+    <Purchase/>
   );
 };
 
