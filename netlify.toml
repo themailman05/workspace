@@ -8,7 +8,7 @@
   package = "@netlify/plugin-nextjs"
 
 [context.production]
-  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build"
+  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../"
   [context.production.environment]
     CHAIN_ID = "1"
     PRIVATE_KEY = "31c18a7e6aaf93d1548ec9ae1b322c75400cb39627ae82bd1bb761ea79224a7d"
