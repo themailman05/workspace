@@ -29,7 +29,7 @@
 
 
 
-[context.rinkeby.environment]
+[context.rinkeby]
   command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
   publish = "packages/app/out"
   [context.rinkeby.environment]
