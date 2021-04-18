@@ -418,9 +418,7 @@ contract GrantElections {
       new uint256[](_election.electionConfiguration.awardees);
 
     if (_election.electionConfiguration.useChainLinkVRF) {
-      randomNumberConsumer.getRandomNumber(
-        uint256(keccak256(abi.encode(block.timestamp, blockhash(block.number))))
-      );
+      randomNumberConsumer.getRandomNumber(block.timestamp);
       uint256 _randomNumber = randomNumberConsumer.randomResult();
 
       _ranking = shuffle(_ranking, _randomNumber);

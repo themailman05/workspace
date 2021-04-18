@@ -10,6 +10,7 @@
     "app:build": "yarn lerna run --scope={@popcorn/utils,@popcorn/app} build",
     "app:start": "yarn lerna run --scope @popcorn/app start",
     "start": "yarn lerna run --scope @popcorn/app start",
+    "postinstall": "patch-package --patch-dir node_modules/@thesatoshicompany/optimism-openzeppelin-compat/patches",
     "pretify": "prettier --write ."
   },
   "dependencies": {
