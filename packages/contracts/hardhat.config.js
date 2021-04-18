@@ -2,6 +2,8 @@ require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
 const { deploy } = require("./scripts/deployWithValues");
 const { deployPrivateSale } = require("./scripts/deployPrivateSale");
+const { parseFixed } =  require('@ethersproject/bignumber');
+
 
 const {
   GrantElectionAdapter,
@@ -158,7 +160,7 @@ task("POPUSDC:mint", "Allow address and amount")
     const [signer] = await ethers.getSigners();
     const { recipient, amount } = args;
     const mockUSDC = new ethers.Contract(
-      contractaddress,
+      process.env.ADDR_USDC,
       require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
       signer
     );
@@ -177,6 +179,11 @@ module.exports = {
     },
   },
   networks: {
+    mainnet: {
+      chainId: 1,
+      url: process.env.RPC_URL,
+      accounts: [process.env.PRIVATE_KEY]
+    },
     hardhat: {
       chainId: +process.env.CHAIN_ID,
     },
