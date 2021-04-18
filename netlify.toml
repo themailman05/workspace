@@ -1,7 +1,6 @@
 [context.production]
-  base = "packages/app"
-  command = "cd ../contracts; yarn install; hardhat compile; cd ../app; yarn build;"
-  publish = "out"
+  command = "cd packages/contracts; yarn hardhat compile; cd ../app; yarn build;"
+  publish = "packages/app/out"
 
   [context.production.environment]
     CHAIN_ID = "1"
