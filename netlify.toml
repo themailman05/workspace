@@ -1,5 +1,8 @@
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
 [context.production]
-  command = "cd packages/contracts; yarn hardhat compile; cd ../app; yarn build; cp .next ../../.next; cp next.config.js ../../"
+  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; cd ../../ "
 
   [context.production.environment]
     CHAIN_ID = "1"
