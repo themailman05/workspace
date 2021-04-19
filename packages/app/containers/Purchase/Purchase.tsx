@@ -182,7 +182,7 @@ const IndexPage = () => {
 
   const onChangePurchaseAmount = (event) => {
     setPurchaseAmount(+event.target.value);
-    setPopToPurchase(Number(event.target.value) / 0.15);
+    setPopToPurchase(Math.floor(Number(event.target.value) / 0.15));
   };
 
   useEffect(() => {
