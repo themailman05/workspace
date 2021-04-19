@@ -2,6 +2,7 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -34,7 +35,7 @@ interface DAI is IERC20 {}
 
 interface CrvLPToken is IERC20 {}
 
-contract Pool is ERC20 {
+contract Pool is ERC20, Ownable {
 
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
@@ -44,20 +45,24 @@ contract Pool is ERC20 {
   YearnVault public yearnVault;
   CurveDepositZap public curveDepositZap;
   address public rewardsManager;
+  address public governance;
 
-  uint256 WITHDRAWAL_FEE_BPS = 50;
-  uint256 MANAGEMENT_FEE_BPS = 200;
   uint256 BPS_DENOMINATOR = 10000;
   uint256 YEARN_PRECISION = 10e17;
 
+  uint256 public withdrawalFee = 50;
+  uint256 public managementFee = 200;
   uint256 public deployedAt;
-  uint256 public lastReport;
-  uint256 public gain;
-  uint256 public loss;
+  uint256 public previousTokenValue = 0;
+  uint256 public previousReport;
+  uint256 public latestReport;
+  uint256 public latestTokenValue = 0;
 
   event Deposit(address from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address to, uint256 amount);
   event WithdrawalFee(address to, uint256 amount);
+  event WithdrawalFeeChanged(uint256 previousBps, uint256 newBps);
+  event ManagementFeeChanged(uint256 previousBps, uint256 newBps);
 
   constructor(
     DAI dai_,
@@ -71,13 +76,16 @@ contract Pool is ERC20 {
     curveDepositZap = curveDepositZap_;
     rewardsManager = rewardsManager_;
     deployedAt = block.number;
-    lastReport = block.number;
-    gain = 0;
-    loss = 0;
+    latestReport = block.number;
+    previousReport = block.number;
   }
 
   function totalValue() external view returns (uint256) {
     return _totalValue();
+  }
+
+  function poolTokenValue() external view returns (uint256) {
+    return this.valueFor(1 * 10 ** this.decimals());
   }
 
   function valueFor(uint256 poolTokens) external view returns (uint256) {
@@ -95,6 +103,7 @@ contract Pool is ERC20 {
     uint256 crvLPTokenAmount = _sendToCurve(amount);
     _sendToYearn(crvLPTokenAmount);
 
+    _reportValue();
     return this.balanceOf(msg.sender);
   }
 
@@ -113,7 +122,35 @@ contract Pool is ERC20 {
     _transferWithdrawalFee(fee);
     _transferWithdrawal(withdrawal);
 
+    _reportValue();
+
     return (withdrawal, fee);
+  }
+
+  function report() external returns (uint256){
+    return _reportValue();
+  }
+
+  function setWithdrawalFee(uint256 withdrawalFee_) public onlyOwner {
+    require(withdrawalFee != withdrawalFee_, "Same withdrawalFee");
+    uint256 _previousWithdrawalFee = withdrawalFee;
+    withdrawalFee = withdrawalFee_;
+    emit WithdrawalFeeChanged(_previousWithdrawalFee, withdrawalFee);
+  }
+
+  function setManagementFee(uint256 managementFee_) public onlyOwner {
+    require(managementFee != managementFee_, "Same managementFee");
+    uint256 _previousManagementFee = managementFee;
+    managementFee = managementFee_;
+    emit ManagementFeeChanged(_previousManagementFee, managementFee);
+  }
+
+  function _reportValue() internal returns (uint256) {
+    previousTokenValue = latestTokenValue;
+    previousReport = latestReport;
+    latestReport = block.number;
+    latestTokenValue = this.poolTokenValue();
+    return latestTokenValue;
   }
 
   function _yearnShareValue(uint256 yvShares) internal view returns (uint256) {
@@ -127,7 +164,7 @@ contract Pool is ERC20 {
   }
 
   function _issuePoolTokens(address to, uint256 amount) internal returns (uint256 poolTokenAmount) {
-    uint256 managementTokens = amount * MANAGEMENT_FEE_BPS / BPS_DENOMINATOR;
+    uint256 managementTokens = amount * managementFee / BPS_DENOMINATOR;
     uint256 depositorTokens = amount - managementTokens;
     _mint(address(this), managementTokens);
     _mint(to, depositorTokens);
@@ -135,7 +172,7 @@ contract Pool is ERC20 {
   }
 
   function _burnPoolTokens(address from, uint256 amount) internal {
-    _burn(msg.sender, amount);
+    _burn(from, amount);
   }
 
   function _sendToCurve(uint256 amount) internal returns (uint256 crvLPTokenAmount) {
@@ -170,12 +207,12 @@ contract Pool is ERC20 {
   }
 
   function _calculateWithdrawalFee(uint256 withdrawalAmount) internal view returns (uint256) {
-    return withdrawalAmount * WITHDRAWAL_FEE_BPS / BPS_DENOMINATOR;
+    return withdrawalAmount * withdrawalFee / BPS_DENOMINATOR;
   }
 
-  function _transferWithdrawalFee(uint256 withdrawalFee) internal {
-    _transferDai(rewardsManager, withdrawalFee);
-    emit WithdrawalFee(rewardsManager, withdrawalFee);
+  function _transferWithdrawalFee(uint256 fee) internal {
+    _transferDai(rewardsManager, fee);
+    emit WithdrawalFee(rewardsManager, fee);
   }
 
   function _transferWithdrawal(uint256 withdrawal) internal {

@@ -6,10 +6,10 @@ const provider = waffle.provider;
 describe('Pool', function () {
   const DepositorInitial = parseEther("100000");
   let MockERC20
-  let depositor, depositor1, depositor2, depositor3, depositor4, depositor5, rewardsManager
+  let owner, depositor, depositor1, depositor2, depositor3, depositor4, depositor5, rewardsManager
 
   beforeEach(async function () {
-    [depositor, depositor1, depositor2, depositor3, depositor4, depositor5, rewardsManager] = await ethers.getSigners();
+    [owner, depositor, depositor1, depositor2, depositor3, depositor4, depositor5, rewardsManager] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
     this.mockDai = await MockERC20.deploy("DAI", "DAI");
@@ -30,15 +30,13 @@ describe('Pool', function () {
       this.mockDai.address,
       this.mockYearnVault.address,
       this.mockCurveDepositZap.address,
-      rewardsManager.address
+      rewardsManager.address,
     );
     await this.Pool.deployed();
   });
 
   it("should be constructed with correct addresses", async function () {
     expect(await this.Pool.dai()).to.equal(this.mockDai.address);
-    expect(await this.Pool.crvLPToken()).to.equal(this.mockCrvUSDX.address);
-    expect(await this.Pool.yearnVault()).to.equal(this.mockYearnVault.address);
     expect(await this.Pool.curveDepositZap()).to.equal(this.mockCurveDepositZap.address);
     expect(await this.Pool.rewardsManager()).to.equal(rewardsManager.address);
   });
@@ -99,15 +97,15 @@ describe('Pool', function () {
     });
   });
 
-  describe("vault token accounting", async function () {
-    it("depositor earns tokens equal to 98% of deposit when vault is empty", async function () {
+  describe("pool token accounting", async function () {
+    it("depositor earns tokens equal to 98% of deposit when pool is empty", async function () {
       let depositAmount  = parseEther("4300");
       await this.mockDai.connect(depositor).approve(this.Pool.address, depositAmount);
       await this.Pool.connect(depositor).deposit(depositAmount);
       expect(await this.Pool.balanceOf(depositor.address)).to.equal(parseEther("4214"));
     });
 
-    it("pool holds tokens equal to 2% of deposit when vault is empty", async function () {
+    it("pool holds tokens equal to 2% of deposit when pool is empty", async function () {
       let depositAmount  = parseEther("4300");
       await this.mockDai.connect(depositor).approve(this.Pool.address, depositAmount);
       await this.Pool.connect(depositor).deposit(depositAmount);
@@ -397,14 +395,47 @@ describe('Pool', function () {
   });
 
   describe("reporting returns", async function () {
-    it("last report is contract creation block for new vault", async function () {
+    it("latest report is contract creation block for new pool", async function () {
       expect(await this.Pool.deployedAt()).to.equal(this.Pool.deployTransaction.blockNumber);
-      expect(await this.Pool.lastReport()).to.equal(this.Pool.deployTransaction.blockNumber);
+      expect(await this.Pool.latestReport()).to.equal(this.Pool.deployTransaction.blockNumber);
     });
 
-    it("empty vault reports no gain or loss", async function () {
-      expect(await this.Pool.gain()).to.equal(0);
-      expect(await this.Pool.loss()).to.equal(0);
+    it("previous report is contract creation block for new pool", async function () {
+      expect(await this.Pool.deployedAt()).to.equal(this.Pool.deployTransaction.blockNumber);
+      expect(await this.Pool.previousReport()).to.equal(this.Pool.deployTransaction.blockNumber);
+    });
+
+    it("latest/previous value is zero for new pool", async function () {
+      expect(await this.Pool.latestTokenValue()).to.equal(0);
+      expect(await this.Pool.previousTokenValue()).to.equal(0);
+    });
+
+    it("reports value on deposit", async function () {
+      let amount = parseEther("10000");
+      await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
+      await this.Pool.connect(depositor).deposit(amount);
+      expect(await this.Pool.previousTokenValue()).to.equal(0);
+      expect(await this.Pool.latestTokenValue()).to.equal(parseUnits("994005000000000000", "wei"));
+    });
+
+    it("reports value on withdrawal", async function () {
+      let amount = parseEther("10000");
+      await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
+      await this.Pool.connect(depositor).deposit(amount);
+      await this.mockYearnVault.setTotalAssets(parseEther("20000"));
+      await this.Pool.connect(depositor).withdraw(parseEther("100"));
+      expect(await this.Pool.previousTokenValue()).to.equal(parseUnits("994005000000000000", "wei"));
+      expect(await this.Pool.latestTokenValue()).to.equal(parseUnits("1988009999999999802", "wei"));
+    });
+
+    it("reports value when report is called", async function () {
+      let amount = parseEther("10000");
+      await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
+      await this.Pool.connect(depositor).deposit(amount);
+      await this.mockYearnVault.setTotalAssets(parseEther("20000"));
+      await this.Pool.report()
+      expect(await this.Pool.previousTokenValue()).to.equal(parseUnits("994005000000000000", "wei"));
+      expect(await this.Pool.latestTokenValue()).to.equal(parseUnits("1988010000000000000", "wei"));
     });
   });
 
@@ -475,6 +506,36 @@ describe('Pool', function () {
           parseUnits("9741249000000000000000", "wei")
         );
       expect(await this.Pool.connect(depositor).valueFor(parseEther("9800"))).to.equal(parseUnits("9741248999999999992924", "wei"));
+    });
+
+    it("calculating value for a single pool token", async function () {
+      let amount = parseEther("10000");
+      await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
+      await this.Pool.connect(depositor).deposit(amount);
+      let valueForOneShare = await this.Pool.valueFor(parseEther("1"));
+      let poolTokenValue = await this.Pool.poolTokenValue();
+      expect(poolTokenValue).to.equal(parseUnits("994005000000000000", "wei"));
+      expect(valueForOneShare).to.equal(poolTokenValue);
+    });
+  });
+
+  describe("governance", async function () {
+    it("owner can set withdrawalFee", async function () {
+      await this.Pool.connect(owner).setWithdrawalFee(20);
+      expect(await this.Pool.withdrawalFee()).to.equal(20);
+    });
+
+    it("non-owner cannot set withdrawalFee", async function () {
+      expect(this.Pool.connect(depositor).setWithdrawalFee(20)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("owner can set managementFee", async function () {
+      await this.Pool.connect(owner).setWithdrawalFee(500);
+      expect(await this.Pool.withdrawalFee()).to.equal(500);
+    });
+
+    it("non-owner cannot set managementFee", async function () {
+      expect(this.Pool.connect(depositor).setManagementFee(500)).to.be.revertedWith("Ownable: caller is not the owner");
     });
   });
 
