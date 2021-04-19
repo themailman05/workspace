@@ -5,6 +5,7 @@ import {
 import { DualActionModalProps } from 'components/Modal/DualActionModal';
 import { DefaultDualActionModalProps } from '../components/Modal/DualActionModal';
 import { Notification } from '../components/Notifications/NotificationsContainer';
+import { DefaultDualActionWideModalProps, DualActionWideModalProps } from 'components/Modal/DualActionWideModal';
 
 export const PUSH_NOTIFICATION = 'notifications/PUSH_NOTIFICATION';
 export const UNSET_NOTIFICATION = 'notifications/UNSET_NOTIFICATION';
@@ -12,6 +13,7 @@ export const HIDE_NOTIFICATION = 'notifications/HIDE_NOTIFICATION';
 export const CLEAR_NOTIFICATIONS = 'notifications/CLEAR_NOTIFICATIONS';
 export const SINGLE_ACTION_MODAL = 'modals/SINGLE_ACTION_MODAL';
 export const DUAL_ACTION_MODAL = 'modals/DUAL_ACTION_MODAL';
+export const DUAL_ACTION_WIDE_MODAL = 'modals/DUAL_ACTION_WIDE_MODAL';
 
 export type AppActions =
   | PushNotificationAction
@@ -19,7 +21,8 @@ export type AppActions =
   | HideNotificationAction
   | ClearNotificationsAction
   | SetSingleActionModalAction
-  | SetDualActionModalAction;
+  | SetDualActionModalAction
+  | SetDualActionWideModalAction;
 
 export interface PushNotificationAction {
   type: typeof PUSH_NOTIFICATION;
@@ -119,3 +122,30 @@ export const setDualActionModal = (
     },
   };
 };
+
+export interface SetDualActionWideModalAction {
+  type: typeof DUAL_ACTION_WIDE_MODAL;
+  payload: DualActionWideModalProps;
+}
+export const setDualActionWideModal = (
+  props: Partial<DualActionWideModalProps>| false,
+): SetDualActionWideModalAction => {
+  if (!props) {
+    return {
+      type: DUAL_ACTION_WIDE_MODAL,
+      payload: {
+        ...DefaultDualActionWideModalProps,
+        visible: false,
+      },
+    };
+  }
+  return {
+    type: DUAL_ACTION_WIDE_MODAL,
+    payload: {
+      ...DefaultDualActionWideModalProps,
+      visible: true,
+      ...props,
+    },
+  };
+};
+
