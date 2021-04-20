@@ -1,6 +1,7 @@
 const { expect } = require("chai");
 const { waffle } = require("hardhat");
 const { parseEther } = require("ethers/lib/utils");
+const { assertRevertOptimism } = require('./optimism/utils/revertOptimism');
 const { merklize, makeElement, generateClaims } = require("../scripts/merkle.js");
 const provider = waffle.provider;
 
@@ -12,7 +13,7 @@ describe('BeneficiaryVaults', function () {
   let owner, rewarder, beneficiary1, beneficiary2;
   let claims, merkleTree, merkleRoot;
 
-  beforeEach(async function () {
+  before(async function () {
     [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
@@ -21,8 +22,8 @@ describe('BeneficiaryVaults', function () {
     await this.mockPop.mint(rewarder.address, RewarderInitial);
 
     BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
-    this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
-    await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
+    this.mockBeneficiaryRegistry = await BeneficiaryRegistry.connect(owner).deploy();
+    //await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
 
     BeneficiaryVaults = await ethers.getContractFactory("BeneficiaryVaults");
     this.beneficiaryVaults = await BeneficiaryVaults.deploy(this.mockPop.address, this.mockBeneficiaryRegistry.address);
@@ -48,28 +49,40 @@ describe('BeneficiaryVaults', function () {
 
   it("reverts when trying to initialize an invalid vault id", async function () {
     const currentBlock = (await provider.getBlock("latest")).number;
-    await expect(
-      this.beneficiaryVaults.initializeVault(4, currentBlock + 1, merkleRoot)
-    ).to.be.revertedWith("Invalid vault id");
+    const tx = await this.beneficiaryVaults.initializeVault(4, currentBlock + 1, merkleRoot, {gasLimit: 890000});
+    await assertRevertOptimism({
+      tx,
+      reason: "Invalid vault id",
+      provider: ethers.provider,
+    })
   });
 
   it("reverts when trying to initialize an invalid end block", async function () {
     const currentBlock = (await provider.getBlock("latest")).number;
-    await expect(
-      this.beneficiaryVaults.initializeVault(0, currentBlock, merkleRoot)
-    ).to.be.revertedWith("Invalid end block");
+    const tx = this.beneficiaryVaults.initializeVault(0, currentBlock, merkleRoot, {gasLimit: 890000})
+    await assertRevertOptimism({
+      tx,
+      reason: "Invalid end block",
+      provider: ethers.provider,
+    })
   });
 
   it("cannot tranfer ownership as non-owner", async function () {
-    await expect(
-      this.beneficiaryVaults.connect(beneficiary1).transferOwnership(beneficiary1.address)
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+    const tx = this.beneficiaryVaults.connect(beneficiary1).transferOwnership(beneficiary1.address, {gasLimit: 890000})
+    await assertRevertOptimism({
+      tx,
+      reason: "Ownable: caller is not the owner",
+      provider: ethers.provider,
+    })
   });
 
   it("should revert setting to same Beneficiary Registry", async function () {
-    await expect(
-      this.beneficiaryVaults.setBeneficiaryRegistry(this.mockBeneficiaryRegistry.address)
-    ).to.be.revertedWith("Same BeneficiaryRegistry");
+    const tx =this.beneficiaryVaults.setBeneficiaryRegistry(this.mockBeneficiaryRegistry.address, {gasLimit: 8900000});
+    await assertRevertOptimism({
+      tx,
+      reason: "Same BeneficiaryRegistry",
+      provider: ethers.provider,
+    })
   });
 
   describe("sets new dependent contracts", function () {
@@ -90,11 +103,21 @@ describe('BeneficiaryVaults', function () {
     });
 
     it("reverts when closing initialized vault", async function () {
-      await expect(this.beneficiaryVaults.closeVault(0)).to.be.revertedWith("Vault must be open");
+      const tx = await this.beneficiaryVaults.closeVault(0, {gasLimit: 8900000});
+      await assertRevertOptimism({
+        tx,
+        reason: "Vault must be open",
+        provider: ethers.provider,
+      })
     });
 
     it("reverts when distributing to no open vaults", async function () {
-      await expect(this.beneficiaryVaults.distributeRewards()).to.be.revertedWith("No open vaults");
+      const tx = await this.beneficiaryVaults.distributeRewards({gasLimit: 8900000});
+      await assertRevertOptimism({
+        tx,
+        reason: "No open vaults",
+        provider: ethers.provider,
+      })
     });
 
     it("emits a VaultInitialized event", async function () {
@@ -109,8 +132,8 @@ describe('BeneficiaryVaults', function () {
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
       expect(vaultData.endTime).to.equal(endTime);
       expect(vaultData.status).to.equal(VaultStatus.Initialized);
-      expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary1.address)).to.be.false;
-      expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary2.address)).to.be.false;
+      expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary1.address, {gasLimit: 8900000})).to.be.false;
+      expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary2.address, {gasLimit: 8900000})).to.be.false;
     });
 
     describe("opens vault 0", function () {
@@ -125,8 +148,8 @@ describe('BeneficiaryVaults', function () {
       it("vault has expected values", async function () {
         const vaultData = await this.beneficiaryVaults.getVault(0);
         expect(vaultData.status).to.equal(VaultStatus.Open);
-        expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary1.address)).to.be.false;
-        expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary2.address)).to.be.false;
+        expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary1.address, {gasLimit: 8900000})).to.be.false;
+        expect(await this.beneficiaryVaults.hasClaimed(0, beneficiary2.address, {gasLimit: 8900000})).to.be.false;
       });
 
       it("contract has expected balance", async function () {
@@ -139,9 +162,12 @@ describe('BeneficiaryVaults', function () {
 
       it("reverts claim with no reward", async function () {
         const proof = merkleTree.getProof(makeElement(beneficiary1.address, claims[beneficiary1.address]));
-        await expect(
-          this.beneficiaryVaults.connect(beneficiary1).claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address])
-        ).to.be.revertedWith("No reward");
+        const tx = this.beneficiaryVaults.connect(beneficiary1).claimReward(0, proof, beneficiary1.address, claims[beneficiary1.address], {gasLimit: 8900000});
+        await assertRevertOptimism({
+          tx,
+          reason: "No reward",
+          provider: ethers.provider,
+        })
       });
 
       describe("deposits reward and distribute to vaults", function () {
@@ -166,9 +192,12 @@ describe('BeneficiaryVaults', function () {
 
         it("reverts invalid claim", async function () {
           const proof = [makeElement(owner.address, "10")];
-          await expect(
-            this.beneficiaryVaults.claimReward(0, proof, owner.address, "10")
-          ).to.be.revertedWith("Invalid claim");
+          const tx = this.beneficiaryVaults.claimReward(0, proof, owner.address, "10", {gasLimit: 8900000});
+          await assertRevertOptimism({
+        tx,
+        reason: "Invalid claim",
+        provider: ethers.provider,
+      })
         });
 
         it("reverts claim when beneficiary does not exist", async function () {
@@ -207,9 +236,12 @@ describe('BeneficiaryVaults', function () {
         });
 
         it("reverts when reinitializing open vault", async function () {
-          await expect(
-            this.beneficiaryVaults.initializeVault(0, endTime, merkleRoot)
-          ).to.be.revertedWith("Vault must not be open");
+          const tx = this.beneficiaryVaults.initializeVault(0, endTime, merkleRoot, {gasLimit: 8900000});
+          await assertRevertOptimism({
+            tx,
+            reason: "No be open",
+            provider: ethers.provider,
+          })
         });
 
         it("reverts close vault before end time", async function () {
@@ -409,7 +441,12 @@ describe('BeneficiaryVaults', function () {
       });
 
       it("reverts when closing initialized vault", async function () {
-        await expect(this.beneficiaryVaults.closeVault(0)).to.be.revertedWith("Vault must be open");
+        const tx = await expect(this.beneficiaryVaults.closeVault(0), {gasLimit: 8900000});
+        await assertRevertOptimism({
+          tx,
+          reason: "Vault must be open",
+          provider: ethers.provider,
+        })
       });
 
       it("emits a VaultInitialized event", async function () {
