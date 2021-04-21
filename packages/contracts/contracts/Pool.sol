@@ -47,22 +47,23 @@ contract Pool is ERC20, Ownable {
   address public rewardsManager;
   address public governance;
 
-  uint256 BPS_DENOMINATOR = 10000;
-  uint256 YEARN_PRECISION = 10e17;
+  uint256 constant BPS_DENOMINATOR = 10000;
+  uint256 constant YEARN_PRECISION = 10e17;
+  uint256 constant SECONDS_PER_YEAR = 31556952;
 
   uint256 public withdrawalFee = 50;
   uint256 public managementFee = 200;
+  uint256 public performanceFee = 2000;
   uint256 public deployedAt;
-  uint256 public previousTokenValue = 0;
-  uint256 public previousReport;
-  uint256 public latestReport;
-  uint256 public latestTokenValue = 0;
+  uint256 public feesUpdatedAt;
+  uint256 public lastTotalValue = 0;
 
   event Deposit(address from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address to, uint256 amount);
   event WithdrawalFee(address to, uint256 amount);
   event WithdrawalFeeChanged(uint256 previousBps, uint256 newBps);
   event ManagementFeeChanged(uint256 previousBps, uint256 newBps);
+  event PerformanceFeeChanged(uint256 previousBps, uint256 newBps);
 
   constructor(
     DAI dai_,
@@ -75,9 +76,8 @@ contract Pool is ERC20, Ownable {
     crvLPToken = CrvLPToken(yearnVault.token());
     curveDepositZap = curveDepositZap_;
     rewardsManager = rewardsManager_;
-    deployedAt = block.number;
-    latestReport = block.number;
-    previousReport = block.number;
+    deployedAt = block.timestamp;
+    feesUpdatedAt = block.timestamp;
   }
 
   function totalValue() external view returns (uint256) {
@@ -85,7 +85,7 @@ contract Pool is ERC20, Ownable {
   }
 
   function poolTokenValue() external view returns (uint256) {
-    return this.valueFor(1 * 10 ** this.decimals());
+    return this.valueFor(10 ** this.decimals());
   }
 
   function valueFor(uint256 poolTokens) external view returns (uint256) {
@@ -103,12 +103,16 @@ contract Pool is ERC20, Ownable {
     uint256 crvLPTokenAmount = _sendToCurve(amount);
     _sendToYearn(crvLPTokenAmount);
 
-    _reportValue();
+    _takeFees();
+    _reportTotalValue();
+
     return this.balanceOf(msg.sender);
   }
 
   function withdraw(uint256 amount) external returns (uint256 withdrawalAmount, uint256 feeAmount) {
     assert(amount <= this.balanceOf(msg.sender));
+
+    _takeFees();
 
     uint256 yvShareWithdrawal = _yearnSharesFor(amount);
 
@@ -122,13 +126,9 @@ contract Pool is ERC20, Ownable {
     _transferWithdrawalFee(fee);
     _transferWithdrawal(withdrawal);
 
-    _reportValue();
+    _reportTotalValue();
 
     return (withdrawal, fee);
-  }
-
-  function report() external returns (uint256){
-    return _reportValue();
   }
 
   function setWithdrawalFee(uint256 withdrawalFee_) public onlyOwner {
@@ -145,12 +145,48 @@ contract Pool is ERC20, Ownable {
     emit ManagementFeeChanged(_previousManagementFee, managementFee);
   }
 
-  function _reportValue() internal returns (uint256) {
-    previousTokenValue = latestTokenValue;
-    previousReport = latestReport;
-    latestReport = block.number;
-    latestTokenValue = this.poolTokenValue();
-    return latestTokenValue;
+  function setPerformanceFee(uint256 performanceFee_) public onlyOwner {
+    require(performanceFee != performanceFee_, "Same performanceFee");
+    uint256 _previousPerformanceFee = performanceFee;
+    performanceFee = performanceFee_;
+    emit PerformanceFeeChanged(_previousPerformanceFee, performanceFee);
+  }
+
+  function takeFees() public {
+    _takeFees();
+    _reportTotalValue();
+  }
+
+  function _reportTotalValue() internal {
+    lastTotalValue = this.totalValue();
+  }
+
+  function _issueTokensForFeeAmount(uint256 amount) internal {
+    uint256 tokens = amount * this.poolTokenValue() / (10 ** this.decimals());
+    _issuePoolTokens(address(this), tokens);
+  }
+
+  function _takeManagementFee() internal {
+    uint256 period = block.timestamp - feesUpdatedAt;
+    uint256 fee = (
+      (managementFee * this.totalValue() * period) /
+      (SECONDS_PER_YEAR * BPS_DENOMINATOR)
+    );
+    _issueTokensForFeeAmount(fee);
+  }
+
+  function _takePerformanceFee() internal {
+    uint256 gain = this.totalValue() - lastTotalValue;
+    if (gain > 0) {
+      uint256 fee = performanceFee * gain / BPS_DENOMINATOR;
+      _issueTokensForFeeAmount(fee);
+    }
+  }
+
+  function _takeFees() internal {
+    _takeManagementFee();
+    _takePerformanceFee();
+    feesUpdatedAt = block.timestamp;
   }
 
   function _yearnShareValue(uint256 yvShares) internal view returns (uint256) {
@@ -163,16 +199,14 @@ contract Pool is ERC20, Ownable {
     return _yearnShareValue(yvShareBalance);
   }
 
-  function _issuePoolTokens(address to, uint256 amount) internal returns (uint256 poolTokenAmount) {
-    uint256 managementTokens = amount * managementFee / BPS_DENOMINATOR;
-    uint256 depositorTokens = amount - managementTokens;
-    _mint(address(this), managementTokens);
-    _mint(to, depositorTokens);
-    return depositorTokens;
+  function _issuePoolTokens(address to, uint256 amount) internal returns (uint256 issuedAmount) {
+    _mint(to, amount);
+    return amount;
   }
 
-  function _burnPoolTokens(address from, uint256 amount) internal {
+  function _burnPoolTokens(address from, uint256 amount) internal returns (uint256 burnedAmount) {
     _burn(from, amount);
+    return amount;
   }
 
   function _sendToCurve(uint256 amount) internal returns (uint256 crvLPTokenAmount) {
@@ -191,10 +225,16 @@ contract Pool is ERC20, Ownable {
     return yearnVault.deposit(amount);
   }
 
+  function _poolShareFor(uint256 poolTokenAmount) internal view returns (uint256) {
+    if (this.totalSupply() ==  0) {
+      return 1 * YEARN_PRECISION;
+    }
+    return poolTokenAmount * YEARN_PRECISION / this.totalSupply();
+  }
+
   function _yearnSharesFor(uint256 poolTokenAmount) internal view returns (uint256) {
     uint256 yearnBalance = yearnVault.balanceOf(address(this));
-    uint256 share = poolTokenAmount * YEARN_PRECISION / this.totalSupply();
-    return yearnBalance * share / YEARN_PRECISION;
+    return yearnBalance * _poolShareFor(poolTokenAmount) / YEARN_PRECISION;
   }
 
   function _withdrawFromYearn(uint256 yvShares) internal returns (uint256) {
