@@ -56,7 +56,7 @@ contract Pool is ERC20, Ownable {
   uint256 public performanceFee = 2000;
   uint256 public deployedAt;
   uint256 public feesUpdatedAt;
-  uint256 public lastTotalValue = 0;
+  uint256 public poolTokenHWM = 0;
 
   event Deposit(address from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address to, uint256 amount);
@@ -104,7 +104,7 @@ contract Pool is ERC20, Ownable {
     _sendToYearn(crvLPTokenAmount);
 
     _takeFees();
-    _reportTotalValue();
+    _reportPoolTokenHWM();
 
     return this.balanceOf(msg.sender);
   }
@@ -126,7 +126,7 @@ contract Pool is ERC20, Ownable {
     _transferWithdrawalFee(fee);
     _transferWithdrawal(withdrawal);
 
-    _reportTotalValue();
+    _reportPoolTokenHWM();
 
     return (withdrawal, fee);
   }
@@ -154,11 +154,13 @@ contract Pool is ERC20, Ownable {
 
   function takeFees() public {
     _takeFees();
-    _reportTotalValue();
+    _reportPoolTokenHWM();
   }
 
-  function _reportTotalValue() internal {
-    lastTotalValue = this.totalValue();
+  function _reportPoolTokenHWM() internal {
+    if (this.poolTokenValue() > poolTokenHWM) {
+      poolTokenHWM = this.poolTokenValue();
+    }
   }
 
   function _issueTokensForFeeAmount(uint256 amount) internal {
@@ -176,7 +178,7 @@ contract Pool is ERC20, Ownable {
   }
 
   function _takePerformanceFee() internal {
-    uint256 gain = this.totalValue() - lastTotalValue;
+    uint256 gain = this.poolTokenValue() - poolTokenHWM;
     if (gain > 0) {
       uint256 fee = performanceFee * gain / BPS_DENOMINATOR;
       _issueTokensForFeeAmount(fee);
