@@ -206,7 +206,6 @@ task("POPUSDC:mint", "Allow address and amount")
       pop: await privateSale.pop(),
       tokenManager: await privateSale.tokenManager(),
       supply: utils.formatEther(await privateSale.supply()),
-      minimumPurchase: formatFixed(await privateSale.minimumPurchase(), 6),
     }
 
     
