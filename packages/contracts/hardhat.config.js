@@ -9,6 +9,7 @@ const {
   GrantElectionAdapter,
 } = require("./scripts/helpers/GrantElectionAdapter");
 const { utils } = require("ethers");
+const { parseEther } = require("@ethersproject/units");
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await ethers.getSigners();
@@ -149,6 +150,22 @@ task("sale:allow", "Allow address and amount")
     const result = await privateSale.allowParticipant(
       participant,
       parseFixed(amount, 6)
+    );
+    console.log("Done: ", result);
+  });
+
+  task("sale:setsupply", "set supply amount address and amount")
+  .addParam("amount", "amount of supply")
+  .setAction(async (args, hre) => {
+    const [signer] = await ethers.getSigners();
+    const {  amount } = args;
+    const privateSale = new ethers.Contract(
+      process.env.ADDR_PRIVATE_SALE,
+      require("./artifacts/contracts/PrivateSale.sol/PrivateSale.json").abi,
+      signer
+    );
+    const result = await privateSale.setSupply(
+      parseEther(amount)
     );
     console.log("Done: ", result);
   });
