@@ -56,7 +56,7 @@ contract Pool is ERC20, Ownable {
   uint256 public performanceFee = 2000;
   uint256 public deployedAt;
   uint256 public feesUpdatedAt;
-  uint256 public poolTokenHWM = 0;
+  uint256 public poolTokenHWM = 10e17;
 
   event Deposit(address from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address to, uint256 amount);
@@ -178,9 +178,14 @@ contract Pool is ERC20, Ownable {
   }
 
   function _takePerformanceFee() internal {
-    uint256 gain = this.poolTokenValue() - poolTokenHWM;
+    console.log("token value: ", this.poolTokenValue());
+    console.log("token HWM: ", poolTokenHWM);
+    int256 gain = int256(this.poolTokenValue()) - int256(poolTokenHWM);
     if (gain > 0) {
-      uint256 fee = performanceFee * gain / BPS_DENOMINATOR;
+      uint256 changeInValuePerToken = uint256(gain);
+      console.log("gain: ", changeInValuePerToken);
+      uint256 fee = performanceFee * changeInValuePerToken * this.totalSupply() / BPS_DENOMINATOR / 10e17;
+      console.log("performance fee: ", fee);
       _issueTokensForFeeAmount(fee);
     }
   }

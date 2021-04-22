@@ -1,5 +1,6 @@
 # @version 0.2.11
 """
+      expect(await this.Pool.withdrawalFee()).to.equal(20);
 @title Yearn Token Vault
 @license GNU AGPLv3
 @author yearn.finance
