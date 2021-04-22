@@ -15,6 +15,7 @@ import {
   hideNotification,
   clearNotifications,
 } from '../../app/actions';
+import { parseEther } from 'ethers/lib/utils';
 
 const IndexPage = () => {
   const { account, activate, active, library } = useWeb3React<Web3Provider>();
@@ -50,7 +51,11 @@ const IndexPage = () => {
     const id = new Date().getTime();
     setIsTxPending(true);
     contracts.USDC.on('Approval', (owner, spender, value) => {
-      console.log("approval", { owner, spender, value} );
+      if (owner !== account || !parseFixed(purchaseAmountUSDC.toString(), 6).eq(value)) {
+        console.log("wrong approval", { owner, spender, value, parseFixed: parseFixed(purchaseAmountUSDC.toString(), 6)} );
+        return;
+      }
+      console.log("Approval", { owner, spender, value} );
       setAllowance(parseInt(formatFixed(value, 6)));
       setIsTxPending(false);
       dispatch(hideNotification(id));
@@ -94,6 +99,11 @@ const IndexPage = () => {
     setIsTxPending(true);
     contracts.privateSale
       .on('TokensPurchased', (participant, amount) => {
+        if (participant !== account || !amount.eq(parseEther(popToPurchase.toString()))) {
+          console.log("wrong purchase", { participant, amount, parseFixed: parseFixed(popToPurchase.toString(), 18)} );
+          return;
+        }
+        console.log("TokensPurchased", {participant, amount});
         setIsTxPending(false);
         //handle purchase completion
         dispatch(hideNotification(id));
