@@ -19,11 +19,11 @@ import { store } from './store';
 import { setSingleActionModal } from './actions';
 
 export interface Contracts {
-  staking: Contract;
-  beneficiary: Contract;
-  election: Contract;
-  pop: Contract;
-  grant: Contract;
+  staking?: Contract;
+  beneficiary?: Contract;
+  election?: Contract;
+  pop?: Contract;
+  grant?: Contract;
   USDC: Contract;
   privateSale: Contract;
 }
@@ -96,24 +96,32 @@ export default function ContractsWrapper({
     if (!library) {
       return;
     }
+//    setContracts({
+//      staking: new Contract(process.env.ADDR_STAKING, Staking.abi, library),
+//      beneficiary: new Contract(
+//        process.env.ADDR_BENEFICIARY_REGISTRY,
+//        BeneficiaryRegistry.abi,
+//        library,
+//      ),
+//      election: new Contract(
+//        process.env.ADDR_GRANT_ELECTION,
+//        GrantElections.abi,
+//        library,
+//      ),
+//      pop: new Contract(process.env.ADDR_POP, MockPop.abi, library),
+//      grant: new Contract(
+//        process.env.ADDR_GRANT_REGISTRY,
+//        GrantRegistry.abi,
+//        library,
+//      ),
+//      USDC: new Contract(process.env.ADDR_USDC, ERC20ABI, library),
+//      privateSale: new Contract(
+//        process.env.ADDR_PRIVATE_SALE,
+//        PrivateSale.abi,
+//        library,
+//      ),
+//    });
     setContracts({
-      staking: new Contract(process.env.ADDR_STAKING, Staking.abi, library),
-      beneficiary: new Contract(
-        process.env.ADDR_BENEFICIARY_REGISTRY,
-        BeneficiaryRegistry.abi,
-        library,
-      ),
-      election: new Contract(
-        process.env.ADDR_GRANT_ELECTION,
-        GrantElections.abi,
-        library,
-      ),
-      pop: new Contract(process.env.ADDR_POP, MockPop.abi, library),
-      grant: new Contract(
-        process.env.ADDR_GRANT_REGISTRY,
-        GrantRegistry.abi,
-        library,
-      ),
       USDC: new Contract(process.env.ADDR_USDC, ERC20ABI, library),
       privateSale: new Contract(
         process.env.ADDR_PRIVATE_SALE,

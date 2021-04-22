@@ -50,6 +50,7 @@ const IndexPage = () => {
     const id = new Date().getTime();
     setIsTxPending(true);
     contracts.USDC.on('Approval', (owner, spender, value) => {
+      console.log("approval", { owner, spender, value} );
       setAllowance(parseInt(formatFixed(value, 6)));
       setIsTxPending(false);
       dispatch(hideNotification(id));
