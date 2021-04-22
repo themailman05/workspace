@@ -2,7 +2,7 @@ require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
 const { deploy } = require("./scripts/deployWithValues");
 const { deployPrivateSale } = require("./scripts/deployPrivateSale");
-const { parseFixed } =  require('@ethersproject/bignumber');
+const { parseFixed, formatFixed } =  require('@ethersproject/bignumber');
 
 
 const {
@@ -166,6 +166,38 @@ task("POPUSDC:mint", "Allow address and amount")
     );
     const result = await mockUSDC.mint(recipient, parseFixed(amount, 6));
     console.log("Done: ", result);
+  });
+
+  task("sale:info", "get private sale info")
+  .addOptionalParam("participant", "participant to check")
+  .setAction(async (args, hre) => {
+    const [signer] = await ethers.getSigners();
+    const privateSale = new ethers.Contract(
+      process.env.ADDR_PRIVATE_SALE,
+      require("./artifacts/contracts/PrivateSale.sol/PrivateSale.json").abi,
+      signer
+    );
+    let participant, allowance;
+    if (args.participant) {
+      allowance = formatFixed(await privateSale.allowances(args.participant), 6);
+      participant = await privateSale.participants(args.participant);
+    }
+
+    const info = { 
+      treasury: await privateSale.treasury(),
+      usdc: await privateSale.usdc(),
+      pop: await privateSale.pop(),
+      tokenManager: await privateSale.tokenManager(),
+      supply: utils.formatEther(await privateSale.supply()),
+      minimumPurchase: formatFixed(await privateSale.minimumPurchase(), 6),
+    }
+
+    
+    if (args.participant) {
+      console.log("Done: ", {...info, participant, allowance });
+    } else {
+      console.log("Done: ", { info});
+    }
   });
 
 module.exports = {
