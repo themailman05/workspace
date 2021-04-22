@@ -21,7 +21,6 @@ contract PrivateSale is Ownable, ReentrancyGuard {
   address public treasury;
   uint256 public tokenPrice = 15e4;
   uint256 public supply = 7500000 * 1e18;
-  uint256 public constant minimumPurchase = 25000 * 1e6;
   uint256 constant secondsInDay = 86400;
 
   mapping(address => bool) public participants;
@@ -65,7 +64,6 @@ contract PrivateSale is Ownable, ReentrancyGuard {
     external
     onlyOwner
   {
-    require(allowance_ >= minimumPurchase, "Allowance too low");
     participants[participant_] = true;
     allowances[participant_] = allowance_;
     emit ParticipantAllowed(participant_, allowance_);
@@ -80,7 +78,6 @@ contract PrivateSale is Ownable, ReentrancyGuard {
 
   function purchase(uint256 amount_) public nonReentrant {
     require(participants[msg.sender] == true, "Participant not allowed");
-    require(amount_ >= minimumPurchase, "Minimum not met");
     require(allowances[msg.sender] >= amount_, "Allowance exceeded");
 
     uint256 _wholePopToReceive = amount_.div(tokenPrice);

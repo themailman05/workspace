@@ -51,11 +51,19 @@ const IndexPage = () => {
     const id = new Date().getTime();
     setIsTxPending(true);
     contracts.USDC.on('Approval', (owner, spender, value) => {
-      if (owner !== account || !parseFixed(purchaseAmountUSDC.toString(), 6).eq(value)) {
-        console.log("wrong approval", { owner, spender, value, parseFixed: parseFixed(purchaseAmountUSDC.toString(), 6)} );
+      if (
+        owner !== account ||
+        !parseFixed(purchaseAmountUSDC.toString(), 6).eq(value)
+      ) {
+        console.log('wrong approval', {
+          owner,
+          spender,
+          value,
+          parseFixed: parseFixed(purchaseAmountUSDC.toString(), 6),
+        });
         return;
       }
-      console.log("Approval", { owner, spender, value} );
+      console.log('Approval', { owner, spender, value });
       setAllowance(parseInt(formatFixed(value, 6)));
       setIsTxPending(false);
       dispatch(hideNotification(id));
@@ -70,8 +78,8 @@ const IndexPage = () => {
             isFlash: true,
             id: new Date().getTime(),
           }),
-        )
-      }, 500)
+        );
+      }, 500);
       contracts.USDC.removeAllListeners();
     })
       .connect(library.getSigner())
@@ -99,11 +107,18 @@ const IndexPage = () => {
     setIsTxPending(true);
     contracts.privateSale
       .on('TokensPurchased', (participant, amount) => {
-        if (participant !== account || !amount.eq(parseEther(popToPurchase.toString()))) {
-          console.log("wrong purchase", { participant, amount, parseFixed: parseFixed(popToPurchase.toString(), 18)} );
+        if (
+          participant !== account ||
+          !amount.eq(parseEther(popToPurchase.toString()))
+        ) {
+          console.log('wrong purchase', {
+            participant,
+            amount,
+            parseFixed: parseFixed(popToPurchase.toString(), 18),
+          });
           return;
         }
-        console.log("TokensPurchased", {participant, amount});
+        console.log('TokensPurchased', { participant, amount });
         setIsTxPending(false);
         //handle purchase completion
         dispatch(hideNotification(id));
