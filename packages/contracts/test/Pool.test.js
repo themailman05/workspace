@@ -53,7 +53,7 @@ describe('Pool', function () {
     expect(await this.Pool.decimals()).to.equal(18);
   });
 
-  xdescribe("deposits", async function () {
+  describe("deposits", async function () {
     xit("accepts DAI deposits", async function () {
       let amount = parseEther("10");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
@@ -88,7 +88,7 @@ describe('Pool', function () {
     });
   });
 
-  xdescribe("calculating total assets", async function () {
+  describe("calculating total assets", async function () {
     it("total assets is Yearn balance * Yearn price per share - slippage from conversion to DAI", async function () {
       let amount = parseEther("3700");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
@@ -98,21 +98,21 @@ describe('Pool', function () {
   });
 
   describe("pool token accounting", async function () {
-    xit("depositor earns tokens equal to deposit when pool is empty", async function () {
+    it("depositor earns tokens equal to deposit when pool is empty", async function () {
       let depositAmount  = parseEther("4300");
       await this.mockDai.connect(depositor).approve(this.Pool.address, depositAmount);
       await this.Pool.connect(depositor).deposit(depositAmount);
       expect(await this.Pool.balanceOf(depositor.address)).to.equal(depositAmount);
     });
 
-    xit("deposits emit an event", async function () {
+    it("deposits emit an event", async function () {
       let depositAmount  = parseEther("4300");
       await this.mockDai.connect(depositor).approve(this.Pool.address, depositAmount);
       expect(await this.Pool.connect(depositor).deposit(depositAmount)).to
         .emit(this.Pool, "Deposit").withArgs(depositor.address, parseEther("4300"), parseEther("4300"));
     });
 
-    xit("depositors earn tokens proportional to contributions", async function () {
+    it("depositors earn tokens proportional to contributions", async function () {
       let deposit1Amount = parseEther("3000");
       let deposit2Amount = parseEther("7000");
       let deposit3Amount = parseEther("11000");
@@ -177,7 +177,7 @@ describe('Pool', function () {
       expect(depositor1DaiBalance).to.equal(parseUnits("104273121741357993446952", "wei"));
     });
 
-    xit("handles multiple deposits", async function () {
+    it("handles multiple deposits", async function () {
       let deposit1Amount = parseEther("1000");
       let deposit2Amount = parseEther("2000");
       let deposit3Amount = parseEther("5000");
@@ -228,22 +228,22 @@ describe('Pool', function () {
       await this.Pool.connect(depositor1).withdraw(withdrawal1Amount);
       expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("9000"));
       let depositor1DaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1DaiBalance).to.equal(parseUnits("91988009999999999999996", "wei"));
+      expect(depositor1DaiBalance).to.equal(parseUnits("91427312173622230019809", "wei"));
 
       let withdrawal2Amount = parseEther("10000");
       await this.Pool.connect(depositor2).withdraw(withdrawal2Amount);
       expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("0"));
       let depositor2DaiBalance = await this.mockDai.balanceOf(depositor2.address);
-      expect(depositor2DaiBalance).to.equal(parseUnits("109880099999999999980119", "wei"));
+      expect(depositor2DaiBalance).to.equal(parseUnits("104273121717701115178387", "wei"));
 
       let withdrawal3Amount = parseEther("9000");
       await this.Pool.connect(depositor1).withdraw(withdrawal3Amount);
       expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("0"));
       let depositor1UpdatedDaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1UpdatedDaiBalance).to.equal(parseUnits("109880100000000000019885", "wei"));
+      expect(depositor1UpdatedDaiBalance).to.equal(parseUnits("104273121702884167042179", "wei"));
     });
 
-    xit("multiple small deposits", async function () {
+    it("multiple small deposits", async function () {
       let deposit1Amount = parseEther("1000");
       for (let i=0; i<10; i++) {
         await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit1Amount);
@@ -273,10 +273,10 @@ describe('Pool', function () {
       await this.Pool.connect(depositor2).withdraw(withdrawal2Amount);
       expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("0"));
       let depositor2DaiBalance = await this.mockDai.balanceOf(depositor2.address);
-      expect(depositor2DaiBalance).to.equal(parseUnits("104273121656661073103396", "wei"));
+      expect(depositor2DaiBalance).to.equal(parseUnits("104273121715403440765791", "wei"));
     });
 
-    xit("multiple small withdrawals", async function () {
+    it("multiple small withdrawals", async function () {
       let deposit1Amount = parseEther("10000");
       await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit1Amount);
       await this.Pool.connect(depositor1).deposit(deposit1Amount);
@@ -309,7 +309,7 @@ describe('Pool', function () {
       expect(depositor2DaiBalance).to.equal(parseUnits("104273121554794556875496", "wei"));
     });
 
-    xit("deposits at different magnitudes", async function () {
+    it("deposits at different magnitudes", async function () {
 
       async function _makeDeposit(depositor, amount) {
         await this.mockDai.mint(depositor.address, amount);
@@ -353,41 +353,41 @@ describe('Pool', function () {
       await expectFeeAndWithdrawalForAmount(
         depositor1,
         deposit1Amount,
-        "9989999999999535572",
+        "7172422985321313913",
         "1427312174078941468687"
       );
 
       await expectFeeAndWithdrawalForAmount(
         depositor2,
         deposit2Amount,
-        "99899999999999175227",
+        "71724229760143381388",
         "14273121722268532896405"
       );
 
       await expectFeeAndWithdrawalForAmount(
         depositor3,
         deposit3Amount,
-        "998999999999999712544",
+        "717242296670721756149",
         "142731217037473629473746"
       );
 
       await expectFeeAndWithdrawalForAmount(
         depositor4,
         deposit4Amount,
-        "9989999999999999016598",
+        "7172422957400095454479",
         "1427312168522618995441400"
       );
 
       await expectFeeAndWithdrawalForAmount(
         depositor5,
         deposit5Amount,
-        "999000000000000001561009",
+        "717242294809296738025261",
         "142731216667050050867027035"
       );
     });
   });
 
-  xdescribe("calculating pool token value", async function () {
+  describe("calculating pool token value", async function () {
     it("calculated value is same as realized withdrawal amount", async function () {
       let amount = parseEther("20000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
@@ -395,7 +395,7 @@ describe('Pool', function () {
       await expect(await this.Pool.connect(depositor).withdraw(parseEther("10000"))).to
         .emit(this.Pool, "WithdrawalFee").withArgs(
           rewardsManager.address,
-          parseUnits("49950000000000000000", "wei")).and
+          parseUnits("49949999905692604697", "wei")).and
         .emit(this.Pool, "Withdrawal").withArgs(
           depositor.address,
           parseUnits("9940049981232828334723", "wei")
@@ -411,7 +411,7 @@ describe('Pool', function () {
       await expect(await this.Pool.connect(depositor).withdraw(parseEther("10000"))).to
         .emit(this.Pool, "WithdrawalFee").withArgs(
           rewardsManager.address,
-          parseUnits("62437500000000000000", "wei")).and
+          parseUnits("58888684799266317859", "wei")).and
         .emit(this.Pool, "Withdrawal").withArgs(
           depositor.address,
           parseUnits("11718848275053997253966", "wei")
@@ -448,7 +448,7 @@ describe('Pool', function () {
       await expect(await this.Pool.connect(depositor).withdraw(parseEther("10000"))).to
         .emit(this.Pool, "WithdrawalFee").withArgs(
           rewardsManager.address,
-          parseUnits("49950000000000000000", "wei")).and
+          parseUnits("49949999685642017904", "wei")).and
         .emit(this.Pool, "Withdrawal").withArgs(
           depositor.address,
           parseUnits("9940049937442761563046", "wei")
@@ -467,7 +467,7 @@ describe('Pool', function () {
     });
   });
 
-  xdescribe("management fees", async function () {
+  describe("management fees", async function () {
     beforeEach(async function() {
       await this.Pool.connect(owner).setPerformanceFee(0);
     });
@@ -522,7 +522,7 @@ describe('Pool', function () {
     });
   });
 
-  xdescribe("performance fees", async function () {
+  describe("performance fees", async function () {
     beforeEach(async function() {
       await this.Pool.connect(owner).setManagementFee(0);
     });
@@ -532,7 +532,7 @@ describe('Pool', function () {
   });
 
 
-  xdescribe("governance", async function () {
+  describe("governance", async function () {
     it("owner can set withdrawalFee", async function () {
       await this.Pool.connect(owner).setWithdrawalFee(20);
       expect(await this.Pool.withdrawalFee()).to.equal(20);
