@@ -15,11 +15,11 @@ import {
 } from '@web3-react/injected-connector'
 
 export interface Contracts {
-  staking: Contract;
-  beneficiary: Contract;
-  election: Contract;
-  pop: Contract;
-  grant: Contract
+  staking?: Contract;
+  beneficiary?: Contract;
+  election?: Contract;
+  pop?: Contract;
+  grant?: Contract
 }
 
 interface ContractsContext {
@@ -81,33 +81,33 @@ export default function ContractsWrapper({
     if (!library) {
       return;
     }
-    setContracts({
-      staking: new Contract(
-        process.env.ADDR_STAKING,
-        Staking.abi,
-        library,
-      ),
-      beneficiary: new Contract(
-        process.env.ADDR_BENEFICIARY_REGISTRY,
-        BeneficiaryRegistry.abi,
-        library,
-      ),
-      election: new Contract(
-        process.env.ADDR_GRANT_ELECTION,
-        GrantElections.abi,
-        library,
-      ),
-      pop: new Contract(
-        process.env.ADDR_POP,
-        MockPop.abi,
-        library,
-      ),
-      grant: new Contract(
-        process.env.ADDR_GRANT_REGISTRY,
-        GrantRegistry.abi,
-        library
-      )
-    });
+//    setContracts({
+//      staking: new Contract(
+//        process.env.ADDR_STAKING,
+//        Staking.abi,
+//        library,
+//      ),
+//      beneficiary: new Contract(
+//        process.env.ADDR_BENEFICIARY_REGISTRY,
+//        BeneficiaryRegistry.abi,
+//        library,
+//      ),
+//      election: new Contract(
+//        process.env.ADDR_GRANT_ELECTION,
+//        GrantElections.abi,
+//        library,
+//      ),
+//      pop: new Contract(
+//        process.env.ADDR_POP,
+//        MockPop.abi,
+//        library,
+//      ),
+//      grant: new Contract(
+//        process.env.ADDR_GRANT_REGISTRY,
+//        GrantRegistry.abi,
+//        library
+//      )
+//    });
   }, [library, active]);
 
   return (

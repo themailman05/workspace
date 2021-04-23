@@ -3,6 +3,7 @@ node_modules
 .env
 .env.rinkeby
 .env.localhost
+.env.mainnet
 dist
 tsconfig.tsbuildinfo
 yarn-error.log
