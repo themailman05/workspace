@@ -46,11 +46,14 @@ const IndexPage = () => {
           </div>
         </div>
         <div className="w-1/2 h-full flex flex-col justify-center">
-          <img
-            src="/images/popcorn_playing.gif"
-            alt="Playing in Popcorn"
-            className=" rounded-l-full bg-white w-full h-full"
-          ></img>
+          <div
+            className="bg-hero-pattern flex-shrink-0 flex-grow-0 rounded-l-full bg-white w-full h-full"
+            style={{
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+            }}
+          ></div>
         </div>
       </div>
     </div>

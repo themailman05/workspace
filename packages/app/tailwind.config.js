@@ -34,6 +34,9 @@ module.exports = {
         secondaryLight: '#D5264E',
         secondaryDark: '#8739B0',
       },
+      backgroundImage: (theme) => ({
+        'hero-pattern': "url('/images/popcorn_playing.gif')",
+      }),
     },
   },
   variants: {
