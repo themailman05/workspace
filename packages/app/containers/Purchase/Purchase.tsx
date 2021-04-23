@@ -16,6 +16,8 @@ import {
   clearNotifications,
 } from '../../app/actions';
 import { parseEther } from 'ethers/lib/utils';
+import GasSlider from 'components/GasSlider';
+import { BigNumber, utils } from 'ethers';
 
 const IndexPage = () => {
   const { account, activate, active, library } = useWeb3React<Web3Provider>();
@@ -25,6 +27,9 @@ const IndexPage = () => {
   const [usdcBalance, setUsdcBalance] = useState(0);
   const [allowance, setAllowance] = useState(0);
   const [popToPurchase, setPopToPurchase] = useState(0);
+  const [gas, setGas] = useState(1);
+  const [fastGas, setFastGas] = useState<BigNumber>();
+  const [normalGas, setNormalGas] = useState<BigNumber>();
   const [purchaseAmountUSDC, setPurchaseAmount] = useState(0);
   const [isTxPending, setIsTxPending] = useState(false);
   const formatter = new Intl.NumberFormat('en-US', {
@@ -46,14 +51,28 @@ const IndexPage = () => {
       }),
     );
   };
+  const getFastGas = async () => {
+    const price = await library.getGasPrice();
+    const fastGas = price.add(price.div(2));
+    console.log('fast gas', utils.formatUnits(fastGas, 'gwei'));
+    setFastGas(fastGas);
+    return fastGas;
+  };
+  const getNormalGas = async () => {
+    const price = await library.getGasPrice();
+    console.log('normal gas', utils.formatUnits(price, 'gwei'));
+    setNormalGas(price);
+    return price;
+  };
 
-  const approvePurchase = () => {
+  const approvePurchase = async () => {
     const id = new Date().getTime();
     setIsTxPending(true);
     contracts.USDC.on('Approval', (owner, spender, value) => {
       if (
         owner !== account ||
-        !parseFixed(purchaseAmountUSDC.toString(), 6).eq(value)
+        !parseFixed(purchaseAmountUSDC.toString(), 6).eq(value) ||
+        spender !== contracts.privateSale.address
       ) {
         console.log('wrong approval', {
           owner,
@@ -86,6 +105,7 @@ const IndexPage = () => {
       .approve(
         contracts.privateSale.address,
         parseFixed(purchaseAmountUSDC.toString(), 6),
+        { gasPrice: gas == 0 ? await getNormalGas() : await getFastGas() },
       )
       .then(() => {
         setIsTxPending(true);
@@ -102,7 +122,7 @@ const IndexPage = () => {
       .catch(handleError);
   };
 
-  const purchasePop = () => {
+  const purchasePop = async () => {
     const id = new Date().getTime();
     setIsTxPending(true);
     contracts.privateSale
@@ -161,7 +181,9 @@ const IndexPage = () => {
         contracts.privateSale.removeAllListeners();
       })
       .connect(library.getSigner())
-      .purchase(parseFixed(purchaseAmountUSDC.toString(), 6))
+      .purchase(parseFixed(purchaseAmountUSDC.toString(), 6), {
+        gasPrice: gas == 0 ? await getNormalGas() : await getFastGas(),
+      })
       .then(() => {
         setIsTxPending(true);
         dispatch(
@@ -366,6 +388,11 @@ const IndexPage = () => {
                             />
                           )}
                         </div>
+                        {/*
+                          <div>
+                           <GasSlider setGas={setGas}></GasSlider>
+                          </div>
+                            */}
                       </div>
                     </div>
                   </div>
