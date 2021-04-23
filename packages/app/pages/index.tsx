@@ -33,12 +33,13 @@ const IndexPage = () => {
               <h1 className="uppercase font-bold text-8xl text-gray-900">
                 Popcorn
               </h1>
-              <p className="uppercase text-3xl font-medium text-gray-900">
-                Defi for the People
-              </p>
+              <p className="text-3xl text-gray-900">DeFi for the People</p>
             </div>
             <Link href="/docs/Popcorn_whitepaper_v1.pdf" passHref>
-              <a className="underline text-3xl text-gray-900" target="_window">
+              <a
+                className="underline text-3xl text-gray-900 font-light"
+                target="_window"
+              >
                 Read the whitepaper
               </a>
             </Link>
