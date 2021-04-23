@@ -36,10 +36,7 @@ const IndexPage = () => {
               <p className="text-3xl text-gray-900">DeFi for the People</p>
             </div>
             <Link href="/docs/Popcorn_whitepaper_v1.pdf" passHref>
-              <a
-                className="underline text-3xl text-gray-900 font-light"
-                target="_window"
-              >
+              <a className="text-3xl text-gray-900 font-light border-b border-black w-max" target="_window">
                 Read the whitepaper
               </a>
             </Link>
