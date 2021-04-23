@@ -13,7 +13,7 @@ const IndexPage = () => {
   }, [router.pathname]);
 
   return (
-    <div className="w-full bg-white h-screen flex flex-col justify-center">
+    <div className="w-full  h-screen flex flex-col justify-center" style={{backgroundColor: '#F8F8FB' }}>
       <div className="flex flex-row w-full h-5/6">
         <div className="w-1/2 h-full">
           <div className="flex flex-col justify-between w-1/2 mx-auto h-full">
