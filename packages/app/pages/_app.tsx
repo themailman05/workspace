@@ -8,9 +8,19 @@ import '../styles/globals.css';
 import Router from 'next/router';
 import { GlobalLinearProgress } from 'containers/GlobalLinearProgress';
 import { StateProvider } from 'app/store';
-import Web3Provider from 'web3-react';
-import { connectors } from '../containers/Web3/connectors';
-import Web3 from 'web3';
+import { Web3ReactProvider } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
+import ContractsWrapper from 'app/contracts';
+import SwapChainModal from 'app/SwapChainModal';
+import ElectionsProvider from '../app/elections';
+import { SingleActionModalContainer } from 'components/Modal/SingleActionModalContainer';
+import { DualActionModalContainer } from 'components/Modal/DualActionModalContainer';
+
+function getLibrary(provider: any): Web3Provider {
+  const library = new Web3Provider(provider);
+  library.pollingInterval = 12000;
+  return library;
+}
 
 export default function MyApp(props) {
   const { Component, pageProps } = props;
@@ -44,9 +54,12 @@ export default function MyApp(props) {
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"
         />
-        <link rel="shortcut icon" type='image/x-icon' href="/favicon.ico" />
+        <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
         <link rel="preconnect" href="https://fonts.gstatic.com" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500&display=swap" rel="stylesheet"></link>
+        <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500&display=swap"
+          rel="stylesheet"
+        ></link>
       </Head>
 
       <StylesProvider injectFirst>
@@ -54,15 +67,18 @@ export default function MyApp(props) {
           <ThemeProvider theme={theme}>
             <CssBaseline />
             <GlobalLinearProgress visible={loading} />
-            <Web3Provider
-              connectors={connectors}
-              libraryName={'web3.js'}
-              web3Api={Web3}
-            >
-              <StateProvider>
-                <Component {...pageProps} />
-              </StateProvider>
-            </Web3Provider>
+            <Web3ReactProvider getLibrary={getLibrary}>
+              <ContractsWrapper>
+                <ElectionsProvider>
+                  <StateProvider>
+                    <SwapChainModal />
+                    <SingleActionModalContainer />
+                    <DualActionModalContainer />
+                    <Component {...pageProps} />
+                  </StateProvider>
+                </ElectionsProvider>
+              </ContractsWrapper>
+            </Web3ReactProvider>
           </ThemeProvider>
         </MuiThemeProvider>
       </StylesProvider>
