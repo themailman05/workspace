@@ -110,7 +110,7 @@ const IndexPage = () => {
                 <img
                   src="/images/popcorn_v1_rainbow_bg.png"
                   alt="Logo"
-                  className="rounded-full h-12 w-12 md:h-14 md:w-14 absolute"
+                  className="rounded-full h-10 w-10 md:h-14 md:w-14 absolute"
                 ></img>
               </a>
             </Link>
