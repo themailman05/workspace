@@ -25,7 +25,7 @@ const IndexPage = () => {
                 <img
                   src="/images/popcorn_v1_rainbow_bg.png"
                   alt="Logo"
-                  className="rounded-full h-18 w-18"
+                  className="rounded-full h-16 w-16"
                 ></img>
               </a>
             </Link>
