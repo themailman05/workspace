@@ -53,7 +53,7 @@ const IndexPage = () => {
                   <input
                     type="email"
                     name="EMAIL"
-                    className="email w-10/12 px-2"
+                    className="email w-10/12 p-2 text-base"
                     id="mce-EMAIL"
                     placeholder="Email Address"
                     required
@@ -71,10 +71,10 @@ const IndexPage = () => {
                   <div className="clear">
                     <input
                       type="submit"
-                      value="Notify Me!"
+                      value="Join Waitlist"
                       name="subscribe"
                       id="mc-embedded-subscribe"
-                      className="button pb-2 button-primary bg-ctaYellow hover:bg-ctaYellowLight text-gray-800 hover:text-gray-900 rounded-full h-8 flex flex-col items-center justify-center"
+                      className="button pb-2 button-primary bg-ctaYellow hover:bg-ctaYellowLight text-gray-800 hover:text-gray-900 rounded-full h-10 flex flex-col items-center justify-center cursor-pointer"
                       readOnly
                     />
                   </div>
@@ -152,7 +152,7 @@ const IndexPage = () => {
                   <input
                     type="email"
                     name="EMAIL"
-                    className="email w-10/12 px-2"
+                    className="email w-10/12 p-2 text-base"
                     id="mce-EMAIL"
                     placeholder="Email Address"
                     required
@@ -170,10 +170,10 @@ const IndexPage = () => {
                   <div className="clear">
                     <input
                       type="submit"
-                      value="Notify Me!"
+                      value="Join Waitlist"
                       name="subscribe"
                       id="mc-embedded-subscribe"
-                      className="button pb-2 button-primary bg-ctaYellow hover:bg-ctaYellowLight text-gray-800 hover:text-gray-900 rounded-full h-10 md:h-8  flex flex-col items-center justify-center"
+                      className="button pb-2 button-primary bg-ctaYellow hover:bg-ctaYellowLight text-gray-800 hover:text-gray-900 rounded-full h-10 flex flex-col items-center justify-center cursor-pointer"
                       readOnly
                     />
                   </div>
