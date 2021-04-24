@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "../../.env" });
+require('../utils/src/envLoader');
 require("@nomiclabs/hardhat-waffle");
 const { deploy } = require("./scripts/deployWithValues");
 const { deployPrivateSale } = require("./scripts/deployPrivateSale");

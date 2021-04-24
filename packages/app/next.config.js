@@ -1,6 +1,6 @@
 const { join } = require('path');
-require("dotenv").config({ path: "../../.env" });
 
+require('../utils/src/envLoader');
 
 const workspace = join(__dirname, '..');
 
