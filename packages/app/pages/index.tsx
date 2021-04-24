@@ -37,16 +37,49 @@ const IndexPage = () => {
                 Popcorn
               </h1>
               <p className="text-3xl text-gray-900">DeFi for the People</p>
-              <div className="bg-white rounded-full py-2 px-2 mt-8 w-full border border-gray-400 flex flex-row items-center justify-between">
-                <input
-                  className="w-10/12 px-2"
-                  type="text"
-                  placeholder="Email Address"
-                ></input>
-                <button className="button button-primary bg-ctaYellow hover:bg-ctaYellowLight text-gray-800 hover:text-gray-900 rounded-full h-8 flex items-center">
-                  Notify Me!
-                </button>
-              </div>
+              <form
+                action="https://network.us1.list-manage.com/subscribe/post?u=5ce5e82d673fd2cfaf12849a5&amp;id=e85a091ed3"
+                method="post"
+                id="mc-embedded-subscribe-form"
+                name="mc-embedded-subscribe-form"
+                className="validate"
+                target="_blank"
+                noValidate
+              >
+                <div
+                  id="mc_embed_signup_scroll"
+                  className=" bg-white rounded-full py-2 px-2 mt-8 w-full border border-gray-400 flex flex-row items-center justify-between"
+                >
+                  <input
+                    type="email"
+                    name="EMAIL"
+                    className="email w-10/12 px-2"
+                    id="mce-EMAIL"
+                    placeholder="Email Address"
+                    required
+                  />
+                  <div
+                    style={{ position: 'absolute', left: '-5000px' }}
+                    aria-hidden="true"
+                  >
+                    <input
+                      type="text"
+                      name="b_5ce5e82d673fd2cfaf12849a5_e85a091ed3"
+                      tabIndex={-1}
+                    />
+                  </div>
+                  <div className="clear">
+                    <input
+                      type="submit"
+                      value="Notify Me!"
+                      name="subscribe"
+                      id="mc-embedded-subscribe"
+                      className="button pb-2 button-primary bg-ctaYellow hover:bg-ctaYellowLight text-gray-800 hover:text-gray-900 rounded-full h-8 flex flex-col items-center justify-center"
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </form>
             </div>
             <Link href="/docs/Popcorn_whitepaper_v1.pdf" passHref>
               <a
@@ -103,19 +136,49 @@ const IndexPage = () => {
               <p className="text-2xl md:text-3xl text-gray-900">
                 DeFi for the People
               </p>
-              <div className="bg-white rounded-full py-2 px-2 mt-8 w-10/12 border border-gray-400 flex flex-row items-center justify-between">
-                <input
-                  className="w-10/12 px-2"
-                  type="text"
-                  placeholder="Email Address"
-                ></input>
-                <button
-                  className="button rounded-full h-10 md:h-8 flex items-center"
-                  style={{ background: '#F6CB22' }}
+              <form
+                action="https://network.us1.list-manage.com/subscribe/post?u=5ce5e82d673fd2cfaf12849a5&amp;id=e85a091ed3"
+                method="post"
+                id="mc-embedded-subscribe-form"
+                name="mc-embedded-subscribe-form"
+                className="validate"
+                target="_blank"
+                noValidate
+              >
+                <div
+                  id="mc_embed_signup_scroll"
+                  className="bg-white rounded-full py-2 px-2 mt-8 w-10/12 border border-gray-400 flex flex-row items-center justify-between"
                 >
-                  Notify Me!
-                </button>
-              </div>
+                  <input
+                    type="email"
+                    name="EMAIL"
+                    className="email w-10/12 px-2"
+                    id="mce-EMAIL"
+                    placeholder="Email Address"
+                    required
+                  />
+                  <div
+                    style={{ position: 'absolute', left: '-5000px' }}
+                    aria-hidden="true"
+                  >
+                    <input
+                      type="text"
+                      name="b_5ce5e82d673fd2cfaf12849a5_e85a091ed3"
+                      tabIndex={-1}
+                    />
+                  </div>
+                  <div className="clear">
+                    <input
+                      type="submit"
+                      value="Notify Me!"
+                      name="subscribe"
+                      id="mc-embedded-subscribe"
+                      className="button pb-2 button-primary bg-ctaYellow hover:bg-ctaYellowLight text-gray-800 hover:text-gray-900 rounded-full h-10 md:h-8  flex flex-col items-center justify-center"
+                      readOnly
+                    />
+                  </div>
+                </div>
+              </form>
             </div>
             <Link href="/docs/Popcorn_whitepaper_v1.pdf" passHref>
               <a
