@@ -53,7 +53,7 @@ const IndexPage = () => {
                   <input
                     type="email"
                     name="EMAIL"
-                    className="email w-10/12 p-2 text-base"
+                    className="email w-10/12 p-2 text-base mx-4"
                     id="mce-EMAIL"
                     placeholder="Email Address"
                     required
@@ -152,7 +152,7 @@ const IndexPage = () => {
                   <input
                     type="email"
                     name="EMAIL"
-                    className="email w-10/12 p-2 text-base"
+                    className="email w-10/12 p-2 text-base mx-1 md:mx-4"
                     id="mce-EMAIL"
                     placeholder="Email Address"
                     required
