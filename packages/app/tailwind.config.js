@@ -33,10 +33,16 @@ module.exports = {
         secondary: '#B72E73',
         secondaryLight: '#D5264E',
         secondaryDark: '#8739B0',
+
+        ctaYellow: '#F6CB22',
+        ctaYellowLight: '#FFD324',
       },
       backgroundImage: (theme) => ({
         'hero-pattern': "url('/images/popcorn_playing.gif')",
       }),
+      fontFamily: {
+        landing: ['Avenir Next LT Pro', 'sans-serif'],
+      },
     },
   },
   variants: {
