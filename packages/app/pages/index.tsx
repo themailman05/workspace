@@ -48,7 +48,7 @@ const IndexPage = () => {
               >
                 <div
                   id="mc_embed_signup_scroll"
-                  className=" bg-white rounded-full py-2 px-2 mt-8 w-full border border-gray-400 flex flex-row items-center justify-between"
+                  className="shadow-lg bg-white rounded-full py-2 px-2 mt-8 w-full border border-gray-400 flex flex-row items-center justify-between"
                 >
                   <input
                     type="email"
@@ -134,7 +134,7 @@ const IndexPage = () => {
                 Popcorn
               </h1>
               <p className="text-2xl md:text-3xl text-gray-900">
-                DeFi for the People
+                DeFi for the People ✨
               </p>
               <form
                 action="https://network.us1.list-manage.com/subscribe/post?u=5ce5e82d673fd2cfaf12849a5&amp;id=e85a091ed3"
@@ -147,7 +147,7 @@ const IndexPage = () => {
               >
                 <div
                   id="mc_embed_signup_scroll"
-                  className="bg-white rounded-full py-2 px-2 mt-8 w-10/12 border border-gray-400 flex flex-row items-center justify-between"
+                  className="shadow-lg bg-white rounded-full py-2 px-2 mt-8 w-10/12 border border-gray-400 flex flex-row items-center justify-between"
                 >
                   <input
                     type="email"
