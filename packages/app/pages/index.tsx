@@ -134,7 +134,7 @@ const IndexPage = () => {
                 Popcorn
               </h1>
               <p className="text-2xl md:text-3xl text-gray-900">
-                DeFi for the People ✨
+                DeFi for the People
               </p>
               <form
                 action="https://network.us1.list-manage.com/subscribe/post?u=5ce5e82d673fd2cfaf12849a5&amp;id=e85a091ed3"
