@@ -19,7 +19,7 @@ const IndexPage = () => {
     >
       <div className="hidden xl:flex flex-row w-full h-5/6">
         <div className="w-1/2 h-full">
-          <div className="flex flex-col justify-between ml-28 w-1/2 h-full">
+          <div className="flex flex-col justify-between ml-24 md:w-8/12 2xl:mx-auto xl:w-1/2 h-full">
             <Link href="/" passHref>
               <a>
                 <img
