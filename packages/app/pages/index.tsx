@@ -19,13 +19,13 @@ const IndexPage = () => {
     >
       <div className="hidden xl:flex flex-row w-full h-5/6">
         <div className="w-1/2 h-full">
-          <div className="flex flex-col justify-between w-1/2 mx-auto h-full">
+          <div className="flex flex-col justify-between ml-24 md:w-8/12 2xl:mx-auto xl:w-1/2 h-full">
             <Link href="/" passHref>
               <a>
                 <img
                   src="/images/popcorn_v1_rainbow_bg.png"
                   alt="Logo"
-                  className="rounded-full h-18 w-18"
+                  className="rounded-full h-14 w-14"
                 ></img>
               </a>
             </Link>
@@ -110,7 +110,7 @@ const IndexPage = () => {
                 <img
                   src="/images/popcorn_v1_rainbow_bg.png"
                   alt="Logo"
-                  className="rounded-full h-12 w-12 md:h-14 md:w-14 absolute"
+                  className="rounded-full h-10 w-10 md:h-14 md:w-14 absolute"
                 ></img>
               </a>
             </Link>
