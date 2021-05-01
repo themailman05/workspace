@@ -19,8 +19,8 @@ describe('Pool', function () {
 
     this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX");
 
-    MockYearnV2Vault = await ethers.getContractFactory("MockYearnV2Vault");
-    this.mockYearnVault = await MockYearnV2Vault.deploy(this.mockCrvUSDX.address);
+    MockYearnV1Vault = await ethers.getContractFactory("MockYearnV1Vault");
+    this.mockYearnVault = await MockYearnV1Vault.deploy(this.mockCrvUSDX.address);
 
     MockCurveDepositZap = await ethers.getContractFactory("MockCurveDepositZap");
     this.mockCurveDepositZap = await MockCurveDepositZap.deploy(this.mockCrvUSDX.address, this.mockDai.address);
@@ -54,68 +54,61 @@ describe('Pool', function () {
   });
 
   describe("deposits", async function () {
-    xit("accepts DAI deposits", async function () {
-      let amount = parseEther("10");
+    it("accepts DAI deposits", async function () {
+      let amount = parseEther("1000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
       await this.Pool.connect(depositor).deposit(amount);
-      expect(await this.mockDai.connect(depositor).balanceOf(this.Pool.address)).to.equal(amount);
+      expect(await this.mockDai.connect(depositor).balanceOf(depositor.address)).to.equal(parseEther("99000"));
     });
 
     it("reverts unapproved deposits", async function () {
-      let amount = parseEther("10");
+      let amount = parseEther("1000");
       await expect(this.Pool.connect(depositor).deposit(amount)).to.be.revertedWith("transfer amount exceeds allowance");
     });
 
     it("returns popDAI to depositor", async function () {
-      let amount = parseEther("23");
+      let amount = parseEther("1000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
       await this.Pool.connect(depositor).deposit(amount);
       expect(await this.Pool.connect(depositor).balanceOf(depositor.address)).to.equal(amount);
     });
 
-    xit("deposits DAI to the USDX Curve pool in exchange for crvUSDX", async function () {
-      let amount = parseEther("31");
-      await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
-      await this.Pool.connect(depositor).deposit(amount);
-      expect(await this.mockCrvUSDX.connect(depositor).balanceOf(this.Pool.address)).to.equal(amount);
-    });
-
     it("deposits crvUSDX to Yearn in exchange for yvUSDX", async function () {
-      let amount = parseEther("2000");
+      let amount = parseEther("1000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
       await this.Pool.connect(depositor).deposit(amount);
-      expect(await this.mockYearnVault.connect(depositor).balanceOf(this.Pool.address)).to.equal(parseEther("2000"));
+      expect(await this.mockYearnVault.connect(depositor).balanceOf(this.Pool.address)).to.equal(parseEther("1000"));
     });
   });
 
   describe("calculating total assets", async function () {
     it("total assets is Yearn balance * Yearn price per share - slippage from conversion to DAI", async function () {
-      let amount = parseEther("3700");
+      let amount = parseEther("10000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
       await this.Pool.connect(depositor).deposit(amount);
-      expect(await this.Pool.totalValue()).to.equal(parseUnits("3696300000000000000000", "wei"));
+      expect(await this.Pool.totalValue()).to.equal(parseEther("9990"));
     });
   });
 
   describe("pool token accounting", async function () {
     it("depositor earns tokens equal to deposit when pool is empty", async function () {
-      let depositAmount  = parseEther("4300");
+      let depositAmount  = parseEther("10000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, depositAmount);
       await this.Pool.connect(depositor).deposit(depositAmount);
       expect(await this.Pool.balanceOf(depositor.address)).to.equal(depositAmount);
     });
 
     it("deposits emit an event", async function () {
-      let depositAmount  = parseEther("4300");
+      let depositAmount  = parseEther("10000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, depositAmount);
       expect(await this.Pool.connect(depositor).deposit(depositAmount)).to
-        .emit(this.Pool, "Deposit").withArgs(depositor.address, parseEther("4300"), parseEther("4300"));
+        .emit(this.Pool, "Deposit").withArgs(depositor.address, parseEther("10000"), parseEther("10000"));
     });
 
     it("depositors earn tokens proportional to contributions", async function () {
-      let deposit1Amount = parseEther("3000");
-      let deposit2Amount = parseEther("7000");
-      let deposit3Amount = parseEther("11000");
+      let deposit1Amount = parseEther("2000");
+      let deposit2Amount = parseEther("3000");
+      let deposit3Amount = parseEther("10000");
 
       await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit1Amount);
       await this.Pool.connect(depositor1).deposit(deposit1Amount);
@@ -130,30 +123,6 @@ describe('Pool', function () {
     });
 
     it("tokens convert 1:1 minus fees on withdrawal when underlying Yearn vault value is unchanged", async function () {
-      let deposit1Amount = parseEther("3000");
-
-      await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit1Amount);
-      await this.Pool.connect(depositor1).deposit(deposit1Amount);
-
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("3000"));
-      expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("97000"));
-      let withdrawal1Amount = parseEther("3000");
-
-      await expect(await this.Pool.connect(depositor1).withdraw(withdrawal1Amount)).to
-        .emit(this.Pool, "WithdrawalFee").withArgs(
-          rewardsManager.address,
-          parseUnits("14984999971707781424", "wei")).and
-        .emit(this.Pool, "Withdrawal").withArgs(
-          depositor1.address,
-          parseUnits("2982014994369848503399", "wei")
-        );
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("0"));
-
-      let depositor1DaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1DaiBalance).to.equal(parseUnits("99982014994369848503399", "wei"));
-    });
-
-    it("tokens convert at higher rate on withdrawal when underlying Yearn vault value increases", async function () {
       let deposit1Amount = parseEther("10000");
 
       await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit1Amount);
@@ -161,86 +130,78 @@ describe('Pool', function () {
 
       expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("10000"));
       expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("90000"));
-
-      this.mockYearnVault.setTotalAssets(parseEther("20000"));
       let withdrawal1Amount = parseEther("10000");
+
       await expect(await this.Pool.connect(depositor1).withdraw(withdrawal1Amount)).to
         .emit(this.Pool, "WithdrawalFee").withArgs(
           rewardsManager.address,
-          parseUnits("71724229856070318828", "wei")).and
+          parseUnits("49949999905692604747", "wei")).and
         .emit(this.Pool, "Withdrawal").withArgs(
           depositor1.address,
-          parseUnits("14273121741357993446952", "wei")
+          parseUnits("9940049981232828344663", "wei")
         );
       expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("0"));
+
       let depositor1DaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1DaiBalance).to.equal(parseUnits("104273121741357993446952", "wei"));
+      expect(depositor1DaiBalance).to.equal(parseUnits("99940049981232828344663", "wei"));
+    });
+
+    it("tokens convert at higher rate on withdrawal when underlying Yearn vault value increases", async function () {
+      let deposit = parseEther("10000");
+
+      await this.mockDai.connect(depositor).approve(this.Pool.address, deposit);
+      await this.Pool.connect(depositor).deposit(deposit);
+
+      expect(await this.Pool.balanceOf(depositor.address)).to.equal(parseEther("10000"));
+      expect(await this.mockDai.balanceOf(depositor.address)).to.equal(parseEther("90000"));
+
+      this.mockYearnVault.setPricePerFullShare(parseEther("2"));
+      let withdrawal = parseEther("10000");
+      await expect(await this.Pool.connect(depositor).withdraw(withdrawal)).to
+        .emit(this.Pool, "WithdrawalFee").withArgs(
+          rewardsManager.address,
+          parseUnits("99899999371284034710", "wei")).and
+        .emit(this.Pool, "Withdrawal").withArgs(
+          depositor.address,
+          parseUnits("19880099874885522907410", "wei")
+        );
+      expect(await this.Pool.balanceOf(depositor.address)).to.equal(parseEther("0"));
+      let depositorDaiBalance = await this.mockDai.balanceOf(depositor.address);
+      expect(depositorDaiBalance).to.equal(parseUnits("109880099874885522907410", "wei"));
     });
 
     it("handles multiple deposits", async function () {
-      let deposit1Amount = parseEther("1000");
-      let deposit2Amount = parseEther("2000");
-      let deposit3Amount = parseEther("5000");
-      let deposit4Amount = parseEther("3000");
-      let deposit5Amount = parseEther("4000");
-      let deposit6Amount = parseEther("5000");
+      let deposits = [
+        [depositor1, parseEther("1000"), parseEther("1000"),  parseEther("99000")],
+        [depositor1, parseEther("2000"), parseEther("3000"),  parseEther("97000")],
+        [depositor2, parseEther("3000"), parseEther("3000"),  parseEther("97000")],
+        [depositor1, parseEther("4000"), parseEther("7000"),  parseEther("93000")],
+        [depositor1, parseEther("5000"), parseEther("12000"), parseEther("88000")],
+        [depositor2, parseEther("6000"), parseEther("9000"),  parseEther("91000")]
+      ]
 
-      await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit1Amount);
-      await this.Pool.connect(depositor1).deposit(deposit1Amount);
+      for ([depositor, deposit, poolBalance, daiBalance] of deposits) {
+        await this.mockDai.connect(depositor).approve(this.Pool.address, deposit);
+        await this.Pool.connect(depositor).deposit(deposit);
 
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("1000"));
-      expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("99000"));
+        expect(await this.Pool.balanceOf(depositor.address)).to.equal(poolBalance);
+        expect(await this.mockDai.balanceOf(depositor.address)).to.equal(daiBalance);
+      }
 
-      await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit2Amount);
-      await this.Pool.connect(depositor1).deposit(deposit2Amount);
+      expect(await this.mockYearnVault.balance()).to.equal(parseEther("21000"));
+      this.mockYearnVault.setPricePerFullShare(parseEther("1.5"));
 
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("3000"));
-      expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("97000"));
-
-      await this.mockDai.connect(depositor2).approve(this.Pool.address, deposit3Amount);
-      await this.Pool.connect(depositor2).deposit(deposit3Amount);
-
-      expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("5000"));
-      expect(await this.mockDai.balanceOf(depositor2.address)).to.equal(parseEther("95000"));
-
-      await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit4Amount);
-      await this.Pool.connect(depositor1).deposit(deposit4Amount);
-
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("6000"));
-      expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("94000"));
-
-      await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit5Amount);
-      await this.Pool.connect(depositor1).deposit(deposit5Amount);
-
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("10000"));
-      expect(await this.mockDai.balanceOf(depositor1.address)).to.equal(parseEther("90000"));
-
-      await this.mockDai.connect(depositor2).approve(this.Pool.address, deposit6Amount);
-      await this.Pool.connect(depositor2).deposit(deposit6Amount);
-
-      expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("10000"));
-      expect(await this.mockDai.balanceOf(depositor2.address)).to.equal(parseEther("90000"));
-
-      expect(await this.mockYearnVault.totalAssets()).to.equal(parseEther("20000"));
-      this.mockYearnVault.setTotalAssets(parseEther("40000"));
-
-      let withdrawal1Amount = parseEther("1000");
+      let withdrawal1Amount = parseEther("10000");
       await this.Pool.connect(depositor1).withdraw(withdrawal1Amount);
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("9000"));
+      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("2000"));
       let depositor1DaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1DaiBalance).to.equal(parseUnits("91427312173622230019809", "wei"));
+      expect(depositor1DaiBalance).to.equal(parseUnits("102910074907728073251568", "wei"));
 
-      let withdrawal2Amount = parseEther("10000");
+      let withdrawal2Amount = parseEther("1000");
       await this.Pool.connect(depositor2).withdraw(withdrawal2Amount);
-      expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("0"));
+      expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("8000"));
       let depositor2DaiBalance = await this.mockDai.balanceOf(depositor2.address);
-      expect(depositor2DaiBalance).to.equal(parseUnits("104273121717701115178387", "wei"));
-
-      let withdrawal3Amount = parseEther("9000");
-      await this.Pool.connect(depositor1).withdraw(withdrawal3Amount);
-      expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("0"));
-      let depositor1UpdatedDaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1UpdatedDaiBalance).to.equal(parseUnits("104273121702884167042179", "wei"));
+      expect(depositor2DaiBalance).to.equal(parseUnits("92491007488661500544994", "wei"));
     });
 
     it("multiple small deposits", async function () {
@@ -260,20 +221,20 @@ describe('Pool', function () {
       expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("10000"));
       expect(await this.mockDai.balanceOf(depositor2.address)).to.equal(parseEther("90000"));
 
-      expect(await this.mockYearnVault.totalAssets()).to.equal(parseEther("20000"));
-      this.mockYearnVault.setTotalAssets(parseEther("40000"));
+      expect(await this.mockYearnVault.balance()).to.equal(parseEther("20000"));
+      this.mockYearnVault.setPricePerFullShare(parseEther("2"));
 
       let withdrawal1Amount = parseEther("10000");
       await this.Pool.connect(depositor1).withdraw(withdrawal1Amount);
       expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("0"));
       let depositor1DaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1DaiBalance).to.equal(parseUnits("104273121733924625951755", "wei"));
+      expect(depositor1DaiBalance).to.equal(parseUnits("109880099806072561824536", "wei"));
 
       let withdrawal2Amount = parseEther("10000");
       await this.Pool.connect(depositor2).withdraw(withdrawal2Amount);
       expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("0"));
       let depositor2DaiBalance = await this.mockDai.balanceOf(depositor2.address);
-      expect(depositor2DaiBalance).to.equal(parseUnits("104273121715403440765791", "wei"));
+      expect(depositor2DaiBalance).to.equal(parseUnits("109880099756026772230583", "wei"));
     });
 
     it("multiple small withdrawals", async function () {
@@ -291,8 +252,8 @@ describe('Pool', function () {
       expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("10000"));
       expect(await this.mockDai.balanceOf(depositor2.address)).to.equal(parseEther("90000"));
 
-      expect(await this.mockYearnVault.totalAssets()).to.equal(parseEther("20000"));
-      this.mockYearnVault.setTotalAssets(parseEther("40000"));
+      expect(await this.mockYearnVault.balance()).to.equal(parseEther("20000"));
+      this.mockYearnVault.setPricePerFullShare(parseEther("2"));
 
       let withdrawal1Amount = parseEther("1000");
       for (let i=0; i<10; i++) {
@@ -300,45 +261,67 @@ describe('Pool', function () {
       }
       expect(await this.Pool.balanceOf(depositor1.address)).to.equal(parseEther("0"));
       let depositor1DaiBalance = await this.mockDai.balanceOf(depositor1.address);
-      expect(depositor1DaiBalance).to.equal(parseUnits("104273121656661073103396", "wei"));
+      expect(depositor1DaiBalance).to.equal(parseUnits("109880099637168024634601", "wei"));
 
       let withdrawal2Amount = parseEther("10000");
       await this.Pool.connect(depositor2).withdraw(withdrawal2Amount);
       expect(await this.Pool.balanceOf(depositor2.address)).to.equal(parseEther("0"));
       let depositor2DaiBalance = await this.mockDai.balanceOf(depositor2.address);
-      expect(depositor2DaiBalance).to.equal(parseUnits("104273121554794556875496", "wei"));
+      expect(depositor2DaiBalance).to.equal(parseUnits("109880099361916192224136", "wei"));
     });
 
     it("deposits at different magnitudes", async function () {
 
       async function _makeDeposit(depositor, amount) {
-        await this.mockDai.mint(depositor.address, amount);
-        await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
-        await this.Pool.connect(depositor).deposit(amount);
-        //expect(await this.Pool.balanceOf(depositor.address)).to.equal(amount.mul(98).div(100));
+        let weiAmount = parseEther(amount);
+        await this.mockDai.mint(depositor.address, weiAmount);
+        await this.mockDai.connect(depositor).approve(this.Pool.address, weiAmount);
+        await this.Pool.connect(depositor).deposit(weiAmount);
       }
       const makeDeposit = _makeDeposit.bind(this);
+      let deposits = [
+        [
+          depositor1,
+          "1000",
+          "9989999930610792356",
+          "1988009986191547678906"
+        ],
+        [
+          depositor2,
+          "10000",
+          "99899999054623432903",
+          "19880099811870063147865"
+        ],
+        [
+          depositor3,
+          "100000",
+          "998999988031377359762",
+          "198800997618244094592817"
+        ],
+        [
+          depositor4,
+          "1000000",
+          "9989999855165135899302",
+          "1988009971177862043961285"
+        ],
+        [
+          depositor5,
+          "100000000",
+          "998999983001649903493407",
+          "198800996617328330795188044"
+        ]
+      ]
 
-      let deposit1Amount = parseEther("1000");
-      await makeDeposit(depositor1, deposit1Amount);
+      for([depositor, deposit] of deposits) {
+        await makeDeposit(depositor, deposit);
+      }
 
-      let deposit2Amount = parseEther("10000");
-      await makeDeposit(depositor2, deposit2Amount);
-
-      let deposit3Amount = parseEther("100000");
-      await makeDeposit(depositor3, deposit3Amount);
-
-      let deposit4Amount = parseEther("1000000");
-      await makeDeposit(depositor4, deposit4Amount);
-
-      let deposit5Amount = parseEther("100000000");
-      await makeDeposit(depositor5, deposit5Amount);
-
-      expect(await this.mockYearnVault.totalAssets()).to.equal(parseEther("101111000"));
-      this.mockYearnVault.setTotalAssets(parseEther("202222000"));
+      expect(await this.mockYearnVault.balance()).to.equal(parseEther("101111000"));
+      this.mockYearnVault.setPricePerFullShare(parseEther("2"));
 
       async function _expectation(depositor, amount, fee, withdrawal) {
-        await expect(await this.Pool.connect(depositor).withdraw(amount)).to
+        let weiAmount = parseEther(amount);
+        await expect(await this.Pool.connect(depositor).withdraw(weiAmount)).to
           .emit(this.Pool, "WithdrawalFee").withArgs(
             rewardsManager.address,
             parseUnits(fee, "wei")).and
@@ -350,40 +333,14 @@ describe('Pool', function () {
       }
       const expectFeeAndWithdrawalForAmount = _expectation.bind(this);
 
-      await expectFeeAndWithdrawalForAmount(
-        depositor1,
-        deposit1Amount,
-        "7172422985321313913",
-        "1427312174078941468687"
-      );
-
-      await expectFeeAndWithdrawalForAmount(
-        depositor2,
-        deposit2Amount,
-        "71724229760143381388",
-        "14273121722268532896405"
-      );
-
-      await expectFeeAndWithdrawalForAmount(
-        depositor3,
-        deposit3Amount,
-        "717242296670721756149",
-        "142731217037473629473746"
-      );
-
-      await expectFeeAndWithdrawalForAmount(
-        depositor4,
-        deposit4Amount,
-        "7172422957400095454479",
-        "1427312168522618995441400"
-      );
-
-      await expectFeeAndWithdrawalForAmount(
-        depositor5,
-        deposit5Amount,
-        "717242294809296738025261",
-        "142731216667050050867027035"
-      );
+      for([depositor, deposit, withdrawalFee, withdrawal] of deposits) {
+        await expectFeeAndWithdrawalForAmount(
+          depositor,
+          deposit,
+          withdrawalFee,
+          withdrawal
+        );
+      }
     });
   });
 
@@ -407,16 +364,16 @@ describe('Pool', function () {
       let amount = parseEther("20000");
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
       await this.Pool.connect(depositor).deposit(amount);
-      await this.mockYearnVault.setTotalAssets(parseEther("25000"));
+      await this.mockYearnVault.setPricePerFullShare(parseEther("2"));
       await expect(await this.Pool.connect(depositor).withdraw(parseEther("10000"))).to
         .emit(this.Pool, "WithdrawalFee").withArgs(
           rewardsManager.address,
-          parseUnits("58888684799266317859", "wei")).and
+          parseUnits("99899999371284034710", "wei")).and
         .emit(this.Pool, "Withdrawal").withArgs(
           depositor.address,
-          parseUnits("11718848275053997253966", "wei")
+          parseUnits("19880099874885522907410", "wei")
         );
-      expect(await this.Pool.connect(depositor).valueFor(parseEther("10000"))).to.equal(parseUnits("11718848275053997280408", "wei"));
+      expect(await this.Pool.connect(depositor).valueFor(parseEther("10000"))).to.equal(parseUnits("19880099874885522942893", "wei"));
     });
 
     it("is unchanged by other deposits", async function () {
@@ -453,7 +410,7 @@ describe('Pool', function () {
           depositor.address,
           parseUnits("9940049937442761563046", "wei")
         );
-      expect(await this.Pool.connect(depositor).valueFor(parseEther("10000"))).to.equal(parseUnits("9940049937442761562773", "wei"));
+      expect(await this.Pool.connect(depositor).valueFor(parseEther("10000"))).to.equal(parseUnits("9940049937442761566750", "wei"));
     });
 
     it("calculating value for a single pool token", async function () {
@@ -461,9 +418,9 @@ describe('Pool', function () {
       await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
       await this.Pool.connect(depositor).deposit(amount);
       let valueForOneShare = await this.Pool.valueFor(parseEther("1"));
-      let poolTokenValue = await this.Pool.poolTokenValue();
-      expect(poolTokenValue).to.equal(parseUnits("994004998748845907", "wei"));
-      expect(valueForOneShare).to.equal(poolTokenValue);
+      let poolTokenPrice = await this.Pool.poolTokenPrice();
+      expect(poolTokenPrice).to.equal(parseUnits("994004998748845907", "wei"));
+      expect(valueForOneShare).to.equal(poolTokenPrice);
     });
   });
 
@@ -501,7 +458,6 @@ describe('Pool', function () {
     it("feesUpdatedAt is contract creation block for new pool", async function () {
       let deployBlock = await provider.getBlock(this.Pool.deployTransaction.blockNumber);
       let deployTimestamp = deployBlock.timestamp;
-      expect(await this.Pool.deployedAt()).to.equal(deployTimestamp);
       expect(await this.Pool.feesUpdatedAt()).to.equal(deployTimestamp);
     });
 
@@ -517,7 +473,7 @@ describe('Pool', function () {
       await this.Pool.takeFees();
 
       let managementTokenBalance = await this.Pool.balanceOf(this.Pool.address);
-      expect(await this.Pool.poolTokenValue()).to.equal(parseUnits("494567487984330135", "wei"));
+      expect(await this.Pool.poolTokenPrice()).to.equal(parseUnits("494567487984330135", "wei"));
       expect(await this.Pool.valueFor(managementTokenBalance)).to.equal(parseUnits("49325120156651547150", "wei"));
     });
   });
@@ -549,6 +505,22 @@ describe('Pool', function () {
 
     it("non-owner cannot set managementFee", async function () {
       expect(this.Pool.connect(depositor).setManagementFee(500)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    describe("sending accrued fees to rewards manager", async function() {
+      it("owner can withdraw accrued fees", async function () {
+        let deposit1Amount = parseEther("10000");
+        await this.mockDai.connect(depositor1).approve(this.Pool.address, deposit1Amount);
+        await this.Pool.connect(depositor1).deposit(deposit1Amount);
+        await this.mockYearnVault.setPricePerFullShare(parseEther("2"));
+        await provider.send("evm_increaseTime", [1 * 365 * 24 * 60 * 60]);
+        await this.Pool.takeFees();
+        expect(await this.Pool.balanceOf(this.Pool.address)).to.equal(parseUnits("793881391039782350409", "wei"));
+        await this.Pool.withdrawAccruedFees();
+        expect(await this.Pool.balanceOf(this.Pool.address)).to.equal(0);
+        expect(await this.mockDai.balanceOf(rewardsManager.address)).to.equal(parseUnits("1469513108245010791860", "wei"));
+      });
+
     });
   });
 

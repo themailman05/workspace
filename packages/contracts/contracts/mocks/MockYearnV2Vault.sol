@@ -7,12 +7,9 @@ import "./MockERC20.sol";
 import "hardhat/console.sol";
 
 contract MockYearnV2Vault is MockERC20 {
-
   MockERC20 public token;
 
-  constructor(address token_)
-    MockERC20("Mock crvUSDX yVault", "yvUSDX")
-  {
+  constructor(address token_) MockERC20("Mock crvUSDX yVault", "yvUSDX") {
     token = MockERC20(token_);
   }
 
@@ -21,7 +18,7 @@ contract MockYearnV2Vault is MockERC20 {
   }
 
   function pricePerShare() external view returns (uint256) {
-    return _shareValue(10 ** this.decimals());
+    return _shareValue(10**this.decimals());
   }
 
   function deposit(uint256 amount) external returns (uint256) {
@@ -37,22 +34,25 @@ contract MockYearnV2Vault is MockERC20 {
     return tokenAmount;
   }
 
-  function _issueSharesForAmount(address to, uint256 amount) internal returns (uint256) {
+  function _issueSharesForAmount(address to, uint256 amount)
+    internal
+    returns (uint256)
+  {
     uint256 shares = 0;
-    if(this.totalSupply() == 0) {
+    if (this.totalSupply() == 0) {
       shares = amount;
     } else {
-      shares = amount * this.totalSupply() / this.totalAssets();
+      shares = (amount * this.totalSupply()) / this.totalAssets();
     }
     _mint(to, shares);
     return shares;
   }
 
-  function _shareValue(uint256 shares) internal view returns (uint256)  {
+  function _shareValue(uint256 shares) internal view returns (uint256) {
     if (this.totalSupply() == 0) {
       return shares;
     }
-    return shares * this.totalAssets() / this.totalSupply();
+    return (shares * this.totalAssets()) / this.totalSupply();
   }
 
   // Test helpers
@@ -61,5 +61,4 @@ contract MockYearnV2Vault is MockERC20 {
     token.burn(address(this), token.balanceOf(address(this)));
     token.mint(address(this), totalAssets_);
   }
-
 }
