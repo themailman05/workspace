@@ -64,9 +64,9 @@ contract Pool is ERC20, Ownable {
   uint256 public feesUpdatedAt;
   uint256 public poolTokenHWM = 10e17;
 
-  event Deposit(address from, uint256 deposit, uint256 poolTokens);
-  event Withdrawal(address to, uint256 amount);
-  event WithdrawalFee(address to, uint256 amount);
+  event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
+  event Withdrawal(address indexed to, uint256 amount);
+  event WithdrawalFee(address indexed to, uint256 amount);
   event PerformanceFee(uint256 amount);
   event ManagementFee(uint256 amount);
   event WithdrawalFeeChanged(uint256 previousBps, uint256 newBps);
