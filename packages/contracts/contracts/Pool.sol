@@ -7,8 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-
-import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface YearnVault is IERC20 {
   function token() external view returns (address);
@@ -41,7 +40,7 @@ interface DAI is IERC20 {}
 
 interface CrvLPToken is IERC20 {}
 
-contract Pool is ERC20, Ownable {
+contract Pool is ERC20, Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for DAI;
   using SafeERC20 for CrvLPToken;
@@ -52,7 +51,6 @@ contract Pool is ERC20, Ownable {
   YearnVault public yearnVault;
   CurveDepositZap public curveDepositZap;
   address public rewardsManager;
-  address public governance;
 
   uint256 constant BPS_DENOMINATOR = 10_000;
   uint256 constant YEARN_PRECISION = 10e17;
@@ -61,8 +59,8 @@ contract Pool is ERC20, Ownable {
   uint256 public withdrawalFee = 50;
   uint256 public managementFee = 200;
   uint256 public performanceFee = 2000;
-  uint256 public feesUpdatedAt;
   uint256 public poolTokenHWM = 10e17;
+  uint256 public feesUpdatedAt;
 
   event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address indexed to, uint256 amount);
@@ -79,6 +77,12 @@ contract Pool is ERC20, Ownable {
     CurveDepositZap curveDepositZap_,
     address rewardsManager_
   ) ERC20("Popcorn DAI Pool", "popDAI") {
+    require(address(dai_) != address(0));
+    require(address(yearnVault_) != address(0));
+    require(address(curveDepositZap_) != address(0));
+    require(rewardsManager_ != address(0));
+    require(address(yearnVault.token()) != address(0));
+
     dai = dai_;
     yearnVault = yearnVault_;
     crvLPToken = CrvLPToken(yearnVault.token());
@@ -87,7 +91,7 @@ contract Pool is ERC20, Ownable {
     feesUpdatedAt = block.timestamp;
   }
 
-  function deposit(uint256 amount) public returns (uint256) {
+  function deposit(uint256 amount) external nonReentrant returns (uint256) {
     uint256 poolTokens = _issuePoolTokens(msg.sender, amount);
     emit Deposit(msg.sender, amount, poolTokens);
 
@@ -101,7 +105,7 @@ contract Pool is ERC20, Ownable {
     return balanceOf(msg.sender);
   }
 
-  function withdraw(uint256 amount) public returns (uint256, uint256) {
+  function withdraw(uint256 amount) external nonReentrant returns (uint256, uint256) {
     require(amount <= balanceOf(msg.sender));
 
     _takeFees();
@@ -116,6 +120,38 @@ contract Pool is ERC20, Ownable {
     _reportPoolTokenHWM();
 
     return (withdrawal, fee);
+  }
+
+  function takeFees() nonReentrant external {
+    _takeFees();
+    _reportPoolTokenHWM();
+  }
+
+  function setWithdrawalFee(uint256 withdrawalFee_) external onlyOwner {
+    require(withdrawalFee != withdrawalFee_, "Same withdrawalFee");
+    uint256 _previousWithdrawalFee = withdrawalFee;
+    withdrawalFee = withdrawalFee_;
+    emit WithdrawalFeeChanged(_previousWithdrawalFee, withdrawalFee);
+  }
+
+  function setManagementFee(uint256 managementFee_) external onlyOwner {
+    require(managementFee != managementFee_, "Same managementFee");
+    uint256 _previousManagementFee = managementFee;
+    managementFee = managementFee_;
+    emit ManagementFeeChanged(_previousManagementFee, managementFee);
+  }
+
+  function setPerformanceFee(uint256 performanceFee_) external onlyOwner {
+    require(performanceFee != performanceFee_, "Same performanceFee");
+    uint256 _previousPerformanceFee = performanceFee;
+    performanceFee = performanceFee_;
+    emit PerformanceFeeChanged(_previousPerformanceFee, performanceFee);
+  }
+
+  function withdrawAccruedFees() external onlyOwner {
+    uint256 tokenBalance = balanceOf(address(this));
+    uint256 daiAmount = _withdrawPoolTokens(address(this), tokenBalance);
+    _transferDai(rewardsManager, daiAmount);
   }
 
   function poolTokenPrice() public view returns (uint256) {
@@ -133,37 +169,6 @@ contract Pool is ERC20, Ownable {
     return shareValue.sub(fee);
   }
 
-  function takeFees() public {
-    _takeFees();
-    _reportPoolTokenHWM();
-  }
-
-  function setWithdrawalFee(uint256 withdrawalFee_) public onlyOwner {
-    require(withdrawalFee != withdrawalFee_, "Same withdrawalFee");
-    uint256 _previousWithdrawalFee = withdrawalFee;
-    withdrawalFee = withdrawalFee_;
-    emit WithdrawalFeeChanged(_previousWithdrawalFee, withdrawalFee);
-  }
-
-  function setManagementFee(uint256 managementFee_) public onlyOwner {
-    require(managementFee != managementFee_, "Same managementFee");
-    uint256 _previousManagementFee = managementFee;
-    managementFee = managementFee_;
-    emit ManagementFeeChanged(_previousManagementFee, managementFee);
-  }
-
-  function setPerformanceFee(uint256 performanceFee_) public onlyOwner {
-    require(performanceFee != performanceFee_, "Same performanceFee");
-    uint256 _previousPerformanceFee = performanceFee;
-    performanceFee = performanceFee_;
-    emit PerformanceFeeChanged(_previousPerformanceFee, performanceFee);
-  }
-
-  function withdrawAccruedFees() public onlyOwner {
-    uint256 tokenBalance = balanceOf(address(this));
-    uint256 daiAmount = _withdrawPoolTokens(address(this), tokenBalance);
-    _transferDai(rewardsManager, daiAmount);
-  }
 
   function _totalValue() internal view returns (uint256) {
     uint256 yvShareBalance = yearnVault.balanceOf(address(this));
