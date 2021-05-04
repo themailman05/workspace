@@ -81,7 +81,6 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     require(address(yearnVault_) != address(0));
     require(address(curveDepositZap_) != address(0));
     require(rewardsManager_ != address(0));
-    require(address(yearnVault.token()) != address(0));
 
     dai = dai_;
     yearnVault = yearnVault_;
@@ -92,6 +91,8 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function deposit(uint256 amount) external nonReentrant returns (uint256) {
+    _takeFees();
+
     uint256 poolTokens = _issuePoolTokens(msg.sender, amount);
     emit Deposit(msg.sender, amount, poolTokens);
 
@@ -99,14 +100,13 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     uint256 crvLPTokenAmount = _sendToCurve(amount);
     _sendToYearn(crvLPTokenAmount);
 
-    _takeFees();
     _reportPoolTokenHWM();
 
     return balanceOf(msg.sender);
   }
 
   function withdraw(uint256 amount) external nonReentrant returns (uint256, uint256) {
-    require(amount <= balanceOf(msg.sender));
+    require(amount <= balanceOf(msg.sender), "Insufficient pool token balance");
 
     _takeFees();
 
@@ -154,7 +154,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     _transferDai(rewardsManager, daiAmount);
   }
 
-  function poolTokenPrice() public view returns (uint256) {
+  function pricePerPoolToken() public view returns (uint256) {
     return valueFor(10**decimals());
   }
 
@@ -176,13 +176,13 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function _reportPoolTokenHWM() internal {
-    if (poolTokenPrice() > poolTokenHWM) {
-      poolTokenHWM = poolTokenPrice();
+    if (pricePerPoolToken() > poolTokenHWM) {
+      poolTokenHWM = pricePerPoolToken();
     }
   }
 
   function _issueTokensForFeeAmount(uint256 amount) internal {
-    uint256 tokens = amount.mul(poolTokenPrice()).div(10**decimals());
+    uint256 tokens = amount.mul(pricePerPoolToken()).div(10**decimals());
     _issuePoolTokens(address(this), tokens);
   }
 
@@ -192,20 +192,19 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
       (managementFee.mul(totalValue()).mul(period)).div(
         SECONDS_PER_YEAR.mul(BPS_DENOMINATOR)
       );
-    _issueTokensForFeeAmount(fee);
-    emit ManagementFee(fee);
+      if (fee > 0) {
+        _issueTokensForFeeAmount(fee);
+        emit ManagementFee(fee);
+      }
   }
 
   function _takePerformanceFee() internal {
-    if (poolTokenHWM == 10e17) {
-      return;
-    }
-    int256 gain = int256(poolTokenPrice() - poolTokenHWM);
+    int256 gain = int256(pricePerPoolToken() - poolTokenHWM);
     if (gain > 0) {
-      uint256 changeInValuePerToken = uint256(gain);
+      uint256 changeInPricePerToken = uint256(gain);
       uint256 fee =
         performanceFee
-          .mul(changeInValuePerToken)
+          .mul(changeInPricePerToken)
           .mul(totalSupply())
           .div(BPS_DENOMINATOR)
           .div(10e17);

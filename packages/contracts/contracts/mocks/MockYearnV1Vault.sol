@@ -22,6 +22,9 @@ contract MockYearnV1Vault is MockERC20 {
   }
 
   function getPricePerFullShare() public view returns (uint256) {
+    if (totalSupply() == 0) {
+      return 1e18;
+    }
     return balance().mul(1e18).div(totalSupply());
   }
 
