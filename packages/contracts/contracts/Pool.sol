@@ -199,9 +199,8 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function _takePerformanceFee() internal {
-    int256 gain = int256(pricePerPoolToken() - poolTokenHWM);
-    if (gain > 0) {
-      uint256 changeInPricePerToken = uint256(gain);
+    if (pricePerPoolToken() > poolTokenHWM) {
+      uint256 changeInPricePerToken = pricePerPoolToken().sub(poolTokenHWM);
       uint256 fee =
         performanceFee
           .mul(changeInPricePerToken)
