@@ -9,6 +9,8 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+import "hardhat/console.sol";
+
 interface YearnVault is IERC20 {
   function token() external view returns (address);
 
@@ -53,13 +55,12 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   address public rewardsManager;
 
   uint256 constant BPS_DENOMINATOR = 10_000;
-  uint256 constant YEARN_PRECISION = 10e17;
   uint256 constant SECONDS_PER_YEAR = 31_556_952;
 
   uint256 public withdrawalFee = 50;
   uint256 public managementFee = 200;
   uint256 public performanceFee = 2000;
-  uint256 public poolTokenHWM = 10e17;
+  uint256 public poolTokenHWM = 1e18;
   uint256 public feesUpdatedAt;
 
   event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
@@ -206,7 +207,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
           .mul(changeInPricePerToken)
           .mul(totalSupply())
           .div(BPS_DENOMINATOR)
-          .div(10e17);
+          .div(1e18);
       _issueTokensForFeeAmount(fee);
       emit PerformanceFee(fee);
     }
@@ -247,9 +248,9 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     returns (uint256)
   {
     if (totalSupply() == 0) {
-      return YEARN_PRECISION;
+      return 1e18;
     }
-    return poolTokenAmount.mul(YEARN_PRECISION).div(totalSupply());
+    return poolTokenAmount.mul(1e18).div(totalSupply());
   }
 
   function _issuePoolTokens(address to, uint256 amount)
@@ -320,7 +321,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     returns (uint256)
   {
     return
-      _yearnBalance().mul(_poolShareFor(poolTokenAmount)).div(YEARN_PRECISION);
+      _yearnBalance().mul(_poolShareFor(poolTokenAmount)).div(1e18);
   }
 
   function _withdrawFromYearn(uint256 yvShares) internal returns (uint256) {
@@ -332,7 +333,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
   function _yearnShareValue(uint256 yvShares) internal view returns (uint256) {
     uint256 crvLPTokens =
-      yearnVault.getPricePerFullShare().mul(yvShares).div(YEARN_PRECISION);
+      yearnVault.getPricePerFullShare().mul(yvShares).div(1e18);
     return curveDepositZap.calc_withdraw_one_coin(crvLPTokens, 1);
   }
 }
