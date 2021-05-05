@@ -492,20 +492,51 @@ describe('Pool', function () {
         await this.Pool.connect(owner).setManagementFee(0);
       });
 
-      it("no performance fee when value is unchanged", async function () {
+      it("takes no performance fee when value is unchanged", async function () {
         let amount = parseEther("20000");
         await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
         await this.Pool.connect(depositor).deposit(amount);
         await expect(this.Pool.connect(depositor).withdraw(parseEther("10000"))).not.to.emit(this.Pool, "PerformanceFee");
       });
 
-      it("takes performance fee when value increases", async function () {
+      it("takes a performance fee when value increases", async function () {
         let amount = parseEther("20000");
         await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
         await this.Pool.connect(depositor).deposit(amount);
         await this.mockYearnVault.setPricePerFullShare(parseEther("1.5"));
         await expect(this.Pool.connect(depositor).withdraw(parseEther("10000"))).to.emit(this.Pool, "PerformanceFee").withArgs(parseEther("1964.03"));
       });
+
+      it("takes no performance fee when value decreases below HWM", async function () {
+        let amount = parseEther("20000");
+        await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
+        await this.Pool.connect(depositor).deposit(amount);
+        await this.mockYearnVault.setPricePerFullShare(parseEther("1.5"));
+        expect(await this.Pool.pricePerPoolToken()).to.equal(parseUnits("1491007500000000000", "wei"));
+        await expect(this.Pool.connect(depositor).withdraw(parseEther("10000"))).to.emit(this.Pool, "PerformanceFee").withArgs(parseEther("1964.03"));
+        await this.mockYearnVault.setPricePerFullShare(parseEther("1.25"));
+        expect(await this.Pool.pricePerPoolToken()).to.equal(parseUnits("1083814959877500528", "wei"));
+        await expect(this.Pool.connect(depositor).withdraw(parseEther("10000"))).not.to.emit(this.Pool, "PerformanceFee")
+      });
+
+      it("takes a performance fee when value decreases below HWM, then increases above it", async function () {
+        let amount = parseEther("30000");
+        await this.mockDai.connect(depositor).approve(this.Pool.address, amount);
+        await this.Pool.connect(depositor).deposit(amount);
+
+        await this.mockYearnVault.setPricePerFullShare(parseEther("1.5"));
+        expect(await this.Pool.pricePerPoolToken()).to.equal(parseUnits("1491007499999985090", "wei"));
+        await expect(this.Pool.connect(depositor).withdraw(parseEther("10000"))).to.emit(this.Pool, "PerformanceFee").withArgs(parseUnits("2946044999999910540000", "wei"));
+
+        await this.mockYearnVault.setPricePerFullShare(parseEther("1.25"));
+        expect(await this.Pool.pricePerPoolToken()).to.equal(parseUnits("1083814959877515580", "wei"));
+        await expect(this.Pool.connect(depositor).withdraw(parseEther("10000"))).not.to.emit(this.Pool, "PerformanceFee")
+
+        await this.mockYearnVault.setPricePerFullShare(parseEther("1.75"));
+        expect(await this.Pool.pricePerPoolToken()).to.equal(parseUnits("1517340943828506569", "wei"));
+        await expect(this.Pool.connect(depositor).withdraw(parseEther("10000"))).to.emit(this.Pool, "PerformanceFee").withArgs(parseUnits("623955532097938987758", "wei"));
+      });
+
     });
 
     describe("combined fees", async function() {
@@ -784,12 +815,21 @@ describe('Pool', function () {
     });
 
     it("owner can set managementFee", async function () {
-      await this.Pool.connect(owner).setWithdrawalFee(500);
-      expect(await this.Pool.withdrawalFee()).to.equal(500);
+      await this.Pool.connect(owner).setManagementFee(500);
+      expect(await this.Pool.managementFee()).to.equal(500);
     });
 
     it("non-owner cannot set managementFee", async function () {
       expect(this.Pool.connect(depositor).setManagementFee(500)).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("owner can set performanceFee", async function () {
+      await this.Pool.connect(owner).setPerformanceFee(5000);
+      expect(await this.Pool.performanceFee()).to.equal(5000);
+    });
+
+    it("non-owner cannot set performanceFee", async function () {
+      expect(this.Pool.connect(depositor).setPerformanceFee(500)).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     describe("sending accrued fees to rewards manager", async function() {
