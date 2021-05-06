@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { waffle } = require("hardhat");
+const { BigNumber } = require("ethers");
 const { parseEther, parseUnits } = require("ethers/lib/utils");
 const provider = waffle.provider;
 

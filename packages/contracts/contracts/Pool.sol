@@ -9,8 +9,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-import "hardhat/console.sol";
-
 interface YearnVault is IERC20 {
   function token() external view returns (address);
 
@@ -73,9 +71,9 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   event PerformanceFeeChanged(uint256 previousBps, uint256 newBps);
 
   constructor(
-    DAI dai_,
-    YearnVault yearnVault_,
-    CurveDepositZap curveDepositZap_,
+    address dai_,
+    address yearnVault_,
+    address curveDepositZap_,
     address rewardsManager_
   ) ERC20("Popcorn DAI Pool", "popDAI") {
     require(address(dai_) != address(0));
@@ -83,10 +81,10 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     require(address(curveDepositZap_) != address(0));
     require(rewardsManager_ != address(0));
 
-    dai = dai_;
-    yearnVault = yearnVault_;
+    dai = DAI(dai_);
+    yearnVault = YearnVault(yearnVault_);
     crvLPToken = CrvLPToken(yearnVault.token());
-    curveDepositZap = curveDepositZap_;
+    curveDepositZap = CurveDepositZap(curveDepositZap_);
     rewardsManager = rewardsManager_;
     feesUpdatedAt = block.timestamp;
   }
@@ -119,6 +117,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     _transferWithdrawal(withdrawal);
 
     _reportPoolTokenHWM();
+
 
     return (withdrawal, fee);
   }
@@ -156,7 +155,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function pricePerPoolToken() public view returns (uint256) {
-    return valueFor(10**decimals());
+    return valueFor(1e18);
   }
 
   function totalValue() public view returns (uint256) {
@@ -183,7 +182,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function _issueTokensForFeeAmount(uint256 amount) internal {
-    uint256 tokens = amount.mul(pricePerPoolToken()).div(10**decimals());
+    uint256 tokens = amount.mul(pricePerPoolToken()).div(1e18);
     _issuePoolTokens(address(this), tokens);
   }
 
