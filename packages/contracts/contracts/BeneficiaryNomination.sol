@@ -7,8 +7,10 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 
-/// @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
-
+/** 
+ @notice This contract is for submitting beneficiary nomination proposals 
+         and beneficiary takedown proposals
+*/
 contract BeneficiaryNomination {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
@@ -23,6 +25,7 @@ contract BeneficiaryNomination {
    * BTP for Beneficiary Takedown Proposal
    */
   enum ProposalType {BNP, BTP}
+  uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
   struct Proposal {
     //Result result;
@@ -61,7 +64,7 @@ contract BeneficiaryNomination {
     address indexed _oldAddress,
     address indexed _newAddress
   );
-  event Propose(
+  event ProposalCreated(
     uint256 indexed proposalId,
     address indexed proposer,
     address indexed beneficiary,
@@ -96,26 +99,28 @@ contract BeneficiaryNomination {
   }
 
   function _setDefaults() internal {
-    DefaultConfigurations.votingPeriod = 2 days;
-    DefaultConfigurations.vetoPeriod = 2 days;
+    DefaultConfigurations.votingPeriod = 2 * ONE_DAY;
+    DefaultConfigurations.vetoPeriod = 2 * ONE_DAY;
     DefaultConfigurations.minProposalBond = 2000e18;
   }
 
   function setConfiguration(
     uint256 _votingPeriod,
     uint256 _vetoPeriod,
-    uint256 _proposalBond
+    uint256 _minProposalBond
   ) public onlyGovernance {
     DefaultConfigurations.votingPeriod = _votingPeriod;
     DefaultConfigurations.vetoPeriod = _vetoPeriod;
-    DefaultConfigurations.minProposalBond = _proposalBond;
+    DefaultConfigurations.minProposalBond = _minProposalBond;
   }
 
-  ///@notice proposes a beneficiary nomination proposal
-  ///@param  _beneficiary address of the beneficiary
-  ///@param  _content IPFS content hash
-  ///@return proposal id
-  function propose(
+  /** 
+  @notice creates a beneficiary nomination proposal or a beneficiary takedown proposal
+  @param  _beneficiary address of the beneficiary
+  @param  _content IPFS content hash
+  @return proposal id
+  */
+  function createProposal(
     address _beneficiary,
     bytes memory _content,
     ProposalType _type
@@ -142,7 +147,7 @@ contract BeneficiaryNomination {
 
     proposals.push(proposal);
 
-    emit Propose(proposalId, msg.sender, _beneficiary, _content);
+    emit ProposalCreated(proposalId, msg.sender, _beneficiary, _content);
 
     return proposalId;
   }
