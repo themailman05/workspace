@@ -1,25 +1,32 @@
 import { Contract } from '@ethersproject/contracts';
 import { Web3Provider } from '@ethersproject/providers';
-import { useWeb3React,  UnsupportedChainIdError } from '@web3-react/core';
+import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
 import React, { useEffect } from 'react';
 import { createContext, useState } from 'react';
-import MockPop from '@popcorn/contracts/artifacts/contracts/mocks/MockERC20.sol/MockERC20.json';
-import Staking from '@popcorn/contracts/artifacts/contracts/Staking.sol/Staking.json';
-import GrantElections from '@popcorn/contracts/artifacts/contracts/GrantElections.sol/GrantElections.json';
-import GrantRegistry from '@popcorn/contracts/artifacts/contracts/GrantRegistry.sol/GrantRegistry.json';
-import BeneficiaryRegistry from '@popcorn/contracts/artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json';
 import { connectors } from '../containers/Web3/connectors';
 import {
   NoEthereumProviderError,
-  UserRejectedRequestError as UserRejectedRequestErrorInjected
-} from '@web3-react/injected-connector'
+  UserRejectedRequestError as UserRejectedRequestErrorInjected,
+} from '@web3-react/injected-connector';
+import {
+  GrantElections,
+  GrantElections__factory,
+  GrantRegistry,
+  GrantRegistry__factory,
+  Staking,
+  Staking__factory,
+  BeneficiaryRegistry,
+  BeneficiaryRegistry__factory,
+  ERC20,
+  ERC20__factory,
+} from '@popcorn/contracts/typechain';
 
 export interface Contracts {
-  staking?: Contract;
-  beneficiary?: Contract;
-  election?: Contract;
-  pop?: Contract;
-  grant?: Contract
+  staking?: Staking;
+  beneficiary?: BeneficiaryRegistry;
+  election?: GrantElections;
+  pop?: ERC20;
+  grant?: GrantRegistry;
 }
 
 interface ContractsContext {
@@ -35,19 +42,16 @@ interface ContractsWrapperProps {
 
 function getErrorMessage(error: Error) {
   if (error instanceof NoEthereumProviderError) {
-    return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.'
+    return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.';
   } else if (error instanceof UnsupportedChainIdError) {
-    return "You're connected to an unsupported network. Please connect to Rinkeby or Localhost"
-  } else if (
-    error instanceof UserRejectedRequestErrorInjected
-  ) {
-    return 'Please authorize this website to access your Ethereum account.'
+    return "You're connected to an unsupported network. Please connect to Rinkeby or Localhost";
+  } else if (error instanceof UserRejectedRequestErrorInjected) {
+    return 'Please authorize this website to access your Ethereum account.';
   } else {
-    console.error(error)
-    return 'An unknown error occurred. Check the console for more details.'
+    console.error(error);
+    return 'An unknown error occurred. Check the console for more details.';
   }
 }
-
 
 export default function ContractsWrapper({
   children,
@@ -75,39 +79,28 @@ export default function ContractsWrapper({
     if (error) {
       alert(getErrorMessage(error));
     }
-  }, [error])
+  }, [error]);
 
   useEffect(() => {
     if (!library) {
       return;
     }
-//    setContracts({
-//      staking: new Contract(
-//        process.env.ADDR_STAKING,
-//        Staking.abi,
-//        library,
-//      ),
-//      beneficiary: new Contract(
-//        process.env.ADDR_BENEFICIARY_REGISTRY,
-//        BeneficiaryRegistry.abi,
-//        library,
-//      ),
-//      election: new Contract(
-//        process.env.ADDR_GRANT_ELECTION,
-//        GrantElections.abi,
-//        library,
-//      ),
-//      pop: new Contract(
-//        process.env.ADDR_POP,
-//        MockPop.abi,
-//        library,
-//      ),
-//      grant: new Contract(
-//        process.env.ADDR_GRANT_REGISTRY,
-//        GrantRegistry.abi,
-//        library
-//      )
-//    });
+    setContracts({
+      staking: Staking__factory.connect(process.env.ADDR_STAKING, library),
+      beneficiary: BeneficiaryRegistry__factory.connect(
+        process.env.ADDR_BENEFICIARY_REGISTRY,
+        library,
+      ),
+      election: GrantElections__factory.connect(
+        process.env.ADDR_GRANT_ELECTION,
+        library,
+      ),
+      pop: ERC20__factory.connect(process.env.ADDR_POP, library),
+      grant: GrantRegistry__factory.connect(
+        process.env.ADDR_GRANT_REGISTRY,
+        library,
+      ),
+    });
   }, [library, active]);
 
   return (

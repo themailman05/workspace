@@ -1,10 +1,12 @@
 require("dotenv").config({ path: "../../.env" });
 require("@nomiclabs/hardhat-waffle");
+const { utils } = require("ethers");
+require('@typechain/hardhat')
+
 const { deploy } = require("./scripts/deployWithValues");
 const {
   GrantElectionAdapter,
 } = require("./scripts/helpers/GrantElectionAdapter");
-const { utils } = require("ethers");
 
 task("accounts", "Prints the list of accounts", async () => {
   const accounts = await ethers.getSigners();
