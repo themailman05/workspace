@@ -8,8 +8,7 @@ import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 
 /** 
- @notice This contract is for submitting beneficiary nomination proposals 
-         and beneficiary takedown proposals
+ @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
 */
 contract BeneficiaryNomination {
   using SafeMath for uint256;
@@ -43,7 +42,7 @@ contract BeneficiaryNomination {
   struct ConfigurationOptions {
     uint256 votingPeriod;
     uint256 vetoPeriod;
-    uint256 minProposalBond;
+    uint256 proposalBond;
   }
   ConfigurationOptions public DefaultConfigurations;
   //modifiers
@@ -55,8 +54,11 @@ contract BeneficiaryNomination {
     require(_address == address(_address), "invalid address");
     _;
   }
-  modifier enoughBond(uint256 bond) {
-    require(bond >= DefaultConfigurations.minProposalBond, "!enough bond");
+  modifier enoughBond(address _address) {
+    require(
+      POP.balanceOf(_address) >= DefaultConfigurations.proposalBond,
+      "!enough bond"
+    );
     _;
   }
   //events
@@ -101,17 +103,17 @@ contract BeneficiaryNomination {
   function _setDefaults() internal {
     DefaultConfigurations.votingPeriod = 2 * ONE_DAY;
     DefaultConfigurations.vetoPeriod = 2 * ONE_DAY;
-    DefaultConfigurations.minProposalBond = 2000e18;
+    DefaultConfigurations.proposalBond = 2000e18;
   }
 
   function setConfiguration(
     uint256 _votingPeriod,
     uint256 _vetoPeriod,
-    uint256 _minProposalBond
+    uint256 _proposalBond
   ) public onlyGovernance {
     DefaultConfigurations.votingPeriod = _votingPeriod;
     DefaultConfigurations.vetoPeriod = _vetoPeriod;
-    DefaultConfigurations.minProposalBond = _minProposalBond;
+    DefaultConfigurations.proposalBond = _proposalBond;
   }
 
   /** 
@@ -128,10 +130,14 @@ contract BeneficiaryNomination {
     external
     payable
     validAddress(_beneficiary)
-    enoughBond(msg.value)
+    enoughBond(msg.sender)
     returns (uint256)
   {
-    POP.safeTransferFrom(msg.sender, address(this), msg.value);
+    POP.safeTransferFrom(
+      msg.sender,
+      address(this),
+      DefaultConfigurations.proposalBond
+    );
 
     uint256 proposalId = proposals.length;
 
@@ -141,7 +147,7 @@ contract BeneficiaryNomination {
     proposal.content = _content;
     proposal.proposer = msg.sender;
     proposal.bondRecipient = msg.sender;
-    proposal.bond = msg.value;
+    proposal.bond = POP.balanceOf(msg.sender);
     proposal.startTime = block.timestamp;
     proposal._proposalType = _type;
 
