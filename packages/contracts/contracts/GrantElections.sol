@@ -4,11 +4,12 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
+import "./Owned.sol";
 import "./IBeneficiaryRegistry.sol";
 import "./IGrantRegistry.sol";
 import "./IRandomNumberConsumer.sol";
 
-contract GrantElections {
+contract GrantElections is Owned {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -93,7 +94,7 @@ contract GrantElections {
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
-  ) {
+  ) Owned(msg.sender) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     grantRegistry = _grantRegistry;
