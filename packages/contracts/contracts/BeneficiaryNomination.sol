@@ -32,7 +32,6 @@ contract BeneficiaryNomination {
     bytes content;
     address proposer;
     address bondRecipient;
-    uint256 bond;
     uint256 startTime;
     uint256 yesCount;
     uint256 noCount;
@@ -147,7 +146,6 @@ contract BeneficiaryNomination {
     proposal.content = _content;
     proposal.proposer = msg.sender;
     proposal.bondRecipient = msg.sender;
-    proposal.bond = POP.balanceOf(msg.sender);
     proposal.startTime = block.timestamp;
     proposal._proposalType = _type;
 
