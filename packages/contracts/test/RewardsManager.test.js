@@ -65,7 +65,7 @@ describe('RewardsManager', function () {
   it("reverts when setting reward splits as non-owner", async function () {
     await expect(
       this.rewardsManager.connect(nonOwner).setRewardSplits([20, 20, 60])
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+    ).to.be.revertedWith("Only the contract owner may perform this action");
   });
 
   it("reverts when setting invalid reward splits", async function () {
@@ -86,10 +86,10 @@ describe('RewardsManager', function () {
     ).to.be.revertedWith("Invalid split");
   });
 
-  it("cannot tranfer ownership as non-owner", async function () {
+  it("cannot nominate new owner as non-owner", async function () {
     await expect(
-      this.rewardsManager.connect(nonOwner).transferOwnership(nonOwner.address)
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+      this.rewardsManager.connect(nonOwner).nominateNewOwner(nonOwner.address)
+    ).to.be.revertedWith("Only the contract owner may perform this action");
   });
 
   describe("reward splits are set", function () {

@@ -50,13 +50,12 @@ contract RewardsManager is Owned, ReentrancyGuard {
   );
 
   constructor(
-    address _owner,
     IERC20 pop_,
     IStaking staking_,
     ITreasury treasury_,
     IBeneficiaryVaults beneficiaryVaults_,
     IUniswapV2Router02 uniswapV2Router_
-  ) public Owned(_owner) {
+  ) Owned(msg.sender) {
     POP = pop_;
     staking = staking_;
     treasury = treasury_;
