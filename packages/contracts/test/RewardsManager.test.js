@@ -227,20 +227,6 @@ describe("RewardsManager", function () {
         .withArgs(this.mockStaking.address, newStaking.address);
     });
 
-    it("sets new Treasury", async function () {
-      const newTreasury = await waffle.deployMockContract(
-        owner,
-        Treasury.interface.format()
-      );
-      result = await this.rewardsManager.setTreasury(newTreasury.address);
-      expect(await this.rewardsManager.treasury()).to.equal(
-        newTreasury.address
-      );
-      expect(result)
-        .to.emit(this.rewardsManager, "TreasuryChanged")
-        .withArgs(this.mockTreasury.address, newTreasury.address);
-    });
-
     it("sets new Insurance", async function () {
       const newInsurance = await waffle.deployMockContract(
         owner,
@@ -253,6 +239,20 @@ describe("RewardsManager", function () {
       expect(result)
         .to.emit(this.rewardsManager, "InsuranceChanged")
         .withArgs(this.mockInsurance.address, newInsurance.address);
+    });
+
+    it("sets new Treasury", async function () {
+      const newTreasury = await waffle.deployMockContract(
+        owner,
+        Treasury.interface.format()
+      );
+      result = await this.rewardsManager.setTreasury(newTreasury.address);
+      expect(await this.rewardsManager.treasury()).to.equal(
+        newTreasury.address
+      );
+      expect(result)
+        .to.emit(this.rewardsManager, "TreasuryChanged")
+        .withArgs(this.mockTreasury.address, newTreasury.address);
     });
 
     it("sets new BeneficiaryVaults", async function () {

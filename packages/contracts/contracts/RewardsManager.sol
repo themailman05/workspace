@@ -105,7 +105,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
    */
   function setInsurance(IInsurance insurance_) public onlyOwner {
     require(insurance != insurance_, "Same Insurance");
-    IInsurance _previousInsurance = insurance_;
+    IInsurance _previousInsurance = insurance;
     insurance = insurance_;
     emit InsuranceChanged(_previousInsurance, insurance_);
   }
