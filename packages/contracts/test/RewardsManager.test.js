@@ -220,8 +220,6 @@ describe("RewardsManager", function () {
         owner,
         Staking.interface.format()
       );
-      console.log("old Address", this.mockStaking.address)
-      console.log("new address", newStaking.address);
       result = await this.rewardsManager.setStaking(newStaking.address);
       expect(await this.rewardsManager.staking()).to.equal(newStaking.address);
       expect(result)
@@ -234,8 +232,6 @@ describe("RewardsManager", function () {
         owner,
         Treasury.interface.format()
       );
-      console.log("old Address", this.mockTreasury.address)
-      console.log("new address", newTreasury.address);
       result = await this.rewardsManager.setTreasury(newTreasury.address);
       expect(await this.rewardsManager.treasury()).to.equal(
         newTreasury.address
@@ -250,8 +246,6 @@ describe("RewardsManager", function () {
         owner,
         Insurance.interface.format()
       );
-      console.log("old Address", this.mockInsurance.address)
-      console.log("new address", newInsurance.address);
       result = await this.rewardsManager.setInsurance(newInsurance.address);
       expect(await this.rewardsManager.insurance()).to.equal(
         newInsurance.address
@@ -266,8 +260,6 @@ describe("RewardsManager", function () {
         owner,
         BeneficiaryVaults.interface.format()
       );
-      console.log("old Address", this.mockBeneficiaryVaults.address)
-      console.log("new address", newBeneficiaryVaults.address);
       result = await this.rewardsManager.setBeneficiaryVaults(
         newBeneficiaryVaults.address
       );
