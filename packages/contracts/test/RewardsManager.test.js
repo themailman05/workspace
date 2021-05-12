@@ -61,6 +61,11 @@ describe('RewardsManager', function () {
     expect(await this.rewardsManager.rewardSplits(2)).to.equal(parseEther("34"));
   });
 
+  it.only("Cannot nominate new owner as non-owner", async function () {
+    await expect(
+      this.rewardsManager.connect(nonOwner).nominateNewOwner(nonOwner.address)
+    ).to.be.revertedWith("Only the contract owner may perform this action");
+  });
 
   it("reverts when setting reward splits as non-owner", async function () {
     await expect(
