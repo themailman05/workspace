@@ -2,13 +2,15 @@
 
 pragma solidity >=0.7.0 <0.8.0;
 
+import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
+import "./Pausable.sol";
 
-contract Staking is IStaking, Ownable, ReentrancyGuard {
+contract Staking is IStaking, Pausable, Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -142,7 +144,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     emit StakingDeposited(msg.sender, amount);
   }
 
-  function withdraw(uint256 amount) external override nonReentrant {
+  function withdraw(uint256 amount) public override nonReentrant {
     require(amount > 0, "amount must be greater than 0");
     require(amount <= getWithdrawableBalance());
 
