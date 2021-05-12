@@ -1,30 +1,31 @@
 require("dotenv").config({ path: "../../.env" });
-require("@nomiclabs/hardhat-waffle");
+import { task } from "hardhat/config";
+import "@nomiclabs/hardhat-waffle";
+import '@typechain/hardhat'
 const { utils } = require("ethers");
-require('@typechain/hardhat')
 
 const { deploy } = require("./scripts/deployWithValues");
 const {
   GrantElectionAdapter,
 } = require("./scripts/helpers/GrantElectionAdapter");
 
-task("accounts", "Prints the list of accounts", async () => {
-  const accounts = await ethers.getSigners();
+task("accounts", "Prints the list of accounts", async (args, hre) => {
+  const accounts = await hre.ethers.getSigners();
 
   for (const account of accounts) {
     console.log(account.address);
   }
 });
 
-task("dev:deploy").setAction(async (args) => {
-  await deploy(ethers);
+task("dev:deploy").setAction(async (args, hre) => {
+  await deploy(hre.ethers);
 });
 
 task("elections:getElectionMetadata")
   .addParam("term", "grant term (int)")
-  .setAction(async (args) => {
-    const [signer] = await ethers.getSigners();
-    const contract = new ethers.Contract(
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    const contract = new hre.ethers.Contract(
       process.env.ADDR_GRANT_ELECTION,
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
@@ -38,9 +39,9 @@ task("elections:getElectionMetadata")
 
 task("elections:refreshElectionState")
   .addParam("term", "grant term (int)")
-  .setAction(async (args) => {
-    const [signer] = await ethers.getSigners();
-    const contract = new ethers.Contract(
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    const contract = new hre.ethers.Contract(
       process.env.ADDR_GRANT_ELECTION,
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
@@ -57,9 +58,9 @@ task("POP:mint", "mint amount for recipient")
   .addParam("recipient", "address to receive POP")
   .addParam("amount", "amount to receive")
   .setAction(async (args, hre) => {
-    const [signer] = await ethers.getSigners();
+    const [signer] = await hre.ethers.getSigners();
     const { recipient, amount } = args;
-    const mockPOP = new ethers.Contract(
+    const mockPOP = new hre.ethers.Contract(
       process.env.ADDR_POP,
       require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
       signer
@@ -71,9 +72,9 @@ task("POP:mint", "mint amount for recipient")
 task("POP:balanceOf", "get balance of POP for address")
   .addParam("address", "amount to receive")
   .setAction(async (args, hre) => {
-    const [signer] = await ethers.getSigners();
+    const [signer] = await hre.ethers.getSigners();
     const { address } = args;
-    const mockPOP = new ethers.Contract(
+    const mockPOP = new hre.ethers.Contract(
       process.env.ADDR_POP,
       require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
       signer
@@ -88,9 +89,9 @@ task("POP:balanceOf", "get balance of POP for address")
 task("staking:getVoiceCredits", "get voice credit balance of address")
   .addParam("address", "address to check balance of")
   .setAction(async (args, hre) => {
-    const [signer] = await ethers.getSigners();
+    const [signer] = await hre.ethers.getSigners();
     const { address } = args;
-    const Staking = new ethers.Contract(
+    const Staking = new hre.ethers.Contract(
       process.env.ADDR_STAKING,
       require("./artifacts/contracts/Staking.sol/Staking.json").abi,
       signer
@@ -105,9 +106,9 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
   task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
-    const [signer] = await ethers.getSigners();
+    const [signer] = await hre.ethers.getSigners();
     const { term } = args;
-    const GrantElections = new ethers.Contract(
+    const GrantElections = new hre.ethers.Contract(
       process.env.ADDR_GRANT_ELECTION,
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
@@ -118,9 +119,9 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
   task("random", "gets a random number")
   .addParam("seed", "the seed")
   .setAction(async (args, hre) => {
-    const [signer] = await ethers.getSigners();
+    const [signer] = await hre.ethers.getSigners();
     const { seed } = args;
-    const RandomNumberConsumer = new ethers.Contract(
+    const RandomNumberConsumer = new hre.ethers.Contract(
       process.env.ADDR_RANDOM_NUMBER,
       require("./artifacts/contracts/RandomNumberConsumer.sol/RandomNumberConsumer.json").abi,
       signer
