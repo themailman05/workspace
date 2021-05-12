@@ -12,6 +12,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
+  /* ========== STATE VARIABLES ========== */
   struct LockedBalance {
     address _address;
     uint256 _balance;
@@ -19,26 +20,101 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     uint256 _lockedAt;
   }
 
-  mapping(address => uint256) public balances;
+  IERC20 public immutable POP;
+  uint256 public periodFinish = 0;
+  uint256 public rewardRate = 0;
+  uint256 public rewardsDuration = 7 days;
+  uint256 public lastUpdateTime;
+  uint256 public rewardPerTokenStored;
   mapping(address => uint256) public voiceCredits;
-  mapping(address => LockedBalance[]) lockedBalances;
-  mapping(address => uint256) withdrawnBalances;
+  mapping(address => uint256) public userRewardPerTokenPaid;
+  mapping(address => uint256) public rewards;
+
+  uint256 private _totalLocked;
+  mapping(address => LockedBalance[]) private lockedBalances;
 
   uint256 constant SECONDS_IN_A_WEEK = 604800;
-  uint256 constant MAX_LOCK_TIME = 604800 * 52 * 4; // 4 years
+  uint256 constant MAX_LOCK_TIME = SECONDS_IN_A_WEEK * 52 * 4; // 4 years
 
-  IERC20 public immutable POP;
+  /* ========== EVENTS ========== */
+
   event StakingDeposited(address _address, uint256 amount);
   event StakingWithdrawn(address _address, uint256 amount);
+  event RewardPaid(address _address, uint256 amount);
 
+  /* ========== CONSTRUCTOR ========== */
   constructor(IERC20 _pop) {
     POP = _pop;
   }
 
+  /* ========== VIEWS ========== */
+
+  function getVoiceCredits(address _address)
+    public
+    view
+    override
+    returns (uint256)
+  {
+    return voiceCredits[_address];
+  }
+
+  function getWithdrawableBalance() public view override returns (uint256) {
+    uint256 _withdrawable = 0;
+    uint256 _currentTime = block.timestamp;
+    for (uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
+      LockedBalance memory _locked = lockedBalances[msg.sender][i];
+      if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
+        _withdrawable = _withdrawable.add(_locked._balance);
+      }
+    }
+
+    return _withdrawable;
+  }
+
+  function totalLocked() external view returns (uint256) {
+    return _totalLocked;
+  }
+
+  function balanceOf(address account) external view returns (uint256) {
+    return lockedBalances[account];
+  }
+
+  function lastTimeRewardApplicable() public view returns (uint256) {
+    return Math.min(block.timestamp, periodFinish);
+  }
+
+  function rewardPerToken() public view returns (uint256) {
+    if (_totalLocked == 0) {
+      return rewardPerTokenStored;
+    }
+    return
+      rewardPerTokenStored.add(
+        lastTimeRewardApplicable()
+          .sub(lastUpdateTime)
+          .mul(rewardRate)
+          .mul(1e18)
+          .div(_totalLocked)
+      );
+  }
+
+  function earned(address account) public view returns (uint256) {
+    return
+      lockedBalances[account]
+        .mul(rewardPerToken().sub(userRewardPerTokenPaid[account]))
+        .div(1e18)
+        .add(rewards[account]);
+  }
+
+  function getRewardForDuration() external view returns (uint256) {
+    return rewardRate.mul(rewardsDuration);
+  }
+
+  /* ========== MUTATIVE FUNCTIONS ========== */
   function stake(uint256 amount, uint256 lengthOfTime)
     external
     override
     nonReentrant
+    updateReward(msg.sender)
   {
     require(amount > 0, "amount must be greater than 0");
     require(
@@ -53,8 +129,7 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
 
-    balances[msg.sender] = balances[msg.sender].add(amount);
-
+    _totalLocked = _totalLocked.add(amount);
     lockedBalances[msg.sender].push(
       LockedBalance({
         _address: msg.sender,
@@ -63,37 +138,25 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
         _lockedAt: block.timestamp
       })
     );
-
     _recalculateVoiceCredits();
     emit StakingDeposited(msg.sender, amount);
   }
 
   function withdraw(uint256 amount) external override nonReentrant {
     require(amount > 0, "amount must be greater than 0");
-    require(balances[msg.sender] > 0, "insufficient balance");
     require(amount <= getWithdrawableBalance());
-
-    withdrawnBalances[msg.sender] = withdrawnBalances[msg.sender].add(amount);
 
     POP.approve(address(this), amount);
     POP.safeTransferFrom(address(this), msg.sender, amount);
+
+    _totalSupply = _totalSupply.sub(amount);
+    _getReward();
     _clearWithdrawnFromLocked(amount);
     _recalculateVoiceCredits();
     emit StakingWithdrawn(msg.sender, amount);
   }
 
-  // todo: multiply voice credits by 10000 to deal with exponent math
-  function _recalculateVoiceCredits() internal {
-    uint256 _voiceCredits = 0;
-    for (uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
-      LockedBalance memory _locked = lockedBalances[msg.sender][i];
-      _voiceCredits = _voiceCredits.add(
-        _locked._balance.mul(_locked._time).div(MAX_LOCK_TIME)
-      );
-    }
-    voiceCredits[msg.sender] = _voiceCredits;
-  }
-
+  /* ========== RESTRICTED FUNCTIONS ========== */
   function _clearWithdrawnFromLocked(uint256 _amount) internal {
     uint256 _currentTime = block.timestamp;
     for (uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
@@ -118,25 +181,36 @@ contract Staking is IStaking, Ownable, ReentrancyGuard {
     }
   }
 
-  function getVoiceCredits(address _address)
-    public
-    view
-    override
-    returns (uint256)
-  {
-    return voiceCredits[_address];
+  function _getReward() internal nonReentrant updateReward(msg.sender) {
+    uint256 reward = rewards[msg.sender];
+    if (reward > 0) {
+      rewards[msg.sender] = 0;
+      rewardsToken.safeTransfer(msg.sender, reward);
+      emit RewardPaid(msg.sender, reward);
+    }
   }
 
-  function getWithdrawableBalance() public view override returns (uint256) {
-    uint256 _withdrawable = 0;
-    uint256 _currentTime = block.timestamp;
+  // todo: multiply voice credits by 10000 to deal with exponent math
+  function _recalculateVoiceCredits() internal {
+    uint256 _voiceCredits = 0;
     for (uint8 i = 0; i < lockedBalances[msg.sender].length; i++) {
       LockedBalance memory _locked = lockedBalances[msg.sender][i];
-      if (_locked._lockedAt.add(_locked._time) <= _currentTime) {
-        _withdrawable = _withdrawable.add(_locked._balance);
-      }
+      _voiceCredits = _voiceCredits.add(
+        _locked._balance.mul(_locked._time).div(MAX_LOCK_TIME)
+      );
     }
+    voiceCredits[msg.sender] = _voiceCredits;
+  }
 
-    return _withdrawable;
+  /* ========== MODIFIERS ========== */
+
+  modifier updateReward(address account) {
+    rewardPerTokenStored = rewardPerToken();
+    lastUpdateTime = lastTimeRewardApplicable();
+    if (account != address(0)) {
+      rewards[account] = earned(account);
+      userRewardPerTokenPaid[account] = rewardPerTokenStored;
+    }
+    _;
   }
 }
