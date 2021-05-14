@@ -29,6 +29,7 @@ contract BeneficiaryNomination {
   struct Proposal {
     //Result result;
     address beneficiary;
+    mapping(address => bool) voters;
     bytes content;
     address proposer;
     address bondRecipient;
@@ -38,6 +39,11 @@ contract BeneficiaryNomination {
     ProposalType _proposalType;
   }
   Proposal[] public proposals;
+  mapping(uint256 => Proposal) public proposalsById;
+
+  // Proposal Id => Voter => Yes Votes
+  mapping(uint256 => mapping(address => uint256)) public yesVotes;
+
   struct ConfigurationOptions {
     uint256 votingPeriod;
     uint256 vetoPeriod;
@@ -70,6 +76,11 @@ contract BeneficiaryNomination {
     address indexed proposer,
     address indexed beneficiary,
     bytes content
+  );
+  event Vote(
+    uint256 indexed proposalId,
+    address indexed voter,
+    uint256 indexed weight
   );
 
   //constructor
@@ -141,7 +152,7 @@ contract BeneficiaryNomination {
     uint256 proposalId = proposals.length;
 
     // Create a new proposal
-    Proposal memory proposal;
+    Proposal storage proposal = proposalsById[proposalId];
     proposal.beneficiary = _beneficiary;
     proposal.content = _content;
     proposal.proposer = msg.sender;
@@ -154,5 +165,46 @@ contract BeneficiaryNomination {
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _content);
 
     return proposalId;
+  }
+
+  function voteYes(uint256 proposalId, uint256 _voiceCredits) public {
+    Proposal storage proposal = proposals[proposalId];
+    require(
+      block.timestamp <=
+        proposal.startTime.add(DefaultConfigurations.votingPeriod),
+      "Initial voting period has already finished!"
+    );
+    require(
+      !proposal.voters[msg.sender],
+      "address already voted for the proposal"
+    );
+
+    require(_voiceCredits > 0, "Voice credits are required");
+    uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);
+
+    require(_stakedVoiceCredits > 0, "must have voice credits from staking");
+    require(_voiceCredits <= _stakedVoiceCredits, "Insufficient voice credits");
+
+    uint256 _sqredVoiceCredits = sqrt(_voiceCredits);
+
+    proposal.voters[msg.sender] = true;
+
+    proposal.yesCount = proposal.yesCount.add(_sqredVoiceCredits);
+    yesVotes[proposalId][msg.sender] = _sqredVoiceCredits;
+
+    emit Vote(proposalId, msg.sender, _sqredVoiceCredits);
+  }
+
+  function sqrt(uint256 y) internal pure returns (uint256 z) {
+    if (y > 3) {
+      z = y;
+      uint256 x = y / 2 + 1;
+      while (x < z) {
+        z = x;
+        x = (y / x + x) / 2;
+      }
+    } else if (y != 0) {
+      z = 1;
+    }
   }
 }
