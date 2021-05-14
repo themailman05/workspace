@@ -26,8 +26,9 @@ contract BeneficiaryNomination {
   enum ProposalType {BNP, BTP}
   uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
+  enum Status {Processing, Yes, No} // status of the proposal
   struct Proposal {
-    //Result result;
+    Status status;
     address beneficiary;
     mapping(address => bool) voters;
     bytes content;
