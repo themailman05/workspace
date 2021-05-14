@@ -168,6 +168,11 @@ contract BeneficiaryNomination {
     return proposalId;
   }
 
+  /** 
+  @notice votes yes to a specific proposal during the initial voting process
+  @param  proposalId Id of the proposal which you are going to vote
+  @param  _voiceCredits Uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
+  */
   function voteYes(uint256 proposalId, uint256 _voiceCredits) public {
     Proposal storage proposal = proposals[proposalId];
     require(
