@@ -8,9 +8,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
+import "./Owned.sol";
 import "./Pausable.sol";
 
-contract Staking is IStaking, Pausable, Ownable, ReentrancyGuard {
+contract Staking is IStaking, Owned, Pausable, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -44,8 +45,9 @@ contract Staking is IStaking, Pausable, Ownable, ReentrancyGuard {
   event StakingWithdrawn(address _address, uint256 amount);
   event RewardPaid(address _address, uint256 amount);
 
-  /* ========== CONSTRUCTOR ========== */
-  constructor(IERC20 _pop) {
+/* ========== CONSTRUCTOR ========== */
+
+  constructor(IERC20 _pop) Owned(msg.sender) {
     POP = _pop;
   }
 
