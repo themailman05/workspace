@@ -95,22 +95,6 @@ describe("Staking", function () {
       expect(await this.contract.getVoiceCredits(owner.address)).to.equal(0);
     });
 
-    it("should pay out rewards successfully", async function () {
-      const amount = parseEther("1");
-      await this.mockPop.connect(owner).approve(this.contract.address, amount);
-      await this.contract.connect(owner).stake(amount, 604800);
-      ethers.provider.send("evm_increaseTime", [700000]);
-      ethers.provider.send("evm_mine");
-      const amountEarned = await this.contract.earned(owner.address);
-      expect(await this.contract.connect(owner).getReward())
-        .to.emit(this.contract, "RewardPaid")
-        .withArgs(owner.address, amountEarned);
-      expect(
-        await this.contract.connect(owner).getWithdrawableBalance()
-      ).to.equal(parseEther("1"));
-      expect(await this.contract.earned(owner.address)).to.equal(0);
-    });
-
     it("should release funds and rewards successfully when exiting", async function () {
       const amount = parseEther("2");
       await this.mockPop.connect(owner).approve(this.contract.address, amount);
@@ -128,11 +112,26 @@ describe("Staking", function () {
       ).to.equal(0);
       expect(await this.contract.getVoiceCredits(owner.address)).to.equal(0);
       expect(await this.contract.earned(owner.address)).to.equal(0);
-      console.log("amountEarned", amountEarned.div(parseEther("1")).toString());
     });
   });
 
   describe("rewards", function () {
+    it("should pay out rewards successfully", async function () {
+      const amount = parseEther("1");
+      await this.mockPop.connect(owner).approve(this.contract.address, amount);
+      await this.contract.connect(owner).stake(amount, 604800);
+      ethers.provider.send("evm_increaseTime", [700000]);
+      ethers.provider.send("evm_mine");
+      const amountEarned = await this.contract.earned(owner.address);
+      expect(await this.contract.connect(owner).getReward())
+        .to.emit(this.contract, "RewardPaid")
+        .withArgs(owner.address, amountEarned);
+      expect(
+        await this.contract.connect(owner).getWithdrawableBalance()
+      ).to.equal(parseEther("1"));
+      expect(await this.contract.earned(owner.address)).to.equal(0);
+    });
+
     it("lowers the reward rate when more user stake", async function () {
       /*let rewardPerToken;
       let lockedAmount;
