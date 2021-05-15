@@ -44,6 +44,8 @@ contract BeneficiaryNomination {
 
   // Proposal Id => Voter => Yes Votes
   mapping(uint256 => mapping(address => uint256)) public yesVotes;
+  // Proposal Id => Voter => No Votes
+  mapping(uint256 => mapping(address => uint256)) public noVotes;
 
   struct ConfigurationOptions {
     uint256 votingPeriod;
@@ -83,6 +85,7 @@ contract BeneficiaryNomination {
     address indexed voter,
     uint256 indexed weight
   );
+  event Finalize(uint256 indexed proposalId);
 
   //constructor
   constructor(
@@ -149,11 +152,12 @@ contract BeneficiaryNomination {
       address(this),
       DefaultConfigurations.proposalBond
     );
-
+    uint256 _withdrawable = 0;
     uint256 proposalId = proposals.length;
 
     // Create a new proposal
-    Proposal storage proposal = proposalsById[proposalId];
+    proposals.push();
+    Proposal storage proposal = proposals[proposalId];
     proposal.beneficiary = _beneficiary;
     proposal.content = _content;
     proposal.proposer = msg.sender;
@@ -161,11 +165,10 @@ contract BeneficiaryNomination {
     proposal.startTime = block.timestamp;
     proposal._proposalType = _type;
 
-    proposals.push(proposal);
-
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _content);
 
-    return proposalId;
+    //return proposalId;
+    return _withdrawable;
   }
 
   /** 
@@ -199,6 +202,55 @@ contract BeneficiaryNomination {
     yesVotes[proposalId][msg.sender] = _sqredVoiceCredits;
 
     emit Vote(proposalId, msg.sender, _sqredVoiceCredits);
+  }
+
+  /** 
+  @notice votes no to a specific proposal during the initial voting process
+  @param  proposalId Id of the proposal which you are going to vote
+  @param  _voiceCredits Uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
+  */
+  function voteNo(uint256 proposalId, uint256 _voiceCredits) public {
+    Proposal storage proposal = proposals[proposalId];
+    require(
+      proposal.status == Status.Processing,
+      "Proposal is already finalized"
+    );
+
+    uint256 proposalEndTime =
+      proposal.startTime.add(DefaultConfigurations.votingPeriod).add(
+        DefaultConfigurations.vetoPeriod
+      );
+    uint256 _time = block.timestamp;
+    require(_time <= proposalEndTime, "Proposal is no longer in voting period");
+    require(
+      !proposal.voters[msg.sender],
+      "address already voted for the proposal"
+    );
+
+    require(_voiceCredits > 0, "Voice credits are required");
+    uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);
+
+    require(_stakedVoiceCredits > 0, "must have voice credits from staking");
+    require(_voiceCredits <= _stakedVoiceCredits, "Insufficient voice credits");
+
+    uint256 _sqredVoiceCredits = sqrt(_voiceCredits);
+
+    proposal.voters[msg.sender] = true;
+
+    proposal.noCount = proposal.noCount.add(_sqredVoiceCredits);
+    noVotes[proposalId][msg.sender] = _sqredVoiceCredits;
+
+    emit Vote(proposalId, msg.sender, _sqredVoiceCredits);
+
+    // Finalize the vote if no votes outnumber yes votes and open voting has ended
+    if (
+      _time > proposal.startTime.add(DefaultConfigurations.votingPeriod) &&
+      proposal.noCount >= proposal.yesCount
+    ) {
+      proposal.status = Status.No;
+      /// TODO: voters should receive back their locked tokens
+      emit Finalize(proposalId);
+    }
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {
