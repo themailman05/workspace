@@ -135,7 +135,49 @@ describe('BeneficiaryNomination', function () {
       ).to.be.revertedWith( "!enough bond");
     });
   });
+  describe("voting", function () {
+    before(async function () {
+      const Staking = await ethers.getContractFactory("Staking");
+      this.mockStaking = await waffle.deployMockContract(
+        owner,
+        Staking.interface.format()
+      );
 
+      const BeneficiaryRegistry = await ethers.getContractFactory(
+        "BeneficiaryRegistry"
+      );
+      this.mockBeneficiaryRegistry = await waffle.deployMockContract(
+        owner,
+        BeneficiaryRegistry.interface.format()
+      );
+
+      MockERC20 = await ethers.getContractFactory("MockERC20");
+      this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+      await this.mockPop.mint(beneficiary.address, parseEther("50"));
+      await this.mockPop.mint(proposer1.address, parseEther("2500"));
+      const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryNomination");
+      bn_contract = await BeneficiaryNomination.deploy(
+        this.mockStaking.address,
+        this.mockBeneficiaryRegistry.address,
+        this.mockPop.address,
+        governance.address
+      );
+      await bn_contract.deployed();
+      // create a BNP proposal
+      var contentbytes=convertStringToBytes(ipfsHahContent);
+   
+      await this.mockPop.connect(proposer1).approve(bn_contract.address, parseEther('2500'));
+      await bn_contract.connect(proposer1).createProposal(beneficiary.address,contentbytes,ProposalType.BNP);
+    });
+    it("should prevent to vote without voice credits", async function() {
+      await expect(bn_contract.connect(voter1).voteYes(PROPOSALID,0)).to.be.revertedWith( "Voice credits are required");
+    });
+    it("should prevent to vote without staked voice credits", async function() {
+      await this.mockStaking.mock.getVoiceCredits.returns(100);
+      
+      await expect(bn_contract.connect(voter1).voteYes(PROPOSALID,200)).to.be.revertedWith( "Insufficient voice credits");
+    });
+  });
 });
 
 
