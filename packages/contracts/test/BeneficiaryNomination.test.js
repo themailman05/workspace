@@ -39,6 +39,7 @@ function hex2a(hexx) {
 }
 describe('BeneficiaryNomination', function () {
 
+  const PROPOSALID = 0;
   before(async function () {
     [
       owner,
@@ -115,13 +116,15 @@ describe('BeneficiaryNomination', function () {
    
       await this.mockPop .connect(proposer2).approve(bn_contract.address, parseEther('3000'));
       await bn_contract.connect(proposer2).createProposal(beneficiary.address,contentbytes,ProposalType.BNP);
-      const proposal=await bn_contract.proposals(0);
+      const proposal=await bn_contract.proposals(PROPOSALID);
       
       expect(proposal.beneficiary).to.equal(beneficiary.address);
       expect(hex2a(proposal.content)).to.equal(ipfsHahContent);
       expect(proposal.proposer).to.equal(proposer2.address);
       expect(proposal.bondRecipient).to.equal(proposer2.address);
       expect(proposal._proposalType).to.equal(ProposalType.BNP);
+
+      expect(await bn_contract.getNumberOfProposals()).to.equal(1);
     });
     it("should prevent to create proposal with not enough bond", async function () {
       var contentbytes=convertStringToBytes(ipfsHahContent);
