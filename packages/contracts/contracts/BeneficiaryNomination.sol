@@ -40,7 +40,6 @@ contract BeneficiaryNomination {
     ProposalType _proposalType;
   }
   Proposal[] public proposals;
-  mapping(uint256 => Proposal) public proposalsById;
 
   // Proposal Id => Voter => Yes Votes
   mapping(uint256 => mapping(address => uint256)) public yesVotes;
@@ -176,7 +175,7 @@ contract BeneficiaryNomination {
   @param  proposalId Id of the proposal which you are going to vote
   @param  _voiceCredits Uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
   */
-  function voteYes(uint256 proposalId, uint256 _voiceCredits) public {
+  function voteYes(uint256 proposalId, uint256 _voiceCredits) external {
     Proposal storage proposal = proposals[proposalId];
     require(
       block.timestamp <=
@@ -209,7 +208,7 @@ contract BeneficiaryNomination {
   @param  proposalId Id of the proposal which you are going to vote
   @param  _voiceCredits Uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
   */
-  function voteNo(uint256 proposalId, uint256 _voiceCredits) public {
+  function voteNo(uint256 proposalId, uint256 _voiceCredits) external {
     Proposal storage proposal = proposals[proposalId];
     require(
       proposal.status == Status.Processing,
@@ -251,6 +250,13 @@ contract BeneficiaryNomination {
       /// TODO: voters should receive back their locked tokens
       emit Finalize(proposalId);
     }
+  }
+
+  /**
+@notice returns number of proposals that have been created
+ */
+  function getNumberOfProposals() external view returns (uint256) {
+    return proposals.length;
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {
