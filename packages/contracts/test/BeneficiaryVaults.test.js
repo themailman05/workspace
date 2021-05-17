@@ -16,7 +16,7 @@ describe('BeneficiaryVaults', function () {
     [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP", 18);
     await this.mockPop.mint(owner.address, OwnerInitial);
     await this.mockPop.mint(rewarder.address, RewarderInitial);
 
@@ -26,7 +26,6 @@ describe('BeneficiaryVaults', function () {
 
     BeneficiaryVaults = await ethers.getContractFactory("BeneficiaryVaults");
     this.beneficiaryVaults = await BeneficiaryVaults.deploy(this.mockPop.address, this.mockBeneficiaryRegistry.address);
-    await this.beneficiaryVaults.deployed();
 
     claims = generateClaims(await provider.listAccounts());
     merkleTree = merklize(claims);

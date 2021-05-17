@@ -2,7 +2,6 @@ import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import ActionButton from './ActionButton';
 import VoteCounter from './VoteCounter';
 import { PendingVotes } from '../../pages/grant-elections/[type]';
-import { RegisterHolder } from '@popcorn/ui/components/grantPage';
 import { Check } from 'react-feather';
 import Link from 'next/link';
 
@@ -131,12 +130,20 @@ export default function Sidebar({
               <div>
                 The winners have been awarded using your votes and Chainlink
                 VRF.
+                <p>
                 <img
-                  className="h-12"
+                  src="/images/popcorn_v1_light_bg.png"
+                  width="30"
+                  className="inline-block"
+                />{' '}
+                +{' '}
+                <img
+                  className="h-12 inline-block"
                   src="/images/partners/chainlink.svg"
                   alt="Chainlink"
-                  width="100"
-                />
+                  width="85"
+                />{' '}
+                </p>
               </div>
             </figcaption>
           </div>

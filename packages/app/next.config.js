@@ -13,6 +13,9 @@ module.exports = {
     ADDR_GRANT_REGISTRY: process.env.ADDR_GRANT_REGISTRY,
     ADDR_BENEFICIARY_REGISTRY: process.env.ADDR_BENEFICIARY_REGISTRY,
     ADDR_GRANT_ELECTION: process.env.ADDR_GRANT_ELECTION,
+    ADDR_PRIVATE_SALE: process.env.ADDR_PRIVATE_SALE,
+    ADDR_USDC: process.env.ADDR_USDC,
+    ADDR_TREASURY: process.env.ADDR_TREASURY,
   },
   poweredByHeader: false,
   webpack: (config, options) => {

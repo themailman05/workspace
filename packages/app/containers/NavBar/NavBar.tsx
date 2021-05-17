@@ -38,15 +38,7 @@ export default function Navbar(): JSX.Element {
         </div>
         <ul className="flex flex-row items-center mx-auto space-x-16">
           <li>
-            <NavbarLink
-              label="Grant Elections"
-              onClick={() => setShowGrants(!showGrants)}
-              isActive={router.pathname === '/grants'}
-            />
-            <GrantsMenu
-              visible={showGrants}
-              toggleSubMenu={() => setShowGrants(!showGrants)}
-            />
+         
           </li>
           <li>
             <NavbarLink
@@ -63,6 +55,7 @@ export default function Navbar(): JSX.Element {
               target="_window"
             />
           </li>
+        
         </ul>
         <button
           className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-indigo-400 hover:text-white"

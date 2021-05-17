@@ -5,6 +5,8 @@ import '@typechain/hardhat'
 const { utils } = require("ethers");
 
 const { deploy } = require("./scripts/deployWithValues");
+const { deployPrivateSale } = require("./scripts/deployPrivateSale");
+
 const {
   GrantElectionAdapter,
 } = require("./scripts/helpers/GrantElectionAdapter");
@@ -103,7 +105,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     );
   });
 
-  task("elections:finalize", "finalize a grant election")
+task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
@@ -113,10 +115,10 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(term, {gasLimit: 9500000});
+    await GrantElections.finalize(Number(term), { gasLimit: 10000000 });
   });
 
-  task("random", "gets a random number")
+task("random", "gets a random number")
   .addParam("seed", "the seed")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
@@ -130,19 +132,48 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
+
+task("POPUSDC:mint", "Allow address and amount")
+  .addParam("recipient", "address to receive POPUSDC")
+  .addParam("amount", "amount to receive")
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    const { recipient, amount } = args;
+    const mockUSDC = new hre.ethers.Contract(
+      process.env.ADDR_POP,
+      require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
+      signer
+    );
+    const result = await mockUSDC.mint(recipient, utils.parseFixed(amount, 6));
+    console.log("Done: ", result);
+  });
+
 module.exports = {
-  solidity: "0.7.3",
+  solidity: {
+    version: "0.7.3",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   networks: {
     hardhat: {
       chainId: +process.env.CHAIN_ID,
     },
     rinkeby: {
       url: process.env.RPC_URL,
-      accounts: [process.env.PRIVATE_KEY].concat(
-        (process.env.BENEFICIARY_PRIVATE_KEYS &&
-          process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
-          []
-      ),
+      accounts: [process.env.PRIVATE_KEY]
+        .concat(
+          (process.env.BENEFICIARY_PRIVATE_KEYS &&
+            process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
+            []
+        )
+        .concat(
+          (process.env.VOTER_PRIVATE_KEY && [process.env.VOTER_PRIVATE_KEY]) ||
+            []
+        ),
     },
   },
 };
