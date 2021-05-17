@@ -236,6 +236,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     onlyOwner
     updateReward(address(0))
   {
+    require(timestamp > block.timestamp, "timestamp cant be in the past");
     periodFinish = timestamp;
   }
 

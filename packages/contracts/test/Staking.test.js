@@ -1,5 +1,6 @@
 const { expect } = require("chai");
 const { parseEther } = require("ethers/lib/utils");
+const { ethers } = require("hardhat");
 
 let stakingFund;
 
@@ -133,29 +134,53 @@ describe("Staking", function () {
     });
 
     it("lowers the reward rate when more user stake", async function () {
-      /*let rewardPerToken;
-      let lockedAmount;
       const amount = parseEther("1");
       await this.mockPop.connect(owner).approve(this.contract.address, amount);
       result = await this.contract.connect(owner).stake(amount, 604800);
-      ethers.provider.send("evm_increaseTime", [10]);
-      ethers.provider.send("evm_mine");
-      const rewardPerToken1 = await this.contract.rewardPerToken();
-      console.log("rewardPerToken 1", rewardPerToken1.toString());
       await this.mockPop
         .connect(nonOwner)
         .approve(this.contract.address, amount);
       result = await this.contract.connect(nonOwner).stake(amount, 604800);
-      lockedAmount = await this.contract.totalLocked();
-      console.log(
-        "lockedAmount 2",
-        lockedAmount.div(parseEther("1")).toString()
+      ethers.provider.send("evm_increaseTime", [604800]);
+      ethers.provider.send("evm_mine");
+      expect(await this.contract.earned(owner.address)).to.equal(
+        "4999999999999838400"
       );
-      const rewardPerToken2 = await this.contract.rewardPerToken();
-      console.log("rewardPerToken 2", rewardPerToken2.toString());
-      console.log("comparison", rewardPerToken1 > rewardPerToken2);*/
-      //TODO
       //Dont know how to test this. RewardPerToken2 is higher than 1 even though they both earn less than if only one person was staking
+    });
+  });
+
+  describe("timelock", function () {
+    it("should increase locktime when staking more funds", async function () {
+      await this.mockPop
+        .connect(owner)
+        .approve(this.contract.address, parseEther("2"));
+      // owner stakes 1 ether for a week
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
+      ethers.provider.send("evm_increaseTime", [500000]);
+      ethers.provider.send("evm_mine", []);
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
+      // still balance 0 for owner
+      expect(
+        await this.contract.connect(owner).getWithdrawableBalance()
+      ).to.equal(0);
+    });
+    it("should lock all funds again when staking new funds without withdrawing old funds", async function () {
+      await this.mockPop
+        .connect(owner)
+        .approve(this.contract.address, parseEther("2"));
+      // owner stakes 1 ether for a week
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
+      ethers.provider.send("evm_increaseTime", [700000]);
+      ethers.provider.send("evm_mine", []);
+      expect(
+        await this.contract.connect(owner).getWithdrawableBalance()
+      ).to.equal(parseEther("1"));
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
+      // still balance 0 for owner
+      expect(
+        await this.contract.connect(owner).getWithdrawableBalance()
+      ).to.equal(0);
     });
   });
 
@@ -222,6 +247,73 @@ describe("Staking", function () {
       expect(
         await this.contract.connect(owner).getWithdrawableBalance()
       ).to.equal(0);
+    });
+  });
+  describe("notifyRewardAmount", function () {
+    beforeEach(async function () {
+      const Staking = await ethers.getContractFactory("Staking");
+      this.contract = await Staking.deploy(this.mockPop.address);
+      await this.contract.deployed();
+      stakingFund = parseEther("10");
+      await this.mockPop.transfer(this.contract.address, stakingFund);
+    });
+    it("should set rewards", async function () {
+      expect(
+        await this.contract.connect(owner).getRewardForDuration()
+      ).to.equal(0);
+      await this.contract.notifyRewardAmount(stakingFund);
+      expect(
+        await this.contract.connect(owner).getRewardForDuration()
+      ).to.equal("9999999999999676800");
+    });
+    it("should be able to increase rewards", async function () {
+      await this.contract.notifyRewardAmount(parseEther("5"));
+      expect(
+        await this.contract.connect(owner).getRewardForDuration()
+      ).to.equal("4999999999999536000");
+      await this.contract.notifyRewardAmount(parseEther("5"));
+      expect(
+        await this.contract.connect(owner).getRewardForDuration()
+      ).to.equal("9999991732803408000");
+    });
+    it("should not allow more rewards than is available in contract balance", async function () {
+      await expect(
+        this.contract.notifyRewardAmount(parseEther("11"))
+      ).to.be.revertedWith("Provided reward too high");
+    });
+  });
+
+  describe("updatePeriodFinish", function () {
+    beforeEach(async function () {
+      const Staking = await ethers.getContractFactory("Staking");
+      this.contract = await Staking.deploy(this.mockPop.address);
+      await this.contract.deployed();
+      stakingFund = parseEther("10");
+      await this.mockPop.transfer(this.contract.address, stakingFund);
+      await this.contract.notifyRewardAmount(stakingFund);
+    });
+    it("should increase staking period", async function () {
+      const periodFinish = await this.contract.periodFinish();
+      this.contract.connect(owner).updatePeriodFinish(periodFinish + 604800);
+      await expect(await this.contract.periodFinish()).to.equal(
+        periodFinish + 604800
+      );
+    });
+    it("should decrease staking period", async function () {
+      const periodFinish = await this.contract.periodFinish();
+      await this.contract
+        .connect(owner)
+        .updatePeriodFinish(periodFinish - 300000);
+      await expect(await this.contract.periodFinish()).to.equal(
+        periodFinish - 300000
+      );
+    });
+    it("should not be able to set finish time before now", async function () {
+      const currentBlockNumber = await ethers.provider.getBlockNumber();
+      const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
+      await expect(
+        this.contract.updatePeriodFinish(currentBlock.timestamp)
+      ).to.revertedWith("timestamp cant be in the past");
     });
   });
 });
