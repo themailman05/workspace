@@ -6,6 +6,7 @@ import {
   ElectionMetadata,
 } from '@popcorn/utils/Contracts';
 import { ContractsContext } from './contracts';
+import { GrantElections } from '@popcorn/contracts/typechain';
 
 interface ElectionsContext {
   elections: ElectionMetadata[];
@@ -21,23 +22,21 @@ interface ElectionsProviderProps {
 export function ElectionsProvider({
   children,
 }: ElectionsProviderProps): React.ReactElement {
-
   const { contracts } = useContext(ContractsContext);
   const [elections, setElections] = useState<ElectionMetadata[]>([]);
   const [shouldRefresh, refresh] = useState(false);
 
-  async function getElectionMetadata(contract: Contract) {
-    setElections(await Promise.all(
-      [0, 1, 2].map(
-        async (term) =>
-          await GrantElectionAdapter(contract).getElectionMetadata(
-            term,
-          ),
+  async function getElectionMetadata(electionsContract: GrantElections) {
+    setElections(
+      await Promise.all(
+        [0, 1, 2].map(
+          async (term) =>
+            await GrantElectionAdapter(electionsContract).getElectionMetadata(term),
+        ),
       ),
-    ));
+    );
   }
 
-  
   useEffect(() => {
     if (contracts?.election || shouldRefresh) {
       getElectionMetadata(contracts.election);
