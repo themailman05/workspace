@@ -268,7 +268,7 @@ describe("Staking", function () {
       const voiceCredits2 = await this.contract.getVoiceCredits(owner.address);
       expect(voiceCredits1 > voiceCredits2).to.equal(true);
     });
-    it.only("should return 0 voice credits after lockperiod ended", async function () {
+    it("should return 0 voice credits after lockperiod ended", async function () {
       ethers.provider.send("evm_increaseTime", [604800]);
       ethers.provider.send("evm_mine", []);
       const voiceCredits = await this.contract.getVoiceCredits(owner.address);
