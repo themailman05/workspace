@@ -6,6 +6,7 @@ import "./IStaking.sol";
 import "./ITreasury.sol";
 import "./IInsurance.sol";
 import "./IBeneficiaryVaults.sol";
+import "./Owned.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -18,7 +19,8 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
  * @title Popcorn Rewards Manager
  * @notice Manages distribution of POP rewards to Popcorn Treasury, DAO Staking, and Beneficiaries
  */
-contract RewardsManager is Ownable, ReentrancyGuard {
+
+contract RewardsManager is Owned, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -59,7 +61,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
     IInsurance insurance_,
     IBeneficiaryVaults beneficiaryVaults_,
     IUniswapV2Router02 uniswapV2Router_
-  ) {
+  ) Owned(msg.sender) {
     POP = pop_;
     staking = staking_;
     treasury = treasury_;
@@ -133,6 +135,7 @@ contract RewardsManager is Ownable, ReentrancyGuard {
    * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
    * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
    */
+
   function setRewardSplits(uint256[4] calldata splits_) public onlyOwner {
     uint256 _total = 0;
     for (uint8 i = 0; i < 4; i++) {

@@ -60,10 +60,10 @@ describe('BeneficiaryVaults', function () {
     ).to.be.revertedWith("Invalid end block");
   });
 
-  it("cannot tranfer ownership as non-owner", async function () {
+  it("cannot nominate new owner as non-owner", async function () {
     await expect(
-      this.beneficiaryVaults.connect(beneficiary1).transferOwnership(beneficiary1.address)
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+      this.beneficiaryVaults.connect(beneficiary1).nominateNewOwner(beneficiary1.address)
+    ).to.be.revertedWith("Only the contract owner may perform this action");
   });
 
   it("should revert setting to same Beneficiary Registry", async function () {

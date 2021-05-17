@@ -3,9 +3,9 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./BeneficiaryRegistry.sol";
+import "./Owned.sol";
 
-
-contract GrantRegistry {
+contract GrantRegistry is Owned {
   address private governance;
   address private council;
   IBeneficiaryRegistry private beneficiaryRegistry;
@@ -69,7 +69,7 @@ contract GrantRegistry {
     _;
   }
 
-  constructor(address _beneficiaryRegistry) {
+  constructor(address _beneficiaryRegistry) Owned(msg.sender) {
     governance = msg.sender;
     council = msg.sender;
     grantTermsEnabled[uint8(GrantTerm.QUARTER)] = true;
