@@ -249,6 +249,33 @@ describe("Staking", function () {
       ).to.equal(0);
     });
   });
+
+  describe("getVoiceCredits", function () {
+    beforeEach(async function () {
+      const Staking = await ethers.getContractFactory("Staking");
+      this.contract = await Staking.deploy(this.mockPop.address);
+      await this.contract.deployed();
+      await this.mockPop
+        .connect(owner)
+        .approve(this.contract.address, parseEther("1"));
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
+    });
+    it("should return decayed voice credits", async function () {
+      const voiceCredits1 = await this.contract.getVoiceCredits(owner.address);
+      //3 days pass
+      ethers.provider.send("evm_increaseTime", [259200]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits2 = await this.contract.getVoiceCredits(owner.address);
+      expect(voiceCredits1 > voiceCredits2).to.equal(true);
+    });
+    it.only("should return 0 voice credits after lockperiod ended", async function () {
+      ethers.provider.send("evm_increaseTime", [604800]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits = await this.contract.getVoiceCredits(owner.address);
+      expect(voiceCredits.toString()).to.equal("0");
+    });
+  });
+
   describe("notifyRewardAmount", function () {
     beforeEach(async function () {
       const Staking = await ethers.getContractFactory("Staking");

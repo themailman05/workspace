@@ -58,7 +58,10 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     override
     returns (uint256)
   {
-    return voiceCredits[_address];
+    uint256 timeTillEnd = lockedBalances[_address]._end.sub(block.timestamp);
+    uint256 slope =
+      voiceCredits[_address].div(lockedBalances[_address]._duration);
+    return timeTillEnd.mul(slope);
   }
 
   function getWithdrawableBalance() public view override returns (uint256) {
