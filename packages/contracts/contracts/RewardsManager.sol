@@ -134,6 +134,7 @@ contract RewardsManager is Owned, ReentrancyGuard {
    * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
    * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
    */
+
   function setRewardSplits(uint256[4] calldata splits_) public onlyOwner {
     uint256 _total = 0;
     for (uint8 i = 0; i < 4; i++) {
