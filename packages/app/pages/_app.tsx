@@ -16,6 +16,8 @@ import ElectionsProvider from '../app/elections';
 import { SingleActionModalContainer } from 'components/Modal/SingleActionModalContainer';
 import { DualActionModalContainer } from 'components/Modal/DualActionModalContainer';
 import NotificationsContainer from 'components/Notifications/NotificationsContainer';
+import { Debug } from 'components/Debug';
+import DualActionWideModalContainer from 'components/Modal/DualActionWideModalContainer';
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -72,11 +74,13 @@ export default function MyApp(props) {
               <StateProvider>
                 <ContractsWrapper>
                   <ElectionsProvider>
-                    <SwapChainModal />
                     <SingleActionModalContainer />
                     <DualActionModalContainer />
+                    <DualActionWideModalContainer />
                     <Component {...pageProps} />
+                    <SwapChainModal />
                     <NotificationsContainer />
+                    <Debug />
                   </ElectionsProvider>
                 </ContractsWrapper>
               </StateProvider>

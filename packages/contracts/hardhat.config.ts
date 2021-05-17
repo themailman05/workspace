@@ -2,13 +2,13 @@ require("dotenv").config({ path: "../../.env" });
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import '@typechain/hardhat'
-const { utils } = require("ethers");
+import { utils } from "ethers";
 
-const { deploy } = require("./scripts/deployWithValues");
+import { deploy } from "./scripts/deployWithValues";
 
-const {
+import  {
   GrantElectionAdapter,
-} = require("./scripts/helpers/GrantElectionAdapter");
+} from "./scripts/helpers/GrantElectionAdapter";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -132,20 +132,8 @@ task("random", "gets a random number")
   });
 
 
-task("POPUSDC:mint", "Allow address and amount")
-  .addParam("recipient", "address to receive POPUSDC")
-  .addParam("amount", "amount to receive")
-  .setAction(async (args, hre) => {
-    const [signer] = await hre.ethers.getSigners();
-    const { recipient, amount } = args;
-    const mockUSDC = new hre.ethers.Contract(
-      process.env.ADDR_POP,
-      require("./artifacts/contracts/mocks/MockERC20.sol/MockERC20.json").abi,
-      signer
-    );
-    const result = await mockUSDC.mint(recipient, utils.parseFixed(amount, 6));
-    console.log("Done: ", result);
-  });
+
+
 
 module.exports = {
   solidity: {
@@ -158,6 +146,11 @@ module.exports = {
     },
   },
   networks: {
+    mainnet: {
+      chainId: 1,
+      url: process.env.RPC_URL,
+      accounts: [process.env.PRIVATE_KEY]
+    },
     hardhat: {
       chainId: +process.env.CHAIN_ID,
     },
