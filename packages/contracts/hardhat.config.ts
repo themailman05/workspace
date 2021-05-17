@@ -5,7 +5,6 @@ import '@typechain/hardhat'
 const { utils } = require("ethers");
 
 const { deploy } = require("./scripts/deployWithValues");
-const { deployPrivateSale } = require("./scripts/deployPrivateSale");
 
 const {
   GrantElectionAdapter,
