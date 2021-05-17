@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./IStaking.sol";
 import "./ITreasury.sol";
+import "./IInsurance.sol";
 import "./IBeneficiaryVaults.sol";
 import "./Owned.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -27,23 +28,26 @@ contract RewardsManager is Owned, ReentrancyGuard {
   IERC20 public immutable POP;
   IStaking public staking;
   ITreasury public treasury;
+  IInsurance public insurance;
   IBeneficiaryVaults public beneficiaryVaults;
   IUniswapV2Factory public immutable uniswapV2Factory;
   IUniswapV2Router02 public immutable uniswapV2Router;
 
-  uint256[3] public rewardSplits;
+  uint256[4] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
 
-  enum RewardTargets {Staking, Treasury, BeneficiaryVaults}
+  enum RewardTargets {Staking, Treasury, Insurance, BeneficiaryVaults}
 
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
+  event InsuranceDeposited(address to, uint256 amount);
   event BeneficiaryVaultsDeposited(address to, uint256 amount);
   event RewardsDistributed(uint256 amount);
-  event RewardSplitsUpdated(uint256[3] splits);
+  event RewardSplitsUpdated(uint256[4] splits);
   event TokenSwapped(address token, uint256 amountIn, uint256 amountOut);
   event StakingChanged(IStaking from, IStaking to);
   event TreasuryChanged(ITreasury from, ITreasury to);
+  event InsuranceChanged(IInsurance from, IInsurance to);
   event BeneficiaryVaultsChanged(
     IBeneficiaryVaults from,
     IBeneficiaryVaults to
@@ -53,19 +57,22 @@ contract RewardsManager is Owned, ReentrancyGuard {
     IERC20 pop_,
     IStaking staking_,
     ITreasury treasury_,
+    IInsurance insurance_,
     IBeneficiaryVaults beneficiaryVaults_,
     IUniswapV2Router02 uniswapV2Router_
   ) Owned(msg.sender) {
     POP = pop_;
     staking = staking_;
     treasury = treasury_;
+    insurance = insurance_;
     beneficiaryVaults = beneficiaryVaults_;
     uniswapV2Router = uniswapV2Router_;
     uniswapV2Factory = IUniswapV2Factory(uniswapV2Router_.factory());
     rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
+    rewardLimits[uint8(RewardTargets.Insurance)] = [0, 10e18];
     rewardLimits[uint8(RewardTargets.BeneficiaryVaults)] = [20e18, 90e18];
-    rewardSplits = [33e18, 33e18, 34e18];
+    rewardSplits = [32e18, 32e18, 2e18, 34e18];
   }
 
   /**
@@ -93,6 +100,18 @@ contract RewardsManager is Owned, ReentrancyGuard {
   }
 
   /**
+   * @notice Overrides existing Insurance contract
+   * @param insurance_ Address of new Insurance contract
+   * @dev Must implement IInsurance and cannot be same as existing
+   */
+  function setInsurance(IInsurance insurance_) public onlyOwner {
+    require(insurance != insurance_, "Same Insurance");
+    IInsurance _previousInsurance = insurance;
+    insurance = insurance_;
+    emit InsuranceChanged(_previousInsurance, insurance_);
+  }
+
+  /**
    * @notice Overrides existing BeneficiaryVaults contract
    * @param beneficiaryVaults_ Address of new BeneficiaryVaults contract
    * @dev Must implement IeneficiaryVaults and cannot be same as existing
@@ -115,9 +134,9 @@ contract RewardsManager is Owned, ReentrancyGuard {
    * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
    * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
    */
-  function setRewardSplits(uint256[3] calldata splits_) public onlyOwner {
+  function setRewardSplits(uint256[4] calldata splits_) public onlyOwner {
     uint256 _total = 0;
-    for (uint8 i = 0; i < 3; i++) {
+    for (uint8 i = 0; i < 4; i++) {
       require(
         splits_[i] >= rewardLimits[i][0] && splits_[i] <= rewardLimits[i][1],
         "Invalid split"
@@ -184,6 +203,10 @@ contract RewardsManager is Owned, ReentrancyGuard {
       _availableReward.mul(rewardSplits[uint8(RewardTargets.Treasury)]).div(
         100e18
       );
+    uint256 _insuranceAmount =
+      _availableReward.mul(rewardSplits[uint8(RewardTargets.Insurance)]).div(
+        100e18
+      );
     uint256 _beneficiaryVaultsAmount =
       _availableReward
         .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
@@ -191,6 +214,7 @@ contract RewardsManager is Owned, ReentrancyGuard {
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);
+    _distributeToInsurance(_insuranceAmount);
     _distributeToVaults(_beneficiaryVaultsAmount);
 
     emit RewardsDistributed(_availableReward);
@@ -206,6 +230,12 @@ contract RewardsManager is Owned, ReentrancyGuard {
     if (amount_ == 0) return;
     POP.transfer(address(treasury), amount_);
     emit TreasuryDeposited(address(treasury), amount_);
+  }
+
+  function _distributeToInsurance(uint256 amount_) internal {
+    if (amount_ == 0) return;
+    POP.transfer(address(insurance), amount_);
+    emit InsuranceDeposited(address(insurance), amount_);
   }
 
   function _distributeToVaults(uint256 amount_) internal {

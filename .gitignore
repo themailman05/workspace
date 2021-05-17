@@ -11,3 +11,7 @@ yarn-error.log
 !.openzeppelin/goerli*.json
 !.openzeppelin/mainnet*.json
 packages/contracts/artifacts
+packages/contracts/artifacts-ovm
+packages/contracts/cache
+packages/contracts/cache-ovm
+packages/contracts/typechain

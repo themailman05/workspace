@@ -48,20 +48,21 @@ export default function LockPop() {
       .balanceOf(account)
       .then((res) => setPopBalance(Number(utils.formatEther(res))));
     contracts.pop
-      .allowance(account, contracts.staking.address)
+      .allowance(account, process.env.ADDR_STAKING)
       .then((res) => setApproval(Number(utils.formatEther(res))));
   }, [account]);
 
   const getLockedPop = async () => {
-    setLockedPop(Number(utils.formatEther(await contracts.staking.balances(account))));
-  }
+    setLockedPop(
+      Number(utils.formatEther(await contracts.staking.balances(account))),
+    );
+  };
 
   useEffect(() => {
     if (contracts?.staking && account) {
       getLockedPop();
     }
-
-  }, [contracts])
+  }, [contracts]);
 
   async function lockPop(): Promise<void> {
     setWait(true);
@@ -84,7 +85,7 @@ export default function LockPop() {
     const lockedPopInEth = utils.parseEther('100000000');
     const connected = await contracts.pop.connect(library.getSigner());
     await connected
-      .approve(contracts.staking.address, lockedPopInEth)
+      .approve(process.env.ADDR_STAKING, lockedPopInEth)
       .then((res) => console.log('approved', res))
       .catch((err) => console.log('err', err));
     setWait(false);
@@ -124,34 +125,33 @@ export default function LockPop() {
           </div>
         </div>
 
-    {lockedPop && (
-        <div className="mt-2 pb-0 lg:mt-4 lg:pb-0">
-          <div className="relative z-0">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="relative lg:grid lg:grid-cols-7">
-                <div className="max-w-lg mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-start-3 lg:col-end-6 lg:row-start-1 lg:row-end-4">
-                  <div className="relative z-10 rounded-lg shadow-xl">
-           
-                    <div className="border-t-2 rounded-t-lg border-gray-100 rounded-b-lg  bg-gray-100  sm:px-10 sm:py-1">
-                      <span className="flex flex-row items-center justify-between">
-                      <h3
-                          className="text-center text-xl font-extralight text-gray-900 sm:-mx-6"
-                          id="tier-growth"
-                        >
-                          Your Locked POP
-                        </h3>
-                        <p className="px-3 text-center my-4 text-3xl font-black tracking-tight text-gray-900 sm:text-3xl">
-                          {lockedPop.toFixed(2)}
-                        </p>
-                      </span>
-             
+        {lockedPop && (
+          <div className="mt-2 pb-0 lg:mt-4 lg:pb-0">
+            <div className="relative z-0">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="relative lg:grid lg:grid-cols-7">
+                  <div className="max-w-lg mx-auto lg:mt-0 lg:max-w-none lg:mx-0 lg:col-start-3 lg:col-end-6 lg:row-start-1 lg:row-end-4">
+                    <div className="relative z-10 rounded-lg shadow-xl">
+                      <div className="border-t-2 rounded-t-lg border-gray-100 rounded-b-lg  bg-gray-100  sm:px-10 sm:py-1">
+                        <span className="flex flex-row items-center justify-between">
+                          <h3
+                            className="text-center text-xl font-extralight text-gray-900 sm:-mx-6"
+                            id="tier-growth"
+                          >
+                            Your Locked POP
+                          </h3>
+                          <p className="px-3 text-center my-4 text-3xl font-black tracking-tight text-gray-900 sm:text-3xl">
+                            {lockedPop.toFixed(2)}
+                          </p>
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>)}
+        )}
 
         <div className="mt-8 pb-12 lg:mt-8 lg:pb-20">
           <div className="relative z-0">
