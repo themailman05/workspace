@@ -7,7 +7,7 @@
     mode = 'prefix'
     
 [context.production]
-  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
   publish = "packages/app/out"
 
   [context.production.environment]
@@ -30,7 +30,8 @@
 
 
 [context.rinkeby]
-  command = "cd packages/contracts; yarn hardhat compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+
   publish = "packages/app/out"
   [context.rinkeby.environment]
     # this is a random private key needed for hardhat compile to work
