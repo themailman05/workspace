@@ -50,8 +50,8 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
   }
 
   /**
-  * @notice sets governance to address provided
-  */
+   * @notice sets governance to address provided
+   */
   function setGovernance(address _address)
     external
     onlyGovernance
@@ -63,8 +63,8 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
   }
 
   /**
-  * @notice sets council to address provided. council can revoke beneficiaries
-  */
+   * @notice sets council to address provided. council can revoke beneficiaries
+   */
   function setCouncil(address _address)
     external
     onlyCouncil
@@ -76,11 +76,12 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
   }
 
   /**
-  * @notice add a beneficiary with their IPFS cid to the registry
-  * TODO: allow only election contract to modify beneficiary
-  */
+   * @notice add a beneficiary with their IPFS cid to the registry
+   * TODO: allow only election contract to modify beneficiary
+   */
   function addBeneficiary(address _address, bytes calldata applicationCid)
     external
+    override
     onlyGovernance
   {
     require(_address == address(_address), "invalid address");
@@ -97,9 +98,9 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
   }
 
   /**
-  * @notice remove a beneficiary from the registry. (callable only by council)
-  */
-  function revokeBeneficiary(address _address) external onlyCouncil {
+   * @notice remove a beneficiary from the registry. (callable only by council)
+   */
+  function revokeBeneficiary(address _address) external override onlyCouncil {
     require(beneficiaryExists(_address), "exists");
     delete beneficiariesList[beneficiariesMap[_address].listPointer];
     delete beneficiariesMap[_address];
@@ -107,8 +108,8 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
   }
 
   /**
-  * @notice check if beneficiary exists in the registry
-  */
+   * @notice check if beneficiary exists in the registry
+   */
   function beneficiaryExists(address _address)
     public
     view
@@ -121,8 +122,8 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
   }
 
   /**
-  * @notice get beneficiary's application cid from registry. this cid is the address to the beneficiary application that is included in the beneficiary nomination proposal.
-  */
+   * @notice get beneficiary's application cid from registry. this cid is the address to the beneficiary application that is included in the beneficiary nomination proposal.
+   */
   function getBeneficiary(address _address) public view returns (bytes memory) {
     return beneficiariesMap[_address].applicationCid;
   }
