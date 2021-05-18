@@ -181,11 +181,19 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
 
   function _addStakeToLocked(uint256 amount, uint256 lengthOfTime) internal {
     uint256 _currentTime = block.timestamp;
-    lockedBalances[msg.sender] = LockedBalance({
-      _balance: lockedBalances[msg.sender]._balance.add(amount),
-      _duration: lengthOfTime,
-      _end: _currentTime.add(lengthOfTime)
-    });
+    if (_currentTime > lockedBalances[msg.sender]._end) {
+      lockedBalances[msg.sender] = LockedBalance({
+        _balance: lockedBalances[msg.sender]._balance.add(amount),
+        _duration: lengthOfTime,
+        _end: _currentTime.add(lengthOfTime)
+      });
+    } else {
+      lockedBalances[msg.sender] = LockedBalance({
+        _balance: lockedBalances[msg.sender]._balance.add(amount),
+        _duration: lengthOfTime,
+        _end: lockedBalances[msg.sender]._end.add(lengthOfTime)
+      });
+    }
   }
 
   function _clearWithdrawnFromLocked(uint256 _amount) internal {

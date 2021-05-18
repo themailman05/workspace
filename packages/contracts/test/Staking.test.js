@@ -149,7 +149,7 @@ describe("Staking", function () {
     });
   });
 
-  describe("timelock", function () {
+  describe.only("timelock", function () {
     it("should increase locktime when staking more funds", async function () {
       await this.mockPop
         .connect(owner)
@@ -163,6 +163,26 @@ describe("Staking", function () {
       expect(
         await this.contract.connect(owner).getWithdrawableBalance()
       ).to.equal(0);
+    });
+    it("should add locktime when staking immediately more funds", async function () {
+      await this.mockPop
+        .connect(owner)
+        .approve(this.contract.address, parseEther("2"));
+      // owner stakes 1 ether for a week
+      await this.contract.connect(owner).stake(parseEther("1"), 604800 * 52);
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
+      ethers.provider.send("evm_increaseTime", [604800]);
+      ethers.provider.send("evm_mine", []);
+      // still balance 0 for owner
+      expect(
+        await this.contract.connect(owner).getWithdrawableBalance()
+      ).to.equal(0);
+      ethers.provider.send("evm_increaseTime", [604800 * 52]);
+      ethers.provider.send("evm_mine", []);
+      // still balance 0 for owner
+      expect(
+        await this.contract.connect(owner).getWithdrawableBalance()
+      ).to.equal(parseEther("2"));
     });
     it("should lock all funds again when staking new funds without withdrawing old funds", async function () {
       await this.mockPop
