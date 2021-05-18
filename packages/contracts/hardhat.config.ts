@@ -1,7 +1,9 @@
 require("dotenv").config({ path: "../../.env" });
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
-import '@typechain/hardhat'
+import "@typechain/hardhat";
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
 const { utils } = require("ethers");
 
 const { deploy } = require("./scripts/deployWithValues");
@@ -103,7 +105,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     );
   });
 
-  task("elections:finalize", "finalize a grant election")
+task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
@@ -113,10 +115,10 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(term, {gasLimit: 9500000});
+    await GrantElections.finalize(term, { gasLimit: 9500000 });
   });
 
-  task("random", "gets a random number")
+task("random", "gets a random number")
   .addParam("seed", "the seed")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
@@ -144,5 +146,15 @@ module.exports = {
           []
       ),
     },
+  },
+  gasReporter: {
+    currency: "USD",
+    gasPrice: 100,
+    enabled: true,
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: true,
+    disambiguatePaths: false,
   },
 };
