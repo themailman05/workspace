@@ -5,6 +5,7 @@ let proposer1,proposer2,beneficiary;
 let bn_contract;
 
 const ProposalType = { BNP: 0, BTP: 1};
+const Vote = { Yes: 0, No: 1};
 const ONE_DAY = 86400;
 const ipfsHahContent='Qmd3cB3amDwdqqmEbmpbiUHyUgaxad9MrvfPy5WN78V24y';
 function parseHexString(str) { 
@@ -170,13 +171,27 @@ describe('BeneficiaryNomination', function () {
       await bn_contract.connect(proposer1).createProposal(beneficiary.address,contentbytes,ProposalType.BNP);
     });
     it("should prevent to vote without voice credits", async function() {
-      await expect(bn_contract.connect(voter1).voteYes(PROPOSALID,0)).to.be.revertedWith( "Voice credits are required");
+      await expect(bn_contract.connect(voter1).vote(PROPOSALID,0,Vote.Yes)).to.be.revertedWith( "Voice credits are required");
     });
     it("should prevent to vote without staked voice credits", async function() {
       await this.mockStaking.mock.getVoiceCredits.returns(100);
       
-      await expect(bn_contract.connect(voter1).voteYes(PROPOSALID,200)).to.be.revertedWith( "Insufficient voice credits");
+      await expect(bn_contract.connect(voter1).vote(PROPOSALID,200,Vote.Yes)).to.be.revertedWith( "Insufficient voice credits");
     });
+    it("should vote yes to a newly created proposal", async function() {
+      const voiceCredits=100;
+      const sqrtVoiceCredits=10;
+      await this.mockStaking.mock.getVoiceCredits.returns(voiceCredits);
+      
+      await bn_contract.connect(voter1).vote(PROPOSALID,voiceCredits,Vote.Yes);
+      const proposal=await bn_contract.proposals(PROPOSALID);
+
+      expect(proposal.noCount).to.equal(0);
+      expect(proposal.yesCount).to.equal(sqrtVoiceCredits);
+      expect(await bn_contract.isVoted(PROPOSALID,voter1.address)).to.equal(true);
+
+    });
+    
   });
 });
 
