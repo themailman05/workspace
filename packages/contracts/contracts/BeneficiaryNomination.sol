@@ -27,6 +27,7 @@ contract BeneficiaryNomination {
   uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
   enum Status {Processing, Yes, No} // status of the proposal
+  enum VoteOption {Yes, No}
   struct Proposal {
     Status status;
     address beneficiary;
@@ -171,50 +172,27 @@ contract BeneficiaryNomination {
   }
 
   /** 
-  @notice votes yes to a specific proposal during the initial voting process
-  @param  proposalId Id of the proposal which you are going to vote
-  @param  _voiceCredits Uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
+  @notice votes to a specific proposal during the initial voting process
+  @param  proposalId id of the proposal which you are going to vote
+  @param  _voiceCredits uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
   */
-  function voteYes(uint256 proposalId, uint256 _voiceCredits) external {
+  function vote(
+    uint256 proposalId,
+    uint256 _voiceCredits,
+    VoteOption _vote
+  ) external {
     Proposal storage proposal = proposals[proposalId];
-    require(
-      block.timestamp <=
-        proposal.startTime.add(DefaultConfigurations.votingPeriod),
-      "Initial voting period has already finished!"
-    );
-    require(
-      !proposal.voters[msg.sender],
-      "address already voted for the proposal"
-    );
-
-    require(_voiceCredits > 0, "Voice credits are required");
-    uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);
-
-    require(_stakedVoiceCredits > 0, "must have voice credits from staking");
-    require(_voiceCredits <= _stakedVoiceCredits, "Insufficient voice credits");
-
-    uint256 _sqredVoiceCredits = sqrt(_voiceCredits);
-
-    proposal.voters[msg.sender] = true;
-
-    proposal.yesCount = proposal.yesCount.add(_sqredVoiceCredits);
-    yesVotes[proposalId][msg.sender] = _sqredVoiceCredits;
-
-    emit Vote(proposalId, msg.sender, _sqredVoiceCredits);
-  }
-
-  /** 
-  @notice votes no to a specific proposal during the initial voting process
-  @param  proposalId Id of the proposal which you are going to vote
-  @param  _voiceCredits Uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
-  */
-  function voteNo(uint256 proposalId, uint256 _voiceCredits) external {
-    Proposal storage proposal = proposals[proposalId];
+    if (_vote == VoteOption.Yes) {
+      require(
+        block.timestamp <=
+          proposal.startTime.add(DefaultConfigurations.votingPeriod),
+        "Initial voting period has already finished!"
+      );
+    }
     require(
       proposal.status == Status.Processing,
       "Proposal is already finalized"
     );
-
     uint256 proposalEndTime =
       proposal.startTime.add(DefaultConfigurations.votingPeriod).add(
         DefaultConfigurations.vetoPeriod
@@ -235,19 +213,20 @@ contract BeneficiaryNomination {
     uint256 _sqredVoiceCredits = sqrt(_voiceCredits);
 
     proposal.voters[msg.sender] = true;
-
-    proposal.noCount = proposal.noCount.add(_sqredVoiceCredits);
-    noVotes[proposalId][msg.sender] = _sqredVoiceCredits;
-
+    if (_vote == VoteOption.Yes) {
+      proposal.yesCount = proposal.yesCount.add(_sqredVoiceCredits);
+      yesVotes[proposalId][msg.sender] = _sqredVoiceCredits;
+    } else if (_vote == VoteOption.No) {
+      proposal.noCount = proposal.noCount.add(_sqredVoiceCredits);
+      noVotes[proposalId][msg.sender] = _sqredVoiceCredits;
+    }
     emit Vote(proposalId, msg.sender, _sqredVoiceCredits);
-
     // Finalize the vote if no votes outnumber yes votes and open voting has ended
     if (
       _time > proposal.startTime.add(DefaultConfigurations.votingPeriod) &&
       proposal.noCount >= proposal.yesCount
     ) {
       proposal.status = Status.No;
-      /// TODO: voters should receive back their locked tokens
       emit Finalize(proposalId);
     }
   }
@@ -257,6 +236,20 @@ contract BeneficiaryNomination {
  */
   function getNumberOfProposals() external view returns (uint256) {
     return proposals.length;
+  }
+
+  /** 
+  @notice checks if someone has voted to a specific proposal or not
+  @param  proposalId id of the proposal
+  @param  voter IPFS content hash
+  @return true or false
+  */
+  function isVoted(uint256 proposalId, address voter)
+    external
+    view
+    returns (bool)
+  {
+    return proposals[proposalId].voters[voter];
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {
