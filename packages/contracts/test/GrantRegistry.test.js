@@ -43,7 +43,7 @@ describe("GrantRegistry", function () {
 
   it("Cannot nominate new owner as non-owner", async function () {
     await expect(
-      grantRegistryContract.connect(nonOwner).nominateNewOwner(nonOwner.address)
-    ).to.be.revertedWith("Only the contract owner may perform this action");
+      grantRegistryContract.connect(nonOwner).nominateNewGovernance(nonOwner.address)
+    ).to.be.revertedWith("Only the contract governance may perform this action");
   });
 });

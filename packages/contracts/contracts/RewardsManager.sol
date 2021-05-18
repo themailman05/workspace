@@ -12,7 +12,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
-import "@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 /**
@@ -30,7 +29,6 @@ contract RewardsManager is Owned, ReentrancyGuard {
   ITreasury public treasury;
   IInsurance public insurance;
   IBeneficiaryVaults public beneficiaryVaults;
-  IUniswapV2Factory public immutable uniswapV2Factory;
   IUniswapV2Router02 public immutable uniswapV2Router;
 
   uint256[4] public rewardSplits;
@@ -67,7 +65,6 @@ contract RewardsManager is Owned, ReentrancyGuard {
     insurance = insurance_;
     beneficiaryVaults = beneficiaryVaults_;
     uniswapV2Router = uniswapV2Router_;
-    uniswapV2Factory = IUniswapV2Factory(uniswapV2Router_.factory());
     rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
     rewardLimits[uint8(RewardTargets.Insurance)] = [0, 10e18];

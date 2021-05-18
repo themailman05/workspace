@@ -94,9 +94,6 @@ describe("RewardsManager", function () {
     expect(await this.rewardsManager.beneficiaryVaults()).to.equal(
       this.mockBeneficiaryVaults.address
     );
-    expect(await this.rewardsManager.uniswapV2Factory()).to.equal(
-      this.mockUniswapV2Factory.address
-    );
     expect(await this.rewardsManager.uniswapV2Router()).to.equal(
       this.mockUniswapV2Router.address
     );
@@ -119,7 +116,7 @@ describe("RewardsManager", function () {
   it("reverts when setting reward splits as non-owner", async function () {
     await expect(
       this.rewardsManager.connect(nonOwner).setRewardSplits([20, 18, 2, 60])
-    ).to.be.revertedWith("Ownable: caller is not the owner");
+    ).to.be.revertedWith("Only the contract owner may perform this action");
   });
 
   it("reverts when setting invalid reward splits", async function () {
