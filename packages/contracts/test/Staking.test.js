@@ -149,7 +149,7 @@ describe("Staking", function () {
     });
   });
 
-  describe.only("timelock", function () {
+  describe("timelock", function () {
     it("should increase locktime when staking more funds", async function () {
       await this.mockPop
         .connect(owner)
