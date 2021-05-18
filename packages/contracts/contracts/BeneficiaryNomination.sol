@@ -37,6 +37,8 @@ contract BeneficiaryNomination is Governed {
     uint256 startTime;
     uint256 yesCount;
     uint256 noCount;
+    uint256 voteCount;
+    uint256 bondBalance;
     ProposalType _proposalType;
   }
   Proposal[] public proposals;
@@ -150,6 +152,7 @@ contract BeneficiaryNomination is Governed {
     proposal.proposer = msg.sender;
     proposal.startTime = block.timestamp;
     proposal._proposalType = _type;
+    proposal.bondBalance = DefaultConfigurations.proposalBond;
 
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _content);
 
@@ -190,6 +193,7 @@ contract BeneficiaryNomination is Governed {
     require(_voiceCredits > 0, "must have voice credits from staking");
 
     proposal.voters[msg.sender] = true;
+    proposal.voteCount = proposal.voteCount.add(1);
     if (_vote == VoteOption.Yes) {
       proposal.yesCount = proposal.yesCount.add(_voiceCredits);
     } else if (_vote == VoteOption.No) {
@@ -263,7 +267,7 @@ contract BeneficiaryNomination is Governed {
     POP.safeTransferFrom(
       address(this),
       msg.sender,
-      DefaultConfigurations.proposalBond
+      proposals[proposalId].bondBalance
     );
   }
 
@@ -272,6 +276,19 @@ contract BeneficiaryNomination is Governed {
  */
   function getNumberOfProposals() external view returns (uint256) {
     return proposals.length;
+  }
+
+  /** 
+  @notice gets number of votes
+  @param  proposalId id of the proposal
+  @return number of votes to a proposal
+  */
+  function getNumberOfVotes(uint256 proposalId)
+    external
+    view
+    returns (uint256)
+  {
+    return proposals[proposalId].voteCount;
   }
 
   /** 
