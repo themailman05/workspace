@@ -2,12 +2,15 @@
 
 pragma solidity >=0.7.0 <=0.8.3;
 
+import "./Governed.sol";
+import "./CouncilControlled.sol";
 import "./IBeneficiaryRegistry.sol";
 
-contract BeneficiaryRegistry is IBeneficiaryRegistry {
-  address private governance;
-  address private council;
-
+contract BeneficiaryRegistry is
+  IBeneficiaryRegistry,
+  Governed,
+  CouncilControlled
+{
   struct Beneficiary {
     bytes applicationCid; // ipfs address of application
     uint256 listPointer;
@@ -18,62 +21,16 @@ contract BeneficiaryRegistry is IBeneficiaryRegistry {
     bytes indexed _applicationCid
   );
   event BeneficiaryRevoked(address indexed _address);
-  event GovernanceUpdated(
-    address indexed _oldAddress,
-    address indexed _newAddress
-  );
-  event CouncilUpdated(
-    address indexed _oldAddress,
-    address indexed _newAddress
-  );
 
   mapping(address => Beneficiary) private beneficiariesMap;
   address[] private beneficiariesList;
 
-  modifier onlyGovernance {
-    require(msg.sender == governance, "!governance");
-    _;
-  }
-
-  modifier onlyCouncil {
-    require(msg.sender == council, "!council");
-    _;
-  }
   modifier validAddress(address _address) {
     require(_address == address(_address), "invalid address");
     _;
   }
 
-  constructor() {
-    governance = msg.sender;
-    council = msg.sender;
-  }
-
-  /**
-   * @notice sets governance to address provided
-   */
-  function setGovernance(address _address)
-    external
-    onlyGovernance
-    validAddress(_address)
-  {
-    address previousGovernance = governance;
-    governance = _address;
-    emit GovernanceUpdated(previousGovernance, _address);
-  }
-
-  /**
-   * @notice sets council to address provided. council can revoke beneficiaries
-   */
-  function setCouncil(address _address)
-    external
-    onlyCouncil
-    validAddress(_address)
-  {
-    address previousCouncil = council;
-    council = _address;
-    emit CouncilUpdated(previousCouncil, _address);
-  }
+  constructor() Governed(msg.sender) CouncilControlled(msg.sender) {}
 
   /**
    * @notice add a beneficiary with their IPFS cid to the registry
