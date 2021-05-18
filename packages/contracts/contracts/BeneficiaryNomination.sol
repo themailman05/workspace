@@ -4,13 +4,14 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "./Governed.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 
 /** 
  @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
 */
-contract BeneficiaryNomination {
+contract BeneficiaryNomination is Governed {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -18,7 +19,6 @@ contract BeneficiaryNomination {
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
 
-  address public governance;
   /**
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
@@ -53,10 +53,6 @@ contract BeneficiaryNomination {
   }
   ConfigurationOptions public DefaultConfigurations;
   //modifiers
-  modifier onlyGovernance {
-    require(msg.sender == governance, "!governance");
-    _;
-  }
   modifier onlyProposer(uint256 proposalId) {
     require(msg.sender == proposals[proposalId].proposer, "!proposer");
     _;
@@ -72,11 +68,6 @@ contract BeneficiaryNomination {
     );
     _;
   }
-  //events
-  event GovernanceUpdated(
-    address indexed _oldAddress,
-    address indexed _newAddress
-  );
   event ProposalCreated(
     uint256 indexed proposalId,
     address indexed proposer,
@@ -94,27 +85,12 @@ contract BeneficiaryNomination {
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
-    IERC20 _pop,
-    address _governance
-  ) {
+    IERC20 _pop
+  ) Governed(msg.sender) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     POP = _pop;
-    governance = _governance;
     _setDefaults();
-  }
-
-  /**
-   * @notice sets governance to address provided
-   */
-  function setGovernance(address _address)
-    external
-    onlyGovernance
-    validAddress(_address)
-  {
-    address _previousGovernance = governance;
-    governance = _address;
-    emit GovernanceUpdated(_previousGovernance, _address);
   }
 
   function _setDefaults() internal {
