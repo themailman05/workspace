@@ -41,11 +41,6 @@ contract BeneficiaryNomination is Governed {
   }
   Proposal[] public proposals;
 
-  // Proposal Id => Voter => Yes Votes
-  mapping(uint256 => mapping(address => uint256)) public yesVotes;
-  // Proposal Id => Voter => No Votes
-  mapping(uint256 => mapping(address => uint256)) public noVotes;
-
   struct ConfigurationOptions {
     uint256 votingPeriod;
     uint256 vetoPeriod;
@@ -164,14 +159,9 @@ contract BeneficiaryNomination is Governed {
 
   /** 
   @notice votes to a specific proposal during the initial voting process
-  @param  proposalId id of the proposal which you are going to vote
-  @param  _voiceCredits uses to vote. Through the staking contract, where users lock their POP tokens. In return, they receive voice credits. 
+  @param  proposalId id of the proposal which you are going to vote 
   */
-  function vote(
-    uint256 proposalId,
-    uint256 _voiceCredits,
-    VoteOption _vote
-  ) external {
+  function vote(uint256 proposalId, VoteOption _vote) external {
     Proposal storage proposal = proposals[proposalId];
     if (_vote == VoteOption.Yes) {
       require(
@@ -195,23 +185,17 @@ contract BeneficiaryNomination is Governed {
       "address already voted for the proposal"
     );
 
-    require(_voiceCredits > 0, "Voice credits are required");
-    uint256 _stakedVoiceCredits = staking.getVoiceCredits(msg.sender);
+    uint256 _voiceCredits = staking.getVoiceCredits(msg.sender);
 
-    require(_stakedVoiceCredits > 0, "must have voice credits from staking");
-    require(_voiceCredits <= _stakedVoiceCredits, "Insufficient voice credits");
-
-    uint256 _sqredVoiceCredits = sqrt(_voiceCredits);
+    require(_voiceCredits > 0, "must have voice credits from staking");
 
     proposal.voters[msg.sender] = true;
     if (_vote == VoteOption.Yes) {
-      proposal.yesCount = proposal.yesCount.add(_sqredVoiceCredits);
-      yesVotes[proposalId][msg.sender] = _sqredVoiceCredits;
+      proposal.yesCount = proposal.yesCount.add(_voiceCredits);
     } else if (_vote == VoteOption.No) {
-      proposal.noCount = proposal.noCount.add(_sqredVoiceCredits);
-      noVotes[proposalId][msg.sender] = _sqredVoiceCredits;
+      proposal.noCount = proposal.noCount.add(_voiceCredits);
     }
-    emit Vote(proposalId, msg.sender, _sqredVoiceCredits);
+    emit Vote(proposalId, msg.sender, _voiceCredits);
     // Finalize the vote if no votes outnumber yes votes and open voting has ended
     if (
       _time > proposal.startTime.add(DefaultConfigurations.votingPeriod) &&
@@ -302,18 +286,5 @@ contract BeneficiaryNomination is Governed {
     returns (bool)
   {
     return proposals[proposalId].voters[voter];
-  }
-
-  function sqrt(uint256 y) internal pure returns (uint256 z) {
-    if (y > 3) {
-      z = y;
-      uint256 x = y / 2 + 1;
-      while (x < z) {
-        z = x;
-        x = (y / x + x) / 2;
-      }
-    } else if (y != 0) {
-      z = 1;
-    }
   }
 }
