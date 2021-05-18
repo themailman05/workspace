@@ -190,7 +190,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     } else {
       lockedBalances[msg.sender] = LockedBalance({
         _balance: lockedBalances[msg.sender]._balance.add(amount),
-        _duration: lengthOfTime,
+        _duration: lockedBalances[msg.sender]._duration.add(lengthOfTime),
         _end: lockedBalances[msg.sender]._end.add(lengthOfTime)
       });
     }
