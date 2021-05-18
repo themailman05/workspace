@@ -147,6 +147,19 @@ contract BeneficiaryNomination {
     enoughBond(msg.sender)
     returns (uint256)
   {
+    if (_type == ProposalType.BTP) {
+      //takedown proposal
+      require(
+        beneficiaryRegistry.beneficiaryExists(_beneficiary),
+        "Beneficiary doesnt exist!"
+      );
+    } else {
+      //nomination proposal
+      require(
+        !beneficiaryRegistry.beneficiaryExists(_beneficiary),
+        "Beneficiary already exists!"
+      );
+    }
     POP.safeTransferFrom(
       msg.sender,
       address(this),
@@ -227,6 +240,51 @@ contract BeneficiaryNomination {
       proposal.noCount >= proposal.yesCount
     ) {
       proposal.status = Status.No;
+      emit Finalize(proposalId);
+    }
+  }
+
+  /** 
+  @notice finalizes the voting process
+  @param  proposalId id of the proposal
+  */
+  function finalize(uint256 proposalId) public onlyGovernance {
+    Proposal storage proposal = proposals[proposalId];
+    require(
+      proposal.status == Status.Processing,
+      "Proposal is already finalized"
+    );
+    uint256 _time = block.timestamp;
+    uint256 proposalEndTime =
+      proposal.startTime.add(DefaultConfigurations.votingPeriod).add(
+        DefaultConfigurations.vetoPeriod
+      );
+
+    if (proposal.yesCount > proposal.noCount) {
+      require(_time > proposalEndTime, "Veto period has not over yet!");
+
+      proposal.status = Status.Yes;
+      if (proposal._proposalType == ProposalType.BNP) {
+        //nomination proposal
+        //register beneficiary using the BeneficiaryRegisty contract
+        beneficiaryRegistry.addBeneficiary(
+          proposal.beneficiary,
+          proposal.content
+        );
+      } else {
+        //BTP
+        //remove beneficiary using BeneficiaryRegistry contract
+        beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
+      }
+      //TODO The bond should be claimable and be returned to the proposer
+    } else {
+      require(
+        _time > proposal.startTime.add(DefaultConfigurations.votingPeriod),
+        "Proposal cannot be finalized until end of initial voting period"
+      );
+
+      proposal.status = Status.No;
+      //If the proposal fail, the bond should be kept in the contract.
       emit Finalize(proposalId);
     }
   }
