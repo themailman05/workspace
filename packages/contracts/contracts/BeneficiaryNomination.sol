@@ -34,7 +34,6 @@ contract BeneficiaryNomination {
     mapping(address => bool) voters;
     bytes content;
     address proposer;
-    address bondRecipient;
     uint256 startTime;
     uint256 yesCount;
     uint256 noCount;
@@ -56,6 +55,10 @@ contract BeneficiaryNomination {
   //modifiers
   modifier onlyGovernance {
     require(msg.sender == governance, "!governance");
+    _;
+  }
+  modifier onlyProposer(uint256 proposalId) {
+    require(msg.sender == proposals[proposalId].proposer, "!proposer");
     _;
   }
   modifier validAddress(address _address) {
@@ -174,7 +177,6 @@ contract BeneficiaryNomination {
     proposal.beneficiary = _beneficiary;
     proposal.content = _content;
     proposal.proposer = msg.sender;
-    proposal.bondRecipient = msg.sender;
     proposal.startTime = block.timestamp;
     proposal._proposalType = _type;
 
@@ -276,7 +278,7 @@ contract BeneficiaryNomination {
         //remove beneficiary using BeneficiaryRegistry contract
         beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
       }
-      //TODO The bond should be claimable and be returned to the proposer
+      // proposers could claim their fund using claimBond function
     } else {
       require(
         _time > proposal.startTime.add(DefaultConfigurations.votingPeriod),
@@ -287,6 +289,22 @@ contract BeneficiaryNomination {
       //If the proposal fail, the bond should be kept in the contract.
       emit Finalize(proposalId);
     }
+  }
+
+  /** 
+  @notice claims bond after a successful proposal voting
+  @param  proposalId id of the proposal
+  */
+  function claimBond(uint256 proposalId) public onlyProposer(proposalId) {
+    require(
+      proposals[proposalId].status == Status.Yes,
+      "Proposal failed or is processing!"
+    );
+    POP.safeTransferFrom(
+      address(this),
+      msg.sender,
+      DefaultConfigurations.proposalBond
+    );
   }
 
   /**
