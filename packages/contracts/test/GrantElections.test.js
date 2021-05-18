@@ -78,13 +78,6 @@ describe("GrantElections", function () {
     );
     await this.contract.initialize(GRANT_TERM.MONTH);
   });
-  describe("access control", async function () {
-    it("Cannot nominate new owner as non-owner", async function () {
-      await expect(
-        this.contract.connect(nonOwner).nominateNewOwner(nonOwner.address)
-      ).to.be.revertedWith("Only the contract owner may perform this action");
-    });
-  });
 
   describe("defaults", function () {
     it("should set correct monthly defaults", async function () {
@@ -167,16 +160,16 @@ describe("GrantElections", function () {
   describe("setters", function () {
     it("should prevent non-governance address from updating governance address", async function () {
       await expect(
-        this.contract.setGovernance(nonOwner.address)
-      ).to.be.revertedWith("!governance");
+        this.contract.connect(nonOwner).nominateNewGovernance(nonOwner.address)
+      ).to.be.revertedWith(
+        "Only the contract governance may perform this action"
+      );
     });
 
     it("should allow governance to set new governance address", async function () {
-      await this.contract.connect(governance).setGovernance(nonOwner.address);
-      expect(await this.contract.governance()).to.equal(nonOwner.address);
-
-      await this.contract.connect(nonOwner).setGovernance(governance.address);
-      expect(await this.contract.governance()).to.equal(governance.address);
+      await expect(
+        this.contract.connect(governance).nominateNewGovernance(nonOwner.address)
+      ).to.emit(this.contract, "GovernanceNominated").withArgs(nonOwner.address);
     });
   });
 
@@ -601,15 +594,6 @@ describe("GrantElections", function () {
         beneficiary4.address,
         beneficiary2.address,
       ]);
-      console.log(
-        await GrantElectionAdapter(this.contract).getElectionMetadata(
-          GRANT_TERM.MONTH
-        )
-      );
-      console.log(await this.contract.getElectionMetadata(GRANT_TERM.MONTH));
-      expect(
-        await this.contract.getElectionMetadata(GRANT_TERM.MONTH)
-      ).deep.to.eq({});
     });
   });
 
