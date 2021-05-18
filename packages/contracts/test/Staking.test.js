@@ -149,7 +149,7 @@ describe("Staking", function () {
     });
   });
 
-  describe.only("timelock", function () {
+  describe("timelock", function () {
     it("should increase locktime when staking more funds", async function () {
       await this.mockPop
         .connect(owner)
@@ -237,8 +237,8 @@ describe("Staking", function () {
         await this.contract.connect(owner).getWithdrawableBalance()
       ).to.equal(0);
 
-      // +3 week passes
-      ethers.provider.send("evm_increaseTime", [604800 * 3]);
+      // +4 week passes
+      ethers.provider.send("evm_increaseTime", [604800 * 4]);
       ethers.provider.send("evm_mine", []);
 
       // balance of 3 either available for withdraw
