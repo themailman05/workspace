@@ -32,7 +32,7 @@ contract BeneficiaryNomination is Governed {
     ProposalStatus status;
     address beneficiary;
     mapping(address => bool) voters;
-    bytes content;
+    bytes applicationCid;
     address proposer;
     uint256 startTime;
     uint256 yesCount;
@@ -108,13 +108,15 @@ contract BeneficiaryNomination is Governed {
 
   /** 
   @notice creates a beneficiary nomination proposal or a beneficiary takedown proposal
+  @dev  used proposals.push() to create an empty proposal Objet and then assiging the values.
+  because of an issue in solc that you can not create a memory object from a struct with nested mappings
   @param  _beneficiary address of the beneficiary
-  @param  _content IPFS content hash
+  @param  _applicationCid IPFS content hash
   @return proposal id
   */
   function createProposal(
     address _beneficiary,
-    bytes memory _content,
+    bytes memory _applicationCid,
     ProposalType _type
   )
     external
@@ -148,13 +150,13 @@ contract BeneficiaryNomination is Governed {
     proposals.push();
     Proposal storage proposal = proposals[proposalId];
     proposal.beneficiary = _beneficiary;
-    proposal.content = _content;
+    proposal.applicationCid = _applicationCid;
     proposal.proposer = msg.sender;
     proposal.startTime = block.timestamp;
     proposal._proposalType = _type;
     proposal.bondBalance = DefaultConfigurations.proposalBond;
 
-    emit ProposalCreated(proposalId, msg.sender, _beneficiary, _content);
+    emit ProposalCreated(proposalId, msg.sender, _beneficiary, _applicationCid);
 
     //return proposalId;
     return _withdrawable;
@@ -247,7 +249,7 @@ contract BeneficiaryNomination is Governed {
         //register beneficiary using the BeneficiaryRegisty contract
         beneficiaryRegistry.addBeneficiary(
           proposal.beneficiary,
-          proposal.content
+          proposal.applicationCid
         );
       } else {
         //BTP
