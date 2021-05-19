@@ -1,7 +1,7 @@
 const { expect } = require('chai');
 const { parseEther } = require("ethers/lib/utils");
 let owner, nonOwner;
-let proposer1,proposer2,beneficiary;
+let proposer1,proposer2,proposer3,beneficiary;
 let bn_contract;
 
 const ProposalType = { BNP: 0, BTP: 1};
@@ -9,15 +9,7 @@ const Vote = { Yes: 0, No: 1};
 const ProposalStatus= {New:0, ChallengePeriod:1, Ended:2, Passed:3, Failed:4};
 const ONE_DAY = 86400;
 const ipfsHahContent='Qmd3cB3amDwdqqmEbmpbiUHyUgaxad9MrvfPy5WN78V24y';
-function parseHexString(str) { 
-  var result = [];
-  while (str.length >= 2) { 
-      result.push(parseInt(str.substring(0, 2), 16));
-      str = str.substring(2, str.length);
-  }
 
-  return result;
-}
 function convertStringToBytes(str) {
   var bytes = []; // char codes
   var bytesv2 = []; // char codes
@@ -48,6 +40,7 @@ describe('BeneficiaryNomination', function () {
       nonOwner,
       proposer1,
       proposer2,
+      proposer3,
       beneficiary,
       voter1,
       voter2,
@@ -59,7 +52,7 @@ describe('BeneficiaryNomination', function () {
     await this.mockPop.mint(beneficiary.address, parseEther("50"));
     await this.mockPop.mint(proposer1.address, parseEther("1500"));
     await this.mockPop.mint(proposer2.address, parseEther("3000"));
-
+    await this.mockPop.mint(proposer3.address, parseEther("3000"));
     const Staking = await ethers.getContractFactory("Staking");
     this.mockStaking = await waffle.deployMockContract(owner, Staking.interface.format());
 
@@ -94,25 +87,10 @@ describe('BeneficiaryNomination', function () {
   
   });
 
- /* describe("setters", function () {
-    it("should prevent non-governance address from updating governance address", async function () {
-      await expect(
-        bn_contract.setGovernance(nonOwner.address)
-      ).to.be.revertedWith("!governance");
-    });
-
-    it("should allow governance to set new governance address", async function () {
-      await bn_contract.connect(governance).setGovernance(nonOwner.address);
-      expect(await bn_contract.governance()).to.equal(nonOwner.address);
-
-      await bn_contract.connect(nonOwner).setGovernance(governance.address);
-      expect(await bn_contract.governance()).to.equal(governance.address);
-    });
-  });*/
-
   describe("proposals", function () {
 
-    it("should create proposal with specified attributes", async function() {
+    it("should create BNP proposal with specified attributes", async function() {
+      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
       var contentbytes=convertStringToBytes(ipfsHahContent);
    
       await this.mockPop .connect(proposer2).approve(bn_contract.address, parseEther('3000'));
@@ -120,11 +98,11 @@ describe('BeneficiaryNomination', function () {
       const proposal=await bn_contract.proposals(PROPOSALID);
       
       expect(proposal.beneficiary).to.equal(beneficiary.address);
-      expect(hex2a(proposal.content)).to.equal(ipfsHahContent);
+      expect(hex2a(proposal.applicationCid)).to.equal(ipfsHahContent);
       expect(proposal.proposer).to.equal(proposer2.address);
-      expect(proposal.bondRecipient).to.equal(proposer2.address);
       expect(proposal._proposalType).to.equal(ProposalType.BNP);
-
+      expect(proposal.voteCount).to.equal(0);
+      expect(proposal.status).to.equal(ProposalStatus.New);
       expect(await bn_contract.getNumberOfProposals()).to.equal(1);
     });
     it("should prevent to create proposal with not enough bond", async function () {
@@ -134,6 +112,15 @@ describe('BeneficiaryNomination', function () {
         bn_contract.connect(proposer1).createProposal(beneficiary.address,contentbytes,ProposalType.BNP)
   
       ).to.be.revertedWith( "!enough bond");
+    });
+    it("should prevent to create a BNP proposal for an existing beneficiary", async function () {
+      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      var contentbytes=convertStringToBytes(ipfsHahContent);
+      await this.mockPop.connect(proposer3).approve(bn_contract.address, parseEther('3000'));
+      await expect(
+        bn_contract.connect(proposer3).createProposal(beneficiary.address,contentbytes,ProposalType.BNP)
+  
+      ).to.be.revertedWith( "Beneficiary already exists!");
     });
   });
   describe("voting", function () {
@@ -166,17 +153,13 @@ describe('BeneficiaryNomination', function () {
       await bn_contract.deployed();
       // create a BNP proposal
       var contentbytes=convertStringToBytes(ipfsHahContent);
-   
+      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
       await this.mockPop.connect(proposer1).approve(bn_contract.address, parseEther('2500'));
       await bn_contract.connect(proposer1).createProposal(beneficiary.address,contentbytes,ProposalType.BNP);
     });
     it("should prevent to vote without voice credits", async function() {
-      await expect(bn_contract.connect(voter1).vote(PROPOSALID,Vote.Yes)).to.be.revertedWith( "Voice credits are required");
-    });
-    it("should prevent to vote without staked voice credits", async function() {
-      await this.mockStaking.mock.getVoiceCredits.returns(100);
-      
-      await expect(bn_contract.connect(voter1).vote(PROPOSALID,Vote.Yes)).to.be.revertedWith( "Insufficient voice credits");
+      await this.mockStaking.mock.getVoiceCredits.returns(0);
+      await expect(bn_contract.connect(voter1).vote(PROPOSALID,Vote.Yes)).to.be.revertedWith( "must have voice credits from staking");
     });
     it("should vote yes to a newly created proposal", async function() {
       const voiceCredits=100;
@@ -187,6 +170,7 @@ describe('BeneficiaryNomination', function () {
       const proposal=await bn_contract.proposals(PROPOSALID);
 
       expect(proposal.noCount).to.equal(0);
+      expect(proposal.voteCount).to.equal(1);
       expect(proposal.yesCount).to.equal(voiceCredits);
       expect(await bn_contract.isVoted(PROPOSALID,voter1.address)).to.equal(true);
 
