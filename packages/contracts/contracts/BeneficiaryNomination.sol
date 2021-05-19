@@ -143,7 +143,6 @@ contract BeneficiaryNomination is Governed {
       address(this),
       DefaultConfigurations.proposalBond
     );
-    uint256 _withdrawable = 0;
     uint256 proposalId = proposals.length;
 
     // Create a new proposal
@@ -158,8 +157,7 @@ contract BeneficiaryNomination is Governed {
 
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _applicationCid);
 
-    //return proposalId;
-    return _withdrawable;
+    return proposalId;
   }
 
   /** 
