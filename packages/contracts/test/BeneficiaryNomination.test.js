@@ -1,11 +1,12 @@
 const { expect } = require('chai');
 const { parseEther } = require("ethers/lib/utils");
-let owner, nonOwner, governance;
+let owner, nonOwner;
 let proposer1,proposer2,beneficiary;
 let bn_contract;
 
 const ProposalType = { BNP: 0, BTP: 1};
 const Vote = { Yes: 0, No: 1};
+const ProposalStatus= {New:0, ChallengePeriod:1, Ended:2, Passed:3, Failed:4};
 const ONE_DAY = 86400;
 const ipfsHahContent='Qmd3cB3amDwdqqmEbmpbiUHyUgaxad9MrvfPy5WN78V24y';
 function parseHexString(str) { 
@@ -50,7 +51,6 @@ describe('BeneficiaryNomination', function () {
       beneficiary,
       voter1,
       voter2,
-      governance,
     ] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
@@ -69,9 +69,9 @@ describe('BeneficiaryNomination', function () {
     bn_contract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
-        this.mockPop.address,
-        governance.address,
+        this.mockPop.address
        );
+       await bn_contract.deployed();
   });
   describe("defaults", function () {
 
@@ -84,7 +84,7 @@ describe('BeneficiaryNomination', function () {
       expect(defConfig.proposalBond).to.equal(parseEther('2000'))
     });
     it("should set configuration for proposals", async function() {
-    await bn_contract.connect(governance).setConfiguration(10*ONE_DAY,10*ONE_DAY,parseEther('3000'));
+    await bn_contract.connect(owner).setConfiguration(10*ONE_DAY,10*ONE_DAY,parseEther('3000'));
      const defConfig = await bn_contract.DefaultConfigurations();
      
        expect(defConfig.votingPeriod).to.equal(10*ONE_DAY);
@@ -94,7 +94,7 @@ describe('BeneficiaryNomination', function () {
   
   });
 
-  describe("setters", function () {
+ /* describe("setters", function () {
     it("should prevent non-governance address from updating governance address", async function () {
       await expect(
         bn_contract.setGovernance(nonOwner.address)
@@ -108,7 +108,7 @@ describe('BeneficiaryNomination', function () {
       await bn_contract.connect(nonOwner).setGovernance(governance.address);
       expect(await bn_contract.governance()).to.equal(governance.address);
     });
-  });
+  });*/
 
   describe("proposals", function () {
 
@@ -129,7 +129,7 @@ describe('BeneficiaryNomination', function () {
     });
     it("should prevent to create proposal with not enough bond", async function () {
       var contentbytes=convertStringToBytes(ipfsHahContent);
-      await this.mockPop .connect(proposer1).approve(bn_contract.address, parseEther('1500'));
+      await this.mockPop.connect(proposer1).approve(bn_contract.address, parseEther('1500'));
       await expect(
         bn_contract.connect(proposer1).createProposal(beneficiary.address,contentbytes,ProposalType.BNP)
   
@@ -156,12 +156,12 @@ describe('BeneficiaryNomination', function () {
       this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
       await this.mockPop.mint(beneficiary.address, parseEther("50"));
       await this.mockPop.mint(proposer1.address, parseEther("2500"));
+      await this.mockPop.mint(voter1.address, parseEther("50"));
       const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryNomination");
       bn_contract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
-        this.mockPop.address,
-        governance.address
+        this.mockPop.address
       );
       await bn_contract.deployed();
       // create a BNP proposal
@@ -171,23 +171,23 @@ describe('BeneficiaryNomination', function () {
       await bn_contract.connect(proposer1).createProposal(beneficiary.address,contentbytes,ProposalType.BNP);
     });
     it("should prevent to vote without voice credits", async function() {
-      await expect(bn_contract.connect(voter1).vote(PROPOSALID,0,Vote.Yes)).to.be.revertedWith( "Voice credits are required");
+      await expect(bn_contract.connect(voter1).vote(PROPOSALID,Vote.Yes)).to.be.revertedWith( "Voice credits are required");
     });
     it("should prevent to vote without staked voice credits", async function() {
       await this.mockStaking.mock.getVoiceCredits.returns(100);
       
-      await expect(bn_contract.connect(voter1).vote(PROPOSALID,200,Vote.Yes)).to.be.revertedWith( "Insufficient voice credits");
+      await expect(bn_contract.connect(voter1).vote(PROPOSALID,Vote.Yes)).to.be.revertedWith( "Insufficient voice credits");
     });
     it("should vote yes to a newly created proposal", async function() {
       const voiceCredits=100;
-      const sqrtVoiceCredits=10;
+      
       await this.mockStaking.mock.getVoiceCredits.returns(voiceCredits);
       
-      await bn_contract.connect(voter1).vote(PROPOSALID,voiceCredits,Vote.Yes);
+      await bn_contract.connect(voter1).vote(PROPOSALID,Vote.Yes);
       const proposal=await bn_contract.proposals(PROPOSALID);
 
       expect(proposal.noCount).to.equal(0);
-      expect(proposal.yesCount).to.equal(sqrtVoiceCredits);
+      expect(proposal.yesCount).to.equal(voiceCredits);
       expect(await bn_contract.isVoted(PROPOSALID,voter1.address)).to.equal(true);
 
     });
