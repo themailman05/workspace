@@ -26,10 +26,10 @@ contract BeneficiaryNomination is Governed {
   enum ProposalType {BNP, BTP}
   uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
-  enum Status {Processing, Yes, No} // status of the proposal
+  enum ProposalStatus {New, ChallengePeriod, Ended, Passed, Failed} // status of the proposal
   enum VoteOption {Yes, No}
   struct Proposal {
-    Status status;
+    ProposalStatus status;
     address beneficiary;
     mapping(address => bool) voters;
     bytes content;
@@ -165,24 +165,20 @@ contract BeneficiaryNomination is Governed {
   @param  proposalId id of the proposal which you are going to vote 
   */
   function vote(uint256 proposalId, VoteOption _vote) external {
+    _refreshState(proposalId);
     Proposal storage proposal = proposals[proposalId];
     if (_vote == VoteOption.Yes) {
       require(
-        block.timestamp <=
-          proposal.startTime.add(DefaultConfigurations.votingPeriod),
+        proposal.status == ProposalStatus.New,
         "Initial voting period has already finished!"
       );
     }
+
     require(
-      proposal.status == Status.Processing,
-      "Proposal is already finalized"
+      proposal.status == ProposalStatus.New ||
+        proposal.status == ProposalStatus.ChallengePeriod,
+      "Proposal is no longer in voting period"
     );
-    uint256 proposalEndTime =
-      proposal.startTime.add(DefaultConfigurations.votingPeriod).add(
-        DefaultConfigurations.vetoPeriod
-      );
-    uint256 _time = block.timestamp;
-    require(_time <= proposalEndTime, "Proposal is no longer in voting period");
     require(
       !proposal.voters[msg.sender],
       "address already voted for the proposal"
@@ -202,12 +198,28 @@ contract BeneficiaryNomination is Governed {
     emit Vote(proposalId, msg.sender, _voiceCredits);
     // Finalize the vote if no votes outnumber yes votes and open voting has ended
     if (
-      _time > proposal.startTime.add(DefaultConfigurations.votingPeriod) &&
+      proposal.status == ProposalStatus.ChallengePeriod &&
       proposal.noCount >= proposal.yesCount
     ) {
-      proposal.status = Status.No;
+      proposal.status = ProposalStatus.Failed;
       emit Finalize(proposalId);
     }
+  }
+
+  /** 
+  @notice gets the voice credits of an address using the staking contract
+  @param  _address address of the voter
+  @return _voiceCredits
+  */
+  function getVoiceCredits(address _address)
+    internal
+    view
+    returns (uint256 _voiceCredits)
+  {
+    _voiceCredits = staking.getVoiceCredits(_address);
+
+    require(_voiceCredits > 0, "must have voice credits from staking");
+    return _voiceCredits;
   }
 
   /** 
@@ -215,21 +227,21 @@ contract BeneficiaryNomination is Governed {
   @param  proposalId id of the proposal
   */
   function finalize(uint256 proposalId) public onlyGovernance {
+    _refreshState(proposalId);
     Proposal storage proposal = proposals[proposalId];
     require(
-      proposal.status == Status.Processing,
+      proposal.status == ProposalStatus.ChallengePeriod ||
+        proposal.status == ProposalStatus.New,
       "Proposal is already finalized"
     );
-    uint256 _time = block.timestamp;
-    uint256 proposalEndTime =
-      proposal.startTime.add(DefaultConfigurations.votingPeriod).add(
-        DefaultConfigurations.vetoPeriod
-      );
 
     if (proposal.yesCount > proposal.noCount) {
-      require(_time > proposalEndTime, "Veto period has not over yet!");
+      require(
+        proposal.status == ProposalStatus.Ended,
+        "Veto period has not over yet!"
+      );
 
-      proposal.status = Status.Yes;
+      proposal.status = ProposalStatus.Passed;
       if (proposal._proposalType == ProposalType.BNP) {
         //nomination proposal
         //register beneficiary using the BeneficiaryRegisty contract
@@ -245,11 +257,11 @@ contract BeneficiaryNomination is Governed {
       // proposers could claim their fund using claimBond function
     } else {
       require(
-        _time > proposal.startTime.add(DefaultConfigurations.votingPeriod),
+        proposal.status != ProposalStatus.New,
         "Proposal cannot be finalized until end of initial voting period"
       );
 
-      proposal.status = Status.No;
+      proposal.status = ProposalStatus.Failed;
       //If the proposal fail, the bond should be kept in the contract.
       emit Finalize(proposalId);
     }
@@ -261,7 +273,7 @@ contract BeneficiaryNomination is Governed {
   */
   function claimBond(uint256 proposalId) public onlyProposer(proposalId) {
     require(
-      proposals[proposalId].status == Status.Yes,
+      proposals[proposalId].status == ProposalStatus.Passed,
       "Proposal failed or is processing!"
     );
     POP.safeTransferFrom(
@@ -269,6 +281,33 @@ contract BeneficiaryNomination is Governed {
       msg.sender,
       proposals[proposalId].bondBalance
     );
+  }
+
+  /**
+@notice returns number of proposals that have been created
+@param  proposalId id of the proposal
+ */
+  function _refreshState(uint256 proposalId) internal {
+    Proposal storage proposal = proposals[proposalId];
+    if (
+      proposal.status == ProposalStatus.Failed ||
+      proposal.status == ProposalStatus.Passed
+    ) return;
+
+    uint256 _time = block.timestamp;
+    uint256 VOTINGPERIOD = DefaultConfigurations.votingPeriod;
+    uint256 VETOPERID = DefaultConfigurations.vetoPeriod;
+    uint256 totalVotingPeriod = VOTINGPERIOD + VETOPERID;
+
+    if (_time < proposal.startTime.add(VOTINGPERIOD)) {
+      proposal.status = ProposalStatus.New;
+    } else {
+      if (_time < proposal.startTime.add(totalVotingPeriod)) {
+        proposal.status = ProposalStatus.ChallengePeriod;
+      } else {
+        proposal.status = ProposalStatus.Ended;
+      }
+    }
   }
 
   /**
