@@ -3,14 +3,15 @@ import { store } from 'app/store';
 import { setDualActionModal,setSingleActionModal } from '../../app/actions';
 import NavBar from '../../containers/NavBar/NavBar';
 
-const DUMMY_BENEFICIARY_DATA = {
+import { DummyBeneficiary } from './interfaces'
+
+const DUMMY_BENEFICIARY_DATA: DummyBeneficiary = {
   name: 'Room to Read',
   missionStatement:
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris hendrerit arcu mauris, id tincidunt elit tristique rutrum. Integer malesuada eros a tortor iaculis finibus. Duis sollicitudin turpis enim, non rhoncus lorem pulvinar ut. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed nec ex vitae orci ultricies mollis a quis erat. Donec varius ornare elementum. Duis porta urna sed finibus fermentum. Donec consequat tincidunt iaculis. Nullam placerat eleifend blandit. Mauris gravida, nibh vitae blandit eleifend, augue turpis suscipit ipsum, interdum ullamcorper enim dolor nec massa. In lectus ex, vestibulum interdum lectus a, consectetur molestie velit. Etiam pretium justo et condimentum consectetur. Proin sed dui eget purus ullamcorper aliquet euismod in enim. Integer in ex ac elit lobortis rhoncus. Ut suscipit rhoncus purus, ac dictum nisi pharetra in. In hac habitasse platea dictumst. Pellentesque condimentum semper orci, vel euismod justo porta a. Vestibulum id facilisis magna. Ut eros neque, consequat at urna a, eleifend mattis tellus. Fusce neque augue, imperdiet et lacus sed, fringilla pellentesque metus. Fusce auctor rhoncus diam quis pretium. Sed quis massa ultricies, luctus risus at, maximus tellus. Integer ac lacus euismod, condimentum erat ac, accumsan lorem. Pellentesque eu lobortis dolor, sed pellentesque nulla. Maecenas malesuada augue dui, eu facilisis sem egestas eu. Aliquam ac ligula eget erat laoreet rutrum at et metus. Suspendisse lacinia, nisi eu tempor congue, nibh erat ullamcorper turpis, non varius ligula justo non ex. Maecenas nisl nisl, dictum non tincidunt id, feugiat a nibh. Phasellus tincidunt ac turpis non pharetra. Sed non risus non sem consequat faucibus. In sodales non sem varius tempor. Maecenas nec volutpat ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus justo neque, pellentesque imperdiet ex tincidunt, consequat gravida nulla. \nMauris condimentum, est vitae pharetra tincidunt, ligula erat dapibus risus, id condimentum est ex et nulla. Nunc facilisis purus laoreet tincidunt mattis. Aliquam sollicitudin non dui non imperdiet. Vestibulum convallis massa vel ullamcorper hendrerit. Morbi a ultrices metus. Pellentesque metus nisi, ultricies a mauris vitae, finibus interdum massa. Praesent ac sem elementum, rutrum turpis in, euismod magna. Cras volutpat mauris ut mauris sollicitudin, sed bibendum enim auctor. Integer laoreet, purus ac aliquet dignissim, felis erat consectetur sem, at interdum odio arcu in urna. Nulla id erat et justo bibendum fringilla ac non felis. Aenean auctor interdum lectus.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. In imperdiet velit et urna dictum vehicula. Vestibulum vitae urna sit amet lorem gravida ullamcorper. Aliquam id neque tincidunt, aliquam leo vitae, iaculis risus. Quisque neque diam, hendrerit id condimentum ut, laoreet vel neque. Proin pellentesque tortor vel ex cursus, non feugiat quam consequat. Cras eget finibus nisl. Fusce efficitur libero et tellus fringilla, sed porta felis mollis.',
   profileImageURL:
     'https://pbs.twimg.com/profile_images/769217849470619648/hHeKiLwY_400x400.jpg',
-  headerImageURL:
-    'https://pbs.twimg.com/profile_banners/64823914/1591143684/600x200',
+  
   photoURLs: new Array(4)
     .fill(undefined)
     .map(
@@ -26,6 +27,8 @@ const DUMMY_BENEFICIARY_DATA = {
   twitterUrl: '#',
   linkedinUrl: '#',
   ethereumAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
+  headerImageURL:
+    'https://pbs.twimg.com/profile_banners/64823914/1591143684/600x200',
 };
 
 export default function BeneficiaryPage() {

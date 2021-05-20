@@ -6,11 +6,11 @@ interface Props {
   visible: boolean;
   toggleSubMenu: Function;
 }
-export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
+export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
   const router = useRouter();
   if (!visible) return <></>;
   return (
-    <div className="absolute z-10  transform  -translate-x-1 mt-5 px-2 w-screen max-w-xs sm:px-0">
+    <div className="absolute z-10 left-4/5 transform  -translate-x-1 mt-5 px-2 w-screen max-w-xs sm:px-0">
       <nav
         className="mx-auto px-4 py-8 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5"
         aria-labelledby="solutionsHeading"
@@ -36,10 +36,10 @@ export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                 </svg>
                 <span className="ml-4">
                   <NavbarLink
-                    label="View All Elections"
-                    url="/grant-elections/all"
+                    label="View Beneficiary Proposals"
+                    url="/beneficiary-proposals"
                     onClick={toggleSubMenu}
-                    isActive={router.pathname === '/grants'}
+                    isActive={router.pathname === '/beneficiary-proposals'}
                   />
                 </span>
               </span>
@@ -63,68 +63,15 @@ export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                 </svg>
                 <span className="ml-4">
                   <NavbarLink
-                    label="Monthly Election"
-                    url="/grant-elections/monthly"
+                    label="View Beneficiary Takedown Proposals"
+                    url="/beneficiary-takedown-proposals"
                     onClick={toggleSubMenu}
-                    isActive={router.pathname === '/grants'}
+                    isActive={router.pathname === '/beneficiary-takedown-proposals'}
                   />
                 </span>
               </span>
             </li>
-            <li className="flow-root">
-              <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <svg
-                  className="flex-shrink-0 h-6 w-6 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="ml-4">
-                  <NavbarLink
-                    label="Quarterly Election"
-                    url="/grant-elections/quarterly"
-                    onClick={toggleSubMenu}
-                    isActive={router.pathname === '/grants'}
-                  />
-                </span>
-              </span>
-            </li>
-            <li className="flow-root">
-              <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <svg
-                  className="flex-shrink-0 h-6 w-6 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="ml-4">
-                  <NavbarLink
-                    label="Yearly Election"
-                    url="/grant-elections/yearly"
-                    onClick={toggleSubMenu}
-                    isActive={router.pathname === '/grants'}
-                  />
-                </span>
-              </span>
-            </li>
+            
 
             <li className="flow-root">
               <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
@@ -145,10 +92,10 @@ export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                 </svg>
                 <span className="ml-4">
                   <NavbarLink
-                    label="Register for a Grant Election"
-                    url="/grant-elections/register"
+                    label="Propose a New Beneficiary"
+                    url="/beneficiary-proposals/propose"
                     onClick={toggleSubMenu}
-                    isActive={router.pathname === '/grant-elections/register'}
+                    isActive={router.pathname === '/beneficiary-proposals/propose'}
                   />
                 </span>
               </span>
