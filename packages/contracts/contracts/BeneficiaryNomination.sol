@@ -230,8 +230,8 @@ contract BeneficiaryNomination is Governed {
     _refreshState(proposalId);
     Proposal storage proposal = proposals[proposalId];
     require(
-      proposal.status == ProposalStatus.ChallengePeriod ||
-        proposal.status == ProposalStatus.New,
+      !(proposal.status == ProposalStatus.Passed ||
+        proposal.status == ProposalStatus.Failed),
       "Proposal is already finalized"
     );
 
@@ -249,7 +249,7 @@ contract BeneficiaryNomination is Governed {
           proposal.beneficiary,
           proposal.applicationCid
         );
-      } else {
+      } else if (proposal._proposalType == ProposalType.BTP) {
         //BTP
         //remove beneficiary using BeneficiaryRegistry contract
         beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
@@ -263,8 +263,8 @@ contract BeneficiaryNomination is Governed {
 
       proposal.status = ProposalStatus.Failed;
       //If the proposal fail, the bond should be kept in the contract.
-      emit Finalize(proposalId);
     }
+    emit Finalize(proposalId);
   }
 
   /** 
