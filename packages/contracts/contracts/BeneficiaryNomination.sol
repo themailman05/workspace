@@ -23,10 +23,15 @@ contract BeneficiaryNomination is Governed {
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
    */
-  enum ProposalType {BNP, BTP}
-  uint256 constant ONE_DAY = 86400; // seconds in 1 day
+  enum ProposalType {BeneficiaryNominationProposal, BeneficiaryTakedownProposal}
 
-  enum ProposalStatus {New, ChallengePeriod, Ended, Passed, Failed} // status of the proposal
+  enum ProposalStatus {
+    New,
+    ChallengePeriod,
+    PendingFinalization,
+    Passed,
+    Failed
+  } // status of the proposal
   enum VoteOption {Yes, No}
   struct Proposal {
     ProposalStatus status;
@@ -37,7 +42,7 @@ contract BeneficiaryNomination is Governed {
     uint256 startTime;
     uint256 yesCount;
     uint256 noCount;
-    uint256 voteCount;
+    uint256 voterCount;
     uint256 bondBalance;
     ProposalType _proposalType;
   }
@@ -69,7 +74,7 @@ contract BeneficiaryNomination is Governed {
     uint256 indexed proposalId,
     address indexed proposer,
     address indexed beneficiary,
-    bytes content
+    bytes applicationCid
   );
   event Vote(
     uint256 indexed proposalId,
@@ -91,8 +96,8 @@ contract BeneficiaryNomination is Governed {
   }
 
   function _setDefaults() internal {
-    DefaultConfigurations.votingPeriod = 2 * ONE_DAY;
-    DefaultConfigurations.vetoPeriod = 2 * ONE_DAY;
+    DefaultConfigurations.votingPeriod = 2 * 1 days;
+    DefaultConfigurations.vetoPeriod = 2 * 1 days;
     DefaultConfigurations.proposalBond = 2000e18;
   }
 
@@ -120,19 +125,18 @@ contract BeneficiaryNomination is Governed {
     ProposalType _type
   )
     external
-    payable
     validAddress(_beneficiary)
     enoughBond(msg.sender)
     returns (uint256)
   {
-    if (_type == ProposalType.BTP) {
+    if (_type == ProposalType.BeneficiaryTakedownProposal) {
       //takedown proposal
       require(
         beneficiaryRegistry.beneficiaryExists(_beneficiary),
         "Beneficiary doesnt exist!"
       );
     } else {
-      //nomination proposal
+      //BeneficiaryNominationProposal
       require(
         !beneficiaryRegistry.beneficiaryExists(_beneficiary),
         "Beneficiary already exists!"
@@ -184,12 +188,10 @@ contract BeneficiaryNomination is Governed {
       "address already voted for the proposal"
     );
 
-    uint256 _voiceCredits = staking.getVoiceCredits(msg.sender);
-
-    require(_voiceCredits > 0, "must have voice credits from staking");
+    uint256 _voiceCredits = getVoiceCredits(msg.sender);
 
     proposal.voters[msg.sender] = true;
-    proposal.voteCount = proposal.voteCount.add(1);
+    proposal.voterCount = proposal.voterCount.add(1);
     if (_vote == VoteOption.Yes) {
       proposal.yesCount = proposal.yesCount.add(_voiceCredits);
     } else if (_vote == VoteOption.No) {
@@ -226,7 +228,7 @@ contract BeneficiaryNomination is Governed {
   @notice finalizes the voting process
   @param  proposalId id of the proposal
   */
-  function finalize(uint256 proposalId) public onlyGovernance {
+  function finalize(uint256 proposalId) public {
     _refreshState(proposalId);
     Proposal storage proposal = proposals[proposalId];
     require(
@@ -237,20 +239,22 @@ contract BeneficiaryNomination is Governed {
 
     if (proposal.yesCount > proposal.noCount) {
       require(
-        proposal.status == ProposalStatus.Ended,
+        proposal.status == ProposalStatus.PendingFinalization,
         "Veto period has not over yet!"
       );
 
       proposal.status = ProposalStatus.Passed;
-      if (proposal._proposalType == ProposalType.BNP) {
+      if (
+        proposal._proposalType == ProposalType.BeneficiaryNominationProposal
+      ) {
         //nomination proposal
         //register beneficiary using the BeneficiaryRegisty contract
         beneficiaryRegistry.addBeneficiary(
           proposal.beneficiary,
           proposal.applicationCid
         );
-      } else if (proposal._proposalType == ProposalType.BTP) {
-        //BTP
+      } else {
+        //BeneficiaryTakedownProposal
         //remove beneficiary using BeneficiaryRegistry contract
         beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
       }
@@ -284,7 +288,7 @@ contract BeneficiaryNomination is Governed {
   }
 
   /**
-@notice returns number of proposals that have been created
+@notice updates the state of the proposal
 @param  proposalId id of the proposal
  */
   function _refreshState(uint256 proposalId) internal {
@@ -295,25 +299,25 @@ contract BeneficiaryNomination is Governed {
     ) return;
 
     uint256 _time = block.timestamp;
-    uint256 VOTINGPERIOD = DefaultConfigurations.votingPeriod;
-    uint256 VETOPERID = DefaultConfigurations.vetoPeriod;
-    uint256 totalVotingPeriod = VOTINGPERIOD + VETOPERID;
+    uint256 votingPeriod = DefaultConfigurations.votingPeriod;
+    uint256 vetoPeriod = DefaultConfigurations.vetoPeriod;
+    uint256 totalVotingPeriod = votingPeriod + vetoPeriod;
 
-    if (_time < proposal.startTime.add(VOTINGPERIOD)) {
+    if (_time < proposal.startTime.add(votingPeriod)) {
       proposal.status = ProposalStatus.New;
     } else {
       if (_time < proposal.startTime.add(totalVotingPeriod)) {
         proposal.status = ProposalStatus.ChallengePeriod;
       } else {
-        proposal.status = ProposalStatus.Ended;
+        proposal.status = ProposalStatus.PendingFinalization;
       }
     }
   }
 
   /**
-@notice returns number of proposals that have been created
+@notice returns number of created proposals
  */
-  function getNumberOfProposals() external view returns (uint256) {
+  function getNumberOfProposals() public view returns (uint256) {
     return proposals.length;
   }
 
@@ -322,12 +326,12 @@ contract BeneficiaryNomination is Governed {
   @param  proposalId id of the proposal
   @return number of votes to a proposal
   */
-  function getNumberOfVotes(uint256 proposalId)
+  function getNumberOfVoters(uint256 proposalId)
     external
     view
     returns (uint256)
   {
-    return proposals[proposalId].voteCount;
+    return proposals[proposalId].voterCount;
   }
 
   /** 
@@ -336,7 +340,7 @@ contract BeneficiaryNomination is Governed {
   @param  voter IPFS content hash
   @return true or false
   */
-  function isVoted(uint256 proposalId, address voter)
+  function hasVoted(uint256 proposalId, address voter)
     external
     view
     returns (bool)
