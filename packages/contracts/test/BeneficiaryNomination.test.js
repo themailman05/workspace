@@ -411,6 +411,17 @@ describe('BeneficiaryNomination', function () {
        
       await expect(bn_contract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Veto period has not over yet!");
    });
+   it("should prevent finalizing  before the initial voting is over yet and novotes is more than novotes", async function() {
+    //three yes votes
+    await this.mockStaking.mock.getVoiceCredits.returns(20);
+    await bn_contract.connect(voter1).vote(PROPOSALID,Vote.No);
+    await this.mockStaking.mock.getVoiceCredits.returns(30);
+    await bn_contract.connect(voter2).vote(PROPOSALID,Vote.Yes);
+    await this.mockStaking.mock.getVoiceCredits.returns(40);
+    await bn_contract.connect(voter3).vote(PROPOSALID,Vote.No);
+     
+    await expect(bn_contract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Proposal cannot be finalized until end of initial voting period");
+ });
    it("should register the beneficiary after a successful BNP voting", async function() {
     
     //three yes votes
