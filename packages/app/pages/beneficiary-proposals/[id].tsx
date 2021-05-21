@@ -1,17 +1,26 @@
 import React, { useContext, useState } from 'react';
 import { store } from 'app/store';
-import { setDualActionModal,setSingleActionModal } from '../../app/actions';
+import { setDualActionModal, setSingleActionModal } from '../../app/actions';
 import NavBar from '../../containers/NavBar/NavBar';
 
-import { DummyBeneficiary } from './interfaces'
+import { DummyBeneficiaryProposal } from './interfaces';
 
-const DUMMY_BENEFICIARY_DATA: DummyBeneficiary = {
+import Voting from 'components/Beneficiary-Proposals/OpenVoting';
+
+// To populate dummy data and test countdown
+const getDateSometimeInTheNext48Hours = () => {
+  const now = new Date();
+  const extraMilliseconds = Math.floor(Math.random() * 1000 * 60 * 60 * 24 * 2);
+  return new Date(Date.parse(now.toString()) + extraMilliseconds);
+};
+
+const DUMMY_BENEFICIARY_DATA: DummyBeneficiaryProposal = {
   name: 'Room to Read',
   missionStatement:
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Mauris hendrerit arcu mauris, id tincidunt elit tristique rutrum. Integer malesuada eros a tortor iaculis finibus. Duis sollicitudin turpis enim, non rhoncus lorem pulvinar ut. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Sed nec ex vitae orci ultricies mollis a quis erat. Donec varius ornare elementum. Duis porta urna sed finibus fermentum. Donec consequat tincidunt iaculis. Nullam placerat eleifend blandit. Mauris gravida, nibh vitae blandit eleifend, augue turpis suscipit ipsum, interdum ullamcorper enim dolor nec massa. In lectus ex, vestibulum interdum lectus a, consectetur molestie velit. Etiam pretium justo et condimentum consectetur. Proin sed dui eget purus ullamcorper aliquet euismod in enim. Integer in ex ac elit lobortis rhoncus. Ut suscipit rhoncus purus, ac dictum nisi pharetra in. In hac habitasse platea dictumst. Pellentesque condimentum semper orci, vel euismod justo porta a. Vestibulum id facilisis magna. Ut eros neque, consequat at urna a, eleifend mattis tellus. Fusce neque augue, imperdiet et lacus sed, fringilla pellentesque metus. Fusce auctor rhoncus diam quis pretium. Sed quis massa ultricies, luctus risus at, maximus tellus. Integer ac lacus euismod, condimentum erat ac, accumsan lorem. Pellentesque eu lobortis dolor, sed pellentesque nulla. Maecenas malesuada augue dui, eu facilisis sem egestas eu. Aliquam ac ligula eget erat laoreet rutrum at et metus. Suspendisse lacinia, nisi eu tempor congue, nibh erat ullamcorper turpis, non varius ligula justo non ex. Maecenas nisl nisl, dictum non tincidunt id, feugiat a nibh. Phasellus tincidunt ac turpis non pharetra. Sed non risus non sem consequat faucibus. In sodales non sem varius tempor. Maecenas nec volutpat ligula. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Vivamus justo neque, pellentesque imperdiet ex tincidunt, consequat gravida nulla. \nMauris condimentum, est vitae pharetra tincidunt, ligula erat dapibus risus, id condimentum est ex et nulla. Nunc facilisis purus laoreet tincidunt mattis. Aliquam sollicitudin non dui non imperdiet. Vestibulum convallis massa vel ullamcorper hendrerit. Morbi a ultrices metus. Pellentesque metus nisi, ultricies a mauris vitae, finibus interdum massa. Praesent ac sem elementum, rutrum turpis in, euismod magna. Cras volutpat mauris ut mauris sollicitudin, sed bibendum enim auctor. Integer laoreet, purus ac aliquet dignissim, felis erat consectetur sem, at interdum odio arcu in urna. Nulla id erat et justo bibendum fringilla ac non felis. Aenean auctor interdum lectus.\nLorem ipsum dolor sit amet, consectetur adipiscing elit. In imperdiet velit et urna dictum vehicula. Vestibulum vitae urna sit amet lorem gravida ullamcorper. Aliquam id neque tincidunt, aliquam leo vitae, iaculis risus. Quisque neque diam, hendrerit id condimentum ut, laoreet vel neque. Proin pellentesque tortor vel ex cursus, non feugiat quam consequat. Cras eget finibus nisl. Fusce efficitur libero et tellus fringilla, sed porta felis mollis.',
   profileImageURL:
     'https://pbs.twimg.com/profile_images/769217849470619648/hHeKiLwY_400x400.jpg',
-  
+
   photoURLs: new Array(4)
     .fill(undefined)
     .map(
@@ -29,6 +38,9 @@ const DUMMY_BENEFICIARY_DATA: DummyBeneficiary = {
   ethereumAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
   headerImageURL:
     'https://pbs.twimg.com/profile_banners/64823914/1591143684/600x200',
+  votes: Math.floor(Math.random() * 99),
+  currentStage: 'Open',
+  stageDeadline: getDateSometimeInTheNext48Hours(),
 };
 
 export default function BeneficiaryPage() {
@@ -60,15 +72,27 @@ export default function BeneficiaryPage() {
               src={DUMMY_BENEFICIARY_DATA.headerImageURL}
               alt=""
             />
-              <img
-                className="absolute -bottom-48 left-10 shadow-lg rounded-full h-131.5 border-black "
-                src={DUMMY_BENEFICIARY_DATA.profileImageURL}
-                alt=""
-              />
+            <img
+              className="absolute -bottom-48 left-10 shadow-lg rounded-full h-131.5 border-black "
+              src={DUMMY_BENEFICIARY_DATA.profileImageURL}
+              alt=""
+            />
           </div>
         </div>
       </div>
       <div className="h-48"></div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-gray-300" />
+        </div>
+      </div>
+      <Voting {...DUMMY_BENEFICIARY_DATA} />
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+          <div className="w-full border-t border-gray-300" />
+        </div>
+      </div>
       <div className="grid grid-cols-7 gap-4 mx-28">
         <div className="col-span-2">
           <p className="mt-2 mx-5 text-3xl font-extrabold text-black sm:text-4xl lg:text-5xl">
@@ -187,23 +211,24 @@ export default function BeneficiaryPage() {
               type="button"
               className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
               onClick={() => {
-                dispatch(setDualActionModal({
-                  content:
-                    'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
+                dispatch(
+                  setDualActionModal({
+                    content:
+                      'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
                      Confirm to continue.',
-                  title: 'Trigger Takedown Proposal',
-                  onConfirm: {
-                    label: 'Confirm Takedown Proposal',
-                    onClick: () => {
-                      triggerTakedownProposal();
+                    title: 'Trigger Takedown Proposal',
+                    onConfirm: {
+                      label: 'Confirm Takedown Proposal',
+                      onClick: () => {
+                        triggerTakedownProposal();
+                      },
                     },
-                  },
-                  onDismiss: {
-                    label: 'Cancel Takedown Proposal',
-                    onClick: () =>
-                    setDualActionModal(false),
-                  },
-                }));
+                    onDismiss: {
+                      label: 'Cancel Takedown Proposal',
+                      onClick: () => setDualActionModal(false),
+                    },
+                  }),
+                );
               }}
             >
               Trigger Takedown Proposal
@@ -214,7 +239,8 @@ export default function BeneficiaryPage() {
                 dispatch(
                   setSingleActionModal({
                     title: 'What is a Takedown Proposal?',
-                    content: "Triggering a Takedown Proposal begins the process to remove a beneficiary from the registry.\nThis need may be required if the beneficiary's actions violate the principles and values stated in the Popcorn Foundation charter. In the event that an eligible beneficiary violates the principles and values in the Popcorn Foundation charter, or if allocation of funds is not consistent with the charter’s criteria, a Beneficiary Takedown Proposal may be raised, which upon successful execution will remove a beneficiary address from the registry.",
+                    content:
+                      "Triggering a Takedown Proposal begins the process to remove a beneficiary from the registry.\nThis need may be required if the beneficiary's actions violate the principles and values stated in the Popcorn Foundation charter. In the event that an eligible beneficiary violates the principles and values in the Popcorn Foundation charter, or if allocation of funds is not consistent with the charter’s criteria, a Beneficiary Takedown Proposal may be raised, which upon successful execution will remove a beneficiary address from the registry.",
                     visible: true,
                     onConfirm: {
                       label: 'OK',
@@ -234,4 +260,4 @@ export default function BeneficiaryPage() {
       </footer>
     </div>
   );
-};
+}

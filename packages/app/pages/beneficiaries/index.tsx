@@ -22,7 +22,7 @@ const DUMMY_BENEFICIARY_DATA: DummyBeneficiary[] = new Array(20)
     };
   });
 
-export default function AllGrants() {
+export default function AllBeneficiaries() {
   const { dispatch } = useContext(store);
   const [searchFilter, updateSearchFilter] = useState('');
 
