@@ -1,5 +1,5 @@
 require("dotenv").config({ path: "../../.env" });
-import { task } from "hardhat/config";
+import { HardhatUserConfig, task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
@@ -139,7 +139,7 @@ task("random", "gets a random number")
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
-module.exports = {
+const config: HardhatUserConfig = {
   solidity: {
     compilers: [
       {
@@ -180,7 +180,7 @@ module.exports = {
   gasReporter: {
     currency: "USD",
     gasPrice: 100,
-    enabled: true,
+    enabled: false,
   },
   contractSizer: {
     alphaSort: true,
@@ -188,3 +188,5 @@ module.exports = {
     disambiguatePaths: false,
   },
 };
+
+export default config;

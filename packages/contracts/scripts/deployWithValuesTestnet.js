@@ -2,7 +2,7 @@ const { parseEther } = require("ethers/lib/utils");
 const { GrantElectionAdapter } = require("./helpers/GrantElectionAdapter");
 const bluebird = require("bluebird");
 const { utils } = require("ethers");
-const IUniswapV2Router02 = require("@uniswap/v2-periphery/build/IUniswapV2Router02.json");
+/*const IUniswapV2Router02 = require("@uniswap/v2-periphery/build/IUniswapV2Router02.json");
 const BeneficiaryRegistryAbi = require("../artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json");
 const GrantRegistryAbi = require("../artifacts/contracts/GrantRegistry.sol/GrantRegistry.json");
 const MockERC20Abi = require("../artifacts/contracts/mocks/MockERC20.sol/MockERC20.json");
@@ -12,7 +12,7 @@ const GrantElectionsAbi = require("../artifacts/contracts/GrantElections.sol/Gra
 const TreasuryAbi = require("../artifacts/contracts/mocks/MockTreasury.sol/MockTreasury.json");
 const BeneficiaryVaultsAbi = require("../artifacts/contracts/BeneficiaryVaults.sol/BeneficiaryVaults.json");
 const InsuranceAbi = require("../artifacts/contracts/mocks/MockInsurance.sol/MockInsurance.json");
-const RewardsManagerAbi = require("../artifacts/contracts/RewardsManager.sol/RewardsManager.json");
+const RewardsManagerAbi = require("../artifacts/contracts/RewardsManager.sol/RewardsManager.json");*/
 
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
@@ -137,7 +137,7 @@ async function deployTestnet(ethers) {
     logResults();
   };
 
-  const connectToContracts = async () => {
+  /*const connectToContracts = async () => {
     console.log("connect to contracts ...");
 
     this.mockPop = new ethers.Contract(
@@ -234,7 +234,7 @@ async function deployTestnet(ethers) {
     console.log("rewardsManager address", this.rewardsManager.address);
 
     logResults();
-  };
+  };*/
 
   const provideUniswapLiquidity = async () => {
     console.log("providing POP and ETH to uniswap pair ...");
