@@ -3,7 +3,7 @@ const { GrantElectionAdapter } = require("./helpers/GrantElectionAdapter");
 const bluebird = require("bluebird");
 const { utils } = require("ethers");
 const IUniswapV2Router02 = require("@uniswap/v2-periphery/build/IUniswapV2Router02.json");
-const BeneficiaryRegistryAbi = require("../artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json");
+/*const BeneficiaryRegistryAbi = require("../artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json");
 const GrantRegistryAbi = require("../artifacts/contracts/GrantRegistry.sol/GrantRegistry.json");
 const MockERC20Abi = require("../artifacts/contracts/mocks/MockERC20.sol/MockERC20.json");
 const StakingAbi = require("../artifacts/contracts/Staking.sol/Staking.json");
@@ -12,7 +12,12 @@ const GrantElectionsAbi = require("../artifacts/contracts/GrantElections.sol/Gra
 const TreasuryAbi = require("../artifacts/contracts/mocks/MockTreasury.sol/MockTreasury.json");
 const BeneficiaryVaultsAbi = require("../artifacts/contracts/BeneficiaryVaults.sol/BeneficiaryVaults.json");
 const InsuranceAbi = require("../artifacts/contracts/mocks/MockInsurance.sol/MockInsurance.json");
-const RewardsManagerAbi = require("../artifacts/contracts/RewardsManager.sol/RewardsManager.json");
+const RewardsManagerAbi = require("../artifacts/contracts/RewardsManager.sol/RewardsManager.json");*/
+
+
+// If you have contracts already deployed and just want to fill them with data you can 
+// uncomment these imports, connectToContracts(), and use connectToContracts() instead of deployContracts()
+
 
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
@@ -137,7 +142,7 @@ async function deployTestnet(ethers) {
     logResults();
   };
 
-  const connectToContracts = async () => {
+  /*const connectToContracts = async () => {
     console.log("connect to contracts ...");
 
     this.mockPop = new ethers.Contract(
@@ -234,23 +239,7 @@ async function deployTestnet(ethers) {
     console.log("rewardsManager address", this.rewardsManager.address);
 
     logResults();
-  };
-
-  const provideUniswapLiquidity = async () => {
-    console.log("providing POP and ETH to uniswap pair ...");
-    const blockNumber = await ethers.provider.getBlockNumber();
-    const currentBlock = await ethers.provider.getBlock(blockNumber);
-    this.popPair = await this.uniswapRouter
-      .connect(this.accounts[0])
-      .addLiquidityETH(
-        this.mockPop.address,
-        10000,
-        10000,
-        1,
-        this.accounts[0].address,
-        currentBlock.timestamp.add(600)
-      );
-  };
+  };*/
 
   const addBeneficiariesToRegistry = async () => {
     console.log("adding beneficiaries to registry ...");
@@ -542,7 +531,6 @@ ADDR_TESTNET_GRANT_ELECTION=${this.grantElections.address}
   //await connectToContracts();
   await addBeneficiariesToRegistry();
   await mintPOP();
-  await provideUniswapLiquidity();
   await approveForStaking();
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
