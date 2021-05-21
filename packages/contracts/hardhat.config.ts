@@ -7,6 +7,8 @@ import "hardhat-contract-sizer";
 const { utils } = require("ethers");
 
 const { deploy } = require("./scripts/deployWithValues");
+const { deployTestnet } = require("./scripts/deployWithValuesTestnet");
+
 const {
   GrantElectionAdapter,
 } = require("./scripts/helpers/GrantElectionAdapter");
@@ -21,6 +23,10 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
 
 task("dev:deploy").setAction(async (args, hre) => {
   await deploy(hre.ethers);
+});
+
+task("dev:deployTestnet").setAction(async (args, hre) => {
+  await deployTestnet(hre.ethers);
 });
 
 task("elections:getElectionMetadata")
@@ -43,6 +49,7 @@ task("elections:refreshElectionState")
   .addParam("term", "grant term (int)")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
+    console.log(signer.address);
     const contract = new hre.ethers.Contract(
       process.env.ADDR_GRANT_ELECTION,
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
@@ -133,7 +140,28 @@ task("random", "gets a random number")
   });
 
 module.exports = {
-  solidity: "0.7.3",
+  solidity: {
+    compilers: [
+      {
+        version: "0.7.3",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
+      },
+      {
+        version: "0.6.6",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
+      },
+    ],
+  },
   networks: {
     hardhat: {
       chainId: +process.env.CHAIN_ID,
@@ -145,6 +173,8 @@ module.exports = {
           process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
           []
       ),
+      gas: 10000000,
+      gasPrice: 10000000000,
     },
   },
   gasReporter: {
