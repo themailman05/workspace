@@ -15,3 +15,4 @@ packages/contracts/artifacts-ovm
 packages/contracts/cache
 packages/contracts/cache-ovm
 packages/contracts/typechain
+**/.DS_Store

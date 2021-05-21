@@ -28,14 +28,12 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   uint256 public rewardsDuration = 7 days;
   uint256 public lastUpdateTime;
   uint256 public rewardPerTokenStored;
-  uint256 private _totalLocked;
+  uint256 public totalLocked;
   mapping(address => uint256) public voiceCredits;
   mapping(address => uint256) public userRewardPerTokenPaid;
   mapping(address => uint256) public rewards;
   mapping(address => LockedBalance) public lockedBalances;
 
-  uint256 constant SECONDS_IN_A_WEEK = 604800;
-  uint256 constant MAX_LOCK_TIME = SECONDS_IN_A_WEEK * 52 * 4; // 4 years
 
   /* ========== EVENTS ========== */
 
@@ -64,21 +62,17 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     return timeTillEnd.mul(slope);
   }
 
-  function getWithdrawableBalance() public view override returns (uint256) {
+  function getWithdrawableBalance(address _address) public view override returns (uint256) {
     uint256 _withdrawable = 0;
     uint256 _currentTime = block.timestamp;
-    if (lockedBalances[msg.sender]._end <= _currentTime) {
-      _withdrawable = lockedBalances[msg.sender]._balance;
+    if (lockedBalances[_address]._end <= _currentTime) {
+      _withdrawable = lockedBalances[_address]._balance;
     }
     return _withdrawable;
   }
 
-  function totalLocked() external view returns (uint256) {
-    return _totalLocked;
-  }
-
-  function balanceOf(address account) external view returns (uint256) {
-    return lockedBalances[account]._balance;
+  function balanceOf(address _address) external view returns (uint256) {
+    return lockedBalances[_address]._balance;
   }
 
   function lastTimeRewardApplicable() public view returns (uint256) {
@@ -86,7 +80,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   }
 
   function rewardPerToken() public view returns (uint256) {
-    if (_totalLocked == 0) {
+    if (totalLocked == 0) {
       return rewardPerTokenStored;
     }
     return
@@ -95,7 +89,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
           .sub(lastUpdateTime)
           .mul(rewardRate)
           .mul(1e18)
-          .div(_totalLocked)
+          .div(totalLocked)
       );
   }
 
@@ -122,19 +116,19 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   {
     require(amount > 0, "amount must be greater than 0");
     require(
-      lengthOfTime >= SECONDS_IN_A_WEEK,
+      lengthOfTime >= 7 days,
       "must lock tokens for at least 1 week"
     );
     require(
-      lengthOfTime <= MAX_LOCK_TIME,
+      lengthOfTime <= 4 years,
       "must lock tokens for less than/equal to  4 year"
     );
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
 
-    _totalLocked = _totalLocked.add(amount);
-    _addStakeToLocked(amount, lengthOfTime);
+    totalLocked = totalLocked.add(amount);
+    _lockTokens(amount, lengthOfTime);
     _recalculateVoiceCredits();
     emit StakingDeposited(msg.sender, amount);
   }
@@ -152,7 +146,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     POP.approve(address(this), amount);
     POP.safeTransferFrom(address(this), msg.sender, amount);
 
-    _totalLocked = _totalLocked.sub(amount);
+    totalLocked = totalLocked.sub(amount);
     _clearWithdrawnFromLocked(amount);
     _recalculateVoiceCredits();
     emit StakingWithdrawn(msg.sender, amount);
@@ -179,10 +173,10 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     voiceCredits[msg.sender] = lockedBalances[msg.sender]
       ._balance
       .mul(lockedBalances[msg.sender]._duration)
-      .div(MAX_LOCK_TIME);
+      .div(4 years);
   }
 
-  function _addStakeToLocked(uint256 amount, uint256 lengthOfTime) internal {
+  function _lockTokens(uint256 amount, uint256 lengthOfTime) internal {
     uint256 _currentTime = block.timestamp;
     lockedBalances[msg.sender] = LockedBalance({
       _balance: lockedBalances[msg.sender]._balance.add(amount),
