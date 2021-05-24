@@ -1,6 +1,6 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
-import { connectors } from 'containers/Web3/connectors';
+import { connectors } from '../../containers/Web3/connectors';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';

@@ -1,7 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
 import { ContractsContext } from 'app/contracts';
-import Navbar from 'containers/NavBar/NavBar';
+import Navbar from 'components/NavBar/NavBar';
 import { connectors } from 'containers/Web3/connectors';
 import { useEffect } from 'react';
 import { useState } from 'react';

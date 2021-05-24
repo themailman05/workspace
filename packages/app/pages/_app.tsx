@@ -6,7 +6,7 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import theme from '../styles/theme';
 import '../styles/globals.css';
 import Router from 'next/router';
-import { GlobalLinearProgress } from 'containers/GlobalLinearProgress';
+import { GlobalLinearProgress } from 'components/GlobalLinearProgress';
 import { StateProvider } from 'app/store';
 import { Web3ReactProvider } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';

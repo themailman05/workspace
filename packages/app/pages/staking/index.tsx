@@ -3,7 +3,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { useState, useEffect, useContext } from 'react';
 import { connectors } from '../../containers/Web3/connectors';
 import { utils } from 'ethers';
-import NavBar from '../../containers/NavBar/NavBar';
+import NavBar from '../../components/NavBar/NavBar';
 import DropdownSelect from 'components/DropdownSelect';
 import { ContractsContext } from 'app/contracts';
 import Slider from 'rc-slider';

@@ -1,4 +1,4 @@
-import NavBar from './../../containers/NavBar/NavBar';
+import NavBar from '../NavBar/NavBar';
 import Link from 'next/link';
 import { useContext } from 'react';
 import { ElectionsContext } from '../../app/elections';
