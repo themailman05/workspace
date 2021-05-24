@@ -1,7 +1,7 @@
 import {
   DummyBeneficiaryProposal,
   Stage,
-} from '../pages/beneficiary-proposals/interfaces';
+} from '../interfaces/beneficiaries';
 
 const randomIndex = () => Math.floor(Math.random() * 3);
 const getRandomStage = () =>
