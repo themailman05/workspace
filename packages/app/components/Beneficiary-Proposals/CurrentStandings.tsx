@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { DummyBeneficiaryProposal } from '../../pages/beneficiary-proposals/interfaces';
+import {DummyBeneficiaryProposal} from '../../interfaces/beneficiaries'
 import ProgressBar from '../ProgressBar';
 
 const getTimeLeft = (stageDeadline: Date): string => {

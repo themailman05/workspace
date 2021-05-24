@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { social } from '../../fixtures/social';
 
-const beneficiaryProposalCard = (beneficiaryProposal) => {
+const beneficiaryProposalCard = (beneficiaryProposal): JSX.Element => {
   return (
     <Link
       key={beneficiaryProposal.name}

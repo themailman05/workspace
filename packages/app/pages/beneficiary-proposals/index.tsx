@@ -7,7 +7,7 @@ import BeneficiaryCard from 'components/Beneficiary-Proposals/BeneficiaryCard';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 
-import { Stage } from './interfaces';
+import {DummyBeneficiaryProposal, Stage} from '../../interfaces/beneficiaries'
 
 import { beneficiaryProposalFixtures } from '../../fixtures/beneficiaryProposals';
 

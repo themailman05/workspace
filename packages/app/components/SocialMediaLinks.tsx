@@ -1,4 +1,4 @@
-import { DummyBeneficiaryProposal } from '../pages/beneficiary-proposals/interfaces';
+import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
 import { social } from '../fixtures/social';
 
 // TODO: Limit social media links to contents of beneficiaryProposal

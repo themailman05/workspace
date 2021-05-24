@@ -3,15 +3,11 @@ import { store } from 'app/store';
 import NavBar from '../../components/NavBar/NavBar';
 import BeneficiaryCard from 'components/Beneficiaries/BeneficiaryCard';
 
-import { Stage } from './interfaces';
-
 import { beneficiaryProposalFixtures } from '../../fixtures/beneficiaryProposals';
-
 
 export default function AllBeneficiaryProposals() {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
-  const [stageFilter, setStageFilter] = useState<Stage>('All');
 
   return (
     <div className="w-full bg-gray-900 pb-16">
@@ -54,25 +50,14 @@ export default function AllBeneficiaryProposals() {
             ></input>
           </div>
         </div>
-        
       </div>
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
-        {beneficiaryProposalFixtures
-          .filter((beneficiaryProposal) => {
-            return (
-              beneficiaryProposal.name
-                .toLowerCase()
-                .includes(searchFilter.toLowerCase()) &&
-              (beneficiaryProposal.currentStage === stageFilter ||
-                stageFilter === 'All')
-            );
-          })
-          .map((beneficiaryProposal) => (
-            <BeneficiaryCard
-              key={beneficiaryProposal.stageDeadline.toString()}
-              {...beneficiaryProposal}
-            />
-          ))}
+        {beneficiaryProposalFixtures.map((beneficiaryProposal) => (
+          <BeneficiaryCard
+            key={beneficiaryProposal.stageDeadline.toString()}
+            {...beneficiaryProposal}
+          />
+        ))}
       </ul>
     </div>
   );

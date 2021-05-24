@@ -3,7 +3,7 @@ import { store } from 'app/store';
 import { RadioGroup } from '@headlessui/react';
 
 import { setDualActionModal } from '../../app/actions';
-import { DummyBeneficiaryProposal } from '../../pages/beneficiary-proposals/interfaces';
+import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import CurrentStandings from './CurrentStandings';
 
 const settings = [

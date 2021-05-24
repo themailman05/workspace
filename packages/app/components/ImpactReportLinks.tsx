@@ -1,4 +1,4 @@
-import { DummyBeneficiaryProposal } from '../pages/beneficiary-proposals/interfaces';
+import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
 
 export default function ImpactReportLinks(
   beneficiaryProposal: DummyBeneficiaryProposal,
