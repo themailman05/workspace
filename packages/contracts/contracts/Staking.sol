@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./Owned.sol";
 
-contract Staking is IStaking, Owned, ReentrancyGuard {
+contract Staking is Owned, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -49,12 +49,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
 
   /* ========== VIEWS ========== */
 
-  function getVoiceCredits(address _address)
-    public
-    view
-    override
-    returns (uint256)
-  {
+  function getVoiceCredits(address _address) public view returns (uint256) {
     uint256 timeTillEnd = lockedBalances[_address]._end.sub(block.timestamp);
     uint256 slope =
       voiceCredits[_address].div(lockedBalances[_address]._duration);
@@ -64,7 +59,6 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   function getWithdrawableBalance(address _address)
     public
     view
-    override
     returns (uint256)
   {
     uint256 _withdrawable = 0;
@@ -114,7 +108,6 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
 
   function stake(uint256 amount, uint256 lengthOfTime)
     external
-    override
     nonReentrant
     updateReward(msg.sender)
   {
@@ -136,7 +129,6 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
 
   function withdraw(uint256 amount)
     public
-    override
     nonReentrant
     updateReward(msg.sender)
   {
