@@ -2,6 +2,7 @@ const { BigNumber } = require("@ethersproject/bignumber");
 const { expect } = require("chai");
 const { parseEther } = require("ethers/lib/utils");
 const { ethers } = require("hardhat");
+const { IGrantRegistry } = require("../typechain");
 
 let stakingFund;
 
@@ -251,7 +252,7 @@ describe("Staking", function () {
     });
   });
 
-  describe.only("getVoiceCredits", function () {
+  describe("getVoiceCredits", function () {
     beforeEach(async function () {
       const Staking = await ethers.getContractFactory("Staking");
       this.contract = await Staking.deploy(this.mockPop.address);
@@ -259,9 +260,9 @@ describe("Staking", function () {
       await this.mockPop
         .connect(owner)
         .approve(this.contract.address, parseEther("10"));
-      await this.contract.connect(owner).stake(parseEther("1"), 604800);
     });
     it("should return decayed voice credits", async function () {
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
       const decayPerDay = BigNumber.from("684931506768000");
       const voiceCredits0 = await this.contract.getVoiceCredits(owner.address);
       //1 days passes
@@ -294,13 +295,32 @@ describe("Staking", function () {
       ethers.provider.send("evm_mine", []);
       const voiceCredits6 = await this.contract.getVoiceCredits(owner.address);
       expect(voiceCredits5.sub(decayPerDay)).to.equal(voiceCredits6);
-      //1 days passes
+      //1 week passed
       ethers.provider.send("evm_increaseTime", [86400]);
       ethers.provider.send("evm_mine", []);
       const voiceCredits7 = await this.contract.getVoiceCredits(owner.address);
       expect(voiceCredits7).to.equal(0);
     });
+    it.only("decays voice credits linearly on large time scales aswell", async function () {
+      await this.contract.connect(owner).stake(parseEther("10"), 604800 * 78);
+      const decayPerWeek = BigNumber.from("47945205479203200");
+      const voiceCredits0 = await this.contract.getVoiceCredits(owner.address);
+      ethers.provider.send("evm_increaseTime", [604800]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits1 = await this.contract.getVoiceCredits(owner.address);
+      //half way through
+      ethers.provider.send("evm_increaseTime", [604800 * 38]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits2 = await this.contract.getVoiceCredits(owner.address);
+      expect(voiceCredits0.sub(decayPerWeek.mul("39"))).to.equal(voiceCredits2)
+      //lockup period over
+      ethers.provider.send("evm_increaseTime", [604800 * 39]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits3 = await this.contract.getVoiceCredits(owner.address);
+      expect(voiceCredits3).to.equal(0)
+    });
     it("should return voice credits again after staking new pop", async function () {
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
       const voiceCredits1 = await this.contract.getVoiceCredits(owner.address);
       //3 days pass
       ethers.provider.send("evm_increaseTime", [604800]);
@@ -309,9 +329,10 @@ describe("Staking", function () {
       expect(voiceCredits2).to.equal(0);
       await this.contract.connect(owner).stake(parseEther("9"), 604800);
       const voiceCredits3 = await this.contract.getVoiceCredits(owner.address);
-      expect(voiceCredits3.toString()).to.equal("47945205479203200")
+      expect(voiceCredits3.toString()).to.equal("47945205479203200");
     });
     it("should return 0 voice credits after lockperiod ended", async function () {
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
       ethers.provider.send("evm_increaseTime", [604800]);
       ethers.provider.send("evm_mine", []);
       const voiceCredits = await this.contract.getVoiceCredits(owner.address);
