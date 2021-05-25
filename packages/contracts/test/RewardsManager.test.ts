@@ -1,8 +1,8 @@
-const { expect } = require("chai");
-const { waffle } = require("hardhat");
-const { parseEther } = require("ethers/lib/utils");
-const IUniswapV2Factory = require("../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json");
-const IUniswapV2Router02 = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json");
+import { expect } from "chai";
+import { waffle, ethers } from "hardhat";
+import { parseEther } from "ethers/lib/utils";
+import IUniswapV2Factory from "../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json";
+import IUniswapV2Router02 from "../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json";
 
 describe("RewardsManager", function () {
   const RewardSplits = {
@@ -112,7 +112,6 @@ describe("RewardsManager", function () {
     );
   });
 
-
   it("reverts when setting reward splits as non-owner", async function () {
     await expect(
       this.rewardsManager.connect(nonOwner).setRewardSplits([20, 18, 2, 60])
@@ -154,6 +153,8 @@ describe("RewardsManager", function () {
   });
 
   describe("reward splits are set", function () {
+    let newRewardSplits = [];
+    let result;
     beforeEach(async function () {
       newRewardSplits = [
         parseEther("20"),
@@ -213,6 +214,7 @@ describe("RewardsManager", function () {
   });
 
   describe("sets new dependent contracts", function () {
+    let result;
     it("sets new Staking", async function () {
       const newStaking = await waffle.deployMockContract(
         owner,
@@ -274,20 +276,22 @@ describe("RewardsManager", function () {
   });
 
   describe("send rewards", function () {
+    const firstReward = parseEther("0.1");
+    const stakingReward = firstReward
+      .mul(RewardSplits.Staking)
+      .div(parseEther("100"));
+    const treasuryReward = firstReward
+      .mul(RewardSplits.Treasury)
+      .div(parseEther("100"));
+    const insuranceReward = firstReward
+      .mul(RewardSplits.Insurance)
+      .div(parseEther("100"));
+    const beneficiaryVaultsReward = firstReward
+      .mul(RewardSplits.BeneficiaryVaults)
+      .div(parseEther("100"));
+    let result;
+
     beforeEach(async function () {
-      firstReward = parseEther("0.1");
-      stakingReward = firstReward
-        .mul(RewardSplits.Staking)
-        .div(parseEther("100"));
-      treasuryReward = firstReward
-        .mul(RewardSplits.Treasury)
-        .div(parseEther("100"));
-      insuranceReward = firstReward
-        .mul(RewardSplits.Insurance)
-        .div(parseEther("100"));
-      beneficiaryVaultsReward = firstReward
-        .mul(RewardSplits.BeneficiaryVaults)
-        .div(parseEther("100"));
       await this.mockPop
         .connect(rewarder)
         .transfer(this.rewardsManager.address, firstReward);
@@ -356,8 +360,8 @@ describe("RewardsManager", function () {
       });
 
       describe("send more rewards", function () {
+        const secondReward = parseEther("0.05");
         beforeEach(async function () {
-          secondReward = parseEther("0.05");
           await this.mockPop
             .connect(rewarder)
             .transfer(this.rewardsManager.address, secondReward);
@@ -370,19 +374,19 @@ describe("RewardsManager", function () {
         });
 
         describe("new rewards are distributed", function () {
+          const stakingSecondReward = secondReward
+            .mul(RewardSplits.Staking)
+            .div(parseEther("100"));
+          const treasurySecondReward = secondReward
+            .mul(RewardSplits.Treasury)
+            .div(parseEther("100"));
+          const insuranceSecondReward = secondReward
+            .mul(RewardSplits.Insurance)
+            .div(parseEther("100"));
+          const beneficiaryVaultsSecondReward = secondReward
+            .mul(RewardSplits.BeneficiaryVaults)
+            .div(parseEther("100"));
           beforeEach(async function () {
-            stakingSecondReward = secondReward
-              .mul(RewardSplits.Staking)
-              .div(parseEther("100"));
-            treasurySecondReward = secondReward
-              .mul(RewardSplits.Treasury)
-              .div(parseEther("100"));
-            insuranceSecondReward = secondReward
-              .mul(RewardSplits.Insurance)
-              .div(parseEther("100"));
-            beneficiaryVaultsSecondReward = secondReward
-              .mul(RewardSplits.BeneficiaryVaults)
-              .div(parseEther("100"));
             result = await this.rewardsManager.distributeRewards();
           });
 
@@ -443,8 +447,8 @@ describe("RewardsManager", function () {
     });
 
     describe("send alt token for reward swap", function () {
+      const altAmount = parseEther("1");
       beforeEach(async function () {
-        altAmount = parseEther("1");
         await this.mockAlt.transfer(this.rewardsManager.address, altAmount);
       });
 
@@ -479,8 +483,8 @@ describe("RewardsManager", function () {
       });
 
       describe("execute token swap for pop rewards", function () {
+        const swapReward = parseEther("0.24");
         beforeEach(async function () {
-          swapReward = parseEther("0.24");
           await this.mockUniswapV2Router.mock.swapExactTokensForTokens.returns([
             altAmount,
             swapReward,
