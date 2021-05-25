@@ -1,4 +1,4 @@
-import chai, {expect} from "chai";
+import { expect } from "chai";
 import {
   IUniswapV2Pair,
   MockERC20,
@@ -8,8 +8,8 @@ import {
 import { Contract } from "@ethersproject/contracts";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { deployContract } from "ethereum-waffle";
-import { ethers, waffle } from "hardhat";
 import { getContractFactory } from "@nomiclabs/hardhat-ethers/types";
+import { ethers, waffle } from "hardhat";
 const IUniswapV2Factory = require("../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json");
 const IUniswapV2PairAbi = require("../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Pair.sol/IUniswapV2Pair.json");
 const IUniswapV2Router02 = require("../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json");
@@ -17,9 +17,6 @@ const IUniswapV2Router02 = require("../artifacts/@uniswap/v2-periphery/contracts
 const overrides = {
   gasLimit: 9999999,
 };
-
-//const waffle = hardhat.waffle
-//const ethers = hardhat.ethers
 
 let owner: SignerWithAddress,
   rewarder: SignerWithAddress,
@@ -36,16 +33,19 @@ interface contracts {
 }
 
 async function deployContracts(owner: SignerWithAddress): Promise<contracts> {
-  const POP = (await (
-    await (await getContractFactory("mockPOP")).deploy()
-  ).deployed()) as MockERC20;
+  const mockERC20Factory = await ethers.getContractFactory("MockERC20");
+  const POP = await mockERC20Factory.deploy("TestPOP", "TPOP") as MockERC20;
 
   const WETH = (await (
-    await (await getContractFactory("WETH9")).deploy()
+    await (await ethers.getContractFactory("WETH9")).deploy()
   ).deployed()) as WETH9;
 
   const Insurance = await (
-    await (await getContractFactory("mockInsurance")).deploy()
+    await (await ethers.getContractFactory("mockInsurance")).deploy()
+  ).deployed();
+
+  const Treasury = await (
+    await (await ethers.getContractFactory("mockTreasury")).deploy()
   ).deployed();
 
   const factoryV2 = await deployContract(owner, IUniswapV2Factory, [
@@ -70,31 +70,45 @@ async function deployContracts(owner: SignerWithAddress): Promise<contracts> {
   return { POP, WETH, Insurance, UniswapRouter, WETHPair };
 }
 
-describe("Integration", async function () {
-  [owner, rewarder, nonOwner] = await ethers.getSigners();
-  const currentBlockNumber = await provider.getBlockNumber();
-  const currentTimestamp = await (
-    await ethers.provider.getBlock(currentBlockNumber)
-  ).timestamp;
-  contracts = await deployContracts(owner);
-  await contracts.UniswapRouter.addLiquidityETH(
-    contracts.POP.address,
-    10000,
-    10000,
-    1,
-    owner.address,
-    currentTimestamp + 60
-  );
-  expect(contracts.POP.address).to.equal(contracts.POP.address)
-  
+describe("Integration", function () {
+  before(async function () {
+    [owner, rewarder, nonOwner] = await ethers.getSigners();
+    const currentBlockNumber = await provider.getBlockNumber();
+    const currentTimestamp = await (
+      await ethers.provider.getBlock(currentBlockNumber)
+    ).timestamp;
+    contracts = await deployContracts(owner);
+    const res = await contracts.UniswapRouter.addLiquidityETH(
+      contracts.POP.address,
+      10000,
+      10000,
+      1,
+      owner.address,
+      currentTimestamp + 60
+    );
+    console.log(res)
+  });
+
   beforeEach(async function () {
     const balance = await contracts.WETH.balanceOf(owner.address);
     console.log(balance.toString());
   });
 
-  describe.only("test", function () {
+  describe("test", function () {
     it("test", async function () {
       console.log(await contracts.WETHPair.getReserves());
     });
+  });
+});
+
+describe("Token", function () {
+  let accounts: SignerWithAddress[];
+
+  beforeEach(async function () {
+    accounts = await ethers.getSigners();
+  });
+
+  it("should do something right", async function () {
+    expect(0).to.equal(0)
   });
 });

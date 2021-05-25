@@ -1,7 +1,7 @@
 require("dotenv").config({ path: "../../.env" });
-import { HardhatUserConfig, task } from "hardhat/config";
+import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
-import "@nomiclabs/hardhat-ethers";
+//import "@nomiclabs/hardhat-ethers";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
@@ -140,7 +140,7 @@ task("random", "gets a random number")
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
-const config: HardhatUserConfig = {
+module.exports = {
   solidity: {
     compilers: [
       {
@@ -165,7 +165,6 @@ const config: HardhatUserConfig = {
   },
   networks: {
     hardhat: {
-      chainId: +process.env.CHAIN_ID,
     },
     rinkeby: {
       url: process.env.RPC_URL,
@@ -189,5 +188,3 @@ const config: HardhatUserConfig = {
     disambiguatePaths: false,
   },
 };
-
-export default config;
