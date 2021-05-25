@@ -7,7 +7,7 @@ import {
 } from "../typechain";
 import { Contract } from "@ethersproject/contracts";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { solidity, deployContract } from "ethereum-waffle";
+import { deployContract } from "ethereum-waffle";
 import { ethers, waffle } from "hardhat";
 import { getContractFactory } from "@nomiclabs/hardhat-ethers/types";
 const IUniswapV2Factory = require("../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json");

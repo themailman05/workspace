@@ -26,12 +26,12 @@
     "downlevelIteration": true,
     "lib": ["dom", "es2017"],
     "paths": {
-      "@popcorn/ui": ["../ui/src"],
-      "@popcorn/ui/*": ["../ui/src/*"],
-      "@popcorn/utils": ["../utils/src"],
-      "@popcorn/utils/*": ["../utils/src/*"],
-      "@popcorn/contracts": ["../contracts/src"],
-      "@popcorn/contracts/*": ["../contracts/src/*"]
+      "@popcorn/ui": [".packages/ui/src"],
+      "@popcorn/ui/*": [".packages/ui/src/*"],
+      "@popcorn/utils": [".packages/utils/src"],
+      "@popcorn/utils/*": [".packages/utils/src/*"],
+      "@popcorn/contracts": [".packages/contracts"],
+      "@popcorn/contracts/*": [".packages/contracts/*"]
     }
   }
 }
