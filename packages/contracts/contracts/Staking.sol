@@ -142,7 +142,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   {
     require(amount > 0, "amount must be greater than 0");
     require(lockedBalances[msg.sender]._balance > 0, "insufficient balance");
-    require(amount <= getWithdrawableBalance());
+    require(amount <= getWithdrawableBalance(msg.sender));
 
     POP.approve(address(this), amount);
     POP.safeTransferFrom(address(this), msg.sender, amount);
