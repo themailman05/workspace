@@ -34,7 +34,6 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   mapping(address => uint256) public rewards;
   mapping(address => LockedBalance) public lockedBalances;
 
-
   /* ========== EVENTS ========== */
 
   event StakingDeposited(address _address, uint256 amount);
@@ -62,7 +61,12 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     return timeTillEnd.mul(slope);
   }
 
-  function getWithdrawableBalance(address _address) public view override returns (uint256) {
+  function getWithdrawableBalance(address _address)
+    public
+    view
+    override
+    returns (uint256)
+  {
     uint256 _withdrawable = 0;
     uint256 _currentTime = block.timestamp;
     if (lockedBalances[_address]._end <= _currentTime) {
@@ -115,12 +119,9 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     updateReward(msg.sender)
   {
     require(amount > 0, "amount must be greater than 0");
+    require(lengthOfTime >= 7 days, "must lock tokens for at least 1 week");
     require(
-      lengthOfTime >= 7 days,
-      "must lock tokens for at least 1 week"
-    );
-    require(
-      lengthOfTime <= 4 years,
+      lengthOfTime <= 365 days * 4,
       "must lock tokens for less than/equal to  4 year"
     );
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
@@ -173,7 +174,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     voiceCredits[msg.sender] = lockedBalances[msg.sender]
       ._balance
       .mul(lockedBalances[msg.sender]._duration)
-      .div(4 years);
+      .div(365 days * 4);
   }
 
   function _lockTokens(uint256 amount, uint256 lengthOfTime) internal {
