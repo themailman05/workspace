@@ -177,7 +177,7 @@ describe('BeneficiaryNomination', function () {
     it("should prevent to vote yes during veto period", async function() {
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine");
-      await this.mockStaking.mock.getVoiceCredits.returns(0);
+      await this.mockStaking.mock.getVoiceCredits.returns(30);
       await expect(this.BNPContract.connect(voter1).vote(PROPOSALID,Vote.Yes)).to.be.revertedWith( "Initial voting period has already finished!");
     });
     it("should prevent to vote after the end of the total voting period", async function() {
@@ -226,10 +226,9 @@ describe('BeneficiaryNomination', function () {
 
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine");
+
       await this.mockStaking.mock.getVoiceCredits.returns(60);
-      await this.BNPContract.connect(voter4).vote(PROPOSALID,Vote.No);
-
-
+      await this.BNPContract.connect(voter4).finalize(PROPOSALID);
 
       //get proposal info
       const proposal=await this.BNPContract.proposals(PROPOSALID);
@@ -251,15 +250,6 @@ describe('BeneficiaryNomination', function () {
 
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine");
-      await this.mockStaking.mock.getVoiceCredits.returns(60);
-      await this.BNPContract.connect(voter4).vote(PROPOSALID,Vote.No);
-
-
-
-      //get proposal info
-      const proposal=await this.BNPContract.proposals(PROPOSALID);
-
-      expect(proposal.status).to.equal(ProposalStatus.Failed);
 
       await this.mockStaking.mock.getVoiceCredits.returns(60);
       await expect(this.BNPContract.connect(voter5).vote(PROPOSALID,Vote.No)).to.be.revertedWith( "Proposal is no longer in voting period");
@@ -358,7 +348,7 @@ describe('BeneficiaryNomination', function () {
       ethers.provider.send("evm_mine");
        
      await this.BNPContract.connect(owner).finalize(PROPOSALID);
-     await expect(this.BNPContract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Proposal is already finalized");
+     await expect(this.BNPContract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Finalization not allowed");
    });
 
     it("should prevent finalizing  when the veto perid has not ended yet and novotes is more than novotes", async function() {
@@ -377,7 +367,7 @@ describe('BeneficiaryNomination', function () {
       await this.mockStaking.mock.getVoiceCredits.returns(20);
       await this.BNPContract.connect(voter5).vote(PROPOSALID,Vote.No);
        
-      await expect(this.BNPContract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Veto period has not over yet!");
+      await expect(this.BNPContract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Finalization not allowed");
    });
    it("should prevent finalizing  before the initial voting is over yet and novotes is more than novotes", async function() {
     //three yes votes
@@ -388,7 +378,7 @@ describe('BeneficiaryNomination', function () {
     await this.mockStaking.mock.getVoiceCredits.returns(40);
     await this.BNPContract.connect(voter3).vote(PROPOSALID,Vote.No);
      
-    await expect(this.BNPContract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Proposal cannot be finalized until end of initial voting period");
+    await expect(this.BNPContract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Finalization not allowed");
  });
    it("should register the beneficiary after a successful BNP voting", async function() {
     
