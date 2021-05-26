@@ -1,13 +1,6 @@
 require("dotenv").config({ path: "../../.env" });
+require("dotenv").config({ path: "../../.environment" });
 
-switch(process.env.ENV) {
-  case "mainnet":
-    require('dotenv').config({path: "../../.env.mainnet"});
-    break;
-  case "rinkeby":
-    require('dotenv').config({ path: "../../.env.rinkeby"});
-    break;
-  case "local":
-    require('dotenv').config({path: "../../.env.local"});
-    break;
+if (process.env.ENV) {
+  require('dotenv').config({path: `../../.env.${process.env.ENV}` });
 }

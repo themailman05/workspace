@@ -1,11 +1,11 @@
 node_modules
 .next
 .env
+.environment
 .env.local
 .env.rinkeby
 .env.mainnet
 .env.localhost
-.env.mainnet
 .env.local
 dist
 tsconfig.tsbuildinfo

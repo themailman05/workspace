@@ -1,4 +1,4 @@
-require("dotenv").config({ path: "../../.env" });
+import "@popcorn/utils/src/envLoader";
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import '@typechain/hardhat'
@@ -16,6 +16,11 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
   for (const account of accounts) {
     console.log(account.address);
   }
+});
+
+
+task("environment").setAction(async (args, hre) => {
+  console.log(process.env.ENV);
 });
 
 task("dev:deploy").setAction(async (args, hre) => {

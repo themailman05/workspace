@@ -30,7 +30,8 @@ async function deploy(ethers) {
     this.mockPop = await (
       await (await ethers.getContractFactory("MockERC20")).deploy(
         "TestPOP",
-        "TPOP"
+        "TPOP",
+        18
       )
     ).deployed();
 
