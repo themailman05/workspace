@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity >=0.7.0 <0.8.0;
+pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
@@ -43,8 +44,8 @@ contract BeneficiaryNomination is Governed {
     uint256 yesCount;
     uint256 noCount;
     uint256 voterCount;
-    uint256 bondBalance;
     ProposalType _proposalType;
+    ConfigurationOptions configurationOptions;
   }
   Proposal[] public proposals;
 
@@ -157,7 +158,7 @@ contract BeneficiaryNomination is Governed {
     proposal.proposer = msg.sender;
     proposal.startTime = block.timestamp;
     proposal._proposalType = _type;
-    proposal.bondBalance = DefaultConfigurations.proposalBond;
+    proposal.configurationOptions = DefaultConfigurations;
 
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _applicationCid);
 
@@ -283,7 +284,7 @@ contract BeneficiaryNomination is Governed {
     POP.safeTransferFrom(
       address(this),
       msg.sender,
-      proposals[proposalId].bondBalance
+      proposals[proposalId].configurationOptions.proposalBond
     );
   }
 
@@ -299,8 +300,8 @@ contract BeneficiaryNomination is Governed {
     ) return;
 
     uint256 _time = block.timestamp;
-    uint256 votingPeriod = DefaultConfigurations.votingPeriod;
-    uint256 vetoPeriod = DefaultConfigurations.vetoPeriod;
+    uint256 votingPeriod = proposal.configurationOptions.votingPeriod;
+    uint256 vetoPeriod = proposal.configurationOptions.vetoPeriod;
     uint256 totalVotingPeriod = votingPeriod + vetoPeriod;
 
     if (_time < proposal.startTime.add(votingPeriod)) {
