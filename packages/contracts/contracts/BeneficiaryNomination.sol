@@ -135,7 +135,7 @@ contract BeneficiaryNomination is Governed {
     enoughBond(msg.sender)
     returns (uint256)
   {
-    _assertProposalPreconditions();
+    _assertProposalPreconditions(_type, _beneficiary);
 
     POP.safeTransferFrom(
       msg.sender,
@@ -161,7 +161,7 @@ contract BeneficiaryNomination is Governed {
     return proposalId;
   }
 
-  function _assertProposalPreconditions() internal {
+  function _assertProposalPreconditions(ProposalType _type, address _beneficiary) internal {
     if (ProposalType.BeneficiaryTakedownProposal == _type) {
       require(
         beneficiaryRegistry.beneficiaryExists(_beneficiary),
