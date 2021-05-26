@@ -57,7 +57,10 @@ contract BeneficiaryNomination is Governed {
   ConfigurationOptions public DefaultConfigurations;
   //modifiers
   modifier onlyProposer(uint256 proposalId) {
-    require(msg.sender == proposals[proposalId].proposer, "!proposer");
+    require(
+      msg.sender == proposals[proposalId].proposer,
+      "only the proposer may call this function"
+    );
     _;
   }
   modifier validAddress(address _address) {
@@ -67,7 +70,7 @@ contract BeneficiaryNomination is Governed {
   modifier enoughBond(address _address) {
     require(
       POP.balanceOf(_address) >= DefaultConfigurations.proposalBond,
-      "!enough bond"
+      "proposal bond is not enough"
     );
     _;
   }
@@ -97,8 +100,8 @@ contract BeneficiaryNomination is Governed {
   }
 
   function _setDefaults() internal {
-    DefaultConfigurations.votingPeriod = 2 * 1 days;
-    DefaultConfigurations.vetoPeriod = 2 * 1 days;
+    DefaultConfigurations.votingPeriod = 2 days;
+    DefaultConfigurations.vetoPeriod = 2 days;
     DefaultConfigurations.proposalBond = 2000e18;
   }
 
@@ -154,6 +157,7 @@ contract BeneficiaryNomination is Governed {
     proposals.push();
     Proposal storage proposal = proposals[proposalId];
     proposal.beneficiary = _beneficiary;
+    proposal.status = ProposalStatus.New;
     proposal.applicationCid = _applicationCid;
     proposal.proposer = msg.sender;
     proposal.startTime = block.timestamp;
@@ -302,9 +306,7 @@ contract BeneficiaryNomination is Governed {
     uint256 vetoPeriod = proposal.configurationOptions.vetoPeriod;
     uint256 totalVotingPeriod = votingPeriod + vetoPeriod;
 
-    if (_time < proposal.startTime.add(votingPeriod)) {
-      proposal.status = ProposalStatus.New;
-    } else {
+    if (_time >= proposal.startTime.add(votingPeriod)) {
       if (_time < proposal.startTime.add(totalVotingPeriod)) {
         proposal.status = ProposalStatus.ChallengePeriod;
       } else {

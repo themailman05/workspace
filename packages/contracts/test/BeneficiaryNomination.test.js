@@ -93,7 +93,7 @@ describe('BeneficiaryNomination', function () {
       await expect(
         this.BNPContract.connect(proposer1).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP)
   
-      ).to.be.revertedWith( "!enough bond");
+      ).to.be.revertedWith( "proposal bond is not enough");
     });
     it("should prevent to create a BNP proposal for an existing beneficiary", async function () {
       await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
