@@ -1,6 +1,6 @@
 import React, { Fragment, useContext, useState } from 'react';
-import { store } from 'app/store';
-import { setSingleActionModal, setDualActionModal } from '../../app/actions';
+import { store } from 'context/store';
+import { setSingleActionModal, setDualActionModal } from '../../context/actions';
 
 const TriggerTakedownProposal = (): JSX.Element => {
   const { dispatch } = useContext(store);

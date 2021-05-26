@@ -5,6 +5,8 @@ export default function Verfication(
 ): JSX.Element {
   return (
     <div>
+
+      
       <p className="text-3xl text-black py-4">Verification and grant history</p>
       <span className="flex flex-row justify-between">
         <p className="text-lg font-bold text-gray-700">Ethereum Address</p>

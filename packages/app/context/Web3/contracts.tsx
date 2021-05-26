@@ -3,7 +3,7 @@ import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
 import React, { useEffect } from 'react';
 import { createContext, useState } from 'react';
-import { connectors } from '../containers/Web3/connectors';
+import { connectors } from './connectors';
 import {
   NoEthereumProviderError,
   UserRejectedRequestError as UserRejectedRequestErrorInjected,

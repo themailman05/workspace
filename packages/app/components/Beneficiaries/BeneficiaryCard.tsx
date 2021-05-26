@@ -23,34 +23,6 @@ const beneficiaryProposalCard = (beneficiaryProposal): JSX.Element => {
             <h3 className="mx-4 mt-4 text-lg font-bold text-gray-800 leading-snug">
               {beneficiaryProposal.name}
             </h3>
-            <span className="mx-4 my-1 flex flex-row justify-between">
-              <p className="text-lg font-medium text-gray-700">Status</p>
-              <span className="text-base text-gray-700 flex flex-row">
-                <p>{beneficiaryProposal.currentStage}</p>
-              </span>
-            </span>
-
-            <span className="mx-4 flex flex-row justify-between">
-              <p className="text-lg font-medium text-gray-700">Votes For</p>
-              <span className="text-base text-gray-700 flex flex-row">
-                <p>{beneficiaryProposal.votesFor}</p>
-              </span>
-            </span>
-            <span className="mx-4 flex flex-row justify-between">
-              <p className="text-lg font-medium text-gray-700">Votes Against</p>
-              <span className="text-base text-gray-700 flex flex-row">
-                <p>{beneficiaryProposal.votesAgainst}</p>
-              </span>
-            </span>
-            <span className="mx-4 flex flex-row justify-between">
-              <p className="text-lg font-medium text-gray-700">Total Votes</p>
-              <span className="text-base text-gray-700 flex flex-row">
-                <p>
-                  {beneficiaryProposal.votesFor +
-                    beneficiaryProposal.votesAgainst}
-                </p>
-              </span>
-            </span>
             <p className="mx-4 my-4 text-m font-medium  text-gray-700">
               {beneficiaryProposal.missionStatement}
             </p>

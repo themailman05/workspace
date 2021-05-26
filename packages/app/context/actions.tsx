@@ -1,5 +1,5 @@
 import React from 'react';
-import { Notification } from '../app/store';
+import { Notification } from './store';
 import { Link } from '@material-ui/core';
 import {
   SingleActionModalProps,

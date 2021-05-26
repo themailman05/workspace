@@ -7,12 +7,12 @@ import theme from '../styles/theme';
 import '../styles/globals.css';
 import Router from 'next/router';
 import { GlobalLinearProgress } from 'components/GlobalLinearProgress';
-import { StateProvider } from 'app/store';
+import { StateProvider } from '../context/store';
 import { Web3ReactProvider } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-import ContractsWrapper from 'app/contracts';
-import SwapChainModal from 'app/SwapChainModal';
-import ElectionsProvider from '../app/elections';
+import ContractsWrapper from '../context/Web3/contracts';
+import SwapChainModal from 'components/SwapChainModal';
+import ElectionsProvider from '../context/Web3/elections';
 import { SingleActionModalContainer } from 'components/Modal/SingleActionModalContainer';
 import { DualActionModalContainer } from 'components/Modal/DualActionModalContainer';
 

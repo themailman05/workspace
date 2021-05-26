@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
 import SingleActionModal from "./SingleActionModal";
-import { store } from "app/store";
+import { store } from '../../context/store';
 
 export const SingleActionModalContainer: React.FC = () => {
 

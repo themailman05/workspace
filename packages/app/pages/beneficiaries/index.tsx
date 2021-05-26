@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { store } from 'app/store';
+import { store } from '../../context/store';
 import NavBar from '../../components/NavBar/NavBar';
 import BeneficiaryCard from 'components/Beneficiaries/BeneficiaryCard';
 

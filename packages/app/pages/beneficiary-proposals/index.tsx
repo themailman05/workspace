@@ -1,7 +1,7 @@
 import React, { Fragment, useContext, useState } from 'react';
-import { store } from 'app/store';
+import { store } from '../../context/store';
 import NavBar from '../../components/NavBar/NavBar';
-import { setSingleActionModal } from '../../app/actions';
+import { setSingleActionModal } from '../../context/actions';
 import BeneficiaryCard from 'components/Beneficiary-Proposals/BeneficiaryCard';
 import StageExplanations from 'components/Beneficiary-Proposals/StageExplanations';
 import { Menu, Transition } from '@headlessui/react';

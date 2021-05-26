@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import { store } from 'app/store';
-import { setSingleActionModal } from '../app/actions';
+import { store } from '../context/store';
+import { setSingleActionModal } from '../context/actions';
 import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
 
 export default function PhotoSideBar(

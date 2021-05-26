@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
-import { store } from 'app/store';
+import { store } from '../../context/store';
 import { RadioGroup } from '@headlessui/react';
 
-import { setDualActionModal } from '../../app/actions';
+import { setDualActionModal } from '../../context/actions';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import CurrentStandings from './CurrentStandings';
 
