@@ -7,7 +7,7 @@
     mode = 'prefix'
 
 [context.deploy-preview]
-  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next/* ../../.next; mv public ../../; cd ../../ "
   publish = "packages/app/out"
 
   [context.deploy-preview.environment]
