@@ -44,7 +44,7 @@ contract BeneficiaryNomination is Governed {
     uint256 yesCount;
     uint256 noCount;
     uint256 voterCount;
-    ProposalType _proposalType;
+    ProposalType proposalType;
     ConfigurationOptions configurationOptions;
   }
   Proposal[] public proposals;
@@ -157,7 +157,7 @@ contract BeneficiaryNomination is Governed {
     proposal.applicationCid = _applicationCid;
     proposal.proposer = msg.sender;
     proposal.startTime = block.timestamp;
-    proposal._proposalType = _type;
+    proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
 
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _applicationCid);
@@ -245,9 +245,7 @@ contract BeneficiaryNomination is Governed {
       );
 
       proposal.status = ProposalStatus.Passed;
-      if (
-        proposal._proposalType == ProposalType.BeneficiaryNominationProposal
-      ) {
+      if (proposal.proposalType == ProposalType.BeneficiaryNominationProposal) {
         //nomination proposal
         //register beneficiary using the BeneficiaryRegisty contract
         beneficiaryRegistry.addBeneficiary(

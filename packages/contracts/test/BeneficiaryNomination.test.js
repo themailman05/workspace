@@ -82,7 +82,7 @@ describe('BeneficiaryNomination', function () {
       expect(proposal.beneficiary).to.equal(beneficiary.address);
       expect(proposal.applicationCid).to.equal( ethers.utils.formatBytes32String("testCid"));
       expect(proposal.proposer).to.equal(proposer2.address);
-      expect(proposal._proposalType).to.equal(ProposalType.BNP);
+      expect(proposal.proposalType).to.equal(ProposalType.BNP);
       expect(proposal.voterCount).to.equal(0);
       expect(proposal.status).to.equal(ProposalStatus.New);
       expect(await this.BNPContract.getNumberOfProposals()).to.equal(1);
@@ -439,7 +439,7 @@ describe('BeneficiaryNomination', function () {
   
   //finalize
   const proposal=await this.BNPContract.proposals(PROPOSALID_BTP);
-  expect(proposal._proposalType).to.equal(ProposalType.BTP);
+  expect(proposal.proposalType).to.equal(ProposalType.BTP);
   await this.mockBeneficiaryRegistry.mock.revokeBeneficiary.returns();
  await this.BNPContract.connect(owner).finalize(PROPOSALID_BTP);
  expect(await this.mockBeneficiaryRegistry.beneficiaryExists(proposal.beneficiary)).to.equal(false);
