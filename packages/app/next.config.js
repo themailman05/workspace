@@ -8,7 +8,6 @@ module.exports = {
   typescript: {
     ignoreBuildErrors: true, // to remove!!!
   },
-  target: 'serverless',
   env: {
     RPC_URL: process.env.RPC_URL,
     CHAIN_ID: process.env.CHAIN_ID,
