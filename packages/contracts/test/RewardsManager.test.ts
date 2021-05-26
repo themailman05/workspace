@@ -44,7 +44,7 @@ describe("RewardsManager", function () {
       Insurance.interface.format()
     );
 
-    Staking = await ethers.getContractFactory("MockStaking");
+    Staking = await ethers.getContractFactory("Staking");
     this.mockStaking = await waffle.deployMockContract(
       owner,
       Staking.interface.format()

@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./Owned.sol";
+import "./IRewardsManager.sol";
 
 contract Staking is IStaking, Owned, ReentrancyGuard {
   using SafeMath for uint256;
@@ -23,6 +24,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   }
 
   IERC20 public immutable POP;
+  address public RewardsManager;
   uint256 public periodFinish = 0;
   uint256 public rewardRate = 0;
   uint256 public rewardsDuration = 7 days;
@@ -43,6 +45,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   event StakingWithdrawn(address _address, uint256 amount);
   event RewardPaid(address _address, uint256 reward);
   event RewardAdded(uint256 reward);
+  event RewardsManagerChanged(address _rewardsManager);
 
   /* ========== CONSTRUCTOR ========== */
 
@@ -210,11 +213,17 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     }
   }
 
+  function setRewardsManager(address _rewardsManager) external onlyOwner {
+    RewardsManager = _rewardsManager;
+    emit RewardsManagerChanged(_rewardsManager);
+  }
+
   function notifyRewardAmount(uint256 reward)
     external
-    onlyOwner
+    override
     updateReward(address(0))
   {
+    require(msg.sender == RewardsManager || msg.sender == owner, "Not allowed");
     if (block.timestamp >= periodFinish) {
       rewardRate = reward.div(rewardsDuration);
     } else {

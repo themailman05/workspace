@@ -17,6 +17,7 @@ describe("Staking", function () {
   beforeEach(async function () {
     const Staking = await ethers.getContractFactory("Staking");
     this.contract = await Staking.deploy(this.mockPop.address);
+    await this.contract.setRewardsManager(rewarder.address);
     await this.contract.deployed();
     stakingFund = parseEther("10");
     await this.mockPop.transfer(this.contract.address, stakingFund);
@@ -272,10 +273,11 @@ describe("Staking", function () {
     beforeEach(async function () {
       const Staking = await ethers.getContractFactory("Staking");
       this.contract = await Staking.deploy(this.mockPop.address);
+      await this.contract.setRewardsManager(rewarder.address);
       await this.contract.deployed();
       stakingFund = parseEther("10");
       await this.mockPop.transfer(this.contract.address, stakingFund);
-    });
+    });  
     it("should set rewards", async function () {
       expect(
         await this.contract.connect(owner).getRewardForDuration()
@@ -285,6 +287,23 @@ describe("Staking", function () {
         await this.contract.connect(owner).getRewardForDuration()
       ).to.equal(parseEther("9.999999999999676800"));
     });
+
+    it("should set as RewardsManager", async function () {
+      expect(
+        await this.contract.getRewardForDuration()
+      ).to.equal(0);
+      await this.contract.connect(rewarder).notifyRewardAmount(stakingFund);
+      expect(
+        await this.contract.getRewardForDuration()
+      ).to.equal(parseEther("9.999999999999676800"));
+    });
+
+    it("should revert if not owner", async function () {
+      await expect(
+        this.contract.connect(nonOwner).notifyRewardAmount(stakingFund)
+      ).to.be.revertedWith("Not allowed");
+    });
+
     it("should be able to increase rewards", async function () {
       await this.contract.notifyRewardAmount(parseEther("5"));
       expect(
