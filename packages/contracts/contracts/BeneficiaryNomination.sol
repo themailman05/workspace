@@ -168,7 +168,7 @@ contract BeneficiaryNomination is Governed {
   function _assertProposalPreconditions(
     ProposalType _type,
     address _beneficiary
-  ) internal {
+  ) internal view {
     if (ProposalType.BeneficiaryTakedownProposal == _type) {
       require(
         beneficiaryRegistry.beneficiaryExists(_beneficiary),
@@ -264,14 +264,14 @@ contract BeneficiaryNomination is Governed {
   }
 
   function _handleSuccessfulProposal(Proposal storage proposal) internal {
-    if (proposal._proposalType == ProposalType.BeneficiaryNominationProposal) {
+    if (proposal.proposalType == ProposalType.BeneficiaryNominationProposal) {
       beneficiaryRegistry.addBeneficiary(
         proposal.beneficiary,
         proposal.applicationCid
       );
     }
 
-    if (proposal._proposalType == ProposalType.BeneficiaryTakedownProposal) {
+    if (proposal.proposalType == ProposalType.BeneficiaryTakedownProposal) {
       beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
     }
   }
@@ -303,8 +303,8 @@ contract BeneficiaryNomination is Governed {
       proposal.status == ProposalStatus.Passed
     ) return;
 
-    uint256 votingPeriod = DefaultConfigurations.votingPeriod;
-    uint256 vetoPeriod = DefaultConfigurations.vetoPeriod;
+    uint256 votingPeriod = proposal.configurationOptions.votingPeriod;
+    uint256 vetoPeriod = proposal.configurationOptions.vetoPeriod;
     uint256 totalVotingPeriod = votingPeriod + vetoPeriod;
 
     if (
