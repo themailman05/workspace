@@ -5,9 +5,6 @@ require('../utils/src/envLoader');
 const workspace = join(__dirname, '..');
 
 module.exports = {
-  typescript: {
-    ignoreBuildErrors: true, // to remove!!!
-  },
   target: 'serverless',
   env: {
     RPC_URL: process.env.RPC_URL,
