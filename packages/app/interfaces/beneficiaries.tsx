@@ -22,5 +22,5 @@ export interface DummyBeneficiaryProposal {
   votesAgainst: number;
   currentStage: Stage;
   stageDeadline: Date;
-  proofOfOwnership: string;  
+  proofOfOwnership: string;
 }

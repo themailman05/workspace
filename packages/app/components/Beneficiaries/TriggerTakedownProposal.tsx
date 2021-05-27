@@ -1,8 +1,11 @@
 import React, { Fragment, useContext, useState } from 'react';
 import { store } from 'context/store';
-import { setSingleActionModal, setDualActionModal } from '../../context/actions';
+import {
+  setSingleActionModal,
+  setDualActionModal,
+} from '../../context/actions';
 
-const TriggerTakedownProposal = (): JSX.Element => {
+export default function TriggerTakedownProposal(): JSX.Element {
   const { dispatch } = useContext(store);
   const triggerTakedownProposal = () => {
     dispatch(
@@ -11,7 +14,6 @@ const TriggerTakedownProposal = (): JSX.Element => {
         progress: true,
       }),
     );
-    // TODO handle takedown process
   };
   return (
     <footer className="bg-white ">
@@ -67,6 +69,4 @@ const TriggerTakedownProposal = (): JSX.Element => {
       </div>
     </footer>
   );
-};
-
-export default TriggerTakedownProposal;
+}

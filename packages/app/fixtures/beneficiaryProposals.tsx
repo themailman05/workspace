@@ -39,7 +39,7 @@ export const beneficiaryProposalFixtures: DummyBeneficiaryProposal[] =
       ],
       votesAgainst: Math.floor(Math.random() * 1000),
       votesFor: Math.floor(Math.random() * 1000),
-      currentStage: getRandomStage(),
+      currentStage: 'Open',
       stageDeadline: getDateSometimeInTheNext48Hours(),
       impactReports: [
         'https://www.roomtoread.org/media/ch0ihvnu/gmr-2015-final_low-resolution.pdf',

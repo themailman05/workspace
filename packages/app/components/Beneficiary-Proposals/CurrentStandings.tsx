@@ -1,24 +1,18 @@
 import { useEffect, useState } from 'react';
-import {DummyBeneficiaryProposal} from '../../interfaces/beneficiaries'
+import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import ProgressBar from '../ProgressBar';
+var { DateTime } = require('luxon');
 
 const getTimeLeft = (stageDeadline: Date): string => {
-  const ms = stageDeadline.getTime() - new Date().getTime();
-  if (ms <= 0) {
-    return '00:00:00';
-  }
-  const seconds = Math.round((ms / 1000) % 60);
-  const minutes = Math.round((ms / (1000 * 60)) % 60);
-  const hours = Math.round((ms / (1000 * 60 * 60)) % 24);
-  const hoursPadded = hours < 10 ? '0' + hours : hours;
-  const minutesPadded = minutes < 10 ? '0' + minutes : minutes;
-  const secondsPadded = seconds < 10 ? '0' + seconds : seconds;
-  return hoursPadded + ':' + minutesPadded + ':' + secondsPadded;
+  const date1 = DateTime.fromISO(new Date().toISOString());
+  const date2 = DateTime.fromISO(stageDeadline.toISOString());
+  const diff = date2.diff(date1, ['hours', 'minutes','seconds']).toObject();
+  return diff.hours + ":" + diff.minutes + ":" + parseInt(diff.seconds)
 };
 
-const CurrentStandings = (
+export default function CurrentStandings(
   beneficiaryProposal: DummyBeneficiaryProposal,
-): JSX.Element => {
+): JSX.Element {
   const [timeLeft, setTimeLeft] = useState<string>(
     getTimeLeft(beneficiaryProposal.stageDeadline),
   );
@@ -96,6 +90,4 @@ const CurrentStandings = (
       </div>
     </div>
   );
-};
-
-export default CurrentStandings;
+}

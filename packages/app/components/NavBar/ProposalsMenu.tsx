@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import NavbarLink from './NavbarLinks';
+import * as Icon from 'react-feather';
 
 interface Props {
   visible: boolean;
@@ -19,85 +20,40 @@ export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
           <ul className="space-y-6">
             <li className="flow-root">
               <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <svg
-                  className="flex-shrink-0 h-6 w-6 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="ml-4">
-                  <NavbarLink
-                    label="View Beneficiary Proposals"
-                    url="/beneficiary-proposals"
-                    onClick={toggleSubMenu}
-                    isActive={router.pathname === '/beneficiary-proposals'}
-                  />
-                </span>
+                <Icon.Info className="mr-4" />
+                <NavbarLink
+                  label="View Beneficiary Proposals"
+                  url="/beneficiary-proposals"
+                  onClick={toggleSubMenu}
+                  isActive={router.pathname === '/beneficiary-proposals'}
+                />
               </span>
             </li>
             <li className="flow-root">
               <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <svg
-                  className="flex-shrink-0 h-6 w-6 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span className="ml-4">
-                  <NavbarLink
-                    label="View Beneficiary Takedown Proposals"
-                    url="/beneficiary-takedown-proposals"
-                    onClick={toggleSubMenu}
-                    isActive={router.pathname === '/beneficiary-takedown-proposals'}
-                  />
-                </span>
+                <Icon.Info className="mr-4" />
+                <NavbarLink
+                  label="View Beneficiary Takedown Proposals"
+                  url="/beneficiary-takedown-proposals"
+                  onClick={toggleSubMenu}
+                  isActive={
+                    router.pathname === '/beneficiary-takedown-proposals'
+                  }
+                />
               </span>
             </li>
-            
 
             <li className="flow-root">
               <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <svg
-                  className="flex-shrink-0 h-6 w-6 text-gray-400"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
-                <span className="ml-4">
-                  <NavbarLink
-                    label="Propose a New Beneficiary"
-                    url="/beneficiary-proposals/propose"
-                    onClick={toggleSubMenu}
-                    isActive={router.pathname === '/beneficiary-proposals/propose'}
-                  />
-                </span>
+                <Icon.Plus className="mr-4" />
+                <NavbarLink
+                  label="Propose a New Beneficiary"
+                  url="/beneficiary-proposals/propose"
+                  onClick={toggleSubMenu}
+                  isActive={
+                    router.pathname === '/beneficiary-proposals/propose'
+                  }
+                />
               </span>
             </li>
           </ul>

@@ -2,13 +2,12 @@ import { useContext, useEffect, useState } from 'react';
 import { store } from '../../context/store';
 
 import { setDualActionModal } from '../../context/actions';
-import {DummyBeneficiaryProposal} from '../../interfaces/beneficiaries'
+import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import CurrentStandings from './CurrentStandings';
 
-// TODO: Add types
-const ChallengePeriodVoting = (
+export default function ChallengePeriodVoting(
   beneficiaryProposal: DummyBeneficiaryProposal,
-) => {
+): JSX.Element {
   const { dispatch } = useContext(store);
 
   return (
@@ -56,10 +55,7 @@ const ChallengePeriodVoting = (
           Veto Proposal Vote
         </button>
       </div>
-
-      <CurrentStandings {...beneficiaryProposal}/>
+      <CurrentStandings {...beneficiaryProposal} />
     </div>
   );
-};
-
-export default ChallengePeriodVoting;
+}
