@@ -15,6 +15,9 @@ import SwapChainModal from 'app/SwapChainModal';
 import ElectionsProvider from '../app/elections';
 import { SingleActionModalContainer } from 'components/Modal/SingleActionModalContainer';
 import { DualActionModalContainer } from 'components/Modal/DualActionModalContainer';
+import NotificationsContainer from 'components/Notifications/NotificationsContainer';
+import { Debug } from 'components/Debug';
+import DualActionWideModalContainer from 'components/Modal/DualActionWideModalContainer';
 
 function getLibrary(provider: any): Web3Provider {
   const library = new Web3Provider(provider);
@@ -38,7 +41,7 @@ export default function MyApp(props) {
     });
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
@@ -68,16 +71,19 @@ export default function MyApp(props) {
             <CssBaseline />
             <GlobalLinearProgress visible={loading} />
             <Web3ReactProvider getLibrary={getLibrary}>
-              <ContractsWrapper>
-                <ElectionsProvider>
-                  <StateProvider>
-                    <SwapChainModal />
+              <StateProvider>
+                <ContractsWrapper>
+                  <ElectionsProvider>
                     <SingleActionModalContainer />
                     <DualActionModalContainer />
+                    <DualActionWideModalContainer />
                     <Component {...pageProps} />
-                  </StateProvider>
-                </ElectionsProvider>
-              </ContractsWrapper>
+                    <SwapChainModal />
+                    <NotificationsContainer />
+                    <Debug />
+                  </ElectionsProvider>
+                </ContractsWrapper>
+              </StateProvider>
             </Web3ReactProvider>
           </ThemeProvider>
         </MuiThemeProvider>

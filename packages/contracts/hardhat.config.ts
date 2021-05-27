@@ -1,13 +1,14 @@
-require("dotenv").config({ path: "../../.env" });
+import "@popcorn/utils/src/envLoader";
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
 import '@typechain/hardhat'
-const { utils } = require("ethers");
+import { utils } from "ethers";
 
-const { deploy } = require("./scripts/deployWithValues");
-const {
+import { deploy } from "./scripts/deployWithValues";
+
+import  {
   GrantElectionAdapter,
-} = require("./scripts/helpers/GrantElectionAdapter");
+} from "./scripts/helpers/GrantElectionAdapter";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -15,6 +16,11 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
   for (const account of accounts) {
     console.log(account.address);
   }
+});
+
+
+task("environment").setAction(async (args, hre) => {
+  console.log(process.env.ENV);
 });
 
 task("dev:deploy").setAction(async (args, hre) => {
@@ -103,7 +109,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     );
   });
 
-  task("elections:finalize", "finalize a grant election")
+task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
@@ -113,10 +119,10 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(term, {gasLimit: 9500000});
+    await GrantElections.finalize(Number(term), { gasLimit: 10000000 });
   });
 
-  task("random", "gets a random number")
+task("random", "gets a random number")
   .addParam("seed", "the seed")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
@@ -130,19 +136,41 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
+
+
+
+
 module.exports = {
-  solidity: "0.7.3",
+  solidity: {
+    version: "0.7.3",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
+  },
   networks: {
+    mainnet: {
+      chainId: 1,
+      url: process.env.RPC_URL,
+      accounts: [process.env.PRIVATE_KEY]
+    },
     hardhat: {
       chainId: +process.env.CHAIN_ID,
     },
     rinkeby: {
       url: process.env.RPC_URL,
-      accounts: [process.env.PRIVATE_KEY].concat(
-        (process.env.BENEFICIARY_PRIVATE_KEYS &&
-          process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
-          []
-      ),
+      accounts: [process.env.PRIVATE_KEY]
+        .concat(
+          (process.env.BENEFICIARY_PRIVATE_KEYS &&
+            process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
+            []
+        )
+        .concat(
+          (process.env.VOTER_PRIVATE_KEY && [process.env.VOTER_PRIVATE_KEY]) ||
+            []
+        ),
     },
   },
 };
