@@ -20,6 +20,7 @@ contract Staking is Owned, ReentrancyGuard {
     uint256 _balance;
     uint256 _duration;
     uint256 _end;
+    uint256 _blockLock;
   }
 
   IERC20 public immutable POP;
@@ -50,7 +51,7 @@ contract Staking is Owned, ReentrancyGuard {
   /* ========== VIEWS ========== */
 
   function getVoiceCredits(address _address) public view returns (uint256) {
-    uint256 timeTillEnd = lockedBalances[_address]._end.sub(block.timestamp);
+    uint256 timeTillEnd = lockedBalances[_address]._end.sub(block.timestamp); //Round to hours
     uint256 slope =
       voiceCredits[_address].div(lockedBalances[_address]._duration);
     return timeTillEnd.mul(slope);
@@ -118,6 +119,14 @@ contract Staking is Owned, ReentrancyGuard {
       "must lock tokens for less than/equal to  4 year"
     );
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
+    require(
+      lockedBalances[msg.sender]._end > _currentTime,
+      "balances already unlocked"
+    );
+    require(
+      lockedBalances[msg.sender]._balance == 0,
+      "Withdraw old tokens first"
+    );
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -125,6 +134,45 @@ contract Staking is Owned, ReentrancyGuard {
     _lockTokens(amount, lengthOfTime);
     _recalculateVoiceCredits();
     emit StakingDeposited(msg.sender, amount);
+  }
+
+  function increaseLock(uint256 lengthOfTime) external {
+    uint256 _currentTime = block.timestamp;
+    require(lengthOfTime >= 7 days, "must lock tokens for at least 1 week");
+    require(
+      lengthOfTime <= 365 days * 4,
+      "must lock tokens for less than/equal to  4 year"
+    );
+    require(lockedBalances[msg.sender]._balance > 0, "no lockedBalance exists");
+    require(
+      lockedBalances[msg.sender]._end > _currentTime,
+      "balances already unlocked"
+    );
+    lockedBalances[msg.sender]._duration = lockedBalances[msg.sender]
+      ._duration
+      .add(lengthOfTime);
+    lockedBalances[msg.sender]._end = lockedBalances[msg.sender]._end.add(
+      lengthOfTime
+    );
+    lockedBalances[msg.sender]._blockLock = _currentTime;
+  }
+
+  function increaseStake(uint256 amount) external {
+    uint256 _currentTime = block.timestamp;
+    require(amount > 0, "amount must be greater than 0");
+    require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
+    require(lockedBalances[msg.sender]._balance > 0, "no lockedBalance exists");
+    require(
+      lockedBalances[msg.sender]._end > _currentTime,
+      "balances already unlocked"
+    );
+    POP.safeTransferFrom(msg.sender, address(this), amount);
+    totalLocked = totalLocked.add(amount);
+    lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
+      ._balance
+      .add(amount);
+    lockedBalances[msg.sender]._blockLock = _currentTime;
+    _recalculateVoiceCredits();
   }
 
   function withdraw(uint256 amount)
@@ -174,7 +222,8 @@ contract Staking is Owned, ReentrancyGuard {
     lockedBalances[msg.sender] = LockedBalance({
       _balance: lockedBalances[msg.sender]._balance.add(amount),
       _duration: lengthOfTime,
-      _end: _currentTime.add(lengthOfTime)
+      _end: _currentTime.add(lengthOfTime),
+      _blockLock: _currentTime
     });
   }
 
