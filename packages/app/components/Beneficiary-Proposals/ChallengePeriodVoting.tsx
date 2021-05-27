@@ -15,18 +15,25 @@ export default function ChallengePeriodVoting(
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
         {beneficiaryProposal.currentStage} vote on {beneficiaryProposal.name}
       </p>
-      <p className="mb-4 text-base font-medium text-gray-900">
-        {beneficiaryProposal.name} is in the second phase of voting, the
-        challenge period. Here, users are able to vote to veto the nomination.
-        This additional phase prevents exploits where a flood of late “Yes”
-        votes swings the results.
-      </p>
-      <p className="mb-4 text-base font-medium text-gray-900">
-        At the end of the challenge period, if the nomination receives more yes
-        votes than no votes, the elected organization will become eligible to
-        receive grants as an eligible beneficiary
-      </p>
-
+      <div className="grid my-2 justify-items-stretch">
+        <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
+          <p className="mb-4 text-base font-medium text-gray-900">
+            {beneficiaryProposal.name} is in the second phase of voting, the
+            challenge period. Here, users are able to vote to veto the
+            nomination. This additional phase prevents exploits where a flood of
+            late “Yes” votes swings the results.
+          </p>
+        </span>
+      </div>
+      <div className="grid my-2 justify-items-stretch">
+        <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
+          <p className="mb-4 text-base font-medium text-gray-900">
+            At the end of the challenge period, if the nomination receives more
+            yes votes than no votes, the elected organization will become
+            eligible to receive grants as an eligible beneficiary
+          </p>
+        </span>
+      </div>
       <div className="grid my-2 justify-items-stretch">
         <button
           type="button"
