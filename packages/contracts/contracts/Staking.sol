@@ -112,6 +112,7 @@ contract Staking is Owned, ReentrancyGuard {
     nonReentrant
     updateReward(msg.sender)
   {
+    uint256 _currentTime = block.timestamp;
     require(amount > 0, "amount must be greater than 0");
     require(lengthOfTime >= 7 days, "must lock tokens for at least 1 week");
     require(
