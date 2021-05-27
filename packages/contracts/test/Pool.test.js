@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { waffle } = require("hardhat");
+const { waffle, ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 const { parseEther, parseUnits } = require("ethers/lib/utils");
 const provider = waffle.provider;
@@ -37,6 +37,11 @@ describe('Pool', function () {
       rewardsManager.address,
     );
     await this.Pool.deployed();
+    MockFlashLoan = await ethers.getContractFactory("MockFlashLoan");
+    this.mockFlashLoan = await MockFlashLoan.deploy(
+      this.Pool.address,
+      this.mockDai.address,
+    )
   });
 
   it("should be constructed with correct addresses", async function () {
@@ -849,5 +854,11 @@ describe('Pool', function () {
 
     });
   });
+  describe("block lock modifier", async function () {
+    it("prevents a deposit and withdrawal in the same block", async function () {
+      await this.mockDai.mint(this.mockFlashLoan.address, parseEther("1000"));
+      await expect(this.mockFlashLoan.doFlashLoan()).to.be.revertedWith("blockLocked");
+    })
+  })
 
 });

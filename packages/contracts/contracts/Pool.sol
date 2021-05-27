@@ -60,6 +60,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   uint256 public performanceFee = 2000;
   uint256 public poolTokenHWM = 1e18;
   uint256 public feesUpdatedAt;
+  mapping(address => uint256) public blockLock;
 
   event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address indexed to, uint256 amount);
@@ -89,7 +90,12 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     feesUpdatedAt = block.timestamp;
   }
 
-  function deposit(uint256 amount) external nonReentrant returns (uint256) {
+  modifier blockLocked() { // Modifier
+        require(blockLock[msg.sender] < block.number, "blockLocked");
+        _;
+  }
+
+  function deposit(uint256 amount) external nonReentrant blockLocked returns (uint256) {
     _takeFees();
 
     uint256 poolTokens = _issuePoolTokens(msg.sender, amount);
@@ -101,10 +107,16 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
     _reportPoolTokenHWM();
 
+    _lockForBlock(msg.sender);
+
     return balanceOf(msg.sender);
   }
+ 
+  function _lockForBlock(address account) internal {
+        blockLock[account] = block.number;
+  }
 
-  function withdraw(uint256 amount) external nonReentrant returns (uint256, uint256) {
+  function withdraw(uint256 amount) external nonReentrant blockLocked returns (uint256, uint256) {
     require(amount <= balanceOf(msg.sender), "Insufficient pool token balance");
 
     _takeFees();
