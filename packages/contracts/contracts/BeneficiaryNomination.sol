@@ -206,12 +206,16 @@ contract BeneficiaryNomination is Governed {
     proposal.voters[msg.sender] = true;
     proposal.voterCount = proposal.voterCount.add(1);
 
-    if ((_vote == VoteOption.Yes) && (proposal.status == ProposalStatus.New)) {
+    if (_vote == VoteOption.Yes) {
+      require(
+        proposal.status == ProposalStatus.New,
+        "Initial voting period has already finished!"
+      );
       proposal.yesCount = proposal.yesCount.add(_voiceCredits);
-    } else if (_vote == VoteOption.No) {
+    }
+
+    if (_vote == VoteOption.No) {
       proposal.noCount = proposal.noCount.add(_voiceCredits);
-    } else {
-      revert("Initial voting period has already finished!");
     }
 
     emit Vote(proposalId, msg.sender, _voiceCredits);
