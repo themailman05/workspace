@@ -54,7 +54,7 @@ export default function LockPop() {
 
   const getLockedPop = async () => {
     setLockedPop(
-      Number(utils.formatEther(await contracts.staking.balances(account))),
+      Number(utils.formatEther(await contracts.staking.balanceOf(account))),
     );
   };
 

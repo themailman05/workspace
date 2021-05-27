@@ -1,5 +1,5 @@
 import React, { Fragment, useContext, useState } from 'react';
-import { store } from 'context/store';
+import { store } from '../../context/store';
 import {
   setSingleActionModal,
   setDualActionModal,
