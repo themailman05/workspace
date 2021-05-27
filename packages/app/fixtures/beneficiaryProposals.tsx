@@ -1,7 +1,4 @@
-import {
-  DummyBeneficiaryProposal,
-  Stage,
-} from '../interfaces/beneficiaries';
+import { DummyBeneficiaryProposal, Stage } from '../interfaces/beneficiaries';
 
 const randomIndex = () => Math.floor(Math.random() * 3);
 const getRandomStage = () =>
@@ -39,7 +36,7 @@ export const beneficiaryProposalFixtures: DummyBeneficiaryProposal[] =
       ],
       votesAgainst: Math.floor(Math.random() * 1000),
       votesFor: Math.floor(Math.random() * 1000),
-      currentStage: getRandomStage(),
+      currentStage: 'Challenge',
       stageDeadline: getDateSometimeInTheNext48Hours(),
       impactReports: [
         'https://www.roomtoread.org/media/ch0ihvnu/gmr-2015-final_low-resolution.pdf',

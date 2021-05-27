@@ -1,8 +1,7 @@
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import CurrentStandings from './CurrentStandings';
 
-// TODO: Add types
-const CompletedVoting = (beneficiaryProposal: DummyBeneficiaryProposal) => {
+export default function CompletedVoting(beneficiaryProposal: DummyBeneficiaryProposal): JSX.Element {
   return (
     <div className="content-center mx-48">
       <div className="grid my-2 justify-items-stretch">
@@ -33,4 +32,3 @@ const CompletedVoting = (beneficiaryProposal: DummyBeneficiaryProposal) => {
   );
 };
 
-export default CompletedVoting;

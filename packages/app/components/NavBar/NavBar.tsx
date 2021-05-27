@@ -31,7 +31,7 @@ export default function Navbar(): JSX.Element {
           <Link href="/" passHref>
             <a>
               <img
-                src="/images/popcorn_v1_dark_bg.png"
+                src="/images/popcorn_v1_rainbow_bg.png"
                 alt="Logo"
                 className="w-8 h-8"
               ></img>
@@ -40,15 +40,7 @@ export default function Navbar(): JSX.Element {
         </div>
         <ul className="flex flex-row items-center mx-auto space-x-16">
           <li>
-            <NavbarLink
-              label="Grant Elections"
-              onClick={() => setShowGrants(!showGrants)}
-              isActive={router.pathname === '/grants'}
-            />
-            <GrantsMenu
-              visible={showGrants}
-              toggleSubMenu={() => setShowGrants(!showGrants)}
-            />
+         
           </li>
           <li>
             <NavbarLink
