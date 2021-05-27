@@ -1,5 +1,4 @@
 import React from 'react';
-import { Notification } from './store';
 import { Link } from '@material-ui/core';
 import {
   SingleActionModalProps,
@@ -7,53 +6,70 @@ import {
 } from 'components/Modal/SingleActionModal';
 import { DualActionModalProps } from 'components/Modal/DualActionModal';
 import { DefaultDualActionModalProps } from '../components/Modal/DualActionModal';
+import { Notification } from '../components/Notifications/NotificationsContainer';
+import { DefaultDualActionWideModalProps, DualActionWideModalProps } from 'components/Modal/DualActionWideModal';
 
-export const DISPLAY_NOTIFICATION = 'notifications/DISPLAY_NOTIFICATION';
-export const TOGGLE_NOTIFICATION = 'notifications/TOGGLE_NOTIFICATION';
+export const PUSH_NOTIFICATION = 'notifications/PUSH_NOTIFICATION';
+export const UNSET_NOTIFICATION = 'notifications/UNSET_NOTIFICATION';
+export const HIDE_NOTIFICATION = 'notifications/HIDE_NOTIFICATION';
+export const CLEAR_NOTIFICATIONS = 'notifications/CLEAR_NOTIFICATIONS';
 export const SINGLE_ACTION_MODAL = 'modals/SINGLE_ACTION_MODAL';
 export const DUAL_ACTION_MODAL = 'modals/DUAL_ACTION_MODAL';
+export const DUAL_ACTION_WIDE_MODAL = 'modals/DUAL_ACTION_WIDE_MODAL';
 
 export type AppActions =
-  | DisplayNotificationAction
-  | ToggleNotificationAction
+  | PushNotificationAction
+  | UnsetNotificationAction
+  | HideNotificationAction
+  | ClearNotificationsAction
   | SetSingleActionModalAction
-  | SetDualActionModalAction;
+  | SetDualActionModalAction
+  | SetDualActionWideModalAction;
 
-export interface DisplayNotificationAction {
-  type: typeof DISPLAY_NOTIFICATION;
+export interface PushNotificationAction {
+  type: typeof PUSH_NOTIFICATION;
   payload: Notification;
 }
-export const displayNotification = (
+export const pushNotification = (
   notification: Partial<Notification>,
-): DisplayNotificationAction => {
+): PushNotificationAction => {
   return {
-    type: DISPLAY_NOTIFICATION,
+    type: PUSH_NOTIFICATION,
     payload: { ...notification, visible: true } as Notification,
   };
 };
 
-export interface ToggleNotificationAction {
-  type: typeof TOGGLE_NOTIFICATION;
+export interface UnsetNotificationAction {
+  type: typeof UNSET_NOTIFICATION;
+  payload: number,
 }
-export const toggleNotification = (): ToggleNotificationAction => {
+
+export const unsetNotification = (id: number): UnsetNotificationAction => {
   return {
-    type: TOGGLE_NOTIFICATION,
+    type: UNSET_NOTIFICATION,
+    payload: id,
   };
 };
 
-export const showPaywall = (): DisplayNotificationAction => {
-  return displayNotification({
-    backdrop: true,
-    isFlash: false,
-    visible: true,
-    type: 'info',
-    content: (
-      <div>
-        Sorry, that feature is only available for{' '}
-        <Link href="/modals/4">premium members</Link>.
-      </div>
-    ),
-  });
+export interface HideNotificationAction {
+  type: typeof HIDE_NOTIFICATION;
+  payload: number,
+}
+export const hideNotification = (id: number): HideNotificationAction => {
+  return {
+    type: HIDE_NOTIFICATION,
+    payload: id,
+  };
+}
+
+export interface ClearNotificationsAction {
+  type: typeof CLEAR_NOTIFICATIONS;
+}
+
+export const clearNotifications = (): ClearNotificationsAction => {
+  return {
+    type: CLEAR_NOTIFICATIONS,
+  };
 };
 
 export interface SetSingleActionModalAction {
@@ -108,3 +124,30 @@ export const setDualActionModal = (
     },
   };
 };
+
+export interface SetDualActionWideModalAction {
+  type: typeof DUAL_ACTION_WIDE_MODAL;
+  payload: DualActionWideModalProps;
+}
+export const setDualActionWideModal = (
+  props: Partial<DualActionWideModalProps>| false,
+): SetDualActionWideModalAction => {
+  if (!props) {
+    return {
+      type: DUAL_ACTION_WIDE_MODAL,
+      payload: {
+        ...DefaultDualActionWideModalProps,
+        visible: false,
+      },
+    };
+  }
+  return {
+    type: DUAL_ACTION_WIDE_MODAL,
+    payload: {
+      ...DefaultDualActionWideModalProps,
+      visible: true,
+      ...props,
+    },
+  };
+};
+

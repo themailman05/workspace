@@ -1,13 +1,15 @@
-import { Contract } from '@ethersproject/contracts';
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { createContext, useState } from 'react';
-import { connectors } from './connectors';
+import { connectors, networkMap } from './connectors';
 import {
   NoEthereumProviderError,
   UserRejectedRequestError as UserRejectedRequestErrorInjected,
 } from '@web3-react/injected-connector';
+import { store } from '../store';
+import { setSingleActionModal } from '../actions';
+
 import {
   GrantElections,
   GrantElections__factory,
@@ -22,12 +24,13 @@ import {
 } from '@popcorn/contracts/typechain';
 
 export interface Contracts {
-  staking?: Staking;
-  beneficiary?: BeneficiaryRegistry;
-  election?: GrantElections;
-  pop?: ERC20;
-  grant?: GrantRegistry;
+  staking: Staking;
+  beneficiary: BeneficiaryRegistry;
+  election: GrantElections;
+  pop: ERC20;
+  grant: GrantRegistry;
 }
+
 
 interface ContractsContext {
   contracts: Contracts;
@@ -44,7 +47,7 @@ function getErrorMessage(error: Error) {
   if (error instanceof NoEthereumProviderError) {
     return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.';
   } else if (error instanceof UnsupportedChainIdError) {
-    return "You're connected to an unsupported network. Please connect to Rinkeby or Localhost";
+    return `You're connected to an unsupported network. Please connect to ${networkMap[Number(process.env.CHAIN_ID)]}.`;
   } else if (error instanceof UserRejectedRequestErrorInjected) {
     return 'Please authorize this website to access your Ethereum account.';
   } else {
@@ -68,6 +71,7 @@ export default function ContractsWrapper({
     error,
   } = context;
   const [contracts, setContracts] = useState<Contracts>();
+  const { dispatch } = useContext(store);
 
   useEffect(() => {
     if (!active) {
@@ -77,7 +81,18 @@ export default function ContractsWrapper({
 
   useEffect(() => {
     if (error) {
-      alert(getErrorMessage(error));
+      dispatch(
+        setSingleActionModal({
+          content: getErrorMessage(error),
+          title: 'Wallet Error',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Close',
+            onClick: () => dispatch(setSingleActionModal(false)),
+          },
+        }),
+      );
     }
   }, [error]);
 

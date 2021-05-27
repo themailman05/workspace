@@ -13,8 +13,12 @@ interface IGrantFunded {
 export default function GrantFunded({  election, beneficiary }: IGrantFunded): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [awarded, setAwarded] = useState(false);
+
   const isBeneficiaryGrantRecipient = async () =>{
-    setAwarded((await contracts.grant.getActiveAwardees(election.electionTerm)).includes(beneficiary.address));
+    const awarded = (await contracts.grant.getActiveAwardees(election.electionTerm)).map((a) => a.toLowerCase());
+    if (awarded.includes(beneficiary.address.toLowerCase())) {
+      setAwarded(true);
+    }
   }
 
   useEffect(() => {
