@@ -37,8 +37,8 @@ describe('Pool', function () {
       rewardsManager.address,
     );
     await this.Pool.deployed();
-    MockFlashLoan = await ethers.getContractFactory("MockFlashLoan");
-    this.mockFlashLoan = await MockFlashLoan.deploy(
+    BlockLockHelper = await ethers.getContractFactory("BlockLockHelper");
+    this.blockLockHelper = await BlockLockHelper.deploy(
       this.Pool.address,
       this.mockDai.address,
     )
@@ -854,11 +854,17 @@ describe('Pool', function () {
 
     });
   });
+
   describe("block lock modifier", async function () {
     it("prevents a deposit and withdrawal in the same block", async function () {
-      await this.mockDai.mint(this.mockFlashLoan.address, parseEther("1000"));
-      await expect(this.mockFlashLoan.doFlashLoan()).to.be.revertedWith("blockLocked");
+      await this.mockDai.mint(this.blockLockHelper.address, parseEther("1000"));
+      await expect(this.blockLockHelper.depositThenWithdraw()).to.be.revertedWith("blockLocked");
+    })
+
+    it("prevents a withdrawal and deposit in the same block", async function () {
+      await this.mockDai.mint(this.blockLockHelper.address, parseEther("1000"));
+      await this.blockLockHelper.deposit()
+      await expect(this.blockLockHelper.withdrawThenDeposit()).to.be.revertedWith("blockLocked");
     })
   })
-
 });

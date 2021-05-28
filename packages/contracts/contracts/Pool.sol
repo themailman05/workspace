@@ -96,6 +96,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function deposit(uint256 amount) external nonReentrant blockLocked returns (uint256) {
+    _lockForBlock(msg.sender);
     _takeFees();
 
     uint256 poolTokens = _issuePoolTokens(msg.sender, amount);
@@ -107,7 +108,6 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
     _reportPoolTokenHWM();
 
-    _lockForBlock(msg.sender);
 
     return balanceOf(msg.sender);
   }
@@ -118,7 +118,8 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
   function withdraw(uint256 amount) external nonReentrant blockLocked returns (uint256, uint256) {
     require(amount <= balanceOf(msg.sender), "Insufficient pool token balance");
-
+    
+    _lockForBlock(msg.sender);
     _takeFees();
 
     uint256 daiAmount = _withdrawPoolTokens(msg.sender, amount);
