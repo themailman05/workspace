@@ -60,7 +60,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   uint256 public performanceFee = 2000;
   uint256 public poolTokenHWM = 1e18;
   uint256 public feesUpdatedAt;
-  mapping(address => uint256) public blockLock;
+  mapping(address => uint256) public blockLocks;
 
   event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address indexed to, uint256 amount);
@@ -90,12 +90,17 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     feesUpdatedAt = block.timestamp;
   }
 
-  modifier blockLocked() { // Modifier
-        require(blockLock[msg.sender] < block.number, "blockLocked");
-        _;
+  modifier blockLocked() {
+    require(blockLocks[msg.sender] < block.number, "Locked until next block");
+    _;
   }
 
-  function deposit(uint256 amount) external nonReentrant blockLocked returns (uint256) {
+  function deposit(uint256 amount)
+    external
+    nonReentrant
+    blockLocked
+    returns (uint256)
+  {
     _lockForBlock(msg.sender);
     _takeFees();
 
@@ -108,17 +113,17 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
     _reportPoolTokenHWM();
 
-
     return balanceOf(msg.sender);
   }
- 
-  function _lockForBlock(address account) internal {
-        blockLock[account] = block.number;
-  }
 
-  function withdraw(uint256 amount) external nonReentrant blockLocked returns (uint256, uint256) {
+  function withdraw(uint256 amount)
+    external
+    nonReentrant
+    blockLocked
+    returns (uint256, uint256)
+  {
     require(amount <= balanceOf(msg.sender), "Insufficient pool token balance");
-    
+
     _lockForBlock(msg.sender);
     _takeFees();
 
@@ -131,11 +136,10 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
     _reportPoolTokenHWM();
 
-
     return (withdrawal, fee);
   }
 
-  function takeFees() nonReentrant external {
+  function takeFees() external nonReentrant {
     _takeFees();
     _reportPoolTokenHWM();
   }
@@ -182,7 +186,6 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     return shareValue.sub(fee);
   }
 
-
   function _totalValue() internal view returns (uint256) {
     uint256 yvShareBalance = yearnVault.balanceOf(address(this));
     return _yearnShareValue(yvShareBalance);
@@ -205,10 +208,10 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
       (managementFee.mul(totalValue()).mul(period)).div(
         SECONDS_PER_YEAR.mul(BPS_DENOMINATOR)
       );
-      if (fee > 0) {
-        _issueTokensForFeeAmount(fee);
-        emit ManagementFee(fee);
-      }
+    if (fee > 0) {
+      _issueTokensForFeeAmount(fee);
+      emit ManagementFee(fee);
+    }
   }
 
   function _takePerformanceFee() internal {
@@ -332,8 +335,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     view
     returns (uint256)
   {
-    return
-      _yearnBalance().mul(_poolShareFor(poolTokenAmount)).div(1e18);
+    return _yearnBalance().mul(_poolShareFor(poolTokenAmount)).div(1e18);
   }
 
   function _withdrawFromYearn(uint256 yvShares) internal returns (uint256) {
@@ -347,5 +349,26 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     uint256 crvLPTokens =
       yearnVault.getPricePerFullShare().mul(yvShares).div(1e18);
     return curveDepositZap.calc_withdraw_one_coin(crvLPTokens, 1);
+  }
+
+  function _lockForBlock(address account) internal {
+    blockLocks[account] = block.number;
+  }
+
+  function transfer(address recipient, uint256 amount)
+    public
+    override
+    blockLocked
+    returns (bool)
+  {
+    return super.transfer(recipient, amount);
+  }
+
+  function transferFrom(
+    address sender,
+    address recipient,
+    uint256 amount
+  ) public override blockLocked returns (bool) {
+    return super.transferFrom(sender, recipient, amount);
   }
 }

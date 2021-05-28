@@ -858,13 +858,23 @@ describe('Pool', function () {
   describe("block lock modifier", async function () {
     it("prevents a deposit and withdrawal in the same block", async function () {
       await this.mockDai.mint(this.blockLockHelper.address, parseEther("1000"));
-      await expect(this.blockLockHelper.depositThenWithdraw()).to.be.revertedWith("blockLocked");
+      await expect(this.blockLockHelper.depositThenWithdraw()).to.be.revertedWith("Locked until next block");
     })
 
     it("prevents a withdrawal and deposit in the same block", async function () {
       await this.mockDai.mint(this.blockLockHelper.address, parseEther("1000"));
       await this.blockLockHelper.deposit()
-      await expect(this.blockLockHelper.withdrawThenDeposit()).to.be.revertedWith("blockLocked");
+      await expect(this.blockLockHelper.withdrawThenDeposit()).to.be.revertedWith("Locked until next block");
+    })
+
+    it("prevents a deposit and a transfer in the same block", async function () {
+      await this.mockDai.mint(this.blockLockHelper.address, parseEther("1000"));
+      await expect(this.blockLockHelper.depositThenTransfer()).to.be.revertedWith("Locked until next block");
+    })
+
+    it("prevents a deposit and transferFrom in the same block", async function () {
+      await this.mockDai.mint(this.blockLockHelper.address, parseEther("1000"));
+      await expect(this.blockLockHelper.depositThenTransferFrom()).to.be.revertedWith("Locked until next block");
     })
   })
 });
