@@ -99,8 +99,9 @@ contract BeneficiaryNomination is Governed {
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
-    IERC20 _pop
-  ) Governed(msg.sender) {
+    IERC20 _pop,
+    address governance
+  ) Governed(governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     POP = _pop;
