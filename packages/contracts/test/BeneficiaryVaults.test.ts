@@ -4,9 +4,9 @@ import { parseEther } from "@ethersproject/units";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { waffle, ethers } from "hardhat";
-import { merklize, makeElement, generateClaims } from "../scripts/merkle.js";
-import { BeneficiaryVaults } from "../typechain/BeneficiaryVaults.js";
-import { MockERC20 } from "../typechain/MockERC20.js";
+import { merklize, makeElement, generateClaims } from "../scripts/merkle";
+import { BeneficiaryVaults } from "../typechain/BeneficiaryVaults";
+import { MockERC20 } from "../typechain/MockERC20";
 const provider = waffle.provider;
 
 interface Contracts {
@@ -35,7 +35,7 @@ async function deployContracts(): Promise<Contracts> {
     await (
       await ethers.getContractFactory("MockERC20")
     ).deploy("TestPOP", "TPOP")
-  ).deployed();
+  ).deployed() as MockERC20;
   await mockPop.mint(owner.address, OwnerInitial);
   await mockPop.mint(rewarder.address, RewarderInitial);
 
@@ -46,7 +46,7 @@ async function deployContracts(): Promise<Contracts> {
     owner,
     beneficiaryRegistryFactory.interface.format() as any[]
   );
-  await beneficiaryRegistry.mock.earned.returns("10"); //assume true
+  await beneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
 
   const beneficiaryVaults = await (
     await (

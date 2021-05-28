@@ -45,7 +45,10 @@ interface Contracts {
 
 async function deployContracts(): Promise<Contracts> {
   const mockERC20Factory = await ethers.getContractFactory("MockERC20");
-  const POP = (await mockERC20Factory.deploy("TestPOP", "TPOP")) as MockERC20;
+  const POP = (await mockERC20Factory.deploy(
+    "TestPOP",
+    "TPOP"
+  )) as MockERC20;
   const TestERC20 = (await mockERC20Factory.deploy(
     "TestToken",
     "TT"

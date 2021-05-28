@@ -5,14 +5,14 @@ import "@nomiclabs/hardhat-waffle";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
-const { utils } = require("ethers");
+import { utils } from "ethers";
 
-const { deploy } = require("./scripts/deployWithValues");
-const { deployTestnet } = require("./scripts/deployWithValuesTestnet");
+import deploy from "./scripts/deployWithValues";
+import deployTestnet from "./scripts/deployWithValuesTestnet";
 
-const {
+import {
   GrantElectionAdapter,
-} = require("./scripts/helpers/GrantElectionAdapter");
+} from "./scripts/helpers/GrantElectionAdapter";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
