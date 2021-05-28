@@ -20,7 +20,6 @@ contract Staking is Owned, ReentrancyGuard {
     uint256 _balance;
     uint256 _duration;
     uint256 _end;
-    uint256 _blockLock;
   }
 
   IERC20 public immutable POP;
@@ -121,13 +120,10 @@ contract Staking is Owned, ReentrancyGuard {
     );
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
     require(
-      lockedBalances[msg.sender]._end > _currentTime,
-      "balances already unlocked"
+      lockedBalances[msg.sender]._end < _currentTime,
+      "withdraw balance first"
     );
-    require(
-      lockedBalances[msg.sender]._balance == 0,
-      "Withdraw old tokens first"
-    );
+    require(lockedBalances[msg.sender]._balance == 0, "funds already locked");
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -146,8 +142,8 @@ contract Staking is Owned, ReentrancyGuard {
     );
     require(lockedBalances[msg.sender]._balance > 0, "no lockedBalance exists");
     require(
-      lockedBalances[msg.sender]._end > _currentTime,
-      "balances already unlocked"
+      lockedBalances[msg.sender]._end < _currentTime,
+      "withdraw balance first"
     );
     lockedBalances[msg.sender]._duration = lockedBalances[msg.sender]
       ._duration
@@ -155,7 +151,6 @@ contract Staking is Owned, ReentrancyGuard {
     lockedBalances[msg.sender]._end = lockedBalances[msg.sender]._end.add(
       lengthOfTime
     );
-    lockedBalances[msg.sender]._blockLock = _currentTime;
   }
 
   function increaseStake(uint256 amount) external {
@@ -164,15 +159,14 @@ contract Staking is Owned, ReentrancyGuard {
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
     require(lockedBalances[msg.sender]._balance > 0, "no lockedBalance exists");
     require(
-      lockedBalances[msg.sender]._end > _currentTime,
-      "balances already unlocked"
+      lockedBalances[msg.sender]._end < _currentTime,
+      "withdraw balance first"
     );
     POP.safeTransferFrom(msg.sender, address(this), amount);
     totalLocked = totalLocked.add(amount);
     lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
       ._balance
       .add(amount);
-    lockedBalances[msg.sender]._blockLock = _currentTime;
     _recalculateVoiceCredits();
   }
 
@@ -223,8 +217,7 @@ contract Staking is Owned, ReentrancyGuard {
     lockedBalances[msg.sender] = LockedBalance({
       _balance: lockedBalances[msg.sender]._balance.add(amount),
       _duration: lengthOfTime,
-      _end: _currentTime.add(lengthOfTime),
-      _blockLock: _currentTime
+      _end: _currentTime.add(lengthOfTime)
     });
   }
 
