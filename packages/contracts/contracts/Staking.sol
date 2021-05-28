@@ -119,7 +119,7 @@ contract Staking is Owned, ReentrancyGuard {
       "must lock tokens for less than/equal to  4 year"
     );
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
-    require(lockedBalances[msg.sender]._balance == 0, "funds already locked");
+    require(lockedBalances[msg.sender]._balance == 0, "withdraw balance first");
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
 
@@ -210,11 +210,19 @@ contract Staking is Owned, ReentrancyGuard {
 
   function _lockTokens(uint256 amount, uint256 lengthOfTime) internal {
     uint256 _currentTime = block.timestamp;
-    lockedBalances[msg.sender] = LockedBalance({
-      _balance: lockedBalances[msg.sender]._balance.add(amount),
-      _duration: lengthOfTime,
-      _end: _currentTime.add(lengthOfTime)
-    });
+    if (_currentTime > lockedBalances[msg.sender]._end) {
+      lockedBalances[msg.sender] = LockedBalance({
+        _balance: lockedBalances[msg.sender]._balance.add(amount),
+        _duration: lengthOfTime,
+        _end: _currentTime.add(lengthOfTime)
+      });
+    } else {
+      lockedBalances[msg.sender] = LockedBalance({
+        _balance: lockedBalances[msg.sender]._balance.add(amount),
+        _duration: lockedBalances[msg.sender]._duration.add(lengthOfTime),
+        _end: lockedBalances[msg.sender]._end.add(lengthOfTime)
+      });
+    }
   }
 
   function _clearWithdrawnFromLocked(uint256 _amount) internal {

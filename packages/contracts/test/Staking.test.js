@@ -67,7 +67,7 @@ describe("Staking", function () {
       await this.mockPop.connect(owner).approve(this.contract.address, amount);
       result = await this.contract.connect(owner).stake(amount, 604800);
       expect(await this.mockPop.balanceOf(this.contract.address)).to.equal(
-        amount.add(stakingFund)
+        stakingFund.add(amount)
       );
       expect(await this.mockPop.balanceOf(owner.address)).to.equal(
         currentBalance.sub(amount)
@@ -156,7 +156,7 @@ describe("Staking", function () {
       ethers.provider.send("evm_increaseTime", [604800]);
       ethers.provider.send("evm_mine");
       expect(await this.contract.earned(owner.address)).to.equal(
-        "4999999999999838400"
+        parseEther("4.999999999999838400")
       );
       //Dont know how to test this. RewardPerToken2 is higher than 1 even though they both earn less than if only one person was staking
     });
@@ -210,7 +210,7 @@ describe("Staking", function () {
     });
   });
 
-  describe.only("increaseTimeLock", function () {
+  describe("increaseTimeLock", function () {
     const amount = parseEther("1");
     it("should lock for at least a week", async function () {
       await this.contract.connect(owner).stake(amount, 604800);
@@ -389,18 +389,6 @@ describe("Staking", function () {
       const voiceCredits3 = await this.contract.getVoiceCredits(owner.address);
       expect(voiceCredits3).to.equal(0);
     });
-    it("should return voice credits again after staking new pop", async function () {
-      await this.contract.connect(owner).stake(parseEther("1"), 604800);
-      const voiceCredits1 = await this.contract.getVoiceCredits(owner.address);
-      //3 days pass
-      ethers.provider.send("evm_increaseTime", [604800]);
-      ethers.provider.send("evm_mine", []);
-      const voiceCredits2 = await this.contract.getVoiceCredits(owner.address);
-      expect(voiceCredits2).to.equal(0);
-      await this.contract.connect(owner).stake(parseEther("9"), 604800);
-      const voiceCredits3 = await this.contract.getVoiceCredits(owner.address);
-      expect(voiceCredits3.toString()).to.equal("47945205479203200");
-    });
     it("should return 0 voice credits after lockperiod ended", async function () {
       await this.contract.connect(owner).stake(parseEther("1"), 604800);
       ethers.provider.send("evm_increaseTime", [604800]);
@@ -425,17 +413,17 @@ describe("Staking", function () {
       await this.contract.notifyRewardAmount(stakingFund);
       expect(
         await this.contract.connect(owner).getRewardForDuration()
-      ).to.equal("9999999999999676800");
+      ).to.equal(parseEther("9.999999999999676800"));
     });
     it("should be able to increase rewards", async function () {
       await this.contract.notifyRewardAmount(parseEther("5"));
       expect(
         await this.contract.connect(owner).getRewardForDuration()
-      ).to.equal("4999999999999536000");
+      ).to.equal(parseEther("4.999999999999536000"));
       await this.contract.notifyRewardAmount(parseEther("5"));
       expect(
         await this.contract.connect(owner).getRewardForDuration()
-      ).to.equal("9999991732803408000");
+      ).to.equal(parseEther("9.999991732803408000"));
     });
     it("should not allow more rewards than is available in contract balance", async function () {
       await expect(
@@ -455,18 +443,20 @@ describe("Staking", function () {
     });
     it("should increase staking period", async function () {
       const periodFinish = await this.contract.periodFinish();
-      this.contract.connect(owner).updatePeriodFinish(periodFinish + 604800);
+      await this.contract
+        .connect(owner)
+        .updatePeriodFinish(periodFinish.add(604800));
       await expect(await this.contract.periodFinish()).to.equal(
-        periodFinish + 604800
+        periodFinish.add(604800)
       );
     });
     it("should decrease staking period", async function () {
       const periodFinish = await this.contract.periodFinish();
       await this.contract
         .connect(owner)
-        .updatePeriodFinish(periodFinish - 300000);
+        .updatePeriodFinish(periodFinish.sub(300000));
       await expect(await this.contract.periodFinish()).to.equal(
-        periodFinish - 300000
+        periodFinish.sub(300000)
       );
     });
     it("should not be able to set finish time before now", async function () {
