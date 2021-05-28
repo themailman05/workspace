@@ -10,7 +10,9 @@ describe("Staking", function () {
     [owner, rewarder, nonOwner] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mockPop = await (await MockERC20.deploy("TestPOP", "TPOP",18)).deployed();
+    this.mockPop = await (
+      await MockERC20.deploy("TestPOP", "TPOP", 18)
+    ).deployed();
     await this.mockPop.mint(owner.address, parseEther("500"));
     await this.mockPop.mint(nonOwner.address, parseEther("10"));
   });
@@ -20,12 +22,14 @@ describe("Staking", function () {
     this.contract = await Staking.deploy(this.mockPop.address);
     await this.contract.deployed();
     stakingFund = parseEther("10");
-    await this.mockPop.connect(owner).approve(this.contract.address, parseEther("100000"));
+    await this.mockPop
+      .connect(owner)
+      .approve(this.contract.address, parseEther("100000"));
     await this.mockPop.transfer(this.contract.address, stakingFund);
     await this.contract.notifyRewardAmount(stakingFund);
   });
 
-  describe.only("stake", function () {
+  describe("stake", function () {
     it("should reject zero amount", async function () {
       await expect(this.contract.stake(0, 604800)).to.be.revertedWith(
         "amount must be greater than 0"
@@ -40,7 +44,7 @@ describe("Staking", function () {
 
     it("should lock at most 4 years", async function () {
       await expect(
-        this.contract.stake(parseEther("1"), 86400 * 500)
+        this.contract.stake(parseEther("1"), 86400 * (365 * 4) + 1)
       ).to.be.revertedWith("must lock tokens for less than/equal to  4 year");
     });
 
@@ -61,25 +65,25 @@ describe("Staking", function () {
       const amount = parseEther("1");
       const currentBalance = await this.mockPop.balanceOf(owner.address);
       await this.mockPop.connect(owner).approve(this.contract.address, amount);
-      result = await expect(this.contract.connect(owner).stake(amount, 604800));
+      result = await this.contract.connect(owner).stake(amount, 604800);
       expect(await this.mockPop.balanceOf(this.contract.address)).to.equal(
         amount.add(stakingFund)
       );
       expect(await this.mockPop.balanceOf(owner.address)).to.equal(
         currentBalance.sub(amount)
       );
-      result.to
-        .emit(this.contract, "StakingDeposited")
+      expect(result)
+        .to.emit(this.contract, "StakingDeposited")
         .withArgs(owner.address, amount);
       expect(await this.contract.getVoiceCredits(owner.address)).to.equal(
-        String((amount * 604800) / (604800 * 52 * 4))
+        "4794520547376000"
       );
     });
   });
 
   describe("withdraw", function () {
     it("should reject zero amount", async function () {
-      await expect(this.contract.withdraw(0)).to.be.revertedWith(
+      await expect(this.contract.withdraw("0")).to.be.revertedWith(
         "amount must be greater than 0"
       );
     });
@@ -92,11 +96,10 @@ describe("Staking", function () {
 
     it("should release funds successfully", async function () {
       const amount = parseEther("1");
-      await this.mockPop.connect(owner).approve(this.contract.address, amount);
       await this.contract.connect(owner).stake(amount, 604800);
       ethers.provider.send("evm_increaseTime", [700000]);
-      ethers.provider.send("evm_mine");
-      expect(await this.contract.connect(owner).withdraw(amount))
+      ethers.provider.send("evm_mine",[]);
+      await expect(this.contract.withdraw(amount))
         .to.emit(this.contract, "StakingWithdrawn")
         .withArgs(owner.address, amount);
       expect(
@@ -159,19 +162,18 @@ describe("Staking", function () {
     });
   });
 
-  describe("increaseTimeLock", function () {
+  describe("increase Stake", function () {
     const amount = parseEther("1");
-    it("should lock for at least a week", async function () {
-      await this.contract.connect(owner).stake(amount, 604800);
-      await expect(this.contract.increaseLock(1, 604799)).to.be.revertedWith(
-        "must lock tokens for at least 1 week"
+    it("should reject zero amount", async function () {
+      await expect(this.contract.stake(0, 604800)).to.be.revertedWith(
+        "amount must be greater than 0"
       );
     });
 
     it("should lock at most 4 years", async function () {
       await this.contract.connect(owner).stake(amount, 604800);
       await expect(
-        this.contract.increaseLock(1, 604800 * 52 * 4 + 1)
+        this.contract.increaseLock(86400 * (365 * 4) + 1)
       ).to.be.revertedWith("must lock tokens for less than/equal to  4 year");
     });
 
@@ -194,17 +196,63 @@ describe("Staking", function () {
       await this.contract.connect(owner).stake(amount, 604800);
       ethers.provider.send("evm_increaseTime", [302400]);
       ethers.provider.send("evm_mine");
-      const voice1 = await this.contract.connect(owner).getVoiceCredits()
-      console.log(voice1)
-      await this.contract.increaseLock(604800)
-      const voice2 = await this.contract.connect(owner).getVoiceCredits()
-      console.log(voice2)
+      const voice1 = await this.contract.connect(owner).getVoiceCredits();
+      console.log(voice1);
+      await this.contract.connect(owner).increaseLock(604800);
+      const voice2 = await this.contract.connect(owner).getVoiceCredits();
+      console.log(voice2);
       ethers.provider.send("evm_increaseTime", [302400]);
       ethers.provider.send("evm_mine");
-      await expect(this.contract.getWithdrawableBalance()).to.equal(0)
+      await expect(this.contract.getWithdrawableBalance()).to.equal(0);
       ethers.provider.send("evm_increaseTime", [604800]);
       ethers.provider.send("evm_mine");
-      await expect(this.contract.getWithdrawableBalance()).to.equal(amount)
+      await expect(this.contract.getWithdrawableBalance()).to.equal(amount);
+    });
+  });
+
+  describe.only("increaseTimeLock", function () {
+    const amount = parseEther("1");
+    it("should lock for at least a week", async function () {
+      await this.contract.connect(owner).stake(amount, 604800);
+      await expect(this.contract.increaseStake(0)).to.be.revertedWith(
+        "amount must be greater than 0"
+      );
+    });
+
+    it("should error on insufficient balance", async function () {
+      await this.contract.connect(owner).stake(amount, 604800);
+      await expect(
+        this.contract.increaseStake(parseEther("1000"))
+      ).to.be.revertedWith("insufficient balance");
+    });
+
+    it("should error if there is no locked stake", async function () {
+      await expect(
+        this.contract.increaseStake(parseEther("10"))
+      ).to.be.revertedWith("no lockedBalance exists");
+    });
+
+    it("should error if locked stake can be withdrawn", async function () {
+      await this.contract.stake(parseEther("10"), 604800);
+      ethers.provider.send("evm_increaseTime", [604800]);
+      ethers.provider.send("evm_mine");
+      await expect(
+        this.contract.increaseStake(parseEther("10"))
+      ).to.be.revertedWith("withdraw balance first");
+    });
+
+    it("should increase stake", async function () {
+      await this.contract.connect(owner).stake(amount, 604800);
+      ethers.provider.send("evm_increaseTime", [302400]);
+      ethers.provider.send("evm_mine");
+      const voice1 = await this.contract.connect(owner).getVoiceCredits();
+      console.log(voice1);
+      await this.contract.connect(owner).increaseStake(amount);
+      const voice2 = await this.contract.connect(owner).getVoiceCredits();
+      console.log(voice2);
+      ethers.provider.send("evm_increaseTime", [302400]);
+      ethers.provider.send("evm_mine");
+      await expect(this.contract.getWithdrawableBalance()).to.equal(amount.mul("2"));
     });
   });
 

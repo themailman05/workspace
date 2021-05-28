@@ -115,14 +115,10 @@ contract Staking is Owned, ReentrancyGuard {
     require(amount > 0, "amount must be greater than 0");
     require(lengthOfTime >= 7 days, "must lock tokens for at least 1 week");
     require(
-      lengthOfTime <= 365 days * 4,
+      lengthOfTime <= 365 * 4 days,
       "must lock tokens for less than/equal to  4 year"
     );
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
-    require(
-      lockedBalances[msg.sender]._end < _currentTime,
-      "withdraw balance first"
-    );
     require(lockedBalances[msg.sender]._balance == 0, "funds already locked");
 
     POP.safeTransferFrom(msg.sender, address(this), amount);
@@ -137,12 +133,12 @@ contract Staking is Owned, ReentrancyGuard {
     uint256 _currentTime = block.timestamp;
     require(lengthOfTime >= 7 days, "must lock tokens for at least 1 week");
     require(
-      lengthOfTime <= 365 days * 4,
+      lengthOfTime <= 365 * 4 days,
       "must lock tokens for less than/equal to  4 year"
     );
     require(lockedBalances[msg.sender]._balance > 0, "no lockedBalance exists");
     require(
-      lockedBalances[msg.sender]._end < _currentTime,
+      lockedBalances[msg.sender]._end > _currentTime,
       "withdraw balance first"
     );
     lockedBalances[msg.sender]._duration = lockedBalances[msg.sender]
@@ -159,7 +155,7 @@ contract Staking is Owned, ReentrancyGuard {
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
     require(lockedBalances[msg.sender]._balance > 0, "no lockedBalance exists");
     require(
-      lockedBalances[msg.sender]._end < _currentTime,
+      lockedBalances[msg.sender]._end > _currentTime,
       "withdraw balance first"
     );
     POP.safeTransferFrom(msg.sender, address(this), amount);
