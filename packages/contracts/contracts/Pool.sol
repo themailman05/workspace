@@ -237,7 +237,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function _transferDai(address to, uint256 amount) internal {
-    dai.safeApprove(address(this), amount);
+    dai.safeIncreaseAllowance(address(this), amount);
     dai.safeTransferFrom(address(this), to, amount);
   }
 
@@ -279,7 +279,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function _sendToCurve(uint256 amount) internal returns (uint256) {
-    dai.safeApprove(address(curveDepositZap), amount);
+    dai.safeIncreaseAllowance(address(curveDepositZap), amount);
     uint256[4] memory curveDepositAmounts =
       [
         0, // USDX
@@ -298,12 +298,12 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     internal
     returns (uint256)
   {
-    crvLPToken.safeApprove(address(curveDepositZap), crvLPTokenAmount);
+    crvLPToken.safeIncreaseAllowance(address(curveDepositZap), crvLPTokenAmount);
     return curveDepositZap.remove_liquidity_one_coin(crvLPTokenAmount, 1, 0);
   }
 
   function _sendToYearn(uint256 amount) internal returns (uint256) {
-    crvLPToken.safeApprove(address(yearnVault), amount);
+    crvLPToken.safeIncreaseAllowance(address(yearnVault), amount);
     uint256 yearnBalanceBefore = _yearnBalance();
     yearnVault.deposit(amount);
     uint256 yearnBalanceAfter = _yearnBalance();
