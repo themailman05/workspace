@@ -1,7 +1,6 @@
-require("dotenv").config({ path: "../../.env" });
+import "@popcorn/utils/src/envLoader";
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
-//import "@nomiclabs/hardhat-ethers";
 import "@typechain/hardhat";
 import "hardhat-gas-reporter";
 import "hardhat-contract-sizer";
@@ -20,6 +19,11 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
   for (const account of accounts) {
     console.log(account.address);
   }
+});
+
+
+task("environment").setAction(async (args, hre) => {
+  console.log(process.env.ENV);
 });
 
 task("dev:deploy").setAction(async (args, hre) => {
@@ -123,7 +127,7 @@ task("elections:finalize", "finalize a grant election")
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
       signer
     );
-    await GrantElections.finalize(term, { gasLimit: 9500000 });
+    await GrantElections.finalize(Number(term), { gasLimit: 10000000 });
   });
 
 task("random", "gets a random number")
@@ -139,6 +143,10 @@ task("random", "gets a random number")
     await RandomNumberConsumer.getRandomNumber(Number(seed));
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
+
+
+
+
 
 module.exports = {
   solidity: {
@@ -164,6 +172,11 @@ module.exports = {
     ],
   },
   networks: {
+    mainnet: {
+      chainId: 1,
+      url: process.env.RPC_URL,
+      accounts: [process.env.PRIVATE_KEY]
+    },
     hardhat: {
     },
     rinkeby: {
