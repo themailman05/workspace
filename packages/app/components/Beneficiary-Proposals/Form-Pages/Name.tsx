@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { ExclamationCircleIcon, ArrowCircleRightIcon, ArrowCircleLeftIcon } from '@heroicons/react/solid';
+import React from 'react';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import useLocalStorageState from 'use-local-storage-state';
 
-export default function Name({ currentStep, name, setName }): JSX.Element {
-
+export default function Name({ currentStep, setCurrentStep }): JSX.Element {
+  const [name, setName] = useLocalStorageState<string>('name', '');
   if (currentStep === 1) {
     return (
       <div className="mx-14 my-14 content-center justify-items-center">
@@ -22,7 +23,7 @@ export default function Name({ currentStep, name, setName }): JSX.Element {
                 placeholder="Beneficiary Name"
               />
             </div>
-            <button className="my-4 justify-self-center inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <button onClick={() => setCurrentStep(currentStep ++) }className="my-4 justify-self-center inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
               OK
             </button>
           </React.Fragment>

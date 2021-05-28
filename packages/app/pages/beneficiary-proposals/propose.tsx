@@ -23,9 +23,7 @@ interface SocialMediaLinks {
 
 export default function BeneficiaryProposal() {
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [name, setName] = useLocalStorageState<string>('name', '');
-  const [ethereumAddress, setEthereumAddress] =
-    useLocalStorageState<string>('');
+
   const [additionalImages, setAdditionalImages] = useLocalStorageState<string>(
     'additionalImages',
     '',
@@ -38,18 +36,12 @@ export default function BeneficiaryProposal() {
     'impactReports',
     '',
   );
-  const [missionStatement, setMissionStatement] = useLocalStorageState<string>(
-    'missionStatement',
-    '',
-  );
+
   const [profileImage, setProfileImage] = useLocalStorageState<string>(
     'profileImage',
     '',
   );
-  const [proofOfOwnership, setProofOfOwnership] = useLocalStorageState<string>(
-    'proofOfOwnership',
-    '',
-  );
+
   const [socialMediaLinks, setSocialMediaLinks] = useLocalStorageState<
     SocialMediaLinks[]
   >('socialMediaLinks', []);
@@ -88,17 +80,23 @@ export default function BeneficiaryProposal() {
           </p>
         </div>
       </div>
-      <h1>Current Step: {currentStep}</h1>
+      <h1>Current Step: {currentStep} (for debuggin)</h1>
+      {/* TODO: Create wrapper component for steps */}
       <Intro currentStep={currentStep} />
-      <Name currentStep={currentStep} name={name} setName={setName} />
+      <Name currentStep={currentStep} setCurrentStep={setCurrentStep} />
       <EthereumAddress
         currentStep={currentStep}
-        ethereumAddress={ethereumAddress}
-        setEthereumAddress={setEthereumAddress}
+        setCurrentStep={setCurrentStep}
       />
-      <MissionStatement currentStep={currentStep} />
-      <ProofOfOwnership currentStep={currentStep} />
-      <ProfileImage currentStep={currentStep} />
+      <MissionStatement
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+      />
+      <ProofOfOwnership
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+      />
+      <ProfileImage currentStep={currentStep} setCurrentStep={setCurrentStep} />
       <HeaderImage currentStep={currentStep} />
       <AdditionalImages currentStep={currentStep} />
       <ImpactReportsAudits currentStep={currentStep} />
