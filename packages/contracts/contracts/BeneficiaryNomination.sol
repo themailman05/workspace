@@ -20,6 +20,7 @@ contract BeneficiaryNomination is Governed {
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
 
+  mapping(address => bool) pendingBeneficiaries;
   /**
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
@@ -160,6 +161,8 @@ contract BeneficiaryNomination is Governed {
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
 
+    pendingBeneficiaries[_beneficiary] = true;
+
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _applicationCid);
 
     return proposalId;
@@ -177,8 +180,9 @@ contract BeneficiaryNomination is Governed {
     }
     if (ProposalType.BeneficiaryNominationProposal == _type) {
       require(
-        !beneficiaryRegistry.beneficiaryExists(_beneficiary),
-        "Beneficiary already exists!"
+        !pendingBeneficiaries[_beneficiary] &&
+          !beneficiaryRegistry.beneficiaryExists(_beneficiary),
+        "Beneficiary proposal is pending or already exists!"
       );
     }
   }
@@ -260,7 +264,13 @@ contract BeneficiaryNomination is Governed {
       _handleSuccessfulProposal(proposal);
     }
 
+    _resetBeneficiaryPendingState(proposal.beneficiary);
+
     emit Finalize(proposalId);
+  }
+
+  function _resetBeneficiaryPendingState(address _beneficiary) internal {
+    pendingBeneficiaries[_beneficiary] = false;
   }
 
   function _handleSuccessfulProposal(Proposal storage proposal) internal {
