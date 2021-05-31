@@ -1,15 +1,17 @@
 import React, { useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 import useLocalStorageState from 'use-local-storage-state';
+import { CheckIcon } from '@heroicons/react/solid';
+import axios from 'axios';
 
 // TODO: Save img to local storage
 // TODO: Ability to edit image w/
 // TODO: Ensure image has been uploaded to local storage
 const thumbsContainer = {
-  display: 'flex',
-  flexDirection: 'row',
-  flexWrap: 'wrap',
-  marginTop: 16,
+  // display: 'flex',
+
+  // flexWrap: 'wrap',
+  // marginTop: 16,
 };
 
 const thumb = {
@@ -21,7 +23,7 @@ const thumb = {
   width: 200,
   height: 200,
   padding: 4,
-  boxSizing: 'border-box',
+
 };
 
 const thumbInner = {
@@ -66,7 +68,6 @@ const rejectStyle = {
 const THREE_MB = 3 * 1000 * 1024;
 
 function imageSizeValidator(file) {
-
   if (file.size > THREE_MB) {
     return {
       code: 'file-too-large',
@@ -77,10 +78,39 @@ function imageSizeValidator(file) {
   return null;
 }
 
+
+export const testPinataUpload = (files, setProfileImage) => {
+  var myHeaders = new Headers();
+  myHeaders.append('pinata_api_key', '5234015f34353d28743c');
+  myHeaders.append(
+    'pinata_secret_api_key',
+    'ddcb952d2b82ba252c98084536950663d84ab190b8f192ca5d843119676beaf2',
+  );
+
+  var formdata = new FormData();
+  formdata.append('file', files[0], 'download.png');
+
+
+  fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+    method: 'POST',
+    headers: myHeaders,
+    body: formdata,
+    redirect: 'follow',
+  })
+    .then((response) => response.text())
+    .then((result) => {
+      const hash = JSON.parse(result).IpfsHash;
+      setProfileImage(hash)
+      console.log({ result, hash })
+    })
+    .catch((error) => console.log('error', error));
+};
+
+
 export default function ProfileImage({ currentStep, setCurrentStep }) {
   const [files, setFiles] = useState([]);
-  const [profileImage, setProfileImage] = useLocalStorageState<File>(
-    'flex',
+  const [profileImage, setProfileImage] = useLocalStorageState<string>(
+    'img',
     null,
   );
   const {
@@ -96,6 +126,7 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
     maxFiles: 1,
     validator: imageSizeValidator,
     onDrop: (acceptedFiles) => {
+      testPinataUpload(acceptedFiles, setProfileImage);
       const file = acceptedFiles[0];
       setProfileImage(file);
       setFiles(
@@ -146,7 +177,16 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
 
   if (currentStep === 5) {
     return (
-      <section className="container">
+      <div className="mx-auto content-center justify-items-center">
+        <p className="max-w-4xl text-xl text-black sm:text-2xl my-4">
+          5 - Upload Profile Image
+        </p>
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Upload a square image, 150px x 150px and less than 3mb
+        </label>
         <div {...getRootProps({ style })}>
           <input {...getInputProps()} />
           <p>Drag 'n' drop some files here, or click to select files</p>
@@ -158,8 +198,25 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
           <h4>Rejected files</h4>
           <ul>{fileRejectionItems}</ul>
         </aside>
-        <aside style={thumbsContainer}>{thumbs}</aside>
-      </section>
+        <div className="grid justify-items-stretch">
+          <aside className="justify-self-center">
+            {thumbs}
+          </aside>
+        </div>
+        {acceptedFileItems.length ? (
+          <div className="grid justify-items-stretch">
+            <button
+              onClick={() => setCurrentStep(currentStep++)}
+              className=" justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              OK
+              <CheckIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <></>
+        )}
+      </div>
     );
   } else {
     return <></>;
