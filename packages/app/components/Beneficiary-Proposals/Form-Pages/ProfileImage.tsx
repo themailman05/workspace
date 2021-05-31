@@ -9,7 +9,6 @@ import axios from 'axios';
 // TODO: Ensure image has been uploaded to local storage
 const thumbsContainer = {
   // display: 'flex',
-
   // flexWrap: 'wrap',
   // marginTop: 16,
 };
@@ -23,7 +22,6 @@ const thumb = {
   width: 200,
   height: 200,
   padding: 4,
-
 };
 
 const thumbInner = {
@@ -78,7 +76,6 @@ function imageSizeValidator(file) {
   return null;
 }
 
-
 export const testPinataUpload = (files, setProfileImage) => {
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', '5234015f34353d28743c');
@@ -90,7 +87,6 @@ export const testPinataUpload = (files, setProfileImage) => {
   var formdata = new FormData();
   formdata.append('file', files[0], 'download.png');
 
-
   fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
     method: 'POST',
     headers: myHeaders,
@@ -100,12 +96,11 @@ export const testPinataUpload = (files, setProfileImage) => {
     .then((response) => response.text())
     .then((result) => {
       const hash = JSON.parse(result).IpfsHash;
-      setProfileImage(hash)
-      console.log({ result, hash })
+      setProfileImage(hash);
+      console.log({ result, hash });
     })
     .catch((error) => console.log('error', error));
 };
-
 
 export default function ProfileImage({ currentStep, setCurrentStep }) {
   const [files, setFiles] = useState([]);
@@ -176,6 +171,8 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
   });
 
   if (currentStep === 5) {
+    console.log({ profileImage });
+    console.log(profileImage.length !== null);
     return (
       <div className="mx-auto content-center justify-items-center">
         <p className="max-w-4xl text-xl text-black sm:text-2xl my-4">
@@ -199,9 +196,7 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
           <ul>{fileRejectionItems}</ul>
         </aside>
         <div className="grid justify-items-stretch">
-          <aside className="justify-self-center">
-            {thumbs}
-          </aside>
+          <aside className="justify-self-center">{thumbs}</aside>
         </div>
         {acceptedFileItems.length ? (
           <div className="grid justify-items-stretch">
@@ -216,6 +211,7 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
         ) : (
           <></>
         )}
+        {profileImage !== null ? <img src={'https://gateway.pinata.cloud/ipfs/' + profileImage}></img> : <> </>}
       </div>
     );
   } else {
