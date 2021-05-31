@@ -9,7 +9,7 @@
     "dev:deploy": "yarn hardhat dev:deploy --network localhost",
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "clean": "rimraf ./cache & rimraf ./artifacts",
-    "compile": "rimraf ./cache & rimraf ./artifacts hardhat compile ",
+    "compile": "yarn clean && hardhat compile ",
     "postinstall": "yarn compile",
     "test": "mocha"
   },
