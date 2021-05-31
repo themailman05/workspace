@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
+import useLocalStorageState from 'use-local-storage-state';
 
 // TODO: Save img to local storage
 // TODO: Ability to edit image w/
@@ -62,10 +63,26 @@ const acceptStyle = {
 const rejectStyle = {
   borderColor: '#ff1744',
 };
+const THREE_MB = 3 * 1000 * 1024;
+
+function imageSizeValidator(file) {
+
+  if (file.size > THREE_MB) {
+    return {
+      code: 'file-too-large',
+      message: `Size is larger than ${THREE_MB} bytes`,
+    };
+  }
+
+  return null;
+}
 
 export default function ProfileImage({ currentStep, setCurrentStep }) {
   const [files, setFiles] = useState([]);
-
+  const [profileImage, setProfileImage] = useLocalStorageState<File>(
+    'flex',
+    null,
+  );
   const {
     acceptedFiles,
     fileRejections,
@@ -77,7 +94,10 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
   } = useDropzone({
     accept: 'image/*',
     maxFiles: 1,
+    validator: imageSizeValidator,
     onDrop: (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      setProfileImage(file);
       setFiles(
         acceptedFiles.map((file) =>
           Object.assign(file, {

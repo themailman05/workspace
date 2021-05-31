@@ -12,17 +12,20 @@ export default function ProofOfOwnership({
   );
   if (currentStep === 4) {
     return (
-      <div className="mx-14 my-14 content-center justify-items-center">
-        <p className="max-w-4xl text-xl text-black sm:text-2xl">
-          Please share a proof of ownership
+      <div className="mx-auto content-center justify-items-center">
+        <p className="max-w-4xl text-xl text-black sm:text-2xl my-4">
+          4 - Please share a proof of ownership
         </p>
-        <p className="my-2 text-xl text-black">
-          Post a the Ethereum address shared in step 2 on the beneficiary's
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Post the Ethereum address shared in step 2 on the beneficiary's
           website or a tweet on the beneficiary's official Twitter account.
-        </p>
+        </label>
         {proofOfOwnership.length > 0 ? (
           <React.Fragment>
-            <div className="mt-1 w-1/2">
+            <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
                 name="poo"
@@ -45,14 +48,14 @@ export default function ProofOfOwnership({
             <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
-                name="poo"
-                id="poo"
+                name="proofofownership"
+                id="proofofownership"
                 value={proofOfOwnership}
                 onChange={(event) => setProofOfOwnership(event.target.value)}
                 className="block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
                 placeholder="Proof of ownership"
                 aria-invalid="true"
-                aria-describedby="email-error"
+                aria-describedby="proof-of-ownership-error"
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <ExclamationCircleIcon

@@ -95,7 +95,7 @@ export default function BeneficiaryProposal() {
       <Review currentStep={currentStep} />
       {/* TODO: Move these buttons to the bottom right */}
       <p>Current Step: {currentStep} (for debuggin)</p>
-      <footer className="h-10">
+      <footer className="h-10 mb-4 mr-4">
         <NavigationButtons />
       </footer>
     </div>
