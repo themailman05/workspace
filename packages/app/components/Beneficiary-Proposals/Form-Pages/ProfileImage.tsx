@@ -1,6 +1,9 @@
 import React, { useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 
+// TODO: Save img to local storage
+// TODO: Ability to edit image w/
+// TODO: Ensure image has been uploaded to local storage
 const thumbsContainer = {
   display: 'flex',
   flexDirection: 'row',

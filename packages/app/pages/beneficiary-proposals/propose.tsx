@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import useLocalStorageState from 'use-local-storage-state';
 import NavBar from '../../components/NavBar/NavBar';
 import Intro from '../../components/Beneficiary-Proposals/Form-Pages/Intro';
@@ -12,10 +12,7 @@ import ProfileImage from '../../components/Beneficiary-Proposals/Form-Pages/Prof
 import ProofOfOwnership from '../../components/Beneficiary-Proposals/Form-Pages/ProofOfOwnership';
 import Review from '../../components/Beneficiary-Proposals/Form-Pages/Review';
 import SocialMediaLinks from '../../components/Beneficiary-Proposals/Form-Pages/SocialMediaLinks';
-import {
-  ArrowCircleRightIcon,
-  ArrowCircleLeftIcon,
-} from '@heroicons/react/solid';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
 interface SocialMediaLinks {
   name: string;
   url: string;
@@ -46,41 +43,35 @@ export default function BeneficiaryProposal() {
     SocialMediaLinks[]
   >('socialMediaLinks', []);
 
-  const NextButton = () => {
+  const NavigationButtons = () => {
     return (
-      <button
-        className="m-5"
-        type="button"
-        onClick={() => setCurrentStep(currentStep + 1)}
-      >
-        <ArrowCircleRightIcon className="h-5 w-5 " aria-hidden="true" />
-      </button>
-    );
-  };
-
-  const PrevButton = () => {
-    return (
-      <button
-        className="m-5"
-        type="button"
-        onClick={() => setCurrentStep(currentStep - 1)}
-      >
-        <ArrowCircleLeftIcon className="h-5 w-5 " aria-hidden="true" />
-      </button>
+      <div className="grid justify-items-stretch ...">
+      <span className="relative z-0 inline-flex shadow-sm rounded-md justify-self-end">
+        <button
+          type="button"
+          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+          onClick={() => setCurrentStep(currentStep - 1)}
+        >
+          <span className="sr-only">Previous</span>
+          <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+          onClick={() => setCurrentStep(currentStep + 1)}
+        >
+          <span className="sr-only">Next</span>
+          <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+        </button>
+        </span>
+        </div>
     );
   };
 
   return (
-    <div className="w-full bg-indigo-200 pb-16">
+    <div className="flex flex-col h-screen justify-between">
       <NavBar />
-      <div className="pt-12 px-4  sm:px-6 lg:px-8 lg:pt-20 py-20">
-        <div className="text-center">
-          <p className="mt-2 text-3xl text-indigo-900 sm:text-4xl lg:text-5xl">
-            Beneficiary Nomination Proposal
-          </p>
-        </div>
-      </div>
-      <h1>Current Step: {currentStep} (for debuggin)</h1>
+
       {/* TODO: Create wrapper component for steps */}
       <Intro currentStep={currentStep} />
       <Name currentStep={currentStep} setCurrentStep={setCurrentStep} />
@@ -102,10 +93,11 @@ export default function BeneficiaryProposal() {
       <ImpactReportsAudits currentStep={currentStep} />
       <SocialMediaLinks currentStep={currentStep} />
       <Review currentStep={currentStep} />
-      <div className="object-right">
-        <PrevButton />
-        <NextButton />
-      </div>
+      {/* TODO: Move these buttons to the bottom right */}
+      <p>Current Step: {currentStep} (for debuggin)</p>
+      <footer className="h-10">
+        <NavigationButtons />
+      </footer>
     </div>
   );
 }

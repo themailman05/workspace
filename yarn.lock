@@ -9685,13 +9685,6 @@ doctrine@^3.0.0:
   dependencies:
     esutils "^2.0.2"
 
-doka@^0.1.0:
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/doka/-/doka-0.1.0.tgz#68a1941ec4a23526f2887c3e7e0eb5b0e6caaedb"
-  integrity sha1-aKGUHsSiNSbyiHw+fg61sObKrts=
-  dependencies:
-    classnames "^2.2.5"
-
 dom-accessibility-api@^0.5.4:
   version "0.5.4"
   resolved "https://registry.yarnpkg.com/dom-accessibility-api/-/dom-accessibility-api-0.5.4.tgz#b06d059cdd4a4ad9a79275f9d414a5c126241166"
