@@ -1,27 +1,18 @@
 import { parseEther } from "ethers/lib/utils";
 import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 import bluebird from "bluebird";
-import { BigNumber, utils } from "ethers";
+import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {
-  BeneficiaryRegistry,
-  GrantElections,
-  GrantRegistry,
-  MockERC20,
-  RandomNumberConsumer,
-  Staking,
-} from "../typechain";
-
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 
 interface Contracts {
-  beneficiaryRegistry: BeneficiaryRegistry;
-  grantRegistry: GrantRegistry;
-  mockPop: MockERC20;
-  staking: Staking;
-  randomNumberConsumer: RandomNumberConsumer;
-  grantElections: GrantElections;
+  beneficiaryRegistry: Contract;
+  grantRegistry: Contract;
+  mockPop: Contract;
+  staking: Contract;
+  randomNumberConsumer: Contract;
+  grantElections: Contract;
 }
 
 export default async function deploy(ethers): Promise<void> {
@@ -52,8 +43,8 @@ export default async function deploy(ethers): Promise<void> {
     const mockPop = (await (
       await (
         await ethers.getContractFactory("MockERC20")
-      ).deploy("TestPOP", "TPOP", 18)
-    ).deployed()) as MockERC20;
+      ).deploy("TestPOP", "TPOP")
+    ).deployed());
 
     const staking = await (
       await (await ethers.getContractFactory("Staking")).deploy(mockPop.address)

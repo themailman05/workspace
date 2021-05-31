@@ -3,16 +3,6 @@ import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 import bluebird from "bluebird";
 import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import {
-  BeneficiaryRegistry,
-  BeneficiaryVaults,
-  GrantElections,
-  GrantRegistry,
-  MockERC20,
-  RandomNumberConsumer,
-  RewardsManager,
-  Staking,
-} from "../typechain";
 import IUniswapV2Router02 from "@uniswap/v2-periphery/build/IUniswapV2Router02.json";
 /*import BeneficiaryRegistryAbi from "../artifacts/contracts/BeneficiaryRegistry.sol/BeneficiaryRegistry.json";
 import GrantRegistryAbi from "../artifacts/contracts/GrantRegistry.sol/GrantRegistry.json";
@@ -29,16 +19,16 @@ import RewardsManagerAbi from "../artifacts/contracts/RewardsManager.sol/Rewards
 // Run this instead of the normal deploy.js script
 
 interface Contracts {
-  beneficiaryRegistry: BeneficiaryRegistry;
-  grantRegistry: GrantRegistry;
-  mockPop: MockERC20;
-  staking: Staking;
-  randomNumberConsumer: RandomNumberConsumer;
-  grantElections: GrantElections;
-  beneficiaryVaults:BeneficiaryVaults,
+  beneficiaryRegistry: Contract;
+  grantRegistry: Contract;
+  mockPop: Contract;
+  staking: Contract;
+  randomNumberConsumer: Contract;
+  grantElections: Contract;
+  beneficiaryVaults:Contract,
   treasury:Contract,
   insurance:Contract,
-  rewardsManager:RewardsManager;
+  rewardsManager:Contract;
 }
 
 export default async function deployTestnet(ethers): Promise<void> {
@@ -68,7 +58,7 @@ export default async function deployTestnet(ethers): Promise<void> {
 
     const mockPop = (await (
       await ethers.getContractFactory("MockERC20")
-    ).deploy("TestPOP", "TPOP", 18)) as MockERC20;
+    ).deploy("TestPOP", "TPOP"));
     await mockPop.deployTransaction.wait(2);
 
     const staking = await (
