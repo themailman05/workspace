@@ -12,7 +12,7 @@ import "./IBeneficiaryRegistry.sol";
 /**
  * @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
  */
-contract BeneficiaryNomination is Governed {
+contract BeneficiaryGovernance is Governed {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 

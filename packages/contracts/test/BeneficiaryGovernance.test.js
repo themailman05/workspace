@@ -44,7 +44,7 @@ describe('BeneficiaryNomination', function () {
     const BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
     this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
 
-    const BeneficiaryNomination = await ethers.getContractFactory('BeneficiaryNomination');
+    const BeneficiaryNomination = await ethers.getContractFactory('BeneficiaryGovernance');
     this.BNPContract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
@@ -138,7 +138,7 @@ describe('BeneficiaryNomination', function () {
       await this.mockPop.mint(proposer1.address, parseEther("2000"));
       await this.mockPop.mint(proposer2.address, parseEther("2000"));
       await this.mockPop.mint(voter1.address, parseEther("50"));
-      const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryNomination");
+      const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryGovernance");
       this.BNPContract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
@@ -307,7 +307,7 @@ describe('BeneficiaryNomination', function () {
       await  this.BRContract.deployed();
 
      // await this.mockPop.mint(voter1.address, parseEther("50"));
-      const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryNomination");
+      const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryGovernance");
       const contract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
         this.BRContract.address,
