@@ -114,7 +114,6 @@ describe("RewardsManager", function () {
     );
   });
 
-
   it("reverts when setting reward splits as non-owner", async function () {
     await expect(
       this.rewardsManager.connect(nonOwner).setRewardSplits([20, 18, 2, 60])

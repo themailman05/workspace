@@ -19,7 +19,6 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
  * @title Popcorn Rewards Manager
  * @notice Manages distribution of POP rewards to Popcorn Treasury, DAO Staking, and Beneficiaries
  */
-
 contract RewardsManager is Owned, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
