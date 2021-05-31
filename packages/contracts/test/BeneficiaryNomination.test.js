@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const { parseEther } = require("ethers/lib/utils");
-let owner,nonOwner;
+let owner,governance,nonOwner;
 let proposer1,proposer2,proposer3,beneficiary,beneficiary2;
 
 const ProposalType = { BNP: 0, BTP: 1};
@@ -15,6 +15,7 @@ describe('BeneficiaryNomination', function () {
   before(async function () {
     [
       owner,
+      governance,
       nonOwner,
       proposer1,
       proposer2,
@@ -33,6 +34,7 @@ describe('BeneficiaryNomination', function () {
     await this.mockPop.mint(owner.address, parseEther("50"));
     await this.mockPop.mint(nonOwner.address, parseEther("50"));
     await this.mockPop.mint(beneficiary.address, parseEther("50"));
+    await this.mockPop.mint(beneficiary2.address, parseEther("50"));
     await this.mockPop.mint(proposer1.address, parseEther("1500"));
     await this.mockPop.mint(proposer2.address, parseEther("3000"));
     await this.mockPop.mint(proposer3.address, parseEther("3000"));
@@ -41,13 +43,15 @@ describe('BeneficiaryNomination', function () {
 
     const BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
     this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
+
     const BeneficiaryNomination = await ethers.getContractFactory('BeneficiaryNomination');
     this.BNPContract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
-        this.mockPop.address
+        this.mockPop.address,
+        owner.address
        );
-       await this.BNPContract.deployed();
+       //this.BNPContract=await contract.deployed();
   });
   describe("defaults", function () {
 
@@ -95,20 +99,19 @@ describe('BeneficiaryNomination', function () {
   
       ).to.be.revertedWith( "proposal bond is not enough");
     });
-    it("should prevent to create a BNP proposal for an existing beneficiary", async function () {
-      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
-      
+    it("should prevent to create a BNP proposal for a pending beneficiary proposal", async function () {
+  
       await this.mockPop.connect(proposer3).approve(this.BNPContract.address, parseEther('3000'));
       await expect(
         this.BNPContract.connect(proposer3).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP)
   
-      ).to.be.revertedWith( "Beneficiary already exists!");
+      ).to.be.revertedWith( "Beneficiary proposal is pending or already exists!");
     });
     it("should prevent to create a BTP proposal for an address which haven't registered before", async function () {
-      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
+      
       await this.mockPop.connect(proposer3).approve(this.BNPContract.address, parseEther('3000'));
       await expect(
-        this.BNPContract.connect(proposer3).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BTP)
+        this.BNPContract.connect(proposer3).createProposal(beneficiary2.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BTP)
   
       ).to.be.revertedWith( "Beneficiary doesnt exist!");
     });
@@ -134,12 +137,13 @@ describe('BeneficiaryNomination', function () {
       await this.mockPop.mint(beneficiary.address, parseEther("50"));
       await this.mockPop.mint(proposer1.address, parseEther("2000"));
       await this.mockPop.mint(proposer2.address, parseEther("2000"));
-     // await this.mockPop.mint(voter1.address, parseEther("50"));
+      await this.mockPop.mint(voter1.address, parseEther("50"));
       const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryNomination");
       this.BNPContract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
         this.mockBeneficiaryRegistry.address,
-        this.mockPop.address
+        this.mockPop.address,
+        owner.address
       );
       await this.BNPContract.deployed();
       // create a BNP proposal
@@ -281,44 +285,40 @@ describe('BeneficiaryNomination', function () {
   });
   describe("finalize", function () {
     beforeEach(async function () {
+
       const Staking = await ethers.getContractFactory("Staking");
       this.mockStaking = await waffle.deployMockContract(
-        owner,
+        governance,
         Staking.interface.format()
       );
 
-      const BeneficiaryRegistry = await ethers.getContractFactory(
-        "BeneficiaryRegistry"
-      );
-      this.mockBeneficiaryRegistry = await waffle.deployMockContract(
-        owner,
-        BeneficiaryRegistry.interface.format()
-      );
+
 
       MockERC20 = await ethers.getContractFactory("MockERC20");
       this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
       await this.mockPop.mint(beneficiary.address, parseEther("50"));
+      await this.mockPop.mint(governance.address, parseEther("50"));
       await this.mockPop.mint(beneficiary2.address, parseEther("50"));
       await this.mockPop.mint(proposer1.address, parseEther("2000"));
       await this.mockPop.mint(proposer2.address, parseEther("2000"));
+
+      const BeneficiaryRegistry = await ethers.getContractFactory('BeneficiaryRegistry');
+      this.BRContract = await BeneficiaryRegistry.deploy();
+      await  this.BRContract.deployed();
+
      // await this.mockPop.mint(voter1.address, parseEther("50"));
       const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryNomination");
-      this.BNPContract = await BeneficiaryNomination.deploy(
+      const contract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
-        this.mockBeneficiaryRegistry.address,
-        this.mockPop.address
+        this.BRContract.address,
+        this.mockPop.address,
+        governance.address
       );
-      await this.BNPContract.deployed();
+      this.BNPContract=await contract.deployed();
       // create a BNP proposal
-      
-      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
-      await this.mockPop.connect(proposer1).approve(this.BNPContract.address, parseEther('2000'));
-      await this.BNPContract.connect(proposer1).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP);
-      // create a BTP
-      
-      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
-      await this.mockPop.connect(proposer2).approve(this.BNPContract.address, parseEther('2000'));
-      await this.BNPContract.connect(proposer2).createProposal(beneficiary2.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BTP);
+       await this.mockPop.connect(proposer1).approve(this.BNPContract.address, parseEther('2000'));
+       await this.BNPContract.connect(proposer1).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP);
+
     });
     it("should finalize a voting during challenge period if novotes are more than yes votes", async function() {
        
@@ -399,17 +399,35 @@ describe('BeneficiaryNomination', function () {
     ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
     ethers.provider.send("evm_mine");
     
-    //finalize
-    const proposal=await this.BNPContract.proposals(PROPOSALID);
-    
-    await this.mockBeneficiaryRegistry.mock.addBeneficiary.returns();
-    
+    //finalize 
+   await this.BNPContract.connect(governance).finalize(PROPOSALID);
 
-   await this.BNPContract.connect(owner).finalize(PROPOSALID);
-   expect(await this.mockBeneficiaryRegistry.beneficiaryExists(beneficiary.address)).to.equal(true);
+   expect(await this.BRContract.beneficiaryExists(beneficiary.address)).to.equal(true);
  });
  it("should remove beneficiary after a successful BTP voting", async function() {
-  await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(false);
+
+  // register beneficiary:
+   //three yes votes
+   await this.mockStaking.mock.getVoiceCredits.returns(80);
+   await this.BNPContract.connect(voter1).vote(PROPOSALID,Vote.Yes);
+   await this.mockStaking.mock.getVoiceCredits.returns(40);
+   await this.BNPContract.connect(voter3).vote(PROPOSALID,Vote.Yes);
+   ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
+   ethers.provider.send("evm_mine");
+   //two no votes
+   await this.mockStaking.mock.getVoiceCredits.returns(30);
+   await this.BNPContract.connect(voter4).vote(PROPOSALID,Vote.No);
+   ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
+   ethers.provider.send("evm_mine");
+   
+   //finalize 
+  await this.BNPContract.connect(governance).finalize(PROPOSALID);
+
+  //create takedown proposal
+  await this.mockPop.connect(proposer2).approve(this.BNPContract.address, parseEther('2000'));
+  await this.BNPContract.connect(proposer2).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BTP);
+  
+
   //three yes votes
   await this.mockStaking.mock.getVoiceCredits.returns(20);
   await this.BNPContract.connect(voter1).vote(PROPOSALID_BTP,Vote.Yes);
@@ -428,11 +446,9 @@ describe('BeneficiaryNomination', function () {
   ethers.provider.send("evm_mine");
   
   //finalize
-  const proposal=await this.BNPContract.proposals(PROPOSALID_BTP);
-  expect(proposal.proposalType).to.equal(ProposalType.BTP);
-  await this.mockBeneficiaryRegistry.mock.revokeBeneficiary.returns();
- await this.BNPContract.connect(owner).finalize(PROPOSALID_BTP);
- expect(await this.mockBeneficiaryRegistry.beneficiaryExists(proposal.beneficiary)).to.equal(false);
+ await this.BNPContract.connect(governance).finalize(PROPOSALID_BTP);
+
+ expect(await this.BRContract.beneficiaryExists(beneficiary.address)).to.equal(false);
 });
 
   });
