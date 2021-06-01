@@ -50,7 +50,10 @@ contract Staking is Owned, ReentrancyGuard {
   /* ========== VIEWS ========== */
 
   function getVoiceCredits(address _address) public view returns (uint256) {
-    uint256 timeTillEnd = lockedBalances[_address]._end.sub(block.timestamp); //Round to hours
+    uint256 timeTillEnd =
+      ((lockedBalances[_address]._end.sub(block.timestamp)).div(1 hours)).mul(
+        1 hours
+      );
     uint256 slope =
       voiceCredits[_address].div(lockedBalances[_address]._duration);
     return timeTillEnd.mul(slope);

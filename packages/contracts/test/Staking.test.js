@@ -396,6 +396,20 @@ describe("Staking", function () {
       const voiceCredits = await this.contract.getVoiceCredits(owner.address);
       expect(voiceCredits.toString()).to.equal("0");
     });
+    it("should round voice credit decay by the hour", async function () {
+      await this.contract.connect(owner).stake(parseEther("1"), 604800);
+      ethers.provider.send("evm_increaseTime", [1000]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits0 = await this.contract.getVoiceCredits(owner.address);
+      ethers.provider.send("evm_increaseTime", [1000]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits1 = await this.contract.getVoiceCredits(owner.address);
+      expect(voiceCredits0).to.equal(voiceCredits1);
+      ethers.provider.send("evm_increaseTime", [2000]);
+      ethers.provider.send("evm_mine", []);
+      const voiceCredits2 = await this.contract.getVoiceCredits(owner.address);
+      expect(voiceCredits0 > voiceCredits2).to.equal(true);
+    });
   });
 
   describe("notifyRewardAmount", function () {
