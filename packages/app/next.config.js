@@ -17,6 +17,10 @@ module.exports = {
     ADDR_PRIVATE_SALE: process.env.ADDR_PRIVATE_SALE,
     ADDR_USDC: process.env.ADDR_USDC,
     ADDR_TREASURY: process.env.ADDR_TREASURY,
+    PINATA_API_SECRET: process.env.PINATA_API_SECRET,
+    PINATA_API_KEY: process.env.PINATA_API_KEY,
+    PINATA_JWT: process.env.PINATA_JWT,
+
   },
   poweredByHeader: false,
   webpack: (config, options) => {

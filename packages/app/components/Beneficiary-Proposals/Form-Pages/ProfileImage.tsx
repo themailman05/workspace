@@ -76,12 +76,12 @@ function imageSizeValidator(file) {
   return null;
 }
 
-export const testPinataUpload = (files, setProfileImage) => {
+export const uploadImageToPinata = (files, setProfileImage) => {
   var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', '5234015f34353d28743c');
+  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
   myHeaders.append(
     'pinata_secret_api_key',
-    'ddcb952d2b82ba252c98084536950663d84ab190b8f192ca5d843119676beaf2',
+    process.env.PINATA_API_SECRET,
   );
 
   var formdata = new FormData();
@@ -121,7 +121,7 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
     maxFiles: 1,
     validator: imageSizeValidator,
     onDrop: (acceptedFiles) => {
-      testPinataUpload(acceptedFiles, setProfileImage);
+      uploadImageToPinata(acceptedFiles, setProfileImage);
       const file = acceptedFiles[0];
       setProfileImage(file);
       setFiles(
@@ -172,7 +172,7 @@ export default function ProfileImage({ currentStep, setCurrentStep }) {
 
   if (currentStep === 5) {
     console.log({ profileImage });
-    console.log(profileImage.length !== null);
+    console.log(profileImage?.length !== null);
     return (
       <div className="mx-auto content-center justify-items-center">
         <p className="max-w-4xl text-xl text-black sm:text-2xl my-4">
