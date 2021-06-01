@@ -8,9 +8,9 @@ export default function Name({ currentStep, setCurrentStep }): JSX.Element {
   if (currentStep === 1) {
     return (
       <div className="mx-auto content-center justify-items-center">
-        <p className="max-w-4xl text-xl text-black sm:text-2xl my-4">
+        <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
           1 - First things first, what's the name of the beneficiary?
-        </p>
+        </h2>
         {name.length > 0 ? (
           <React.Fragment>
             <div className="mt-1 relative rounded-md shadow-sm">

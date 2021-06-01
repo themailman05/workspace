@@ -1,7 +1,12 @@
 import { TrashIcon } from '@heroicons/react/solid';
 import Link from 'next/link';
+import useLocalStorageState from 'use-local-storage-state';
 import React from 'react';
 
+interface SocialMediaLinks {
+  name: string;
+  url: string;
+}
 /* This example requires Tailwind CSS v2.0+ */
 const people = [
   {
@@ -36,7 +41,10 @@ const people = [
   // More people...
 ];
 
-export default function SocialMediaLinks({ currentStep }): JSX.Element {
+export default function SocialMediaLinks({ currentStep, setCurrentStep }): JSX.Element {
+  const [socialMediaLinks, setSocialMediaLinks] = useLocalStorageState<
+  SocialMediaLinks[]
+>('socialMediaLinks', []);
   if (currentStep === 9) {
     return (
       <div className="flex flex-col w-2/3 content-center ">
@@ -92,7 +100,7 @@ export default function SocialMediaLinks({ currentStep }): JSX.Element {
                           className="text-red-400 hover:text-red-900"
                           onClick={() => console.log({ personIdx })}
                         >
-                          <TrashIcon className="h-5 w-5 " aria-hidden="true" />
+                          <TrashIcon className="h-5 w-5" aria-hidden="true" />
                         </a>
                       </td>
                     </tr>
