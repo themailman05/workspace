@@ -10,11 +10,12 @@ export default function HeaderImage({ currentStep, setCurrentStep }) {
   if (currentStep === 6) {
     return (
       <IpfsUpload
+        stepName={'6 - UPLOAD HEADER IMAGE'}
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         localStorageFile={headerImage}
         setLocalStorage={setHeaderImage}
-        imageDescription={'Header Image'}
+        imageDescription={'a Header Image'}
         imageInstructions={
           'Ideal dimensions - 1500px x 500px and less than 5mb'
         }
