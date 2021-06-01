@@ -12,5 +12,4 @@ contract MockCurveAddressProvider {
   function get_registry() external view returns (address) {
     return registry;
   }
-
 }

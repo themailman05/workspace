@@ -9,8 +9,11 @@ contract MockCurveRegistry {
     poolAddress = poolAddress_;
   }
 
-  function get_pool_from_lp_token(address lp_token) external view returns (address) {
+  function get_pool_from_lp_token(address lp_token)
+    external
+    view
+    returns (address)
+  {
     return poolAddress;
   }
-
 }
