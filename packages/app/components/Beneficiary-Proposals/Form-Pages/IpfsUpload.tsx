@@ -1,12 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-import {
-  CheckIcon,
-  DocumentAddIcon,
-  XIcon,
-  DocumentIcon,
-} from '@heroicons/react/solid';
+import { CheckIcon, DocumentAddIcon, XIcon } from '@heroicons/react/solid';
+import { DocumentReportIcon } from '@heroicons/react/outline';
 import toast, { Toaster } from 'react-hot-toast';
 
 const baseStyle = {
@@ -209,16 +205,17 @@ const DisplayPDFs: React.FC<Props> = ({
   return (
     <div className="grid justify-items-stretch">
       <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        Image Preview
+        {localStorageFile.length ?  "Document Preview" : ""}
       </p>
-      <div className="my-4 grid grid-cols-1 gap-8 mx-16">
-        {localStorageFile.map((IpfsHash) => {
+      <div>
+        {localStorageFile.map((IpfsHash, i) => {
           return (
-            <div>
-              <a href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}>
-                {'https://gateway.pinata.cloud/ipfs/' + IpfsHash}
+            <div className="row-auto justify-self-center">
+              <a className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1" href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}>
+                {"Impact Report/Audit " + i + ": " }
+                <DocumentReportIcon className="ml-2 h-5 w-5" />
               </a>
-              <DocumentIcon className="h-10 w-10" />
+              
             </div>
           );
         })}
