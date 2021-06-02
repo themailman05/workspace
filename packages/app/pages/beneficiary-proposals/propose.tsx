@@ -1,4 +1,4 @@
-import React, { useState } from 'react';;
+import React, { useState } from 'react';
 import NavBar from '../../components/NavBar/NavBar';
 import Intro from '../../components/Beneficiary-Proposals/Form-Pages/Intro';
 import Name from '../../components/Beneficiary-Proposals/Form-Pages/1/Name';
@@ -14,19 +14,25 @@ import SocialMediaLinks from '../../components/Beneficiary-Proposals/Form-Pages/
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
 import ProgressBar from 'components/ProgressBar';
 
-
 export default function BeneficiaryProposal() {
   const [currentStep, setCurrentStep] = useState<number>(0);
 
+  // TODO: Move Navigation Buttons into its own component
   const NavigationButtons = () => {
+    const progressPercentage =
+      currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / 10);
     return (
       <div className="grid justify-items-stretch ...">
         <span className="relative z-0 inline-flex shadow-sm rounded-md justify-self-end">
-          <p>Progress: {currentStep} (for debuggin)</p>
-          <ProgressBar
-            progress={(100 * currentStep - 1) / 9}
-            progressColor={'bg-green-300'}
-          />
+          <div className="mr-2">
+            <p className="text-gray-500 text-sm relative inline-flex items-center ">
+              {progressPercentage}% completed
+            </p>
+            <ProgressBar
+              progress={progressPercentage}
+              progressColor={'bg-indigo-300'}
+            />
+          </div>
           <button
             type="button"
             className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
@@ -51,7 +57,7 @@ export default function BeneficiaryProposal() {
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
-      {/* TODO: Create wrapper component for steps */}
+      {/* TODO: Create wrapper component for text input steps */}
       <Intro currentStep={currentStep} />
       <Name currentStep={currentStep} setCurrentStep={setCurrentStep} />
       <EthereumAddress

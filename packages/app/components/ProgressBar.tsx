@@ -10,9 +10,9 @@ export default function ProgressBar({
   height = 'h-4',
 }: ProgressbarProps): JSX.Element {
   return (
-    <div className={`w-full rounded ${height}`}>
+    <div className={`w-full bg-gray-200 rounded ${height}`}>
       <div
-        className={`h-full ${progressColor}`}
+        className={`h-full rounded ${progressColor}`}
         style={{
           width: `${progress.toFixed(2)}%`,
         }}
