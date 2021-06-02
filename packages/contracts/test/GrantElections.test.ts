@@ -43,7 +43,7 @@ async function deployContracts(): Promise<Contracts> {
   const mockPop = await (
     await (
       await ethers.getContractFactory("MockERC20")
-    ).deploy("TestPOP", "TPOP")
+    ).deploy("TestPOP", "TPOP",18)
   ).deployed();
   await mockPop.mint(owner.address, parseEther("500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));

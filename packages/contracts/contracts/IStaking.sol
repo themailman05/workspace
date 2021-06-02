@@ -9,7 +9,10 @@ interface IStaking {
 
   function getVoiceCredits(address _address) external view returns (uint256);
 
-  function getWithdrawableBalance() external view returns (uint256);
+  function getWithdrawableBalance(address _address)
+    external
+    view
+    returns (uint256);
 
   function notifyRewardAmount(uint256 reward) external;
 }

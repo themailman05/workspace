@@ -47,11 +47,13 @@ async function deployContracts(): Promise<Contracts> {
   const mockERC20Factory = await ethers.getContractFactory("MockERC20");
   const POP = (await mockERC20Factory.deploy(
     "TestPOP",
-    "TPOP"
+    "TPOP",
+    18
   )) as MockERC20;
   const TestERC20 = (await mockERC20Factory.deploy(
     "TestToken",
-    "TT"
+    "TT",
+    18
   )) as MockERC20;
 
   const WETH = (await (
