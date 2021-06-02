@@ -1,3 +1,20 @@
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+
+interface IntroProps {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  setName: UpdateState<string>;
+  setEthereumAddress: UpdateState<string>;
+  setMissionStatement: UpdateState<string>;
+  setProofOfOwnership: UpdateState<string>;
+  setProfileImage: UpdateState<string>;
+  setHeaderImage: UpdateState<string>;
+  setAdditionalImages: UpdateState<string[]>;
+  setImpactReports: UpdateState<string[]>;
+  setSocialMediaLinks: UpdateState<string>;
+  name: string;
+}
+
 export default function Intro({
   currentStep,
   setCurrentStep,
@@ -11,7 +28,7 @@ export default function Intro({
   setImpactReports,
   setSocialMediaLinks,
   name,
-}): JSX.Element {
+}: IntroProps): JSX.Element {
   if (currentStep === 0) {
     return (
       <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
@@ -41,7 +58,7 @@ export default function Intro({
           </p>
           <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
             {/* Check for partially completed form */}
-            {name !== "" ? (
+            {name !== '' ? (
               <div className="rounded-md shadow">
                 <a
                   onClick={() => {

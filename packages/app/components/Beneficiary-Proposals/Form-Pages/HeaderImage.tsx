@@ -1,8 +1,15 @@
 import React from 'react';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
 
-export default function HeaderImage({ currentStep, setCurrentStep,headerImage, setHeaderImage }) {
-  
+interface HIProps {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  headerImage: string;
+  setHeaderImage: UpdateState<string>;
+}
+
+export default function HeaderImage({ currentStep, setCurrentStep,headerImage, setHeaderImage }: HIProps): JSX.Element {
   if (currentStep === 6) {
     return (
       <IpfsUpload

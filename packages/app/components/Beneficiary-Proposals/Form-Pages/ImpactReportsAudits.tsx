@@ -1,12 +1,20 @@
 import React from 'react';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
+
+interface IRProps {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  impactReports: string[];
+  setImpactReports: UpdateState<string[]>;
+}
 
 export default function AdditionalImages({
   currentStep,
   setCurrentStep,
   impactReports,
   setImpactReports,
-}) {
+}: IRProps): JSX.Element {
   if (currentStep === 8) {
     return (
       <IpfsUpload

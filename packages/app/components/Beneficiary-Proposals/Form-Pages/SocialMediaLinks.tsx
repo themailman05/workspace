@@ -1,14 +1,22 @@
 import Link from 'next/link';
-import useLocalStorageState from 'use-local-storage-state';
 import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@heroicons/react/solid';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 
 interface SocialMediaLinks {
   platform: string;
   url: string;
 }
 
-function AddSocialMedia({ socialMediaLinks, setSocialMediaLinks }) {
+interface SMProps {
+  socialMediaLinks: string;
+  setSocialMediaLinks: UpdateState<string>;
+}
+
+function AddSocialMedia({
+  socialMediaLinks,
+  setSocialMediaLinks,
+}: SMProps): JSX.Element {
   const [platform, setPlatform] = useState<string>('Facebook');
   const [url, setUrl] = useState<string>('');
   return (
@@ -81,7 +89,7 @@ function AddSocialMedia({ socialMediaLinks, setSocialMediaLinks }) {
   );
 }
 
-function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }) {
+function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }: SMProps) {
   return (
     <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">

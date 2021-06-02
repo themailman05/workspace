@@ -2,12 +2,21 @@ import React from 'react';
 import web3 from 'web3';
 
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+
+interface EProps {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  ethereumAddress: string;
+  setEthereumAddress: UpdateState<string>;
+}
 
 export default function EtherumAddress({
   currentStep,
-  setCurrentStep,ethereumAddress, setEthereumAddress
-}): JSX.Element {
-  
+  setCurrentStep,
+  ethereumAddress,
+  setEthereumAddress,
+}: EProps): JSX.Element {
   if (currentStep === 2) {
     return (
       <div className="mx-auto content-center justify-items-center">

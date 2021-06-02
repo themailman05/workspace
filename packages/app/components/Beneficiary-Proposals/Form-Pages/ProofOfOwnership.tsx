@@ -1,12 +1,20 @@
 import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+
+interface PoPProps {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  proofOfOwnership: string;
+  setProofOfOwnership: UpdateState<string>;
+}
 
 export default function ProofOfOwnership({
   currentStep,
   setCurrentStep,
-  proofOfOwnership, setProofOfOwnership
-}): JSX.Element {
-  
+  proofOfOwnership,
+  setProofOfOwnership,
+}: PoPProps): JSX.Element {
   if (currentStep === 4) {
     return (
       <div className="mx-auto content-center justify-items-center px-10">

@@ -4,6 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import { DocumentReportIcon } from '@heroicons/react/outline';
 import toast, { Toaster } from 'react-hot-toast';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 
 const baseStyle = {
   flex: 1,
@@ -77,11 +78,11 @@ export const uploadImageToPinata = (files, setProfileImage) => {
   });
 };
 
-export const uploadMultipleImagesToPinata = (
+function uploadMultipleImagesToPinata(
   files,
   currentLocalStorageVal,
   setLocalStorageVal,
-) => {
+) {
   toast.dismiss();
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -111,9 +112,8 @@ export const uploadMultipleImagesToPinata = (
         uploadError('Error uploading to IPFS');
       });
   });
-};
+}
 
-// TODO: Correct these
 interface Props {
   localStorageFile: any;
   setLocalStorage: any;
@@ -242,6 +242,19 @@ const DisplayPDFs: React.FC<Props> = ({
   );
 };
 
+
+interface IpfsProps {
+  stepName: string;
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  localStorageFile: string | string[];
+  setLocalStorage: UpdateState<string> | UpdateState<string[]> ;
+  imageDescription: string;
+  imageInstructions: string;
+  fileType: string;
+  numMaxFiles: number;
+}
+
 export default function IpfsUpload({
   stepName,
   currentStep,
@@ -252,7 +265,7 @@ export default function IpfsUpload({
   imageInstructions,
   fileType,
   numMaxFiles,
-}) {
+}: IpfsProps) {
   const [files, setFiles] = useState([]);
   const {
     acceptedFiles,

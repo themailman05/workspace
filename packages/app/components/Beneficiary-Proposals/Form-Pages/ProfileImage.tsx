@@ -1,12 +1,20 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+
+interface PIProps {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  profileImage: string;
+  setProfileImage: UpdateState<string>;
+}
 
 export default function ProfileImage({
   currentStep,
   setCurrentStep,
   profileImage,
   setProfileImage,
-}) {
+}: PIProps) {
   if (currentStep === 5) {
     return (
       <IpfsUpload

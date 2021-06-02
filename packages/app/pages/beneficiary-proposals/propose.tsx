@@ -15,7 +15,7 @@ import Navigation from '../../components/Beneficiary-Proposals/Form-Pages/Naviga
 
 import useLocalStorageState from 'use-local-storage-state';
 
-export default function BeneficiaryProposal() {
+export default function BeneficiaryProposal(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [name, setName] = useLocalStorageState<string>('name', '');
   const [ethereumAddress, setEthereumAddress] =
@@ -121,6 +121,7 @@ export default function BeneficiaryProposal() {
       />
       <Review
         currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
         name={name}
         ethereumAddress={ethereumAddress}
         missionStatement={missionStatement}

@@ -1,12 +1,20 @@
 import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+
+interface NameProps {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  name: string;
+  setName: UpdateState<string>;
+}
 
 export default function Name({
   currentStep,
   setCurrentStep,
   name,
   setName,
-}): JSX.Element {
+}: NameProps): JSX.Element {
   if (currentStep === 1) {
     return (
       <div className="mx-auto content-center justify-items-center">

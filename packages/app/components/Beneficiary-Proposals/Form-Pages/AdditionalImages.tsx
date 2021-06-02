@@ -1,9 +1,20 @@
-
 import React from 'react';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
 
-export default function AdditionalImages({ currentStep, setCurrentStep,additionalImages, setAdditionalImages }) {
-  
+interface Props {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  additionalImages: string[];
+  setAdditionalImages: UpdateState<string[]>;
+}
+
+export default function AdditionalImages({
+  currentStep,
+  setCurrentStep,
+  additionalImages,
+  setAdditionalImages,
+}: Props): JSX.Element {
   if (currentStep === 7) {
     return (
       <IpfsUpload
