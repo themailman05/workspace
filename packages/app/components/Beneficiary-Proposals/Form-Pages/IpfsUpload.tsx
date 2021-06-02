@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
 
-import { CheckIcon, DocumentAddIcon, XIcon } from '@heroicons/react/solid';
+import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import { DocumentReportIcon } from '@heroicons/react/outline';
 import toast, { Toaster } from 'react-hot-toast';
 
@@ -138,7 +138,7 @@ const DisplaySingleImage: React.FC<Props> = ({
       ></img>
       <div className="row-auto my-2 justify-self-center">
         <button
-          onClick={() => setLocalStorage(null)}
+          onClick={() => setLocalStorage.reset()}
           className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
         >
           Cancel
@@ -327,9 +327,7 @@ export default function IpfsUpload({
                     htmlFor="file-upload"
                     className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                   >
-                    <span>
-                      Upload
-                    </span>
+                    <span>Upload</span>
                     <input
                       id="file-upload"
                       name="file-upload"
@@ -337,7 +335,9 @@ export default function IpfsUpload({
                       className="sr-only"
                     />
                   </label>
-                  <p className="pl-1">or drag and drop {imageDescription.toLowerCase()}</p>
+                  <p className="pl-1">
+                    or drag and drop {imageDescription.toLowerCase()}
+                  </p>
                 </div>
                 <p className="text-xs text-gray-500">{imageInstructions}</p>
               </div>

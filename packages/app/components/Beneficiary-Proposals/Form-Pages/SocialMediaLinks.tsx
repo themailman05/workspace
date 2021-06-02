@@ -1,8 +1,7 @@
 import Link from 'next/link';
 import useLocalStorageState from 'use-local-storage-state';
 import React, { useState } from 'react';
-import { TrashIcon } from '@heroicons/react/solid';
-import { CloudflareProvider } from '@ethersproject/providers';
+import { CheckIcon, TrashIcon } from '@heroicons/react/solid';
 
 interface SocialMediaLinks {
   platform: string;
@@ -33,7 +32,9 @@ function AddSocialMedia({ socialMediaLinks, setSocialMediaLinks }) {
             >
               {['Facebook', 'LinkedIn', 'Instagram', 'GitHub', 'Twitter'].map(
                 (platform) => (
-                  <option value={platform}>{platform}</option>
+                  <option key={platform} value={platform}>
+                    {platform}
+                  </option>
                 ),
               )}
             </select>
@@ -80,14 +81,86 @@ function AddSocialMedia({ socialMediaLinks, setSocialMediaLinks }) {
   );
 }
 
+function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }) {
+  return (
+    <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+        <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Platform
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  URL
+                </th>
+                <th
+                  scope="col"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
+                  Delete
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {JSON.parse(socialMediaLinks)
+                .sort((a, b) => a.platform - b.platform)
+                .map((socialMediaData, idx) => {
+                  const { url, platform } = socialMediaData;
+                  return (
+                    <tr
+                      key={platform}
+                      className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {platform}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <Link href={url}>{url}</Link>
+                      </td>
+
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <a
+                          href="#"
+                          className="text-red-400 hover:text-red-900"
+                          onClick={() => {
+                            const newPlatformData = JSON.parse(
+                              socialMediaLinks,
+                            ).filter((socialMediaObj) => {
+                              return socialMediaObj.platform !== platform;
+                            });
+                            setSocialMediaLinks(
+                              JSON.stringify(newPlatformData),
+                            );
+                          }}
+                        >
+                          <TrashIcon className="h-5 w-5" aria-hidden="true" />
+                        </a>
+                      </td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function SocialMediaLinks({
   currentStep,
   setCurrentStep,
+  socialMediaLinks,
+  setSocialMediaLinks,
 }): JSX.Element {
-  const [socialMediaLinks, setSocialMediaLinks] = useLocalStorageState<string>(
-    'socialMediaLinks',
-    '[]',
-  );
   if (currentStep === 9) {
     return (
       <div className="mx-auto content-center justify-items-center">
@@ -101,72 +174,18 @@ export default function SocialMediaLinks({
           socialMediaLinks={socialMediaLinks}
           setSocialMediaLinks={setSocialMediaLinks}
         />
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-            <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Platform
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      URL
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Delete
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {JSON.parse(socialMediaLinks).sort((a, b) => a.platform - b.platform).map((socialMediaData, idx) => {
-                    const { url, platform } = socialMediaData;
-                    return (
-                      <tr
-                        key={platform}
-                        className={idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {platform}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          <Link href={url}>{url}</Link>
-                        </td>
-
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <a
-                            href="#"
-                            className="text-red-400 hover:text-red-900"
-                            onClick={() => {
-                              const newPlatformData = JSON.parse(
-                                socialMediaLinks,
-                              ).filter((socialMediaObj) => {
-                                return socialMediaObj.platform !== platform;
-                              });
-                              setSocialMediaLinks(
-                                JSON.stringify(newPlatformData),
-                              );
-                            }}
-                          >
-                            <TrashIcon className="h-5 w-5" aria-hidden="true" />
-                          </a>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <SocialMediaTable
+          socialMediaLinks={socialMediaLinks}
+          setSocialMediaLinks={setSocialMediaLinks}
+        />
+        <div className="row-auto my-2 justify-self-center">
+          <button
+            onClick={() => setCurrentStep(currentStep++)}
+            className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            OK
+            <CheckIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
+          </button>
         </div>
       </div>
     );

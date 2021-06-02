@@ -1,14 +1,13 @@
 import React from 'react';
 import web3 from 'web3';
-import useLocalStorageState from 'use-local-storage-state';
+
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 
 export default function EtherumAddress({
   currentStep,
-  setCurrentStep,
+  setCurrentStep,ethereumAddress, setEthereumAddress
 }): JSX.Element {
-  const [ethereumAddress, setEthereumAddress] =
-    useLocalStorageState<string>('');
+  
   if (currentStep === 2) {
     return (
       <div className="mx-auto content-center justify-items-center">

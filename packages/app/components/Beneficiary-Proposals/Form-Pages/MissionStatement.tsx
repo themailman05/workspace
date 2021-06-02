@@ -1,15 +1,12 @@
 import React from 'react';
-import useLocalStorageState from 'use-local-storage-state';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 
 export default function MissionStatement({
   currentStep,
   setCurrentStep,
+  missionStatement, setMissionStatement
 }): JSX.Element {
-  const [missionStatement, setMissionStatement] = useLocalStorageState<string>(
-    'missionStatement',
-    '',
-  );
+  
   if (currentStep === 3) {
     return (
       <div className="mx-auto content-center justify-items-center">

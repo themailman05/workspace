@@ -1,12 +1,9 @@
 
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import useLocalStorageState from 'use-local-storage-state';
 
-export default function AdditionalImages({ currentStep, setCurrentStep }) {
-  const [additionalImages, setAdditionalImages] = useLocalStorageState<
-    string[]
-  >('additionalimages', []);
+export default function AdditionalImages({ currentStep, setCurrentStep,additionalImages, setAdditionalImages }) {
+  
   if (currentStep === 7) {
     return (
       <IpfsUpload

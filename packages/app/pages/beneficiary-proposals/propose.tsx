@@ -11,86 +11,127 @@ import ProfileImage from '../../components/Beneficiary-Proposals/Form-Pages/Prof
 import ProofOfOwnership from '../../components/Beneficiary-Proposals/Form-Pages/ProofOfOwnership';
 import Review from '../../components/Beneficiary-Proposals/Form-Pages/Review';
 import SocialMediaLinks from '../../components/Beneficiary-Proposals/Form-Pages/SocialMediaLinks';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
-import ProgressBar from 'components/ProgressBar';
+import Navigation from '../../components/Beneficiary-Proposals/Form-Pages/Navigation';
+
+import useLocalStorageState from 'use-local-storage-state';
 
 export default function BeneficiaryProposal() {
   const [currentStep, setCurrentStep] = useState<number>(0);
-
-  // TODO: Move Navigation Buttons into its own component
-  const NavigationButtons = () => {
-    const progressPercentage =
-      currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / 10);
-    return (
-      <div className="grid justify-items-stretch ...">
-        <span className="relative z-0 inline-flex shadow-sm rounded-md justify-self-end">
-          <div className="mr-2">
-            <p className="text-gray-500 text-sm relative inline-flex items-center ">
-              {progressPercentage}% completed
-            </p>
-            <ProgressBar
-              progress={progressPercentage}
-              progressColor={'bg-indigo-300'}
-            />
-          </div>
-          <button
-            type="button"
-            className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            onClick={() => setCurrentStep(currentStep - 1)}
-          >
-            <span className="sr-only">Previous</span>
-            <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <button
-            type="button"
-            className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            onClick={() => setCurrentStep(currentStep + 1)}
-          >
-            <span className="sr-only">Next</span>
-            <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </span>
-      </div>
-    );
-  };
-
+  const [name, setName] = useLocalStorageState<string>('name', '');
+  const [ethereumAddress, setEthereumAddress] =
+    useLocalStorageState<string>('');
+  const [missionStatement, setMissionStatement] = useLocalStorageState<string>(
+    'missionStatement',
+    '',
+  );
+  const [proofOfOwnership, setProofOfOwnership] = useLocalStorageState<string>(
+    'proofOfOwnership',
+    '',
+  );
+  const [profileImage, setProfileImage] = useLocalStorageState<string>(
+    'img',
+    null,
+  );
+  const [headerImage, setHeaderImage] = useLocalStorageState<string>(
+    'headerimg',
+    null,
+  );
+  const [additionalImages, setAdditionalImages] = useLocalStorageState<
+    string[]
+  >('additionalimages', []);
+  const [impactReports, setImpactReports] = useLocalStorageState<string[]>(
+    'impactreports',
+    [],
+  );
+  const [socialMediaLinks, setSocialMediaLinks] = useLocalStorageState<string>(
+    'socialMediaLinks',
+    '[]',
+  );
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
       {/* TODO: Create wrapper component for text input steps */}
-      <Intro currentStep={currentStep} />
-      <Name currentStep={currentStep} setCurrentStep={setCurrentStep} />
+      <Intro
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        setName={setName}
+        setEthereumAddress={setEthereumAddress}
+        setMissionStatement={setMissionStatement}
+        setProofOfOwnership={setProofOfOwnership}
+        setProfileImage={setProfileImage}
+        setHeaderImage={setHeaderImage}
+        setAdditionalImages={setAdditionalImages}
+        setImpactReports={setImpactReports}
+        setSocialMediaLinks={setSocialMediaLinks}
+        name={name}
+      />
+      <Name
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        name={name}
+        setName={setName}
+      />
       <EthereumAddress
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
+        ethereumAddress={ethereumAddress}
+        setEthereumAddress={setEthereumAddress}
       />
       <MissionStatement
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
+        missionStatement={missionStatement}
+        setMissionStatement={setMissionStatement}
       />
       <ProofOfOwnership
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
+        proofOfOwnership={proofOfOwnership}
+        setProofOfOwnership={setProofOfOwnership}
       />
-      <ProfileImage currentStep={currentStep} setCurrentStep={setCurrentStep} />
-      <HeaderImage currentStep={currentStep} setCurrentStep={setCurrentStep} />
+      <ProfileImage
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        profileImage={profileImage}
+        setProfileImage={setProfileImage}
+      />
+      <HeaderImage
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        headerImage={headerImage}
+        setHeaderImage={setHeaderImage}
+      />
       <AdditionalImages
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
+        additionalImages={additionalImages}
+        setAdditionalImages={setAdditionalImages}
       />
       <ImpactReportsAudits
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
+        impactReports={impactReports}
+        setImpactReports={setImpactReports}
       />
       <SocialMediaLinks
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
+        socialMediaLinks={socialMediaLinks}
+        setSocialMediaLinks={setSocialMediaLinks}
       />
-      <Review currentStep={currentStep} />
-
-      <footer className="h-10 mb-4 mr-4">
-        <NavigationButtons />
-      </footer>
+      <Review
+        currentStep={currentStep}
+        name={name}
+        ethereumAddress={ethereumAddress}
+        missionStatement={missionStatement}
+        proofOfOwnership={proofOfOwnership}
+        profileImage={profileImage}
+        headerImage={headerImage}
+        additionalImages={additionalImages}
+        impactReports={impactReports}
+        socialMediaLinks={socialMediaLinks}
+      />
+      <Navigation currentStep={currentStep} setCurrentStep={setCurrentStep} />
     </div>
   );
 }

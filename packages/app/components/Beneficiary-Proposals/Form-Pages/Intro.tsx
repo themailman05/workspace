@@ -1,7 +1,17 @@
-// TODO: Show 'Continue' button conditionally
-// TODO: Wipe data held in local storage if 'Start new proposal'
-
-export default function Intro({ currentStep }): JSX.Element {
+export default function Intro({
+  currentStep,
+  setCurrentStep,
+  setName,
+  setEthereumAddress,
+  setMissionStatement,
+  setProofOfOwnership,
+  setProfileImage,
+  setHeaderImage,
+  setAdditionalImages,
+  setImpactReports,
+  setSocialMediaLinks,
+  name,
+}): JSX.Element {
   if (currentStep === 0) {
     return (
       <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
@@ -30,17 +40,35 @@ export default function Intro({ currentStep }): JSX.Element {
             hash.
           </p>
           <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
-            <div className="rounded-md shadow">
-              <a
-                href="#"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
-              >
-                Continue
-              </a>
-            </div>
+            {/* Check for partially completed form */}
+            {name !== "" ? (
+              <div className="rounded-md shadow">
+                <a
+                  onClick={() => {
+                    setCurrentStep(currentStep++);
+                  }}
+                  className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                >
+                  Continue
+                </a>
+              </div>
+            ) : (
+              <></>
+            )}
             <div className="mt-3 sm:mt-0 sm:ml-3">
               <a
-                href="#"
+                onClick={() => {
+                  setCurrentStep(currentStep + 1);
+                  setName.reset();
+                  setEthereumAddress.reset();
+                  setMissionStatement.reset();
+                  setProofOfOwnership.reset();
+                  setProfileImage.reset();
+                  setHeaderImage.reset();
+                  setAdditionalImages.reset();
+                  setImpactReports.reset();
+                  setSocialMediaLinks.reset();
+                }}
                 className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10"
               >
                 Start new proposal

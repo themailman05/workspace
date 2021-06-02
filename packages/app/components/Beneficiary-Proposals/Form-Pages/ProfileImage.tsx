@@ -1,16 +1,16 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import useLocalStorageState from 'use-local-storage-state';
 
-export default function ProfileImage({ currentStep, setCurrentStep }) {
-  const [profileImage, setProfileImage] = useLocalStorageState<string>(
-    'img',
-    null,
-  );
+export default function ProfileImage({
+  currentStep,
+  setCurrentStep,
+  profileImage,
+  setProfileImage,
+}) {
   if (currentStep === 5) {
     return (
       <IpfsUpload
-        stepName={"5 - UPLOAD PROFILE IMAGE"}
+        stepName={'5 - UPLOAD PROFILE IMAGE'}
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         localStorageFile={profileImage}

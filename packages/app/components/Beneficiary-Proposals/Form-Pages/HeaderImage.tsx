@@ -1,12 +1,8 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import useLocalStorageState from 'use-local-storage-state';
 
-export default function HeaderImage({ currentStep, setCurrentStep }) {
-  const [headerImage, setHeaderImage] = useLocalStorageState<string>(
-    'headerimg',
-    null,
-  );
+export default function HeaderImage({ currentStep, setCurrentStep,headerImage, setHeaderImage }) {
+  
   if (currentStep === 6) {
     return (
       <IpfsUpload

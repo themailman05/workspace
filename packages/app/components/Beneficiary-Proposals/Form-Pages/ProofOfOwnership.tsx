@@ -1,15 +1,12 @@
 import React from 'react';
-import useLocalStorageState from 'use-local-storage-state';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 
 export default function ProofOfOwnership({
   currentStep,
   setCurrentStep,
+  proofOfOwnership, setProofOfOwnership
 }): JSX.Element {
-  const [proofOfOwnership, setProofOfOwnership] = useLocalStorageState<string>(
-    'proofOfOwnership',
-    '',
-  );
+  
   if (currentStep === 4) {
     return (
       <div className="mx-auto content-center justify-items-center px-10">
