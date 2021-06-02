@@ -12,7 +12,7 @@ export default function ProofOfOwnership({
   );
   if (currentStep === 4) {
     return (
-      <div className="mx-auto content-center justify-items-center">
+      <div className="mx-auto content-center justify-items-center px-10">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
           4 - Please share a proof of ownership
         </h2>
