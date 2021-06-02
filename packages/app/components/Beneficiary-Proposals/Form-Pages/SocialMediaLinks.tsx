@@ -134,7 +134,7 @@ function SocialMediaMenu() {
                       </a>
                     )}
                   </Menu.Item>
-                  <Menu.Item>
+                  <Menu.Item onClick={() => window.alert("Twitter") }>
                     {({ active }) => (
                       <a
                         href="#"
@@ -159,6 +159,7 @@ function SocialMediaMenu() {
     </div>
   );
 }
+
 /* This example requires Tailwind CSS v2.0+ */
 const people = [
   {
