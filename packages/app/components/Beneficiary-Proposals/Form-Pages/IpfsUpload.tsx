@@ -120,6 +120,7 @@ interface IpfsProps {
   imageInstructions: string;
   fileType: string;
   numMaxFiles: number;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function IpfsUpload({
@@ -132,6 +133,7 @@ export default function IpfsUpload({
   imageInstructions,
   fileType,
   numMaxFiles,
+  setStepLimit,
 }: IpfsProps) {
   const [files, setFiles] = useState([]);
   const {
@@ -176,7 +178,7 @@ export default function IpfsUpload({
     }),
     [isDragActive, isDragReject, isDragAccept],
   );
-
+  console.log({ localStorageFile });
   return (
     <div className="mx-auto content-center grid justify-items-stretch">
       <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
@@ -227,22 +229,37 @@ export default function IpfsUpload({
       ) : (
         <div></div>
       )}
-      {localStorageFile && fileType === 'image/*' ? (
+      {numMaxFiles === 1 && localStorageFile && fileType === 'image/*' ? (
         <DisplayImages
           localStorageFile={localStorageFile}
           setLocalStorage={setLocalStorage}
           setCurrentStep={setCurrentStep}
           currentStep={currentStep}
+          setStepLimit={setStepLimit}
         />
       ) : (
         <> </>
       )}
-      {localStorageFile && fileType === '.pdf' ? (
+      {numMaxFiles > 1 &&
+      localStorageFile.length > 0 &&
+      fileType === 'image/*' ? (
+        <DisplayImages
+          localStorageFile={localStorageFile}
+          setLocalStorage={setLocalStorage}
+          setCurrentStep={setCurrentStep}
+          currentStep={currentStep}
+          setStepLimit={setStepLimit}
+        />
+      ) : (
+        <> </>
+      )}
+      {numMaxFiles > 1 && localStorageFile.length > 0 && fileType === '.pdf' ? (
         <DisplayPDFs
           localStorageFile={localStorageFile}
           setLocalStorage={setLocalStorage}
           setCurrentStep={setCurrentStep}
           currentStep={currentStep}
+          setStepLimit={setStepLimit}
         />
       ) : (
         <> </>

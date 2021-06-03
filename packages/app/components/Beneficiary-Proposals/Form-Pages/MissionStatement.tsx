@@ -7,6 +7,7 @@ interface MSProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   missionStatement: string;
   setMissionStatement: UpdateState<string>;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function MissionStatement({
@@ -14,6 +15,7 @@ export default function MissionStatement({
   setCurrentStep,
   missionStatement,
   setMissionStatement,
+  setStepLimit,
 }: MSProps): JSX.Element {
   if (currentStep === 3) {
     return (
@@ -35,7 +37,10 @@ export default function MissionStatement({
               />
             </div>
             <button
-              onClick={() => setCurrentStep(currentStep++)}
+              onClick={() => {
+                setStepLimit(currentStep + 1);
+                setCurrentStep(currentStep + 1);
+              }}
               className=" justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               OK

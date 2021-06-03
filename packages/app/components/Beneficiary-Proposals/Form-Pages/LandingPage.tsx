@@ -65,6 +65,8 @@ export default function LandingPage(): JSX.Element {
         setImpactReports={setImpactReports}
         setSocialMediaLinks={setSocialMediaLinks}
         name={name}
+        stepLimit={stepLimit}
+        setStepLimit={setStepLimit}
       />
       <Name
         currentStep={currentStep}
@@ -79,48 +81,56 @@ export default function LandingPage(): JSX.Element {
         setCurrentStep={setCurrentStep}
         ethereumAddress={ethereumAddress}
         setEthereumAddress={setEthereumAddress}
+        setStepLimit={setStepLimit}
       />
       <MissionStatement
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         missionStatement={missionStatement}
         setMissionStatement={setMissionStatement}
+        setStepLimit={setStepLimit}
       />
       <ProofOfOwnership
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         proofOfOwnership={proofOfOwnership}
         setProofOfOwnership={setProofOfOwnership}
+        setStepLimit={setStepLimit}
       />
       <ProfileImage
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         profileImage={profileImage}
         setProfileImage={setProfileImage}
+        setStepLimit={setStepLimit}
       />
       <HeaderImage
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         headerImage={headerImage}
         setHeaderImage={setHeaderImage}
+        setStepLimit={setStepLimit}
       />
       <AdditionalImages
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         additionalImages={additionalImages}
         setAdditionalImages={setAdditionalImages}
+        setStepLimit={setStepLimit}
       />
       <ImpactReportsAudits
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         impactReports={impactReports}
         setImpactReports={setImpactReports}
+        setStepLimit={setStepLimit}
       />
       <SocialMediaLinks
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         socialMediaLinks={socialMediaLinks}
         setSocialMediaLinks={setSocialMediaLinks}
+        setStepLimit={setStepLimit}
       />
       <Review
         currentStep={currentStep}
@@ -134,11 +144,13 @@ export default function LandingPage(): JSX.Element {
         additionalImages={additionalImages}
         impactReports={impactReports}
         socialMediaLinks={socialMediaLinks}
+        setStepLimit={setStepLimit}
       />
       <Navigation
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         stepLimit={stepLimit}
+        setStepLimit={setStepLimit}
       />
     </div>
   );

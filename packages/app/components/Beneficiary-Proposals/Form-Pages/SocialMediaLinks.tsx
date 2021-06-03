@@ -39,8 +39,8 @@ function AddSocialMedia({
               value={platform}
             >
               {['Facebook', 'LinkedIn', 'Instagram', 'GitHub', 'Twitter'].map(
-                (platform) => (
-                  <option key={platform} value={platform}>
+                (platform, i) => (
+                  <option key={i} value={platform}>
                     {platform}
                   </option>
                 ),
@@ -168,6 +168,7 @@ export default function SocialMediaLinks({
   setCurrentStep,
   socialMediaLinks,
   setSocialMediaLinks,
+  setStepLimit
 }): JSX.Element {
   if (currentStep === 9) {
     return (
@@ -188,7 +189,10 @@ export default function SocialMediaLinks({
         />
         <div className="row-auto my-2 justify-self-center">
           <button
-            onClick={() => setCurrentStep(currentStep++)}
+            onClick={() => {
+              setStepLimit(currentStep + 1);
+              setCurrentStep(currentStep + 1);
+            }}
             className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             OK

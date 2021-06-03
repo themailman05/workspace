@@ -7,6 +7,7 @@ interface PIProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   profileImage: string;
   setProfileImage: UpdateState<string>;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function ProfileImage({
@@ -14,6 +15,7 @@ export default function ProfileImage({
   setCurrentStep,
   profileImage,
   setProfileImage,
+  setStepLimit,
 }: PIProps) {
   if (currentStep === 5) {
     return (
@@ -29,6 +31,7 @@ export default function ProfileImage({
         }
         fileType={'image/*'}
         numMaxFiles={1}
+        setStepLimit={setStepLimit}
       />
     );
   } else {

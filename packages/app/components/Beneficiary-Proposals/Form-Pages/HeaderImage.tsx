@@ -7,9 +7,16 @@ interface HIProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   headerImage: string;
   setHeaderImage: UpdateState<string>;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export default function HeaderImage({ currentStep, setCurrentStep,headerImage, setHeaderImage }: HIProps): JSX.Element {
+export default function HeaderImage({
+  currentStep,
+  setCurrentStep,
+  headerImage,
+  setHeaderImage,
+  setStepLimit,
+}: HIProps): JSX.Element {
   if (currentStep === 6) {
     return (
       <IpfsUpload
@@ -24,6 +31,7 @@ export default function HeaderImage({ currentStep, setCurrentStep,headerImage, s
         }
         fileType={'image/*'}
         numMaxFiles={1}
+        setStepLimit={setStepLimit}
       />
     );
   } else {

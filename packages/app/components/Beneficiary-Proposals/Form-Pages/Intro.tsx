@@ -13,6 +13,8 @@ interface IntroProps {
   setImpactReports: UpdateState<string[]>;
   setSocialMediaLinks: UpdateState<string>;
   name: string;
+  stepLimit: number;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function Intro({
@@ -28,6 +30,8 @@ export default function Intro({
   setImpactReports,
   setSocialMediaLinks,
   name,
+  stepLimit,
+  setStepLimit,
 }: IntroProps): JSX.Element {
   if (currentStep === 0) {
     return (
@@ -62,7 +66,7 @@ export default function Intro({
               <div className="rounded-md shadow">
                 <a
                   onClick={() => {
-                    setCurrentStep(currentStep++);
+                    setCurrentStep(currentStep + 1);
                   }}
                   className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
                 >
@@ -75,7 +79,7 @@ export default function Intro({
             <div className="mt-3 sm:mt-0 sm:ml-3">
               <a
                 onClick={() => {
-                  setCurrentStep(currentStep + 1);
+                  setCurrentStep(1);
                   setName.reset();
                   setEthereumAddress.reset();
                   setMissionStatement.reset();
@@ -85,6 +89,7 @@ export default function Intro({
                   setAdditionalImages.reset();
                   setImpactReports.reset();
                   setSocialMediaLinks.reset();
+                  setStepLimit(1);
                 }}
                 className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10"
               >

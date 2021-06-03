@@ -7,6 +7,7 @@ interface Props {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   additionalImages: string[];
   setAdditionalImages: UpdateState<string[]>;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function AdditionalImages({
@@ -14,6 +15,7 @@ export default function AdditionalImages({
   setCurrentStep,
   additionalImages,
   setAdditionalImages,
+  setStepLimit,
 }: Props): JSX.Element {
   if (currentStep === 7) {
     return (
@@ -29,6 +31,7 @@ export default function AdditionalImages({
         }
         fileType={'image/*'}
         numMaxFiles={4}
+        setStepLimit={setStepLimit}
       />
     );
   } else {

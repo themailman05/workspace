@@ -42,7 +42,7 @@ export default function Name({
               <button
                 onClick={() => {
                   setStepLimit(currentStep + 1);
-                  setCurrentStep(currentStep++);
+                  setCurrentStep(currentStep + 1);
                 }}
                 className=" justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >

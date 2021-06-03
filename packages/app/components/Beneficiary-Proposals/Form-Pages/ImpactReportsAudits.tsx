@@ -7,6 +7,7 @@ interface IRProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   impactReports: string[];
   setImpactReports: UpdateState<string[]>;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function AdditionalImages({
@@ -14,6 +15,7 @@ export default function AdditionalImages({
   setCurrentStep,
   impactReports,
   setImpactReports,
+  setStepLimit
 }: IRProps): JSX.Element {
   if (currentStep === 8) {
     return (
@@ -29,6 +31,7 @@ export default function AdditionalImages({
         }
         fileType={'.pdf'}
         numMaxFiles={4}
+        setStepLimit={setStepLimit}
       />
     );
   } else {
