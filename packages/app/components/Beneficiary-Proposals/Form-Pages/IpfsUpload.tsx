@@ -1,15 +1,11 @@
 import React, { useState, useMemo } from 'react';
 import { useDropzone } from 'react-dropzone';
-
-import { CheckIcon, XIcon } from '@heroicons/react/solid';
-import { DocumentReportIcon } from '@heroicons/react/outline';
 import toast, { Toaster } from 'react-hot-toast';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-
+import { DisplayImages, DisplayPDFs } from './DisplayFiles';
 const baseStyle = {
   flex: 1,
   display: 'flex',
-  flexDirection: 'column',
   alignItems: 'center',
   padding: '20px',
   borderWidth: 2,
@@ -114,141 +110,12 @@ function uploadMultipleImagesToPinata(
   });
 }
 
-interface Props {
-  localStorageFile: any;
-  setLocalStorage: any;
-  setCurrentStep: any;
-  currentStep: any;
-}
-
-const DisplaySingleImage: React.FC<Props> = ({
-  localStorageFile,
-  setLocalStorage,
-  setCurrentStep,
-  currentStep,
-}) => {
-  return (
-    <div className="grid justify-items-stretch">
-      <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        Image Preview
-      </p>
-      <img
-        className="w-1/4 justify-self-center"
-        src={'https://gateway.pinata.cloud/ipfs/' + localStorageFile}
-      ></img>
-      <div className="row-auto my-2 justify-self-center">
-        <button
-          onClick={() => setLocalStorage.reset()}
-          className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-        >
-          Cancel
-          <XIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-        </button>
-        <button
-          onClick={() => setCurrentStep(currentStep++)}
-          className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          OK
-          <CheckIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const DisplayMultipleImages: React.FC<Props> = ({
-  localStorageFile,
-  setLocalStorage,
-  setCurrentStep,
-  currentStep,
-}) => {
-  return (
-    <div className="grid justify-items-stretch">
-      <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        Image Preview
-      </p>
-      <div className="my-4 grid grid-cols-4 gap-8 mx-16">
-        {localStorageFile.map((imgHash) => {
-          return (
-            <div key={imgHash}>
-              <img src={'https://gateway.pinata.cloud/ipfs/' + imgHash}></img>
-            </div>
-          );
-        })}
-      </div>
-      <div className="row-auto my-2 justify-self-center">
-        <button
-          onClick={() => setLocalStorage([])}
-          className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-        >
-          Cancel
-          <XIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-        </button>
-        <button
-          onClick={() => setCurrentStep(currentStep++)}
-          className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          OK
-          <CheckIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const DisplayPDFs: React.FC<Props> = ({
-  localStorageFile,
-  setLocalStorage,
-  setCurrentStep,
-  currentStep,
-}) => {
-  return (
-    <div className="grid justify-items-stretch">
-      <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        {localStorageFile.length ? 'Document Preview' : ''}
-      </p>
-      <div>
-        {localStorageFile.map((IpfsHash, i) => {
-          return (
-            <div key={IpfsHash} className="row-auto justify-self-center">
-              <a
-                className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1"
-                href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}
-              >
-                {'Impact Report/Audit ' + i + ': '}
-                <DocumentReportIcon className="ml-2 h-5 w-5" />
-              </a>
-            </div>
-          );
-        })}
-      </div>
-      <div className="row-auto my-2 justify-self-center">
-        <button
-          onClick={() => setLocalStorage([])}
-          className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-        >
-          Cancel
-          <XIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-        </button>
-        <button
-          onClick={() => setCurrentStep(currentStep++)}
-          className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          OK
-          <CheckIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
-
 interface IpfsProps {
   stepName: string;
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   localStorageFile: string | string[];
-  setLocalStorage: UpdateState<string> | UpdateState<string[]> ;
+  setLocalStorage: UpdateState<string> | UpdateState<string[]>;
   imageDescription: string;
   imageInstructions: string;
   fileType: string;
@@ -360,9 +227,8 @@ export default function IpfsUpload({
       ) : (
         <div></div>
       )}
-      {/* If numMaxFiles === 1, display component that contains just the one image otherwise display component that contains an album of files */}
-      {localStorageFile && numMaxFiles === 1 && fileType === 'image/*' ? (
-        <DisplaySingleImage
+      {localStorageFile && fileType === 'image/*' ? (
+        <DisplayImages
           localStorageFile={localStorageFile}
           setLocalStorage={setLocalStorage}
           setCurrentStep={setCurrentStep}
@@ -371,17 +237,7 @@ export default function IpfsUpload({
       ) : (
         <> </>
       )}
-      {localStorageFile && numMaxFiles > 1 && fileType === 'image/*' ? (
-        <DisplayMultipleImages
-          localStorageFile={localStorageFile}
-          setLocalStorage={setLocalStorage}
-          setCurrentStep={setCurrentStep}
-          currentStep={currentStep}
-        />
-      ) : (
-        <> </>
-      )}
-      {localStorageFile && numMaxFiles > 1 && fileType === '.pdf' ? (
+      {localStorageFile && fileType === '.pdf' ? (
         <DisplayPDFs
           localStorageFile={localStorageFile}
           setLocalStorage={setLocalStorage}
