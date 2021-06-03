@@ -88,18 +88,17 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   function claim() external nonReentrant updateVested(msg.sender) {
     uint256 claimable = vested[msg.sender];
-    if (claimable > 0) {
-      vested[msg.sender] = 0;
-      escrows[msg.sender].amount = escrows[msg.sender].amount.sub(claimable);
-      POP.safeTransfer(msg.sender, claimable);
-      emit Claimed(msg.sender, claimable);
-    }
+    require(claimable > 0, "nothing to claim");
+    vested[msg.sender] = 0;
+    escrows[msg.sender].amount = escrows[msg.sender].amount.sub(claimable);
+    POP.safeTransfer(msg.sender, claimable);
+    emit Claimed(msg.sender, claimable);
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
   function setStaking(IStaking _staking) external onlyOwner {
-    require(Staking != _staking, "Same Treasury");
+    require(Staking != _staking, "Same Staking");
     Staking = _staking;
     emit StakingChanged(_staking);
   }

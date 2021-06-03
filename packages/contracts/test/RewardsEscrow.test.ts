@@ -175,5 +175,8 @@ describe("RewardsEscrow", function () {
       expect(vested4).to.equal(0);
       expect(locked4).to.equal(0);
     });
+    it("reverts if there is nothing to claim", async function () {
+      await expect(contracts.rewardsEscrow.connect(nonOwner).claim()).to.be.revertedWith("nothing to claim");
+    });
   });
 });
