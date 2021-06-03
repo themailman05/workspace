@@ -13,16 +13,18 @@ import { DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
 interface Props {
   isProposal: boolean,
   beneficiaryProposal?: DummyBeneficiaryProposal
+  isProposalPreview?: boolean;
 }
 
 const defaultProps: Props = {
   isProposal: true,
-  beneficiaryProposal: beneficiaryProposal
+  beneficiaryProposal: beneficiaryProposal,
+  isProposalPreview: false
 }
-export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal }): JSX.Element {
+export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal, isProposalPreview }): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
-      <NavBar />
+      {!isProposalPreview ? <NavBar /> : <div></div>}
       <ImageHeader {...beneficiaryProposal} />
       {isProposal ? <Voting {...beneficiaryProposal} /> : <div></div>}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
