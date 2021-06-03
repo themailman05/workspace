@@ -8,7 +8,7 @@ const Vote = { Yes: 0, No: 1};
 const ProposalStatus= {New:0, ChallengePeriod:1, PendingFinalization:2, Passed:3, Failed:4};
 const ONE_DAY = 86400;
 
-describe('BeneficiaryNomination', function () {
+describe('BeneficiaryGovernance', function () {
 
   const PROPOSALID = 0;
   const PROPOSALID_BTP = 1;
@@ -303,18 +303,20 @@ describe('BeneficiaryNomination', function () {
       await this.mockPop.mint(proposer2.address, parseEther("2000"));
 
       const BeneficiaryRegistry = await ethers.getContractFactory('BeneficiaryRegistry');
-      this.BRContract = await BeneficiaryRegistry.deploy();
-      await  this.BRContract.deployed();
-
-     // await this.mockPop.mint(voter1.address, parseEther("50"));
+      const beneficiaryRegistryContract = await BeneficiaryRegistry.connect(governance).deploy();
+     
       const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryGovernance");
-      const contract = await BeneficiaryNomination.deploy(
+      this.BNPContract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
-        this.BRContract.address,
+        beneficiaryRegistryContract.address,
         this.mockPop.address,
         governance.address
       );
-      this.BNPContract=await contract.deployed();
+     
+      // pass the Beneficiary governance contract address as the governance address for the beneficiary registry contract
+      await beneficiaryRegistryContract.connect(governance).nominateNewGovernance(this.BNPContract.address);
+      await beneficiaryRegistryContract.connect(governance).nominateNewCouncil(this.BNPContract.address);
+
       // create a BNP proposal
        await this.mockPop.connect(proposer1).approve(this.BNPContract.address, parseEther('2000'));
        await this.BNPContract.connect(proposer1).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP);
@@ -381,7 +383,7 @@ describe('BeneficiaryNomination', function () {
     await expect(this.BNPContract.connect(owner).finalize(PROPOSALID)).to.be.revertedWith("Finalization not allowed");
  });
    it("should register the beneficiary after a successful BNP voting", async function() {
-    
+ 
     //three yes votes
     await this.mockStaking.mock.getVoiceCredits.returns(20);
     await this.BNPContract.connect(voter1).vote(PROPOSALID,Vote.Yes);
