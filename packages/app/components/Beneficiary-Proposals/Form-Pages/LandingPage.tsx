@@ -17,6 +17,7 @@ import useLocalStorageState from 'use-local-storage-state';
 
 export default function LandingPage(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
+  const [stepLimit, setStepLimit] = useState<number>(1);
   const [name, setName] = useLocalStorageState<string>('name', '');
   const [ethereumAddress, setEthereumAddress] =
     useLocalStorageState<string>('');
@@ -70,6 +71,8 @@ export default function LandingPage(): JSX.Element {
         setCurrentStep={setCurrentStep}
         name={name}
         setName={setName}
+        stepLimit={stepLimit}
+        setStepLimit={setStepLimit}
       />
       <EthereumAddress
         currentStep={currentStep}
@@ -132,7 +135,11 @@ export default function LandingPage(): JSX.Element {
         impactReports={impactReports}
         socialMediaLinks={socialMediaLinks}
       />
-      <Navigation currentStep={currentStep} setCurrentStep={setCurrentStep} />
+      <Navigation
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        stepLimit={stepLimit}
+      />
     </div>
   );
 }

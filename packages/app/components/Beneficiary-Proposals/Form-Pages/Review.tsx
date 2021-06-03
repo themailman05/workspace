@@ -30,7 +30,7 @@ export const uploadJsonToIpfs = (submissionData) => {
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
   myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  myHeaders.append('Content-Type', 'application/json');
+  myHeaders.append("Content-Type", "application/json");
   var raw = JSON.stringify(submissionData);
   loading();
   fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
@@ -42,7 +42,7 @@ export const uploadJsonToIpfs = (submissionData) => {
     .then((response) => response.text())
     .then((result) => {
       const hash = JSON.parse(result).IpfsHash;
-      console.log({ hash });
+      console.log({hash});
       toast.dismiss();
       success();
     })

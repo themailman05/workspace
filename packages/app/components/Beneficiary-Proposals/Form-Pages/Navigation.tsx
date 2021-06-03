@@ -4,8 +4,14 @@ import ProgressBar from 'components/ProgressBar';
 interface NavProps {
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  stepLimit: number;
 }
-export default function Navigation({ currentStep, setCurrentStep }: NavProps) {
+export default function Navigation({
+  currentStep,
+  setCurrentStep,
+  stepLimit,
+}: NavProps) {
+  console.log({ currentStep, stepLimit });
   const progressPercentage =
     currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / 10);
   return (
@@ -24,7 +30,9 @@ export default function Navigation({ currentStep, setCurrentStep }: NavProps) {
           <button
             type="button"
             className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            onClick={() => setCurrentStep(currentStep - 1)}
+            onClick={() => {
+              if (currentStep !== 0) setCurrentStep(currentStep - 1);
+            }}
           >
             <span className="sr-only">Previous</span>
             <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
@@ -32,7 +40,11 @@ export default function Navigation({ currentStep, setCurrentStep }: NavProps) {
           <button
             type="button"
             className="-ml-px relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-            onClick={() => setCurrentStep(currentStep + 1)}
+            onClick={() => {
+              if (currentStep !== 10 && currentStep < stepLimit) {
+                setCurrentStep(currentStep + 1);
+              }
+            }}
           >
             <span className="sr-only">Next</span>
             <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />

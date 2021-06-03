@@ -7,6 +7,8 @@ interface NameProps {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   name: string;
   setName: UpdateState<string>;
+  stepLimit: number;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
 export default function Name({
@@ -14,6 +16,8 @@ export default function Name({
   setCurrentStep,
   name,
   setName,
+  stepLimit,
+  setStepLimit,
 }: NameProps): JSX.Element {
   if (currentStep === 1) {
     return (
@@ -37,6 +41,7 @@ export default function Name({
             <div className="grid justify-items-stretch">
               <button
                 onClick={() => {
+                  setStepLimit(currentStep + 1);
                   setCurrentStep(currentStep++);
                 }}
                 className=" justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
