@@ -4,12 +4,12 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./Owned.sol";
 import "./IRewardsManager.sol";
+import "./IRewardsEscrow.sol";
 
 contract Staking is IStaking, Owned, ReentrancyGuard {
   using SafeMath for uint256;
@@ -24,7 +24,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   }
 
   IERC20 public immutable POP;
-  address public RewardsManager;
+  IRewardsManager public RewardsManager;
+  IRewardsEscrow public RewardsEscrow;
   uint256 public periodFinish = 0;
   uint256 public rewardRate = 0;
   uint256 public rewardsDuration = 7 days;
@@ -42,12 +43,15 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   event StakingWithdrawn(address _address, uint256 amount);
   event RewardPaid(address _address, uint256 reward);
   event RewardAdded(uint256 reward);
-  event RewardsManagerChanged(address _rewardsManager);
+  event RewardsManagerChanged(IRewardsManager _rewardsManager);
+  event RewardsEscrowChanged(IRewardsEscrow _rewardsEscrow);
 
   /* ========== CONSTRUCTOR ========== */
 
-  constructor(IERC20 _pop) Owned(msg.sender) {
+  constructor(IERC20 _pop, IRewardsEscrow _rewardsEscrow) Owned(msg.sender) {
     POP = _pop;
+    RewardsEscrow = _rewardsEscrow;
+    //How do i construct with a contract that itself needs this contract to construct?
   }
 
   /* ========== VIEWS ========== */
@@ -196,8 +200,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     require(lockedBalances[msg.sender]._balance > 0, "insufficient balance");
     require(amount <= getWithdrawableBalance(msg.sender));
 
-    POP.approve(address(this), amount);
-    POP.safeTransferFrom(address(this), msg.sender, amount);
+    POP.safeTransfer(msg.sender, amount);
 
     totalLocked = totalLocked.sub(amount);
     _clearWithdrawnFromLocked(amount);
@@ -209,8 +212,15 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     uint256 reward = rewards[msg.sender];
     if (reward > 0) {
       rewards[msg.sender] = 0;
-      POP.safeTransfer(msg.sender, reward);
-      emit RewardPaid(msg.sender, reward);
+      //This division doesnt look very safe
+      uint256 payout = reward.div(uint256(3));
+      uint256 escrowed = payout.mul(uint256(2));
+
+      POP.safeTransfer(msg.sender, payout);
+      POP.approve(address(RewardsEscrow), escrowed);
+      RewardsEscrow.lock(msg.sender, escrowed);
+
+      emit RewardPaid(msg.sender, payout);
     }
   }
 
@@ -260,9 +270,19 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     }
   }
 
-  function setRewardsManager(address _rewardsManager) external onlyOwner {
+  function setRewardsManager(IRewardsManager _rewardsManager)
+    external
+    onlyOwner
+  {
+    require(RewardsManager != _rewardsManager, "Same RewardsManager");
     RewardsManager = _rewardsManager;
     emit RewardsManagerChanged(_rewardsManager);
+  }
+
+  function setRewardsEscrow(IRewardsEscrow _rewardsEscrow) external onlyOwner {
+    require(RewardsEscrow != _rewardsEscrow, "Same RewardsEscrow");
+    RewardsEscrow = _rewardsEscrow;
+    emit RewardsEscrowChanged(_rewardsEscrow);
   }
 
   function notifyRewardAmount(uint256 reward)
@@ -270,7 +290,10 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     override
     updateReward(address(0))
   {
-    require(msg.sender == RewardsManager || msg.sender == owner, "Not allowed");
+    require(
+      IRewardsManager(msg.sender) == RewardsManager || msg.sender == owner,
+      "Not allowed"
+    );
     if (block.timestamp >= periodFinish) {
       rewardRate = reward.div(rewardsDuration);
     } else {

@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { waffle, ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
-import { MockERC20, Staking } from "../typechain";
+import { MockERC20, RewardsEscrow, Staking } from "../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "@ethersproject/bignumber";
 
@@ -15,6 +15,7 @@ let owner: SignerWithAddress,
 let mockERC20Factory
 let mockPop:MockERC20
 let staking:Staking
+let rewardsEscrow: RewardsEscrow
 
 describe("Staking", function () {
   beforeEach(async function () {
@@ -24,10 +25,17 @@ describe("Staking", function () {
     await mockPop.mint(owner.address, parseEther("500"));
     await mockPop.mint(nonOwner.address, parseEther("10"));
 
+    rewardsEscrow = (await (
+      await (
+        await ethers.getContractFactory("RewardsEscrow")
+      ).deploy(mockPop.address)
+    ).deployed()) as RewardsEscrow;
+
     const stakingFactory = await ethers.getContractFactory("Staking");
-    staking = await stakingFactory.deploy(mockPop.address) as Staking;
+    staking = await stakingFactory.deploy(mockPop.address, rewardsEscrow.address) as Staking;
     await staking.deployed();
     await staking.setRewardsManager(rewarder.address);
+    await rewardsEscrow.setStaking(staking.address)
     stakingFund = parseEther("10");
     await mockPop.transfer(staking.address, stakingFund);
     await mockPop.connect(owner).approve(staking.address, parseEther("100000"));
@@ -110,11 +118,12 @@ describe("Staking", function () {
       ethers.provider.send("evm_increaseTime", [700000]);
       ethers.provider.send("evm_mine",[]);
       const amountEarned = await staking.earned(owner.address);
+      const payout = amountEarned.div(BigNumber.from("3"));
       expect(await staking.connect(owner).exit(amount))
         .to.emit(staking, "StakingWithdrawn")
         .withArgs(owner.address, amount)
         .to.emit(staking, "RewardPaid")
-        .withArgs(owner.address, amountEarned);
+        .withArgs(owner.address, payout);
       expect(
         await staking.getWithdrawableBalance(owner.address)
       ).to.equal(0);
@@ -131,12 +140,13 @@ describe("Staking", function () {
       ethers.provider.send("evm_increaseTime", [700000]);
       ethers.provider.send("evm_mine",[]);
       const amountEarned = await staking.earned(owner.address);
+      const payout = amountEarned.div(BigNumber.from("3"));
       const popBalance = await mockPop.balanceOf(owner.address);
       const result = await staking.connect(owner).getReward()
       expect(result)
         .to.emit(staking, "RewardPaid")
-        .withArgs(owner.address, amountEarned);
-      expect(await mockPop.balanceOf(owner.address)).to.equal(popBalance.add(amountEarned));
+        .withArgs(owner.address, payout);
+      expect(await mockPop.balanceOf(owner.address)).to.equal(popBalance.add(payout));
       expect(
         await staking.getWithdrawableBalance(owner.address)
       ).to.equal(parseEther("1"));
@@ -433,7 +443,7 @@ describe("Staking", function () {
   describe("updatePeriodFinish", function () {
     beforeEach(async function () {
       const Staking = await ethers.getContractFactory("Staking");
-      staking = await Staking.deploy(mockPop.address);
+      staking = await Staking.deploy(mockPop.address,rewardsEscrow.address);
       await staking.deployed();
       stakingFund = parseEther("10");
       await mockPop.transfer(staking.address, stakingFund);
