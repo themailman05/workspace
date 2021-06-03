@@ -1,4 +1,4 @@
-// TODO: On submit clear local storage
+// TODO: On submit clear local storage - implement after connection to contract
 import BeneficiaryPage from '../../../components/BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast, { Toaster } from 'react-hot-toast';

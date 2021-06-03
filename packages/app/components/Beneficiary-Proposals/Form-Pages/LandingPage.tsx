@@ -51,7 +51,6 @@ export default function LandingPage(): JSX.Element {
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
-      {/* TODO: Create wrapper component for text input steps */}
       <Intro
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
