@@ -144,13 +144,11 @@ export default function LandingPage(): JSX.Element {
         additionalImages={additionalImages}
         impactReports={impactReports}
         socialMediaLinks={socialMediaLinks}
-        setStepLimit={setStepLimit}
       />
       <Navigation
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         stepLimit={stepLimit}
-        setStepLimit={setStepLimit}
       />
     </div>
   );
