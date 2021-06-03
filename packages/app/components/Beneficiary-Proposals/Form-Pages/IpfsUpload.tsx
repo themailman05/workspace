@@ -170,7 +170,7 @@ const DisplayMultipleImages: React.FC<Props> = ({
       <div className="my-4 grid grid-cols-4 gap-8 mx-16">
         {localStorageFile.map((imgHash) => {
           return (
-            <div>
+            <div key={imgHash}>
               <img src={'https://gateway.pinata.cloud/ipfs/' + imgHash}></img>
             </div>
           );
@@ -210,7 +210,7 @@ const DisplayPDFs: React.FC<Props> = ({
       <div>
         {localStorageFile.map((IpfsHash, i) => {
           return (
-            <div className="row-auto justify-self-center">
+            <div key={IpfsHash} className="row-auto justify-self-center">
               <a
                 className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1"
                 href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}

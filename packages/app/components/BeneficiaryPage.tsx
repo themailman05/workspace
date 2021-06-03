@@ -8,8 +8,18 @@ import Verification from 'components/Verification';
 import Voting from 'components/Beneficiary-Proposals/Voting';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
 import { beneficiaryProposalFixture as beneficiaryProposal } from '../fixtures/beneficiaryProposals';
+import { DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
 
-export default function BeneficiaryPage({ isProposal }): JSX.Element {
+interface Props {
+  isProposal: boolean,
+  beneficiaryProposal?: DummyBeneficiaryProposal
+}
+
+const defaultProps: Props = {
+  isProposal: true,
+  beneficiaryProposal: beneficiaryProposal
+}
+export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal }): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       <NavBar />
@@ -33,3 +43,5 @@ export default function BeneficiaryPage({ isProposal }): JSX.Element {
     </div>
   );
 }
+
+BeneficiaryPage.defaultProps = defaultProps;
