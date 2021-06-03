@@ -17,6 +17,7 @@ let owner: SignerWithAddress,
 
 let contracts: Contracts;
 let popBalance: BigNumber;
+const stakingFund = parseEther("10");
 
 async function deployContracts(): Promise<Contracts> {
   const mockPop = (await (
@@ -39,7 +40,6 @@ async function deployContracts(): Promise<Contracts> {
     ).deploy(mockPop.address, rewardsEscrow.address)
   ).deployed()) as Staking;
 
-  const stakingFund = parseEther("10");
   await mockPop.transfer(staking.address, stakingFund);
   await mockPop.connect(owner).approve(staking.address, parseEther("100000"));
 
@@ -106,7 +106,7 @@ describe("RewardsEscrow", function () {
     });
   });
 
-  describe("lock", function () {
+  describe.only("lock", function () {
     beforeEach(async function () {
       await contracts.rewardsEscrow
         .connect(owner)
@@ -130,6 +130,36 @@ describe("RewardsEscrow", function () {
         await contracts.mockPop.balanceOf(contracts.rewardsEscrow.address)
       ).to.equal(lockedAmount);
     });
+    it("should adjust the slope if new funds get locked", async function(){
+      const rewardsEarned = await contracts.staking.earned(owner.address);
+      const lockedAmount = rewardsEarned
+        .div(BigNumber.from("3"))
+        .mul(BigNumber.from("2"));
+      await contracts.staking.connect(owner).getReward();
+      expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
+        lockedAmount
+      );
+      await contracts.staking.connect(owner).exit();
+      await contracts.mockPop.transfer(contracts.staking.address, stakingFund);
+      await contracts.staking.setRewardsManager(nonOwner.address);
+      await contracts.staking.notifyRewardAmount(stakingFund);
+      const blockNumber = await ethers.provider.getBlockNumber()
+      const block = await ethers.provider.getBlock(blockNumber)
+      await contracts.staking.updatePeriodFinish(block.timestamp+604800);
+
+      await contracts.staking.connect(owner).stake(parseEther("1"), 604800);
+      ethers.provider.send("evm_increaseTime", [605000]);
+      ethers.provider.send("evm_mine", []);
+      const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(owner.address)
+      await contracts.staking.connect(owner).getReward();
+      const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(owner.address)
+      expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
+        parseEther("13.333300264549833618")
+      );
+      expect(escrowedBalance1.end < escrowedBalance2.end).to.equal(true)
+      expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true)
+
+    })
     it("should not allow anyone but the staking contract to lock funds", async function () {
       await expect(
         contracts.rewardsEscrow

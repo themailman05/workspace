@@ -119,7 +119,7 @@ describe("Staking", function () {
       ethers.provider.send("evm_mine",[]);
       const amountEarned = await staking.earned(owner.address);
       const payout = amountEarned.div(BigNumber.from("3"));
-      expect(await staking.connect(owner).exit(amount))
+      expect(await staking.connect(owner).exit())
         .to.emit(staking, "StakingWithdrawn")
         .withArgs(owner.address, amount)
         .to.emit(staking, "RewardPaid")

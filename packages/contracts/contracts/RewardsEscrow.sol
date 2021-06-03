@@ -27,7 +27,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   IERC20 public immutable POP;
   IStaking public Staking;
   uint256 public escrowDuration = 30 * 6 days;
-  mapping(address => Escrow) public escrows;
+  mapping(address => Escrow) public escrowedBalances;
   mapping(address => uint256) public vested;
 
   /* ========== EVENTS ========== */
@@ -46,14 +46,14 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   /* ========== VIEWS ========== */
 
   function getLocked(address _address) external view returns (uint256) {
-    return escrows[_address].amount;
+    return escrowedBalances[_address].amount;
   }
 
   function getVested(address _address) public view returns (uint256) {
     uint256 _now = block.timestamp;
-    uint256 locked = escrows[_address].amount;
-    uint256 start = escrows[_address].start;
-    uint256 end = escrows[_address].end;
+    uint256 locked = escrowedBalances[_address].amount;
+    uint256 start = escrowedBalances[_address].start;
+    uint256 end = escrowedBalances[_address].end;
     if (_now < start) {
       return 0;
     }
@@ -78,10 +78,10 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     POP.safeTransferFrom(msg.sender, address(this), _amount);
 
     uint256 _now = block.timestamp;
-    escrows[_address] = Escrow({
+    escrowedBalances[_address] = Escrow({
       start: _now,
       end: _now.add(escrowDuration),
-      amount: escrows[_address].amount.add(_amount)
+      amount: escrowedBalances[_address].amount.add(_amount)
     });
     emit Locked(_address, _amount);
   }
@@ -90,7 +90,9 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     uint256 claimable = vested[msg.sender];
     require(claimable > 0, "nothing to claim");
     vested[msg.sender] = 0;
-    escrows[msg.sender].amount = escrows[msg.sender].amount.sub(claimable);
+    escrowedBalances[msg.sender].amount = escrowedBalances[msg.sender]
+      .amount
+      .sub(claimable);
     POP.safeTransfer(msg.sender, claimable);
     emit Claimed(msg.sender, claimable);
   }

@@ -224,8 +224,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     }
   }
 
-  function exit(uint256 amount) external {
-    withdraw(amount);
+  function exit() external {
+    withdraw(getWithdrawableBalance(msg.sender));
     getReward();
   }
 
