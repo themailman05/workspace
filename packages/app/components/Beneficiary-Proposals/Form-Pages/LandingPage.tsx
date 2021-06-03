@@ -1,0 +1,138 @@
+import React, { useState } from 'react';
+import NavBar from '../../NavBar/NavBar';
+import Intro from './Intro';
+import Name from './Name';
+import AdditionalImages from './AdditionalImages';
+import EthereumAddress from './EthereumAddress';
+import HeaderImage from './HeaderImage';
+import ImpactReportsAudits from './ImpactReportsAudits';
+import MissionStatement from './MissionStatement';
+import ProfileImage from './ProfileImage';
+import ProofOfOwnership from './ProofOfOwnership';
+import Review from './Review';
+import SocialMediaLinks from './SocialMediaLinks';
+import Navigation from './Navigation';
+
+import useLocalStorageState from 'use-local-storage-state';
+
+export default function LandingPage(): JSX.Element {
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [name, setName] = useLocalStorageState<string>('name', '');
+  const [ethereumAddress, setEthereumAddress] =
+    useLocalStorageState<string>('');
+  const [missionStatement, setMissionStatement] = useLocalStorageState<string>(
+    'missionStatement',
+    '',
+  );
+  const [proofOfOwnership, setProofOfOwnership] = useLocalStorageState<string>(
+    'proofOfOwnership',
+    '',
+  );
+  const [profileImage, setProfileImage] = useLocalStorageState<string>(
+    'img',
+    null,
+  );
+  const [headerImage, setHeaderImage] = useLocalStorageState<string>(
+    'headerimg',
+    null,
+  );
+  const [additionalImages, setAdditionalImages] = useLocalStorageState<
+    string[]
+  >('additionalimages', []);
+  const [impactReports, setImpactReports] = useLocalStorageState<string[]>(
+    'impactreports',
+    [],
+  );
+  const [socialMediaLinks, setSocialMediaLinks] = useLocalStorageState<string>(
+    'socialMediaLinks',
+    '[]',
+  );
+  return (
+    <div className="flex flex-col h-screen justify-between">
+      <NavBar />
+      {/* TODO: Create wrapper component for text input steps */}
+      <Intro
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        setName={setName}
+        setEthereumAddress={setEthereumAddress}
+        setMissionStatement={setMissionStatement}
+        setProofOfOwnership={setProofOfOwnership}
+        setProfileImage={setProfileImage}
+        setHeaderImage={setHeaderImage}
+        setAdditionalImages={setAdditionalImages}
+        setImpactReports={setImpactReports}
+        setSocialMediaLinks={setSocialMediaLinks}
+        name={name}
+      />
+      <Name
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        name={name}
+        setName={setName}
+      />
+      <EthereumAddress
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        ethereumAddress={ethereumAddress}
+        setEthereumAddress={setEthereumAddress}
+      />
+      <MissionStatement
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        missionStatement={missionStatement}
+        setMissionStatement={setMissionStatement}
+      />
+      <ProofOfOwnership
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        proofOfOwnership={proofOfOwnership}
+        setProofOfOwnership={setProofOfOwnership}
+      />
+      <ProfileImage
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        profileImage={profileImage}
+        setProfileImage={setProfileImage}
+      />
+      <HeaderImage
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        headerImage={headerImage}
+        setHeaderImage={setHeaderImage}
+      />
+      <AdditionalImages
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        additionalImages={additionalImages}
+        setAdditionalImages={setAdditionalImages}
+      />
+      <ImpactReportsAudits
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        impactReports={impactReports}
+        setImpactReports={setImpactReports}
+      />
+      <SocialMediaLinks
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        socialMediaLinks={socialMediaLinks}
+        setSocialMediaLinks={setSocialMediaLinks}
+      />
+      <Review
+        currentStep={currentStep}
+        setCurrentStep={setCurrentStep}
+        name={name}
+        ethereumAddress={ethereumAddress}
+        missionStatement={missionStatement}
+        proofOfOwnership={proofOfOwnership}
+        profileImage={profileImage}
+        headerImage={headerImage}
+        additionalImages={additionalImages}
+        impactReports={impactReports}
+        socialMediaLinks={socialMediaLinks}
+      />
+      <Navigation currentStep={currentStep} setCurrentStep={setCurrentStep} />
+    </div>
+  );
+}
