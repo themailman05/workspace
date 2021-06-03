@@ -3,6 +3,7 @@ import { useDropzone } from 'react-dropzone';
 import toast, { Toaster } from 'react-hot-toast';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
+
 const baseStyle = {
   flex: 1,
   display: 'flex',
@@ -173,12 +174,11 @@ export default function IpfsUpload({
     () => ({
       ...baseStyle,
       ...(isDragActive ? activeStyle : {}),
-      ...(isDragAccept ? acceptStyle : {}),
+    ...(isDragAccept ? acceptStyle : {}),
       ...(isDragReject ? rejectStyle : {}),
     }),
     [isDragActive, isDragReject, isDragAccept],
   );
-  console.log({ localStorageFile });
   return (
     <div className="mx-auto content-center grid justify-items-stretch">
       <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
