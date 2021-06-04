@@ -199,12 +199,8 @@ describe("RewardsEscrow", function () {
 
     describe("locking additional funds after all other funds have been vested", function () {
       it("should claim vested funds and update the vesting time and locked funds when locking again", async function () {
-        //here we can see that my implementation of dividing by one third is problematic
-        //during tests the lockedAmount constantly switched between lockedAmount or lockedAmount2
-        //If nothing else this makes it very hard to test but might also lead to wrong amounts getting vested
-        //Plus what happens with the gwei that are left?
         const lockedAmount = parseEther("3.333355379188604788");
-        const lockedAmount2 = parseEther("3.333300264550156818");
+        const lockedAmount2 = parseEther("3.333300264550156818")
         await contracts.staking.connect(owner).getReward();
         const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
           owner.address
@@ -212,22 +208,21 @@ describe("RewardsEscrow", function () {
         ethers.provider.send("evm_increaseTime", [86400 * 30 * 6 + 1]);
         ethers.provider.send("evm_mine", []);
         const vested1 = await contracts.rewardsEscrow.getVested(owner.address);
-        expect(vested1 >= lockedAmount2 && vested1 <= lockedAmount).to.equal(
-          true
-        );
+        console.log(vested1.toString());
+        expect(vested1).to.equal(lockedAmount);
         const result = await contracts.staking.connect(owner).getReward();
         const vested2 = await contracts.rewardsEscrow.getVested(owner.address);
         expect(vested2).to.equal(0);
-        expect(result).to.emit(contracts.rewardsEscrow, "Claimed");
+        expect(result)
+          .to.emit(contracts.rewardsEscrow, "Claimed")
+          .withArgs(owner.address, lockedAmount);
         const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(
           owner.address
         );
         const lockedBalance = await contracts.rewardsEscrow.getLocked(
           owner.address
         );
-        expect(
-          lockedBalance >= lockedAmount2 && lockedBalance <= lockedAmount
-        ).to.equal(true);
+        expect(lockedBalance).to.equal(lockedAmount2);
         expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true);
         expect(escrowedBalance2.end).to.equal(
           escrowedBalance2.start.add(86400 * 30 * 3)
@@ -249,7 +244,7 @@ describe("RewardsEscrow", function () {
       const payout = rewardsEarned.div(BigNumber.from("3"));
       const lockedAmount = payout.mul(BigNumber.from("2"));
       await contracts.staking.connect(owner).getReward();
-      popBalance = await contracts.mockPop.balanceOf(owner.address)
+      popBalance = await contracts.mockPop.balanceOf(owner.address);
 
       ethers.provider.send("evm_increaseTime", [86400 * 30 * 4]);
       ethers.provider.send("evm_mine", []);
@@ -268,7 +263,7 @@ describe("RewardsEscrow", function () {
       await contracts.rewardsEscrow.connect(owner).claim();
       const locked4 = await contracts.rewardsEscrow.getLocked(owner.address);
       const vested4 = await contracts.rewardsEscrow.getVested(owner.address);
-      
+
       expect(await contracts.mockPop.balanceOf(owner.address)).to.equal(
         popBalance.add(lockedAmount)
       );
