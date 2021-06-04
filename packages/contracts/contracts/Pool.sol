@@ -3,11 +3,12 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 interface YearnVault is IERC20 {
   function token() external view returns (address);
@@ -48,7 +49,7 @@ interface ThreeCrv is IERC20 {}
 
 interface CrvLPToken is IERC20 {}
 
-contract Pool is ERC20, Ownable, ReentrancyGuard {
+contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
   using SafeMath for uint256;
   using SafeERC20 for ThreeCrv;
   using SafeERC20 for CrvLPToken;
@@ -103,7 +104,12 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     feesUpdatedAt = block.timestamp;
   }
 
-  function deposit(uint256 amount) external nonReentrant returns (uint256) {
+  function deposit(uint256 amount)
+    external
+    nonReentrant
+    whenNotPaused
+    returns (uint256)
+  {
     _takeFees();
 
     uint256 poolTokens = _issuePoolTokensForAmount(msg.sender, amount);
@@ -354,5 +360,13 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
       yearnVault.getPricePerFullShare().mul(yvShares).div(1e18);
     uint256 virtualPrice = curveMetapool.get_virtual_price();
     return crvLPTokens.mul(virtualPrice).div(1e18);
+  }
+
+  function pauseContract() external onlyOwner {
+    _pause();
+  }
+
+  function unpauseContract() external onlyOwner {
+    _unpause();
   }
 }
