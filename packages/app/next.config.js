@@ -5,7 +5,10 @@ require('../utils/src/envLoader');
 const workspace = join(__dirname, '..');
 
 module.exports = {
-  target: 'serverless',
+  //target: 'serverless',
+  future: {
+    webpack5: true,
+  },
   env: {
     RPC_URL: process.env.RPC_URL,
     CHAIN_ID: process.env.CHAIN_ID,
@@ -23,6 +26,7 @@ module.exports = {
   poweredByHeader: false,
   webpack: (config, options) => {
     /** Allows import modules from packages in workspace. */
+    //config.externals = { ...config.externals, electron: 'electron' };
     config.module = {
       ...config.module,
       rules: [
@@ -35,7 +39,6 @@ module.exports = {
         },
       ],
     };
-
     return config;
   },
 };
