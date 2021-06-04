@@ -212,7 +212,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     uint256 reward = rewards[msg.sender];
     if (reward > 0) {
       rewards[msg.sender] = 0;
-      //This division doesnt look very safe
+      //How to handle missing gwei?
       uint256 payout = reward.div(uint256(3));
       uint256 escrowed = payout.mul(uint256(2));
 
