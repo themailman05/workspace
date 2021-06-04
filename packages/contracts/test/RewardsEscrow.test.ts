@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import {  ethers } from "hardhat";
+import { ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
 import { MockERC20, RewardsEscrow, Staking } from "../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
@@ -106,66 +106,133 @@ describe("RewardsEscrow", function () {
     });
   });
 
-  describe.only("lock", function () {
+  describe("lock", function () {
     beforeEach(async function () {
       await contracts.rewardsEscrow
         .connect(owner)
         .setStaking(contracts.staking.address);
-      ethers.provider.send("evm_increaseTime", [604800]);
+      ethers.provider.send("evm_increaseTime", [302400]);
       ethers.provider.send("evm_mine", []);
     });
-    it("should transfer lock funds and emit an event ", async function () {
-      const rewardsEarned = await contracts.staking.earned(owner.address);
-      const lockedAmount = rewardsEarned
-        .div(BigNumber.from("3"))
-        .mul(BigNumber.from("2"));
-      const result = await contracts.staking.connect(owner).getReward();
-      expect(result)
-        .to.emit(contracts.rewardsEscrow, "Locked")
-        .withArgs(owner.address, lockedAmount);
-      expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
-        lockedAmount
-      );
-      expect(
-        await contracts.mockPop.balanceOf(contracts.rewardsEscrow.address)
-      ).to.equal(lockedAmount);
-    });
-    it("should adjust the slope if new funds get locked", async function(){
-      const rewardsEarned = await contracts.staking.earned(owner.address);
-      const lockedAmount = rewardsEarned
-        .div(BigNumber.from("3"))
-        .mul(BigNumber.from("2"));
-      await contracts.staking.connect(owner).getReward();
-      expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
-        lockedAmount
-      );
-      await contracts.staking.connect(owner).exit();
-      await contracts.mockPop.transfer(contracts.staking.address, stakingFund);
-      await contracts.staking.setRewardsManager(nonOwner.address);
-      await contracts.staking.notifyRewardAmount(stakingFund);
-      const blockNumber = await ethers.provider.getBlockNumber()
-      const block = await ethers.provider.getBlock(blockNumber)
-      await contracts.staking.updatePeriodFinish(block.timestamp+604800);
-
-      await contracts.staking.connect(owner).stake(parseEther("1"), 604800);
-      ethers.provider.send("evm_increaseTime", [605000]);
-      ethers.provider.send("evm_mine", []);
-      const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(owner.address)
-      await contracts.staking.connect(owner).getReward();
-      const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(owner.address)
-      expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
-        parseEther("13.333300264549833618")
-      );
-      expect(escrowedBalance1.end < escrowedBalance2.end).to.equal(true)
-      expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true)
-
-    })
     it("should not allow anyone but the staking contract to lock funds", async function () {
       await expect(
         contracts.rewardsEscrow
           .connect(owner)
           .lock(owner.address, parseEther("1"))
       ).to.be.revertedWith("you cant call this function");
+    });
+    describe("locking funds before the first vesting period starts", function () {
+      it("should transfer funds, lock them and emit an event", async function () {
+        const currentBlockNumber = await ethers.provider.getBlockNumber();
+        const currentBlock = await ethers.provider._getBlock(
+          currentBlockNumber
+        );
+        const result = await contracts.staking.connect(owner).getReward();
+        const lockedAmount = parseEther("3.333355379188604788");
+        const escrowedBalance = await contracts.rewardsEscrow.escrowedBalances(
+          owner.address
+        );
+        expect(result)
+          .to.emit(contracts.rewardsEscrow, "Locked")
+          .withArgs(owner.address, lockedAmount);
+        expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
+          lockedAmount
+        );
+        expect(
+          await contracts.mockPop.balanceOf(contracts.rewardsEscrow.address)
+        ).to.equal(lockedAmount);
+        expect(
+          escrowedBalance.start >
+            BigNumber.from(currentBlock.timestamp + 86400 * 30 * 3)
+        ).to.equal(true);
+        expect(escrowedBalance.end).to.equal(
+          escrowedBalance.start.add(86400 * 30 * 3)
+        );
+      });
+      it("should extend the vesting end time and locked funds when locking again", async function () {
+        await contracts.staking.connect(owner).getReward();
+        const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
+          owner.address
+        );
+        ethers.provider.send("evm_increaseTime", [302400]);
+        ethers.provider.send("evm_mine", []);
+        await contracts.staking.connect(owner).getReward();
+        const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(
+          owner.address
+        );
+        expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
+          parseEther("6.666655643738761606")
+        );
+        expect(escrowedBalance2.start).to.equal(escrowedBalance1.start);
+        expect(
+          escrowedBalance2.end > escrowedBalance2.start.add(86400 * 30 * 3)
+        ).to.equal(true);
+      });
+    });
+    describe("locking additional funds after vesting already started", function () {
+      it("should claim vested funds and update the vesting time and locked funds when locking again", async function () {
+        await contracts.staking.connect(owner).getReward();
+        const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
+          owner.address
+        );
+        ethers.provider.send("evm_increaseTime", [86400 * 30 * 3 + 1]);
+        ethers.provider.send("evm_mine", []);
+        const result = await contracts.staking.connect(owner).getReward();
+        const lockedAmount = parseEther("6.666654786394271074");
+        const vested = await contracts.rewardsEscrow.vested(owner.address);
+        expect(result)
+          .to.emit(contracts.rewardsEscrow, "Claimed")
+          .withArgs(owner.address, "857344490532");
+        expect(vested).to.equal(0);
+        const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(
+          owner.address
+        );
+        expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
+          lockedAmount
+        );
+        expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true);
+        expect(escrowedBalance2.end).to.equal(
+          escrowedBalance2.start.add(86400 * 30 * 3)
+        );
+      });
+    });
+
+    describe("locking additional funds after all other funds have been vested", function () {
+      it("should claim vested funds and update the vesting time and locked funds when locking again", async function () {
+        //here we can see that my implementation of dividing by one third is problematic
+        //during tests the lockedAmount constantly switched between lockedAmount or lockedAmount2
+        //If nothing else this makes it very hard to test but might also lead to wrong amounts getting vested
+        //Plus what happens with the gwei that are left?
+        const lockedAmount = parseEther("3.333355379188604788");
+        const lockedAmount2 = parseEther("3.333300264550156818");
+        await contracts.staking.connect(owner).getReward();
+        const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
+          owner.address
+        );
+        ethers.provider.send("evm_increaseTime", [86400 * 30 * 6 + 1]);
+        ethers.provider.send("evm_mine", []);
+        const vested1 = await contracts.rewardsEscrow.getVested(owner.address);
+        expect(vested1 >= lockedAmount2 && vested1 <= lockedAmount).to.equal(
+          true
+        );
+        const result = await contracts.staking.connect(owner).getReward();
+        const vested2 = await contracts.rewardsEscrow.getVested(owner.address);
+        expect(vested2).to.equal(0);
+        expect(result).to.emit(contracts.rewardsEscrow, "Claimed");
+        const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(
+          owner.address
+        );
+        const lockedBalance = await contracts.rewardsEscrow.getLocked(
+          owner.address
+        );
+        expect(
+          lockedBalance >= lockedAmount2 && lockedBalance <= lockedAmount
+        ).to.equal(true);
+        expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true);
+        expect(escrowedBalance2.end).to.equal(
+          escrowedBalance2.start.add(86400 * 30 * 3)
+        );
+      });
     });
   });
 
@@ -179,26 +246,29 @@ describe("RewardsEscrow", function () {
     });
     it("should claim funds", async function () {
       const rewardsEarned = await contracts.staking.earned(owner.address);
-      const payout = rewardsEarned.div(BigNumber.from("3"))
+      const payout = rewardsEarned.div(BigNumber.from("3"));
       const lockedAmount = payout.mul(BigNumber.from("2"));
       await contracts.staking.connect(owner).getReward();
-      ethers.provider.send("evm_increaseTime", [2592000]);
+      popBalance = await contracts.mockPop.balanceOf(owner.address)
+
+      ethers.provider.send("evm_increaseTime", [86400 * 30 * 4]);
       ethers.provider.send("evm_mine", []);
-      const locked1 = await contracts.rewardsEscrow.getLocked(owner.address);
-      const vested1 = await contracts.rewardsEscrow.getVested(owner.address);
-      popBalance = await contracts.mockPop.balanceOf(owner.address);
+
       await contracts.rewardsEscrow.connect(owner).claim();
       expect(await contracts.mockPop.balanceOf(owner.address)).to.equal(
-        parseEther("493.444437524494542442")
+        parseEther("494.555547227119704082")
       );
-      ethers.provider.send("evm_increaseTime", [2592000 * 5]);
+
+      ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]);
       ethers.provider.send("evm_mine", []);
+
       const locked3 = await contracts.rewardsEscrow.getLocked(owner.address);
       const vested3 = await contracts.rewardsEscrow.getVested(owner.address);
       expect(locked3).to.equal(vested3);
       await contracts.rewardsEscrow.connect(owner).claim();
       const locked4 = await contracts.rewardsEscrow.getLocked(owner.address);
       const vested4 = await contracts.rewardsEscrow.getVested(owner.address);
+      
       expect(await contracts.mockPop.balanceOf(owner.address)).to.equal(
         popBalance.add(lockedAmount)
       );
@@ -206,7 +276,9 @@ describe("RewardsEscrow", function () {
       expect(locked4).to.equal(0);
     });
     it("reverts if there is nothing to claim", async function () {
-      await expect(contracts.rewardsEscrow.connect(nonOwner).claim()).to.be.revertedWith("nothing to claim");
+      await expect(
+        contracts.rewardsEscrow.connect(nonOwner).claim()
+      ).to.be.revertedWith("nothing to claim");
     });
   });
 });
