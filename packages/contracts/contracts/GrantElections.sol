@@ -7,13 +7,13 @@ import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 import "./IGrantRegistry.sol";
 import "./IRandomNumberConsumer.sol";
+import "./Governed.sol";
 
-contract GrantElections {
+contract GrantElections is Governed {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   IERC20 public immutable POP;
-  address public governance;
 
   struct Vote {
     address voter;
@@ -63,10 +63,6 @@ contract GrantElections {
   IGrantRegistry grantRegistry;
   IRandomNumberConsumer randomNumberConsumer;
 
-  modifier onlyGovernance {
-    require(msg.sender == governance, "!governance");
-    _;
-  }
   modifier validAddress(address _address) {
     require(_address == address(_address), "invalid address");
     _;
@@ -81,11 +77,6 @@ contract GrantElections {
     uint256[] _shares
   );
 
-  event GovernanceUpdated(
-    address indexed _oldAddress,
-    address indexed _newAddress
-  );
-
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
@@ -93,27 +84,13 @@ contract GrantElections {
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
-  ) {
+  ) Governed(_governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     grantRegistry = _grantRegistry;
     randomNumberConsumer = _randomNumberConsumer;
     POP = _pop;
-    governance = _governance;
     _setDefaults();
-  }
-
-  /**
-   * @notice sets governance to address provided
-   */
-  function setGovernance(address _address)
-    external
-    onlyGovernance
-    validAddress(_address)
-  {
-    address _previousGovernance = governance;
-    governance = _address;
-    emit GovernanceUpdated(_previousGovernance, _address);
   }
 
   // todo: mint POP for caller to incentivize calling function

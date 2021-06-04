@@ -5,9 +5,7 @@ pragma solidity >=0.7.0 <0.8.0;
 import "./BeneficiaryRegistry.sol";
 import "./Owned.sol";
 
-contract GrantRegistry is Owned {
-  address private governance;
-  address private council;
+contract GrantRegistry is Governed, CouncilControlled {
   IBeneficiaryRegistry private beneficiaryRegistry;
 
   uint8 private grantShareType;
@@ -26,14 +24,6 @@ contract GrantRegistry is Owned {
     address[] awardees,
     uint8 grantShareType,
     uint256[] shares
-  );
-  event GovernanceUpdated(
-    address indexed _oldAddress,
-    address indexed _newAddress
-  );
-  event CouncilUpdated(
-    address indexed _oldAddress,
-    address indexed _newAddress
   );
 
   struct Awardee {
@@ -54,47 +44,18 @@ contract GrantRegistry is Owned {
   mapping(uint8 => Awardee[]) private activeAwardees;
   mapping(uint8 => uint8) private activeAwardeesCount;
 
-  modifier onlyGovernance {
-    require(msg.sender == governance, "!governance");
-    _;
-  }
-
-  modifier onlyCouncil {
-    require(msg.sender == council, "!council");
-    _;
-  }
-
   modifier validAddress(address _address) {
     require(_address == address(_address), "invalid address");
     _;
   }
 
-  constructor(address _beneficiaryRegistry) Owned(msg.sender) {
-    governance = msg.sender;
-    council = msg.sender;
+  constructor(address _beneficiaryRegistry)
+    Governed(msg.sender)
+    CouncilControlled(msg.sender)
+  {
     grantTermsEnabled[uint8(GrantTerm.QUARTER)] = true;
     grantShareType = GRANT_SHARE_TYPE_EQUAL_WEIGHT;
     beneficiaryRegistry = IBeneficiaryRegistry(_beneficiaryRegistry);
-  }
-
-  function setGovernance(address _address)
-    public
-    onlyGovernance
-    validAddress(_address)
-  {
-    address previousGovernance = governance;
-    governance = _address;
-    emit GovernanceUpdated(previousGovernance, _address);
-  }
-
-  function setCouncil(address _address)
-    public
-    onlyCouncil
-    validAddress(_address)
-  {
-    address previousCouncil = council;
-    council = _address;
-    emit CouncilUpdated(previousCouncil, _address);
   }
 
   function setEnabledGrantTerms(uint8[] calldata grantTerms)

@@ -1,12 +1,15 @@
 import "@popcorn/utils/src/envLoader";
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-waffle";
-import '@typechain/hardhat'
+import "@typechain/hardhat";
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
 import { utils } from "ethers";
 
-import { deploy } from "./scripts/deployWithValues";
+import deploy from "./scripts/deployWithValues";
+import deployTestnet from "./scripts/deployWithValuesTestnet";
 
-import  {
+import {
   GrantElectionAdapter,
 } from "./scripts/helpers/GrantElectionAdapter";
 
@@ -25,6 +28,10 @@ task("environment").setAction(async (args, hre) => {
 
 task("dev:deploy").setAction(async (args, hre) => {
   await deploy(hre.ethers);
+});
+
+task("dev:deployTestnet").setAction(async (args, hre) => {
+  await deployTestnet(hre.ethers);
 });
 
 task("elections:getElectionMetadata")
@@ -47,6 +54,7 @@ task("elections:refreshElectionState")
   .addParam("term", "grant term (int)")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
+    console.log(signer.address);
     const contract = new hre.ethers.Contract(
       process.env.ADDR_GRANT_ELECTION,
       require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
@@ -142,13 +150,26 @@ task("random", "gets a random number")
 
 module.exports = {
   solidity: {
-    version: "0.7.3",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 200,
+    compilers: [
+      {
+        version: "0.7.3",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
       },
-    },
+      {
+        version: "0.6.6",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 1000,
+          },
+        },
+      },
+    ],
   },
   networks: {
     mainnet: {
@@ -157,20 +178,26 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY]
     },
     hardhat: {
-      chainId: +process.env.CHAIN_ID,
     },
     rinkeby: {
       url: process.env.RPC_URL,
-      accounts: [process.env.PRIVATE_KEY]
-        .concat(
-          (process.env.BENEFICIARY_PRIVATE_KEYS &&
-            process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
-            []
-        )
-        .concat(
-          (process.env.VOTER_PRIVATE_KEY && [process.env.VOTER_PRIVATE_KEY]) ||
-            []
-        ),
+      accounts: [process.env.PRIVATE_KEY].concat(
+        (process.env.BENEFICIARY_PRIVATE_KEYS &&
+          process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
+          []
+      ),
+      gas: 10000000,
+      gasPrice: 10000000000,
     },
+  },
+  gasReporter: {
+    currency: "USD",
+    gasPrice: 100,
+    enabled: false,
+  },
+  contractSizer: {
+    alphaSort: true,
+    runOnCompile: true,
+    disambiguatePaths: false,
   },
 };
