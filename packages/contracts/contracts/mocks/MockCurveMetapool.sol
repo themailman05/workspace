@@ -8,8 +8,10 @@ contract MockCurveMetapool {
   MockERC20 lpToken;
   MockERC20 threeCrv;
   uint256 virtualPrice = 1e18;
+  uint256 baseVirtualPrice = 1e18;
 
   uint256 withdrawalSlippageBps = 10;
+  uint256 depositSlippageBps = 0;
 
   uint256 BPS_DENOMINATOR = 10000;
 
@@ -28,8 +30,11 @@ contract MockCurveMetapool {
   {
     threeCrv.transferFrom(msg.sender, address(this), amounts[1]);
     assert(amounts[1] > min_mint_amounts);
-    lpToken.mint(msg.sender, amounts[1]);
-    return amounts[1];
+    uint256 slippage = (amounts[1] * depositSlippageBps) / 10000;
+    uint256 amountWithSlippage = amounts[1] - slippage;
+    uint256 lpTokenAmount = baseVirtualPrice  * 1e18 / virtualPrice * amountWithSlippage / 1e18;
+    lpToken.mint(msg.sender, lpTokenAmount);
+    return lpTokenAmount;
   }
 
   function remove_liquidity_one_coin(
@@ -52,6 +57,10 @@ contract MockCurveMetapool {
 
   function setVirtualPrice(uint256 virtualPrice_) external {
     virtualPrice = virtualPrice_;
+  }
+  
+  function setBaseVirtualPrice(uint256 baseVirtualPrice_) external {
+    baseVirtualPrice = baseVirtualPrice_;
   }
 
   function setWithdrawalSlippage(uint256 withdrawalSlippageBps_) external {
