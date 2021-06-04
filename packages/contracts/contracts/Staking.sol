@@ -261,8 +261,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     if (lockedBalances[msg.sender]._end <= _currentTime) {
       if (_amount == lockedBalances[msg.sender]._balance) {
         delete lockedBalances[msg.sender];
-      }
-      if (_amount < lockedBalances[msg.sender]._balance) {
+      } else {
         lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
           ._balance
           .sub(_amount);

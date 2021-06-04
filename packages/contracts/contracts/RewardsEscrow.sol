@@ -26,7 +26,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   IERC20 public immutable POP;
   IStaking public Staking;
-  uint256 public escrowDuration = 30 * 6 days;
+  uint256 public escrowDuration = 30 * 3 days;
   mapping(address => Escrow) public escrowedBalances;
   mapping(address => uint256) public vested;
 
@@ -77,6 +77,62 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
     POP.safeTransferFrom(msg.sender, address(this), _amount);
 
+    if (
+      escrowedBalances[_address].end > _now &&
+      escrowedBalances[_address].start < _now
+    ) {
+      _increaseLock(_address, _amount);
+    } else {
+      _lock(_address, _amount);
+    }
+    emit Locked(_address, _amount);
+  }
+
+  function claim() public nonReentrant updateVested(msg.sender) {
+    uint256 claimable = vested[msg.sender];
+    require(claimable > 0, "nothing to claim");
+    if (claimable == escrowedBalances[msg.sender].amount) {
+      delete vested[msg.sender];
+      delete escrowedBalances[msg.sender];
+    } else {
+      vested[msg.sender] = 0;
+      escrowedBalances[msg.sender].amount = escrowedBalances[msg.sender]
+        .amount
+        .sub(claimable);
+    }
+    POP.safeTransfer(msg.sender, claimable);
+    emit Claimed(msg.sender, claimable);
+  }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
+
+  function _lock(address _address, uint256 _amount) internal nonReentrant {
+    uint256 _now = block.timestamp;
+    uint256 _start = _now.add(30 * 3 days);
+    uint256 _end = _start.add(escrowDuration);
+
+    if (escrowedBalances[_address].start >= _now) {
+      _start = escrowedBalances[_address].start;
+    }
+    escrowedBalances[_address] = Escrow({
+      start: _start,
+      end: _end,
+      amount: escrowedBalances[_address].amount.add(_amount)
+    });
+
+    emit Locked(_address, _amount);
+  }
+
+  function _increaseLock(address _address, uint256 _amount)
+    internal
+    nonReentrant
+  {
+    require(msg.sender == address(Staking), "you cant call this function");
+    require(_amount > 0, "amount must be greater than 0");
+    require(POP.balanceOf(msg.sender) >= _amount, "insufficient balance");
+
+    _claimFor(_address);
+
     uint256 _now = block.timestamp;
     escrowedBalances[_address] = Escrow({
       start: _now,
@@ -86,18 +142,16 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     emit Locked(_address, _amount);
   }
 
-  function claim() external nonReentrant updateVested(msg.sender) {
-    uint256 claimable = vested[msg.sender];
+  function _claimFor(address _address) internal nonReentrant {
+    uint256 claimable = vested[_address];
     require(claimable > 0, "nothing to claim");
-    vested[msg.sender] = 0;
-    escrowedBalances[msg.sender].amount = escrowedBalances[msg.sender]
-      .amount
-      .sub(claimable);
-    POP.safeTransfer(msg.sender, claimable);
-    emit Claimed(msg.sender, claimable);
+    vested[_address] = 0;
+    escrowedBalances[_address].amount = escrowedBalances[_address].amount.sub(
+      claimable
+    );
+    POP.safeTransfer(_address, claimable);
+    emit Claimed(_address, claimable);
   }
-
-  /* ========== RESTRICTED FUNCTIONS ========== */
 
   function setStaking(IStaking _staking) external onlyOwner {
     require(Staking != _staking, "Same Staking");
