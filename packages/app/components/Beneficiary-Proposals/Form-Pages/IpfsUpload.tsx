@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { useDropzone } from 'react-dropzone';
+import { DropzoneRootProps, useDropzone } from 'react-dropzone';
 import toast, { Toaster } from 'react-hot-toast';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
@@ -179,13 +179,15 @@ export default function IpfsUpload({
     }),
     [isDragActive, isDragReject, isDragAccept],
   );
+  // Hack to avoid netlify build breaking. 
+  const rootProps = getRootProps({ style }) as any;
   return (
     <div className="mx-auto content-center grid justify-items-stretch">
       <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
         {stepName}
       </h2>
       {!localStorageFile || localStorageFile.length === 0 ? (
-        <div {...getRootProps({ style })}>
+        <div {...rootProps}>
           <input {...getInputProps()} />
           <div className="mt-1 sm:mt-0 sm:col-span-2">
             <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
