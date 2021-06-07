@@ -1,0 +1,93 @@
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[[plugins]]
+  package = 'netlify-plugin-contextual-env'
+  [plugins.inputs]
+    mode = 'prefix'
+
+[context.deploy-preview]
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; rm -rf ../../.next; mv .next ../../; mv public ../../; cd ../../"
+  
+
+  [context.deploy-preview.environment]
+    # this is a random private key needed for hardhat compile to work
+    PRIVATE_KEY = "31c18a7e6aaf93d1548ec9ae1b322c75400cb39627ae82bd1bb761ea79224a7d"
+    CHAIN_ID = "4"
+    ADDR_BENEFICIARY_REGISTRY = "0x458AA7487104f00B8837856AD07971dF1247506E"
+    ADDR_GRANT_REGISTRY = "0x3F1f673c68d8e9828c6f3585E262B1274582B832"
+    ADDR_STAKING = "0x19251c0BA87cC7B8956e23eD129ad3f149846B56"
+    ADDR_RANDOM_NUMBER = "0x3618dEaBA11D7cd1879485A79E9dce5Acc23cc0d"
+    ADDR_GOVERNANCE = "0x4a7a11D12805A7570bD1CB65E1Ca1396a0B1aF6F"
+    ADDR_GRANT_ELECTION = "0x2d3EfF9b0E198DA95E43fee52713F8168d792433"
+    ADDR_PRIVATE_SALE = "0x33800CB1899deADc7298322481289bC6925F2cE1"
+    ADDR_POP = "0xcc763df24b9b1d68194ba52e787b6760f04ffd72"
+    ADDR_USDC = "0x21Df8C81d26DfCAC129A169bAf427e5368F8a016"
+    ADDR_TOKEN_MANAGER = "0x4b5af91d2489352e365478ca755875965ec5a3ee"
+    ADDR_TREASURY = "0xc8299a954d8B012d77de9CC401155B309Ca36584"
+    PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
+
+[context.production]
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+  publish = "packages/app/out"
+
+  [context.production.environment]
+    # this is a random private key needed for hardhat compile to work
+    PRIVATE_KEY = "31c18a7e6aaf93d1548ec9ae1b322c75400cb39627ae82bd1bb761ea79224a7d"
+    CHAIN_ID = "1"
+    ADDR_BENEFICIARY_REGISTRY = "0x458AA7487104f00B8837856AD07971dF1247506E"
+    ADDR_GRANT_REGISTRY = "0x3F1f673c68d8e9828c6f3585E262B1274582B832"
+    ADDR_STAKING = "0x19251c0BA87cC7B8956e23eD129ad3f149846B56"
+    ADDR_RANDOM_NUMBER = "0x3618dEaBA11D7cd1879485A79E9dce5Acc23cc0d"
+    ADDR_GOVERNANCE = "0x4a7a11D12805A7570bD1CB65E1Ca1396a0B1aF6F"
+    ADDR_GRANT_ELECTION = "0x2d3EfF9b0E198DA95E43fee52713F8168d792433"
+    ADDR_PRIVATE_SALE = "0x51F3a9C2B8771a9C299ed886b9D51F0445D7d30f"
+    ADDR_POP = "0xd0cd466b34a24fcb2f87676278af2005ca8a78c4"
+    ADDR_USDC = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+    ADDR_TOKEN_MANAGER = "0x50a7c5a2aa566eb8aafc80ffc62e984bfece334f"
+    ADDR_TREASURY = "0x6BE8ef6207b4114A52ae5011FE8846dA2Af8F281"
+    PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
+
+
+
+[context.rinkeby]
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; mv .next ../../; mv public ../../; cd ../../ "
+
+  publish = "packages/app/out"
+  [context.rinkeby.environment]
+    # this is a random private key needed for hardhat compile to work
+    PRIVATE_KEY = "31c18a7e6aaf93d1548ec9ae1b322c75400cb39627ae82bd1bb761ea79224a7d"
+    CHAIN_ID = "4"
+    ADDR_BENEFICIARY_REGISTRY = "0x458AA7487104f00B8837856AD07971dF1247506E"
+    ADDR_GRANT_REGISTRY = "0x3F1f673c68d8e9828c6f3585E262B1274582B832"
+    ADDR_STAKING = "0x19251c0BA87cC7B8956e23eD129ad3f149846B56"
+    ADDR_RANDOM_NUMBER = "0x3618dEaBA11D7cd1879485A79E9dce5Acc23cc0d"
+    ADDR_GOVERNANCE = "0x4a7a11D12805A7570bD1CB65E1Ca1396a0B1aF6F"
+    ADDR_GRANT_ELECTION = "0x2d3EfF9b0E198DA95E43fee52713F8168d792433"
+    ADDR_PRIVATE_SALE = "0x33800CB1899deADc7298322481289bC6925F2cE1"
+    ADDR_POP = "0xcc763df24b9b1d68194ba52e787b6760f04ffd72"
+    ADDR_USDC = "0x21Df8C81d26DfCAC129A169bAf427e5368F8a016"
+    ADDR_TOKEN_MANAGER = "0x4b5af91d2489352e365478ca755875965ec5a3ee"
+    ADDR_TREASURY = "0xc8299a954d8B012d77de9CC401155B309Ca36584"
+    PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"
+
+[context.develop]
+  command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build; rm -rf ../../.next; mv .next ../../; mv public ../../; cd ../../"
+
+  publish = "packages/app/out"
+  [context.develop.environment]
+    # this is a random private key needed for hardhat compile to work
+    PRIVATE_KEY = "31c18a7e6aaf93d1548ec9ae1b322c75400cb39627ae82bd1bb761ea79224a7d"
+    CHAIN_ID = "4"
+    ADDR_BENEFICIARY_REGISTRY = "0x458AA7487104f00B8837856AD07971dF1247506E"
+    ADDR_GRANT_REGISTRY = "0x3F1f673c68d8e9828c6f3585E262B1274582B832"
+    ADDR_STAKING = "0x19251c0BA87cC7B8956e23eD129ad3f149846B56"
+    ADDR_RANDOM_NUMBER = "0x3618dEaBA11D7cd1879485A79E9dce5Acc23cc0d"
+    ADDR_GOVERNANCE = "0x4a7a11D12805A7570bD1CB65E1Ca1396a0B1aF6F"
+    ADDR_GRANT_ELECTION = "0x2d3EfF9b0E198DA95E43fee52713F8168d792433"
+    ADDR_PRIVATE_SALE = "0x33800CB1899deADc7298322481289bC6925F2cE1"
+    ADDR_POP = "0xcc763df24b9b1d68194ba52e787b6760f04ffd72"
+    ADDR_USDC = "0x21Df8C81d26DfCAC129A169bAf427e5368F8a016"
+    ADDR_TOKEN_MANAGER = "0x4b5af91d2489352e365478ca755875965ec5a3ee"
+    ADDR_TREASURY = "0xc8299a954d8B012d77de9CC401155B309Ca36584"
+    PRIVATE_SALE_DEFAULT_SUPPLY = "7500000"

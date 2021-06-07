@@ -1,31 +1,41 @@
+import { DefaultSingleActionModalProps } from 'components/Modal/SingleActionModal';
 import React, { createContext, useReducer } from 'react';
+import { SingleActionModalProps } from '../components/Modal/SingleActionModal';
+import { Notification } from '../components/Notifications/NotificationsContainer';
+import {
+  DefaultDualActionModalProps,
+  DualActionModalProps,
+} from '../components/Modal/DualActionModal';
 import {
   AppActions,
-  DISPLAY_NOTIFICATION,
-  TOGGLE_NOTIFICATION,
+  PUSH_NOTIFICATION,
+  UNSET_NOTIFICATION,
+  HIDE_NOTIFICATION,
+  CLEAR_NOTIFICATIONS,
+  SINGLE_ACTION_MODAL,
+  DUAL_ACTION_MODAL,
+  DUAL_ACTION_WIDE_MODAL,
 } from './actions';
-
-export interface Notification {
-  visible: boolean;
-  type: 'info' | 'warn';
-  isFlash?: boolean;
-  content: React.ReactElement;
-  backdrop?: boolean;
-}
-
+import { DefaultDualActionWideModalProps, DualActionWideModalProps } from 'components/Modal/DualActionWideModal';
 
 interface DefaultState {
-  notifications: Notification;
+  notifications: Notification[];
+  singleActionModal: SingleActionModalProps;
+  dualActionModal: DualActionModalProps;
+  dualActionWideModal: DualActionWideModalProps;
 }
 
 const initialState: DefaultState = {
-  notifications: {
-    visible: false,
-    type: 'info',
-    content: <></>,
-    isFlash: false,
-    backdrop: false,
+  notifications: [],
+  singleActionModal: {
+    ...DefaultSingleActionModalProps,
   },
+  dualActionModal: {
+    ...DefaultDualActionModalProps,
+  },
+  dualActionWideModal: {
+    ...DefaultDualActionWideModalProps,
+  }
 };
 
 const store = createContext(
@@ -40,17 +50,61 @@ const StateProvider = ({ children }) => {
   const [state, dispatch] = useReducer(
     (state: DefaultState, action: AppActions) => {
       switch (action.type) {
-        case DISPLAY_NOTIFICATION:
+        case PUSH_NOTIFICATION:
           return {
             ...state,
-            notifications: action.payload,
+            notifications: [...state.notifications, action.payload],
           };
-        case TOGGLE_NOTIFICATION:
+        case HIDE_NOTIFICATION:
           return {
             ...state,
-            notifications: {
-              ...state.notifications,
-              visible: !state.notifications.visible,
+            notifications: [
+              ...state.notifications.map((notification) => {
+                if (notification.id == action.payload) {
+                  notification.visible = false;
+                }
+                return notification;
+              }),
+            ],
+          };
+        case UNSET_NOTIFICATION:
+          return {
+            ...state,
+            notifications: [
+              ...state.notifications.filter(
+                (notification) => notification.id !== action.payload,
+              ),
+            ],
+          };
+        case CLEAR_NOTIFICATIONS:
+          return {
+            ...state,
+            notifications: [
+              ...state.notifications.map((notification) => {
+                notification.visible = false;
+                return notification;
+              }),
+            ],
+          };
+        case SINGLE_ACTION_MODAL:
+          return {
+            ...state,
+            singleActionModal: {
+              ...action.payload,
+            },
+          };
+        case DUAL_ACTION_MODAL:
+          return {
+            ...state,
+            dualActionModal: {
+              ...action.payload,
+            },
+          };
+        case DUAL_ACTION_WIDE_MODAL:
+          return {
+            ...state,
+            dualActionWideModal: {
+              ...action.payload,
             },
           };
         default:
