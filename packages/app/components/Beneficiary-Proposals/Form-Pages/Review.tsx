@@ -3,7 +3,7 @@ import BeneficiaryPage from '../../../components/BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
 
-interface RProps {
+interface ReviewProps {
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   name: string;
@@ -63,7 +63,7 @@ export default function Review({
   additionalImages,
   impactReports,
   socialMediaLinks,
-}: RProps): JSX.Element {
+}: ReviewProps): JSX.Element {
   if (currentStep === 10) {
     const submissionData = {
       name,
@@ -117,7 +117,7 @@ export default function Review({
         </div>
 
         <BeneficiaryPage
-          isProposal={true}
+          isProposal={false}
           beneficiaryProposal={beneficaryProposal}
           isProposalPreview={true}
         />
