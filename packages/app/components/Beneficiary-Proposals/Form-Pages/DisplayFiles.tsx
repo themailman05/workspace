@@ -2,7 +2,7 @@ import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import { DocumentReportIcon } from '@heroicons/react/outline';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 
-interface DProps {
+interface DisplayFilesProps {
   localStorageFile: string | string[];
   setLocalStorage: UpdateState<string> | UpdateState<string[]>;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
@@ -39,7 +39,7 @@ function ActionButtons({
   );
 }
 
-export const DisplayImages: React.FC<DProps> = ({
+export const DisplayImages: React.FC<DisplayFilesProps> = ({
   localStorageFile,
   setLocalStorage,
   setCurrentStep,
@@ -78,7 +78,7 @@ export const DisplayImages: React.FC<DProps> = ({
   );
 };
 
-export const DisplayPDFs: React.FC<DProps> = ({
+export const DisplayPDFs: React.FC<DisplayFilesProps> = ({
   localStorageFile,
   setLocalStorage,
   setCurrentStep,
