@@ -8,6 +8,7 @@ interface PIProps {
   profileImage: string;
   setProfileImage: UpdateState<string>;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  visible: boolean;
 }
 
 export default function ProfileImage({
@@ -16,8 +17,9 @@ export default function ProfileImage({
   profileImage,
   setProfileImage,
   setStepLimit,
+  visible
 }: PIProps) {
-  if (currentStep === 5) {
+  if (visible) {
     return (
       <IpfsUpload
         stepName={'5 - UPLOAD PROFILE IMAGE'}

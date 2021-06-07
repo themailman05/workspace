@@ -15,6 +15,7 @@ interface PreviewProps {
   additionalImages: string[];
   impactReports: string[];
   socialMediaLinks: string;
+  visible: boolean;
 }
 
 function twoDaysInAdvance() {
@@ -64,8 +65,9 @@ export default function Preview({
   additionalImages,
   impactReports,
   socialMediaLinks,
+  visible
 }: PreviewProps): JSX.Element {
-  if (currentStep === 10) {
+  if (visible) {
     const submissionData = {
       name,
       ethereumAddress,

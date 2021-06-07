@@ -168,9 +168,10 @@ export default function SocialMediaLinks({
   setCurrentStep,
   socialMediaLinks,
   setSocialMediaLinks,
-  setStepLimit
+  setStepLimit,
+  visible
 }): JSX.Element {
-  if (currentStep === 9) {
+  if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">

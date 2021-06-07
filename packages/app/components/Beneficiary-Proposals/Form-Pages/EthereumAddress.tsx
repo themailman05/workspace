@@ -10,6 +10,7 @@ interface EProps {
   ethereumAddress: string;
   setEthereumAddress: UpdateState<string>;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  visible: boolean;
 }
 
 export default function EtherumAddress({
@@ -18,8 +19,9 @@ export default function EtherumAddress({
   ethereumAddress,
   setEthereumAddress,
   setStepLimit,
+  visible
 }: EProps): JSX.Element {
-  if (currentStep === 2) {
+  if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">

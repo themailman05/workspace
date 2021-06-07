@@ -8,6 +8,7 @@ interface HIProps {
   headerImage: string;
   setHeaderImage: UpdateState<string>;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  visible: boolean;
 }
 
 export default function HeaderImage({
@@ -16,8 +17,9 @@ export default function HeaderImage({
   headerImage,
   setHeaderImage,
   setStepLimit,
+  visible
 }: HIProps): JSX.Element {
-  if (currentStep === 6) {
+  if (visible) {
     return (
       <IpfsUpload
         stepName={'6 - UPLOAD HEADER IMAGE'}

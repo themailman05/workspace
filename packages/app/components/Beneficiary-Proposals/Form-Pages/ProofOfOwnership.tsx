@@ -8,6 +8,7 @@ interface PoPProps {
   proofOfOwnership: string;
   setProofOfOwnership: UpdateState<string>;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  visible: boolean;
 }
 
 export default function ProofOfOwnership({
@@ -16,8 +17,9 @@ export default function ProofOfOwnership({
   proofOfOwnership,
   setProofOfOwnership,
   setStepLimit,
+  visible
 }: PoPProps): JSX.Element {
-  if (currentStep === 4) {
+  if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center px-10">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">

@@ -8,6 +8,7 @@ interface IRProps {
   impactReports: string[];
   setImpactReports: UpdateState<string[]>;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  visible: boolean;
 }
 
 export default function AdditionalImages({
@@ -15,9 +16,10 @@ export default function AdditionalImages({
   setCurrentStep,
   impactReports,
   setImpactReports,
-  setStepLimit
+  setStepLimit,
+  visible
 }: IRProps): JSX.Element {
-  if (currentStep === 8) {
+  if (visible) {
     return (
       <IpfsUpload
         stepName={'8 - Upload Impact Reports'}

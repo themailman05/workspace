@@ -18,6 +18,13 @@ import { Toaster } from 'react-hot-toast';
 
 // TODO: Save last completed step to local storage
 
+export interface Navigation {
+  currentStep: number;
+  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  stepLimit: number;
+  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+}
+
 export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
@@ -51,12 +58,17 @@ export default function PropsalForm(): JSX.Element {
     'socialMediaLinks',
     '[]',
   );
+  const navigation: Navigation = {
+    currentStep,
+    setCurrentStep,
+    stepLimit,
+    setStepLimit,
+  };
+
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
       <Intro
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         setName={setName}
         setEthereumAddress={setEthereumAddress}
         setMissionStatement={setMissionStatement}
@@ -67,16 +79,13 @@ export default function PropsalForm(): JSX.Element {
         setImpactReports={setImpactReports}
         setSocialMediaLinks={setSocialMediaLinks}
         name={name}
-        stepLimit={stepLimit}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
       />
       <Name
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         name={name}
         setName={setName}
-        stepLimit={stepLimit}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
+        visible={currentStep === 1}
       />
       <EthereumAddress
         currentStep={currentStep}
@@ -84,6 +93,7 @@ export default function PropsalForm(): JSX.Element {
         ethereumAddress={ethereumAddress}
         setEthereumAddress={setEthereumAddress}
         setStepLimit={setStepLimit}
+        visible={currentStep === 2}
       />
       <MissionStatement
         currentStep={currentStep}
@@ -91,6 +101,7 @@ export default function PropsalForm(): JSX.Element {
         missionStatement={missionStatement}
         setMissionStatement={setMissionStatement}
         setStepLimit={setStepLimit}
+        visible={currentStep === 3}
       />
       <ProofOfOwnership
         currentStep={currentStep}
@@ -98,6 +109,7 @@ export default function PropsalForm(): JSX.Element {
         proofOfOwnership={proofOfOwnership}
         setProofOfOwnership={setProofOfOwnership}
         setStepLimit={setStepLimit}
+        visible={currentStep === 4}
       />
       <ProfileImage
         currentStep={currentStep}
@@ -105,6 +117,7 @@ export default function PropsalForm(): JSX.Element {
         profileImage={profileImage}
         setProfileImage={setProfileImage}
         setStepLimit={setStepLimit}
+        visible={currentStep === 5}
       />
       <HeaderImage
         currentStep={currentStep}
@@ -112,6 +125,7 @@ export default function PropsalForm(): JSX.Element {
         headerImage={headerImage}
         setHeaderImage={setHeaderImage}
         setStepLimit={setStepLimit}
+        visible={currentStep === 6}
       />
       <AdditionalImages
         currentStep={currentStep}
@@ -119,6 +133,7 @@ export default function PropsalForm(): JSX.Element {
         additionalImages={additionalImages}
         setAdditionalImages={setAdditionalImages}
         setStepLimit={setStepLimit}
+        visible={currentStep === 7}
       />
       <ImpactReportsAudits
         currentStep={currentStep}
@@ -126,6 +141,7 @@ export default function PropsalForm(): JSX.Element {
         impactReports={impactReports}
         setImpactReports={setImpactReports}
         setStepLimit={setStepLimit}
+        visible={currentStep === 8}
       />
       <SocialMediaLinks
         currentStep={currentStep}
@@ -133,6 +149,7 @@ export default function PropsalForm(): JSX.Element {
         socialMediaLinks={socialMediaLinks}
         setSocialMediaLinks={setSocialMediaLinks}
         setStepLimit={setStepLimit}
+        visible={currentStep === 9}
       />
       <Preview
         currentStep={currentStep}
@@ -146,6 +163,7 @@ export default function PropsalForm(): JSX.Element {
         additionalImages={additionalImages}
         impactReports={impactReports}
         socialMediaLinks={socialMediaLinks}
+        visible={currentStep === 10}
       />
       <Navigation
         currentStep={currentStep}

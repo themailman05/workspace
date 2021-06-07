@@ -1,8 +1,7 @@
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+import { Navigation } from './PropsalForm';
 
 interface IntroProps {
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   setName: UpdateState<string>;
   setEthereumAddress: UpdateState<string>;
   setMissionStatement: UpdateState<string>;
@@ -13,13 +12,10 @@ interface IntroProps {
   setImpactReports: UpdateState<string[]>;
   setSocialMediaLinks: UpdateState<string>;
   name: string;
-  stepLimit: number;
-  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  navigation: Navigation;
 }
 
 export default function Intro({
-  currentStep,
-  setCurrentStep,
   setName,
   setEthereumAddress,
   setMissionStatement,
@@ -30,9 +26,9 @@ export default function Intro({
   setImpactReports,
   setSocialMediaLinks,
   name,
-  stepLimit,
-  setStepLimit,
+  navigation,
 }: IntroProps): JSX.Element {
+  const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
   if (currentStep === 0) {
     return (
       <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">

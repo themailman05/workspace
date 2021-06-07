@@ -1,25 +1,23 @@
 import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+import { Navigation } from './PropsalForm';
 
 interface NameProps {
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   name: string;
+  navigation: Navigation;
   setName: UpdateState<string>;
-  stepLimit: number;
-  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  visible: boolean;
 }
 
 export default function Name({
-  currentStep,
-  setCurrentStep,
   name,
+  navigation,
   setName,
-  stepLimit,
-  setStepLimit,
+  visible
 }: NameProps): JSX.Element {
-  if (currentStep === 1) {
+  const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">

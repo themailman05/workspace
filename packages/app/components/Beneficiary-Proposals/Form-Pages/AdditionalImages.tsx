@@ -8,6 +8,7 @@ interface Props {
   additionalImages: string[];
   setAdditionalImages: UpdateState<string[]>;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  visible: boolean;
 }
 
 export default function AdditionalImages({
@@ -16,8 +17,9 @@ export default function AdditionalImages({
   additionalImages,
   setAdditionalImages,
   setStepLimit,
+  visible
 }: Props): JSX.Element {
-  if (currentStep === 7) {
+  if (visible) {
     return (
       <IpfsUpload
         stepName={'7 - Upload Additional Images'}
