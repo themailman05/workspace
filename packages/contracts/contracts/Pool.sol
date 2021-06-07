@@ -110,6 +110,8 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
     whenNotPaused
     returns (uint256)
   {
+    require(amount <= threeCrv.balanceOf(msg.sender), "Insufficient balance");
+
     _takeFees();
 
     uint256 poolTokens = _issuePoolTokensForAmount(msg.sender, amount);
