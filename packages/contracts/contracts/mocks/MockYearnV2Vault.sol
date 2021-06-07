@@ -9,7 +9,7 @@ import "hardhat/console.sol";
 contract MockYearnV2Vault is MockERC20 {
   MockERC20 public token;
 
-  constructor(address token_) MockERC20("Mock crvUSDX yVault", "yvUSDX") {
+  constructor(address token_) MockERC20("Mock crvUSDX yVault", "yvUSDX", 18) {
     token = MockERC20(token_);
   }
 

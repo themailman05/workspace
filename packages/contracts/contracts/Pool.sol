@@ -3,11 +3,12 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 interface YearnVault is IERC20 {
   function token() external view returns (address);
@@ -32,10 +33,8 @@ interface CurveRegistry {
 
 interface CurveMetapool {
   function get_virtual_price() external view returns (uint256);
-}
 
-interface CurveDepositZap {
-  function add_liquidity(uint256[4] calldata amounts, uint256 min_mint_amounts)
+  function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amounts)
     external
     returns (uint256);
 
@@ -44,30 +43,24 @@ interface CurveDepositZap {
     int128 i,
     uint256 min_underlying_amount
   ) external returns (uint256);
-
-  function calc_withdraw_one_coin(uint256 amount, int128 i)
-    external
-    view
-    returns (uint256);
 }
 
-interface DAI is IERC20 {}
+interface ThreeCrv is IERC20 {}
 
 interface CrvLPToken is IERC20 {}
 
-contract Pool is ERC20, Ownable, ReentrancyGuard {
+contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
   using SafeMath for uint256;
-  using SafeERC20 for DAI;
+  using SafeERC20 for ThreeCrv;
   using SafeERC20 for CrvLPToken;
   using SafeERC20 for YearnVault;
 
-  DAI public dai;
+  ThreeCrv public threeCrv;
   CrvLPToken public crvLPToken;
   YearnVault public yearnVault;
   CurveAddressProvider public curveAddressProvider;
   CurveRegistry public curveRegistry;
   CurveMetapool public curveMetapool;
-  CurveDepositZap public curveDepositZap;
   address public rewardsManager;
 
   uint256 constant BPS_DENOMINATOR = 10_000;
@@ -89,19 +82,17 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   event PerformanceFeeChanged(uint256 previousBps, uint256 newBps);
 
   constructor(
-    address dai_,
+    address threeCrv_,
     address yearnVault_,
     address curveAddressProvider_,
-    address curveDepositZap_,
     address rewardsManager_
-  ) ERC20("Popcorn DAI Pool", "popDAI") {
-    require(address(dai_) != address(0));
+  ) ERC20("Popcorn 3Crv Pool", "pop3Crv") {
+    require(address(threeCrv_) != address(0));
     require(address(yearnVault_) != address(0));
     require(address(curveAddressProvider_) != address(0));
-    require(address(curveDepositZap_) != address(0));
     require(rewardsManager_ != address(0));
 
-    dai = DAI(dai_);
+    threeCrv = ThreeCrv(threeCrv_);
     yearnVault = YearnVault(yearnVault_);
     crvLPToken = CrvLPToken(yearnVault.token());
     curveAddressProvider = CurveAddressProvider(curveAddressProvider_);
@@ -109,18 +100,24 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     curveMetapool = CurveMetapool(
       curveRegistry.get_pool_from_lp_token(address(crvLPToken))
     );
-    curveDepositZap = CurveDepositZap(curveDepositZap_);
     rewardsManager = rewardsManager_;
     feesUpdatedAt = block.timestamp;
   }
 
-  function deposit(uint256 amount) external nonReentrant returns (uint256) {
+  function deposit(uint256 amount)
+    external
+    nonReentrant
+    whenNotPaused
+    returns (uint256)
+  {
+    require(amount <= threeCrv.balanceOf(msg.sender), "Insufficient balance");
+
     _takeFees();
 
     uint256 poolTokens = _issuePoolTokensForAmount(msg.sender, amount);
     emit Deposit(msg.sender, amount, poolTokens);
 
-    dai.safeTransferFrom(msg.sender, address(this), amount);
+    threeCrv.safeTransferFrom(msg.sender, address(this), amount);
     uint256 crvLPTokenAmount = _sendToCurve(amount);
     _sendToYearn(crvLPTokenAmount);
 
@@ -137,9 +134,9 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
     _takeFees();
 
-    uint256 daiAmount = _withdrawPoolTokens(msg.sender, amount);
-    uint256 fee = _calculateWithdrawalFee(daiAmount);
-    uint256 withdrawal = daiAmount.sub(fee);
+    uint256 threeCrvAmount = _withdrawPoolTokens(msg.sender, amount);
+    uint256 fee = _calculateWithdrawalFee(threeCrvAmount);
+    uint256 withdrawal = threeCrvAmount.sub(fee);
 
     _transferWithdrawalFee(fee);
     _transferWithdrawal(withdrawal);
@@ -177,8 +174,8 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
 
   function withdrawAccruedFees() external onlyOwner {
     uint256 tokenBalance = balanceOf(address(this));
-    uint256 daiAmount = _withdrawPoolTokens(address(this), tokenBalance);
-    _transferDai(rewardsManager, daiAmount);
+    uint256 threeCrvAmount = _withdrawPoolTokens(address(this), tokenBalance);
+    _transferThreeCrv(rewardsManager, threeCrvAmount);
   }
 
   function pricePerPoolToken() public view returns (uint256) {
@@ -260,18 +257,18 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function _transferWithdrawalFee(uint256 fee) internal {
-    _transferDai(rewardsManager, fee);
+    _transferThreeCrv(rewardsManager, fee);
     emit WithdrawalFee(rewardsManager, fee);
   }
 
   function _transferWithdrawal(uint256 withdrawal) internal {
-    _transferDai(msg.sender, withdrawal);
+    _transferThreeCrv(msg.sender, withdrawal);
     emit Withdrawal(msg.sender, withdrawal);
   }
 
-  function _transferDai(address to, uint256 amount) internal {
-    dai.safeIncreaseAllowance(address(this), amount);
-    dai.safeTransferFrom(address(this), to, amount);
+  function _transferThreeCrv(address to, uint256 amount) internal {
+    threeCrv.safeIncreaseAllowance(address(this), amount);
+    threeCrv.safeTransferFrom(address(this), to, amount);
   }
 
   function _poolShareFor(uint256 poolTokenAmount)
@@ -312,15 +309,13 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
   }
 
   function _sendToCurve(uint256 amount) internal returns (uint256) {
-    dai.safeIncreaseAllowance(address(curveDepositZap), amount);
-    uint256[4] memory curveDepositAmounts =
+    threeCrv.safeIncreaseAllowance(address(curveMetapool), amount);
+    uint256[2] memory curveDepositAmounts =
       [
         0, // USDX
-        amount, // DAI
-        0, // USDC
-        0 // USDT
+        amount // 3Crv
       ];
-    return curveDepositZap.add_liquidity(curveDepositAmounts, 0);
+    return curveMetapool.add_liquidity(curveDepositAmounts, 0);
   }
 
   function _crvBalance() internal view returns (uint256) {
@@ -331,11 +326,8 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
     internal
     returns (uint256)
   {
-    crvLPToken.safeIncreaseAllowance(
-      address(curveDepositZap),
-      crvLPTokenAmount
-    );
-    return curveDepositZap.remove_liquidity_one_coin(crvLPTokenAmount, 1, 0);
+    crvLPToken.safeIncreaseAllowance(address(curveMetapool), crvLPTokenAmount);
+    return curveMetapool.remove_liquidity_one_coin(crvLPTokenAmount, 1, 0);
   }
 
   function _sendToYearn(uint256 amount) internal returns (uint256) {
@@ -370,5 +362,13 @@ contract Pool is ERC20, Ownable, ReentrancyGuard {
       yearnVault.getPricePerFullShare().mul(yvShares).div(1e18);
     uint256 virtualPrice = curveMetapool.get_virtual_price();
     return crvLPTokens.mul(virtualPrice).div(1e18);
+  }
+
+  function pauseContract() external onlyOwner {
+    _pause();
+  }
+
+  function unpauseContract() external onlyOwner {
+    _unpause();
   }
 }
