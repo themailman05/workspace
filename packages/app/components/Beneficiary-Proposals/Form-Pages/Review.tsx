@@ -1,7 +1,7 @@
 // TODO: On submit clear local storage - implement after connection to contract
 import BeneficiaryPage from '../../../components/BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 
 interface RProps {
   currentStep: number;
@@ -121,7 +121,6 @@ export default function Review({
           beneficiaryProposal={beneficaryProposal}
           isProposalPreview={true}
         />
-        <Toaster />
       </div>
     );
   } else {

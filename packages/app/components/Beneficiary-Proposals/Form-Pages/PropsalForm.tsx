@@ -14,6 +14,7 @@ import SocialMediaLinks from './SocialMediaLinks';
 import Navigation from './Navigation';
 
 import useLocalStorageState from 'use-local-storage-state';
+import { Toaster } from 'react-hot-toast';
 
 // TODO: Save last completed step to local storage
 
@@ -151,6 +152,7 @@ export default function PropsalForm(): JSX.Element {
         setCurrentStep={setCurrentStep}
         stepLimit={stepLimit}
       />
+      <Toaster />
     </div>
   );
 }

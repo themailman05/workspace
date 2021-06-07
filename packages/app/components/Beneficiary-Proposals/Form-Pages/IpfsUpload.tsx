@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { DropzoneRootProps, useDropzone } from 'react-dropzone';
-import toast, { Toaster } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
 import { DocumentAddIcon, PhotographIcon } from '@heroicons/react/solid';
@@ -258,7 +258,6 @@ export default function IpfsUpload({
       ) : (
         <> </>
       )}
-      <Toaster />
     </div>
   );
 }
