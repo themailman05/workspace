@@ -9,15 +9,16 @@ import ImpactReportsAudits from './ImpactReportsAudits';
 import MissionStatement from './MissionStatement';
 import ProfileImage from './ProfileImage';
 import ProofOfOwnership from './ProofOfOwnership';
-import Review from './Review';
+import Preview from './Preview';
 import SocialMediaLinks from './SocialMediaLinks';
 import Navigation from './Navigation';
 
 import useLocalStorageState from 'use-local-storage-state';
+import { Toaster } from 'react-hot-toast';
 
 // TODO: Save last completed step to local storage
 
-export default function LandingPage(): JSX.Element {
+export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
   const [name, setName] = useLocalStorageState<string>('name', '');
@@ -133,7 +134,7 @@ export default function LandingPage(): JSX.Element {
         setSocialMediaLinks={setSocialMediaLinks}
         setStepLimit={setStepLimit}
       />
-      <Review
+      <Preview
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         name={name}
@@ -151,6 +152,7 @@ export default function LandingPage(): JSX.Element {
         setCurrentStep={setCurrentStep}
         stepLimit={stepLimit}
       />
+      <Toaster />
     </div>
   );
 }

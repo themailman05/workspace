@@ -35,8 +35,8 @@ export default function ProofOfOwnership({
             <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
-                name="poo"
-                id="poo"
+                name="proofofownership"
+                id="proofofownership"
                 value={proofOfOwnership}
                 onChange={(event) => setProofOfOwnership(event.target.value)}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
