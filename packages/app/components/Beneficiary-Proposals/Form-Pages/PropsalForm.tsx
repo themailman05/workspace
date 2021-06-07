@@ -17,7 +17,7 @@ import useLocalStorageState from 'use-local-storage-state';
 
 // TODO: Save last completed step to local storage
 
-export default function LandingPage(): JSX.Element {
+export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
   const [name, setName] = useLocalStorageState<string>('name', '');
