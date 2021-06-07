@@ -9,7 +9,7 @@ import ImpactReportsAudits from './ImpactReportsAudits';
 import MissionStatement from './MissionStatement';
 import ProfileImage from './ProfileImage';
 import ProofOfOwnership from './ProofOfOwnership';
-import Review from './Review';
+import Preview from './Preview';
 import SocialMediaLinks from './SocialMediaLinks';
 import Navigation from './Navigation';
 
@@ -134,7 +134,7 @@ export default function PropsalForm(): JSX.Element {
         setSocialMediaLinks={setSocialMediaLinks}
         setStepLimit={setStepLimit}
       />
-      <Review
+      <Preview
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
         name={name}
