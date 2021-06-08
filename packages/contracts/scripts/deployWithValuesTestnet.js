@@ -104,13 +104,18 @@ async function deployTestnet(ethers) {
     );
     console.log("uniswapRouter address", this.uniswapRouter.address);
 
+    const currentBlockNumber = await provider.getBlockNumber();
+    const currentTimestamp = await (
+      await ethers.provider.getBlock(currentBlockNumber)
+    ).timestamp;
+
     await this.uniswapRouter.addLiquidityETH(
       this.mockPop.address,
       parseEther("1000"),
       parseEther("1000"),
       parseEther("1"),
       this.accounts[0].address,
-      currentTimestamp + 60,
+      currentTimestamp + 1200,
       { ...overrides, value: parseEther("1") }
     );
 
@@ -208,6 +213,11 @@ async function deployTestnet(ethers) {
     );
     console.log("grantElections address", this.grantElections.address)
 
+    const currentBlockNumber = await provider.getBlockNumber();
+    const currentTimestamp = await (
+      await ethers.provider.getBlock(currentBlockNumber)
+    ).timestamp;
+
     console.log("uniswapRouter");
     this.uniswapRouter = new ethers.Contract(
       process.env.ADDR_UNISWAP_ROUTER,
@@ -222,7 +232,7 @@ async function deployTestnet(ethers) {
       parseEther("1000"),
       parseEther("1"),
       this.accounts[0].address,
-      currentTimestamp + 60,
+      currentTimestamp + 1200,
       { ...overrides, value: parseEther("1") }
     );
 
