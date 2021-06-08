@@ -1,35 +1,35 @@
 import React from 'react';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
-import { Navigation } from './PropsalForm';
+import { Navigation } from './ProposalForm';
 
-interface IRProps {
-  impactReports: string[];
-  setImpactReports: UpdateState<string[]>;
+interface Props {
+  additionalImages: string[];
+  setAdditionalImages: UpdateState<string[]>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function AdditionalImages({
-  impactReports,
-  setImpactReports,
+  additionalImages,
+  setAdditionalImages,
   navigation,
   visible,
-}: IRProps): JSX.Element {
+}: Props): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   if (visible) {
     return (
       <IpfsUpload
-        stepName={'8 - Upload Impact Reports'}
+        stepName={'7 - Upload Additional Images'}
         currentStep={currentStep}
         setCurrentStep={setCurrentStep}
-        localStorageFile={impactReports}
-        setLocalStorage={setImpactReports}
-        imageDescription={'Impact Reports'}
+        localStorageFile={additionalImages}
+        setLocalStorage={setAdditionalImages}
+        imageDescription={'Additional Images'}
         imageInstructions={
-          'Impact report uploads are limited to up to a maximum of four PDFs, each with a maximum size of 5mb.'
+          'The ideal image size and aspect ratio are 1200px X 675px and 16:9, respectively.'
         }
-        fileType={'.pdf'}
+        fileType={'image/*'}
         numMaxFiles={4}
         setStepLimit={setStepLimit}
       />

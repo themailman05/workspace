@@ -1,39 +1,46 @@
 import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-import { Navigation } from './PropsalForm';
+import { Navigation } from './ProposalForm';
 
-interface MSProps {
-  missionStatement: string;
-  setMissionStatement: UpdateState<string>;
+interface PoPProps {
+  proofOfOwnership: string;
+  setProofOfOwnership: UpdateState<string>;
   navigation: Navigation;
   visible: boolean;
 }
 
-export default function MissionStatement({
-  missionStatement,
-  setMissionStatement,
+export default function ProofOfOwnership({
+  proofOfOwnership,
+  setProofOfOwnership,
   navigation,
   visible,
-}: MSProps): JSX.Element {
+}: PoPProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   if (visible) {
     return (
-      <div className="mx-auto content-center justify-items-center">
+      <div className="mx-auto content-center justify-items-center px-10">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          3 - Please share the beneficiary's mission statement
+          4 - Please share a proof of ownership
         </h2>
-        {missionStatement.length > 0 ? (
+        <label
+          htmlFor="email"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Post the Ethereum address shared in step 2 on the beneficiary's
+          website or a tweet on the beneficiary's official Twitter account.
+        </label>
+        {proofOfOwnership.length > 0 ? (
           <React.Fragment>
             <div className="mt-1 relative rounded-md shadow-sm">
-              <textarea
-                name="missionstatement"
-                id="missionstatement"
-                rows={10}
-                value={missionStatement}
-                onChange={(event) => setMissionStatement(event.target.value)}
+              <input
+                type="text"
+                name="proofofownership"
+                id="proofofownership"
+                value={proofOfOwnership}
+                onChange={(event) => setProofOfOwnership(event.target.value)}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                placeholder="Mission Statement"
+                placeholder="Proof of ownership"
               />
             </div>
             <button
@@ -50,16 +57,16 @@ export default function MissionStatement({
         ) : (
           <div>
             <div className="mt-1 relative rounded-md shadow-sm">
-              <textarea
-                name="name"
-                id="name"
-                rows={10}
-                value={missionStatement}
-                onChange={(event) => setMissionStatement(event.target.value)}
+              <input
+                type="text"
+                name="proofofownership"
+                id="proofofownership"
+                value={proofOfOwnership}
+                onChange={(event) => setProofOfOwnership(event.target.value)}
                 className="block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
-                placeholder="Mission Statement"
+                placeholder="Proof of ownership"
                 aria-invalid="true"
-                aria-describedby="email-error"
+                aria-describedby="proof-of-ownership-error"
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <ExclamationCircleIcon
@@ -69,7 +76,7 @@ export default function MissionStatement({
               </div>
             </div>
             <p className="mt-2 text-sm text-red-600" id="email-error">
-              The mission statement cannot be blank.
+              The proof of ownership cannot be left blank
             </p>
           </div>
         )}

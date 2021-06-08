@@ -1,41 +1,41 @@
 import React from 'react';
-import web3 from 'web3';
-
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-import { Navigation } from './PropsalForm';
+import { FormData, Navigation } from './ProposalForm';
 
-interface EProps {
-  ethereumAddress: string;
-  setEthereumAddress: UpdateState<string>;
+interface NameProps {
+  formData: FormData;
+  
   navigation: Navigation;
+  setName: UpdateState<string>;
   visible: boolean;
 }
 
-export default function EtherumAddress({
-  ethereumAddress,
-  setEthereumAddress,
+export default function Name({
+  formData,
   navigation,
+  setName,
   visible
-}: EProps): JSX.Element {
-  const { currentStep, setStepLimit, setCurrentStep } = navigation;
+}: NameProps): JSX.Element {
+  const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  const { name } = formData;
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          2 - What's the Ethereum address grants will be sent to?
+          1 - First things first, what's the name of the beneficiary?
         </h2>
-        {web3.utils.isAddress(ethereumAddress) ? (
+        {name.length > 0 ? (
           <React.Fragment>
             <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
-                name="ethaddress"
-                id="ethaddress"
-                value={ethereumAddress}
-                onChange={(event) => setEthereumAddress(event.target.value)}
+                name="name"
+                id="name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                placeholder="Ethererum Address"
+                placeholder="Beneficiary Name"
               />
             </div>
             <div className="grid justify-items-stretch">
@@ -56,14 +56,14 @@ export default function EtherumAddress({
             <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
-                name="ethaddress"
-                id="ethaddress"
-                value={ethereumAddress}
-                onChange={(event) => setEthereumAddress(event.target.value)}
+                name="name"
+                id="name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
                 className="block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
-                placeholder="Etherum Address"
+                placeholder="Beneficiary Name"
                 aria-invalid="true"
-                aria-describedby="eth-address-error"
+                aria-describedby="email-error"
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                 <ExclamationCircleIcon
@@ -73,7 +73,7 @@ export default function EtherumAddress({
               </div>
             </div>
             <p className="mt-2 text-sm text-red-600" id="email-error">
-              Please enter a valid ethereum address
+              Beneficiary name cannot be blank.
             </p>
           </div>
         )}

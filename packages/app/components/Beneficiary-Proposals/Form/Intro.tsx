@@ -1,5 +1,5 @@
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-import { Navigation } from './PropsalForm';
+import { Navigation } from './ProposalForm';
 
 interface IntroProps {
   setName: UpdateState<string>;

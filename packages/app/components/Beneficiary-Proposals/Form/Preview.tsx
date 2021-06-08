@@ -2,7 +2,7 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
-import { Navigation } from './PropsalForm';
+import { Navigation } from './ProposalForm';
 
 interface PreviewProps {
   name: string;

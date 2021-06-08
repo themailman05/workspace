@@ -2,7 +2,7 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-import { Navigation } from './PropsalForm';
+import { Navigation } from './ProposalForm';
 
 interface SocialMediaLinks {
   platform: string;

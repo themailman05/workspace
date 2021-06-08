@@ -1,7 +1,7 @@
 import React from 'react';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
-import { Navigation } from './PropsalForm';
+import { Navigation } from './ProposalForm';
 
 interface HIProps {
   

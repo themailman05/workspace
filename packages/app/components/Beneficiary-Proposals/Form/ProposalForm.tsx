@@ -16,13 +16,16 @@ import NavigationButtons from './NavigationButtons';
 import useLocalStorageState from 'use-local-storage-state';
 import { Toaster } from 'react-hot-toast';
 
-// TODO: Save last completed step to local storage
-
 export interface Navigation {
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   stepLimit: number;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export interface FormData {
+  name: string;
+  missionStatement: string;
 }
 
 export default function PropsalForm(): JSX.Element {
@@ -58,6 +61,11 @@ export default function PropsalForm(): JSX.Element {
     'socialMediaLinks',
     '[]',
   );
+  const formData = {
+    name,
+    missionStatement,
+  } as FormData;
+
   const navigation: Navigation = {
     currentStep,
     setCurrentStep,
@@ -82,7 +90,8 @@ export default function PropsalForm(): JSX.Element {
         navigation={navigation}
       />
       <Name
-        name={name}
+        // name={name}
+        formData={formData}
         setName={setName}
         navigation={navigation}
         visible={currentStep === 1}
