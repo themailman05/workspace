@@ -104,6 +104,16 @@ async function deployTestnet(ethers) {
     );
     console.log("uniswapRouter address", this.uniswapRouter.address);
 
+    await this.uniswapRouter.addLiquidityETH(
+      this.mockPop.address,
+      parseEther("1000"),
+      parseEther("1000"),
+      parseEther("1"),
+      this.accounts[0].address,
+      currentTimestamp + 60,
+      { ...overrides, value: parseEther("1") }
+    );
+
     console.log("beneficiaryVaults");
     this.beneficiaryVaults = await (
       await ethers.getContractFactory("BeneficiaryVaults")
@@ -205,6 +215,16 @@ async function deployTestnet(ethers) {
       ethers.provider
     );
     console.log("uniswapRouter address", this.uniswapRouter.address);
+
+    await this.uniswapRouter.addLiquidityETH(
+      this.mockPop.address,
+      parseEther("1000"),
+      parseEther("1000"),
+      parseEther("1"),
+      this.accounts[0].address,
+      currentTimestamp + 60,
+      { ...overrides, value: parseEther("1") }
+    );
 
     console.log("beneficiaryVaults");
     this.beneficiaryVaults = new ethers.Contract(
