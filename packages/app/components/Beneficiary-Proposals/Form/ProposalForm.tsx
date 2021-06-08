@@ -10,8 +10,8 @@ import MissionStatement from './MissionStatement';
 import ProfileImage from './ProfileImage';
 import ProofOfOwnership from './ProofOfOwnership';
 import Preview from './Preview';
-import SocialMediaLinks from './SocialMediaLinks';
 import NavigationButtons from './NavigationButtons';
+import SocialMedia from './SocialMedia';
 
 import useLocalStorageState from 'use-local-storage-state';
 import { Toaster } from 'react-hot-toast';
@@ -25,7 +25,14 @@ export interface Navigation {
 
 export interface FormData {
   name: string;
+  ethereumAddress: string;
   missionStatement: string;
+  proofOfOwnership: string;
+  profileImage: string;
+  headerImage: string;
+  additionalImages: string[];
+  impactReports: string[];
+  socialMediaLinks: string;
 }
 
 export default function PropsalForm(): JSX.Element {
@@ -63,7 +70,14 @@ export default function PropsalForm(): JSX.Element {
   );
   const formData = {
     name,
+    ethereumAddress,
     missionStatement,
+    proofOfOwnership,
+    profileImage,
+    headerImage,
+    additionalImages,
+    impactReports,
+    socialMediaLinks,
   } as FormData;
 
   const navigation: Navigation = {
@@ -90,70 +104,61 @@ export default function PropsalForm(): JSX.Element {
         navigation={navigation}
       />
       <Name
-        // name={name}
         formData={formData}
         setName={setName}
         navigation={navigation}
         visible={currentStep === 1}
       />
       <EthereumAddress
-        ethereumAddress={ethereumAddress}
+        formData={formData}
         setEthereumAddress={setEthereumAddress}
         navigation={navigation}
         visible={currentStep === 2}
       />
       <MissionStatement
-        missionStatement={missionStatement}
+        formData={formData}
         setMissionStatement={setMissionStatement}
         navigation={navigation}
         visible={currentStep === 3}
       />
       <ProofOfOwnership
-        proofOfOwnership={proofOfOwnership}
+        formData={formData}
         setProofOfOwnership={setProofOfOwnership}
         navigation={navigation}
         visible={currentStep === 4}
       />
       <ProfileImage
-        profileImage={profileImage}
+        formData={formData}
         setProfileImage={setProfileImage}
         navigation={navigation}
         visible={currentStep === 5}
       />
       <HeaderImage
-        headerImage={headerImage}
+        formData={formData}
         setHeaderImage={setHeaderImage}
         navigation={navigation}
         visible={currentStep === 6}
       />
       <AdditionalImages
-        additionalImages={additionalImages}
+        formData={formData}
         setAdditionalImages={setAdditionalImages}
         navigation={navigation}
         visible={currentStep === 7}
       />
       <ImpactReportsAudits
-        impactReports={impactReports}
+        formData={formData}
         setImpactReports={setImpactReports}
         navigation={navigation}
         visible={currentStep === 8}
       />
-      <SocialMediaLinks
-        socialMediaLinks={socialMediaLinks}
+      <SocialMedia
+        formData={formData}
         setSocialMediaLinks={setSocialMediaLinks}
         navigation={navigation}
         visible={currentStep === 9}
       />
       <Preview
-        name={name}
-        ethereumAddress={ethereumAddress}
-        missionStatement={missionStatement}
-        proofOfOwnership={proofOfOwnership}
-        profileImage={profileImage}
-        headerImage={headerImage}
-        additionalImages={additionalImages}
-        impactReports={impactReports}
-        socialMediaLinks={socialMediaLinks}
+        formData={formData}
         navigation={navigation}
         visible={currentStep === 10}
       />

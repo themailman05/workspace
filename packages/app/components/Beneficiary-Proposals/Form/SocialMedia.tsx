@@ -164,13 +164,14 @@ function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }: SMProps) {
   );
 }
 
-export default function SocialMediaLinks({
-  socialMediaLinks,
+export default function SocialMedia({
+  formData,
   setSocialMediaLinks,
   navigation,
   visible,
 }): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  const { socialMediaLinks } = formData;
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

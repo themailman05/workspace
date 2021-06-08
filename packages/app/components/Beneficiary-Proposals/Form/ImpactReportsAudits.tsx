@@ -1,22 +1,23 @@
 import React from 'react';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
-import { Navigation } from './ProposalForm';
+import { FormData, Navigation } from './ProposalForm';
 
 interface IRProps {
-  impactReports: string[];
+  formData: FormData;
   setImpactReports: UpdateState<string[]>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function AdditionalImages({
-  impactReports,
+  formData,
   setImpactReports,
   navigation,
   visible,
 }: IRProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  const { impactReports } = formData;
   if (visible) {
     return (
       <IpfsUpload

@@ -1,22 +1,23 @@
 import React from 'react';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
-import { Navigation } from './ProposalForm';
+import {FormData, Navigation } from './ProposalForm';
 
 interface Props {
-  additionalImages: string[];
+  formData: FormData;
   setAdditionalImages: UpdateState<string[]>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function AdditionalImages({
-  additionalImages,
+  formData,
   setAdditionalImages,
   navigation,
   visible,
 }: Props): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  const { additionalImages } = formData;
   if (visible) {
     return (
       <IpfsUpload

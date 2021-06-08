@@ -2,18 +2,10 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
-import { Navigation } from './ProposalForm';
+import { FormData, Navigation } from './ProposalForm';
 
 interface PreviewProps {
-  name: string;
-  ethereumAddress: string;
-  missionStatement: string;
-  proofOfOwnership: string;
-  profileImage: string;
-  headerImage: string;
-  additionalImages: string[];
-  impactReports: string[];
-  socialMediaLinks: string;
+  formData: FormData;
   navigation: Navigation;
   visible: boolean;
 }
@@ -54,19 +46,22 @@ export const uploadJsonToIpfs = (submissionData) => {
 };
 
 export default function Preview({
-  name,
-  ethereumAddress,
-  missionStatement,
-  proofOfOwnership,
-  profileImage,
-  headerImage,
-  additionalImages,
-  impactReports,
-  socialMediaLinks,
+  formData,
   navigation,
   visible,
 }: PreviewProps): JSX.Element {
   const { currentStep, setCurrentStep } = navigation;
+  const {
+    name,
+    ethereumAddress,
+    missionStatement,
+    proofOfOwnership,
+    profileImage,
+    headerImage,
+    additionalImages,
+    impactReports,
+    socialMediaLinks,
+  } = formData;
   if (visible) {
     const submissionData = {
       name,

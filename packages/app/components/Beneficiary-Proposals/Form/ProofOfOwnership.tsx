@@ -1,22 +1,23 @@
 import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-import { Navigation } from './ProposalForm';
+import { FormData, Navigation } from './ProposalForm';
 
 interface PoPProps {
-  proofOfOwnership: string;
+  formData: FormData;
   setProofOfOwnership: UpdateState<string>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function ProofOfOwnership({
-  proofOfOwnership,
+  formData,
   setProofOfOwnership,
   navigation,
   visible,
 }: PoPProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  const { proofOfOwnership } = formData;
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center px-10">
