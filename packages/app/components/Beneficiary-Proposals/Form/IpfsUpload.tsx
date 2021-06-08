@@ -151,14 +151,18 @@ export default function IpfsUpload({
     maxFiles: numMaxFiles,
     validator: imageSizeValidator,
     onDrop: (acceptedFiles) => {
-      if (numMaxFiles === 1) {
-        uploadImageToPinata(acceptedFiles, setLocalStorage);
+      if (fileRejections.length) {
+        toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
-        uploadMultipleImagesToPinata(
-          acceptedFiles,
-          localStorageFile,
-          setLocalStorage,
-        );
+        if (numMaxFiles === 1) {
+          uploadImageToPinata(acceptedFiles, setLocalStorage);
+        } else {
+          uploadMultipleImagesToPinata(
+            acceptedFiles,
+            localStorageFile,
+            setLocalStorage,
+          );
+        }
       }
 
       setFiles(

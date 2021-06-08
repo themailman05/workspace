@@ -40,7 +40,7 @@ function AddSocialMedia({
             >
               {['Facebook', 'LinkedIn', 'Instagram', 'GitHub', 'Twitter'].map(
                 (platform, i) => (
-                  <option key={i} value={platform}>
+                  <option key={platform} value={platform}>
                     {platform}
                   </option>
                 ),

@@ -1,4 +1,3 @@
-// TODO: On submit clear local storage - implement after connection to contract
 import BeneficiaryPage from '../../BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
