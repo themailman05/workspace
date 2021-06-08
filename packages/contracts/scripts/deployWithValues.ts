@@ -35,25 +35,25 @@ export default async function deploy(ethers): Promise<void> {
     ).deployed();
 
     const grantRegistry = await (
-      await (
-        await ethers.getContractFactory("GrantRegistry")
-      ).deploy(beneficiaryRegistry.address)
+      await (await ethers.getContractFactory("GrantRegistry")).deploy(
+        beneficiaryRegistry.address
+      )
     ).deployed();
 
-    const mockPop = (await (
-      await (
-        await ethers.getContractFactory("MockERC20")
-      ).deploy("TestPOP", "TPOP")
-    ).deployed());
+    const mockPop = await (
+      await (await ethers.getContractFactory("MockERC20")).deploy(
+        "TestPOP",
+        "TPOP",
+        18
+      )
+    ).deployed();
 
     const staking = await (
       await (await ethers.getContractFactory("Staking")).deploy(mockPop.address)
     ).deployed();
 
     const randomNumberConsumer = await (
-      await (
-        await ethers.getContractFactory("RandomNumberConsumer")
-      ).deploy(
+      await (await ethers.getContractFactory("RandomNumberConsumer")).deploy(
         process.env.ADDR_CHAINLINK_VRF_COORDINATOR,
         process.env.ADDR_CHAINLINK_LINK_TOKEN,
         process.env.ADDR_CHAINLINK_KEY_HASH
@@ -61,9 +61,7 @@ export default async function deploy(ethers): Promise<void> {
     ).deployed();
 
     const grantElections = await (
-      await (
-        await ethers.getContractFactory("GrantElections")
-      ).deploy(
+      await (await ethers.getContractFactory("GrantElections")).deploy(
         staking.address,
         beneficiaryRegistry.address,
         grantRegistry.address,
@@ -206,7 +204,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(voters, async (voter) => {
       return contracts.staking
         .connect(voter)
-        .stake(utils.parseEther("1000"), 604800 * 52 * 4);
+        .stake(utils.parseEther("1000"), 86400 * 365 * 4);
     });
   };
 
@@ -338,11 +336,10 @@ export default async function deploy(ethers): Promise<void> {
     await displayElectionMetadata(GrantTerm.Year);
   };
 
-  const setElectionContractAsGovernanceForGrantRegistry =
-    async (): Promise<void> => {
-      await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
-      await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
-    };
+  const setElectionContractAsGovernanceForGrantRegistry = async (): Promise<void> => {
+    await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
+    await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
+  };
 
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");
