@@ -4,7 +4,7 @@
 
 export type Stage = 'All' | 'Open' | 'Challenge' | 'Closed';
 
-export interface DummyBeneficiaryProposal {
+export interface BeneficiaryCardProps {
   name: string;
   missionStatement: string;
   twitterUrl?: string;
@@ -15,6 +15,9 @@ export interface DummyBeneficiaryProposal {
   dribbleUrl?: string;
   ethereumAddress: string;
   profileImageURL: string;
+}
+
+export interface DummyBeneficiaryProposal extends BeneficiaryCardProps {
   headerImageURL: string;
   photoURLs?: string[];
   impactReports?: string[];
