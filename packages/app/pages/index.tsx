@@ -5,13 +5,6 @@ import React, { useEffect } from 'react';
 import { LandingPage } from '../components/Grants/LandingPage';
 
 const IndexPage = () => {
-  const router = useRouter();
-  useEffect(() => {
-    if (typeof window !== 'undefined' && window.location.pathname !== '/') {
-      router.replace(window.location.pathname);
-    }
-  }, [router.pathname]);
-
   return (
     <div
       className="w-full h-screen flex flex-col justify-center font-landing"

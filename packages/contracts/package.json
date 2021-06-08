@@ -9,14 +9,18 @@
     "dev:deploy": "yarn hardhat dev:deploy --network localhost",
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "clean": "rimraf ./cache & rimraf ./artifacts",
-    "compile": "yarn clean && hardhat compile",
-    "postinstall": "yarn compile"
+    "compile": "yarn clean && hardhat compile ",
+    "postinstall": "yarn compile",
+    "test": "mocha"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
     "@types/chai": "^4.2.16",
+    "@types/mocha": "^8.2.2",
     "@types/node": "^14.14.41",
     "ethers": "^5.0.31",
+    "hardhat-contract-sizer": "^2.0.3",
+    "hardhat-gas-reporter": "^1.0.4",
     "rimraf": "^3.0.2"
   },
   "dependencies": {
@@ -31,9 +35,11 @@
     "@uniswap/v2-periphery": "^1.1.0-beta.0",
     "bluebird": "^3.7.2",
     "chai": "^4.3.0",
+    "dotenv": "^10.0.0",
     "ethereum-waffle": "^3.2.2",
     "hardhat": "^2.0.10",
     "merkle-tree-solidity": "^1.0.8",
+    "mocha": "^8.4.0",
     "prettier": "^2.2.1",
     "prettier-plugin-solidity": "^1.0.0-beta.5",
     "ts-generator": "^0.1.1",
