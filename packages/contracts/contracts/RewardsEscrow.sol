@@ -79,14 +79,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
     POP.safeTransferFrom(msg.sender, address(this), _amount);
 
-    if (
-      escrowedBalances[_address].end > _now &&
-      escrowedBalances[_address].start < _now
-    ) {
-      _increaseLock(_address, _amount);
-    } else {
-      _lock(_address, _amount);
-    }
+    _lock(_address, _amount);
   }
 
   function claim() public nonReentrant updateVested(msg.sender) {
@@ -100,14 +93,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     uint256 _start = _now.add(30 * 3 days);
     uint256 _end = _start.add(escrowDuration);
 
-    if (
-      escrowedBalances[_address].end > 0 &&
-      escrowedBalances[_address].end < _now
-    ) {
-      _claimFor(_address);
-    }
-
-    if (escrowedBalances[_address].start >= _now) {
+    if (escrowedBalances[_address].end > _start) {
       _start = escrowedBalances[_address].start;
     }
     escrowedBalances[_address] = Escrow({
@@ -116,19 +102,6 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
       amount: escrowedBalances[_address].amount.add(_amount)
     });
 
-    emit Locked(_address, _amount);
-  }
-
-  function _increaseLock(address _address, uint256 _amount) internal {
-    uint256 _now = block.timestamp;
-
-    _claimFor(_address);
-
-    escrowedBalances[_address] = Escrow({
-      start: _now,
-      end: _now.add(escrowDuration),
-      amount: escrowedBalances[_address].amount.add(_amount)
-    });
     emit Locked(_address, _amount);
   }
 
