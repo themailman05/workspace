@@ -5,20 +5,18 @@ import { FormData, Navigation } from './ProposalForm';
 
 interface NameProps {
   formData: FormData;
-  
+
   navigation: Navigation;
-  setName: UpdateState<string>;
   visible: boolean;
 }
 
 export default function Name({
   formData,
   navigation,
-  setName,
   visible
 }: NameProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const { name } = formData;
+  const { name, setName } = formData;
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

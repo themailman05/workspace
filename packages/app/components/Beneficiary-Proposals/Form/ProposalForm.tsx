@@ -15,6 +15,7 @@ import SocialMedia from './SocialMedia';
 
 import useLocalStorageState from 'use-local-storage-state';
 import { Toaster } from 'react-hot-toast';
+import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 
 export interface Navigation {
   currentStep: number;
@@ -25,14 +26,23 @@ export interface Navigation {
 
 export interface FormData {
   name: string;
+  setName: UpdateState<string>;
   ethereumAddress: string;
+  setEthereumAddress: UpdateState<string>;
   missionStatement: string;
+  setMissionStatement: UpdateState<string>;
   proofOfOwnership: string;
+  setProofOfOwnership: UpdateState<string>;
   profileImage: string;
+  setProfileImage: UpdateState<string>;
   headerImage: string;
+  setHeaderImage: UpdateState<string>;
   additionalImages: string[];
+  setAdditionalImages: UpdateState<string[]>;
   impactReports: string[];
+  setImpactReports: UpdateState<string[]>;
   socialMediaLinks: string;
+  setSocialMediaLinks: UpdateState<string>;
 }
 
 export default function PropsalForm(): JSX.Element {
@@ -70,14 +80,23 @@ export default function PropsalForm(): JSX.Element {
   );
   const formData = {
     name,
+    setName,
     ethereumAddress,
+    setEthereumAddress,
     missionStatement,
+    setMissionStatement,
     proofOfOwnership,
+    setProofOfOwnership,
     profileImage,
+    setProfileImage,
     headerImage,
+    setHeaderImage,
     additionalImages,
+    setAdditionalImages,
     impactReports,
+    setImpactReports,
     socialMediaLinks,
+    setSocialMediaLinks,
   } as FormData;
 
   const navigation: Navigation = {
@@ -91,69 +110,51 @@ export default function PropsalForm(): JSX.Element {
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
       <Intro
-        setName={setName}
-        setEthereumAddress={setEthereumAddress}
-        setMissionStatement={setMissionStatement}
-        setProofOfOwnership={setProofOfOwnership}
-        setProfileImage={setProfileImage}
-        setHeaderImage={setHeaderImage}
-        setAdditionalImages={setAdditionalImages}
-        setImpactReports={setImpactReports}
-        setSocialMediaLinks={setSocialMediaLinks}
-        name={name}
+        formData={formData}
         navigation={navigation}
       />
       <Name
         formData={formData}
-        setName={setName}
         navigation={navigation}
         visible={currentStep === 1}
       />
       <EthereumAddress
         formData={formData}
-        setEthereumAddress={setEthereumAddress}
         navigation={navigation}
         visible={currentStep === 2}
       />
       <MissionStatement
         formData={formData}
-        setMissionStatement={setMissionStatement}
         navigation={navigation}
         visible={currentStep === 3}
       />
       <ProofOfOwnership
         formData={formData}
-        setProofOfOwnership={setProofOfOwnership}
         navigation={navigation}
         visible={currentStep === 4}
       />
       <ProfileImage
         formData={formData}
-        setProfileImage={setProfileImage}
         navigation={navigation}
         visible={currentStep === 5}
       />
       <HeaderImage
         formData={formData}
-        setHeaderImage={setHeaderImage}
         navigation={navigation}
         visible={currentStep === 6}
       />
       <AdditionalImages
         formData={formData}
-        setAdditionalImages={setAdditionalImages}
         navigation={navigation}
         visible={currentStep === 7}
       />
       <ImpactReportsAudits
         formData={formData}
-        setImpactReports={setImpactReports}
         navigation={navigation}
         visible={currentStep === 8}
       />
       <SocialMedia
         formData={formData}
-        setSocialMediaLinks={setSocialMediaLinks}
         navigation={navigation}
         visible={currentStep === 9}
       />

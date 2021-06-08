@@ -1,25 +1,21 @@
 import React from 'react';
 import web3 from 'web3';
-
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import { FormData, Navigation } from './ProposalForm';
 
 interface EProps {
   formData: FormData;
-  setEthereumAddress: UpdateState<string>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function EtherumAddress({
   formData,
-  setEthereumAddress,
   navigation,
-  visible
+  visible,
 }: EProps): JSX.Element {
   const { currentStep, setStepLimit, setCurrentStep } = navigation;
-  const { ethereumAddress } = formData;
+  const { ethereumAddress, setEthereumAddress } = formData;
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

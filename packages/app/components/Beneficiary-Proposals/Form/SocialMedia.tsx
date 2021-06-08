@@ -2,7 +2,6 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-import { Navigation } from './ProposalForm';
 
 interface SocialMediaLinks {
   platform: string;
@@ -166,12 +165,11 @@ function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }: SMProps) {
 
 export default function SocialMedia({
   formData,
-  setSocialMediaLinks,
   navigation,
   visible,
 }): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const { socialMediaLinks } = formData;
+  const { socialMediaLinks, setSocialMediaLinks } = formData;
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

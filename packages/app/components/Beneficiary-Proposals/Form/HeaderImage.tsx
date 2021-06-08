@@ -1,23 +1,22 @@
 import React from 'react';
-import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+
 import IpfsUpload from './IpfsUpload';
-import {FormData, Navigation } from './ProposalForm';
+import { FormData, Navigation } from './ProposalForm';
 
 interface HIProps {
   formData: FormData;
-  setHeaderImage: UpdateState<string>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function HeaderImage({
   formData,
-  setHeaderImage,
+
   navigation,
-  visible
+  visible,
 }: HIProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const {  headerImage} = formData;
+  const { headerImage, setHeaderImage } = formData;
   if (visible) {
     return (
       <IpfsUpload
