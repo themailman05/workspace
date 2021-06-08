@@ -13,6 +13,7 @@ contract RewardParticipation is Owned, ReentrancyGuard {
   /* ========== STATE VARIABLES ========== */
 
   IERC20 public immutable POP;
+  uint256 public rewardBudget;
 
   /* ========== EVENTS ========== */
 
