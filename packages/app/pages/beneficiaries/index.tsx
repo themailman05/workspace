@@ -1,42 +1,57 @@
 import { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
-
 import BeneficiaryGrid from 'components/BeneficiaryGrid';
 import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
+import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [benefeciaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>([])
+  const [benefeciaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>(
+    [],
+  );
 
   async function getBeneficiaries() {
     const beneficiaryAddresses = await contracts.beneficiary.getBeneficiaryList();
-    const beneficiaries = await Promise.all(
+    const ipfsHashes = await Promise.all(
       beneficiaryAddresses.map(async (address) => {
         return contracts.beneficiary.getBeneficiary(address);
       }),
     );
-    console.log(beneficiaries)
     const beneficiaryData = await (
       await Promise.all(
-        beneficiaries.map(async (ipfsHash) => {
-          const url = 'https://gateway.pinata.cloud/ipfs/' + ipfsHash;
-          return fetch(url, { method: 'GET' }).then((response) =>
-            response.json(),
-          );
+        ipfsHashes.map((ipfsHash) => {
+          const url =
+            'https://gateway.pinata.cloud/ipfs/' +
+            getIpfsHashFromBytes32(ipfsHash);
+          return fetch(url).then((response) => response.json());
         }),
       )
     ).map((beneficiaryJson) => {
-      const benefificaryCardData: BeneficiaryCardProps = { ...beneficiaryJson };
+      //TODO parse social media links
+      const benefificaryCardData: BeneficiaryCardProps = {
+        name: beneficiaryJson.name,
+        missionStatement: beneficiaryJson.missionStatement,
+        twitterUrl: '',
+        linkedinUrl: '',
+        facebookUrl: '',
+        instagramUrl: '',
+        githubUrl: '',
+        dribbleUrl: '',
+        ethereumAddress: beneficiaryJson.ethereumAddress,
+        profileImageURL: `https://gateway.pinata.cloud/ipfs/${beneficiaryJson.profileImage}`,
+      };
       return benefificaryCardData;
     });
-    setBeneficiaries(beneficiaryData)
+    setBeneficiaries(beneficiaryData);
   }
 
   useEffect(() => {
-    if(contracts){
+    if (contracts) {
       getBeneficiaries();
     }
   }, [contracts]);
 
-  return <BeneficiaryGrid isProposal={false} />;
+  console.log(benefeciaries);
+
+  return <BeneficiaryGrid isProposal={false} benefeciaries={benefeciaries} />;
 }

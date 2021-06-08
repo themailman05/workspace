@@ -8,7 +8,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import * as Icon from 'react-feather';
 
-import { Stage } from '../interfaces/beneficiaries';
+import { BeneficiaryCardProps, Stage } from '../interfaces/beneficiaries';
 
 import { beneficiaryProposalFixtures } from '../fixtures/beneficiaryProposals';
 
@@ -31,7 +31,12 @@ function Header({ title, subtitle }) {
   );
 }
 
-export default function BeneficiaryGrid({ isProposal }) {
+interface BeneficiaryGridProps{
+  isProposal:boolean;
+  benefeciaries:BeneficiaryCardProps[]
+}
+
+export default function BeneficiaryGrid({ isProposal, benefeciaries }:BeneficiaryGridProps) {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [stageFilter, setStageFilter] = useState<Stage>('All');
@@ -152,6 +157,8 @@ export default function BeneficiaryGrid({ isProposal }) {
         )}
       </div>
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
+        {/* TODO update this to be more flexible regarding proposals and beneficiaries*/}
+        {/* TODO update this to display real data*/}
         {beneficiaryProposalFixtures
           .filter((beneficiaryProposal) => {
             return (
