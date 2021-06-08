@@ -9,13 +9,13 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   const [benefeciaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>([])
 
   async function getBeneficiaries() {
-    const beneficiaryList = await contracts.beneficiary.getBeneficiaryList();
-    console.log(beneficiaryList)
+    const beneficiaryAddresses = await contracts.beneficiary.getBeneficiaryList();
     const beneficiaries = await Promise.all(
-      beneficiaryList.map(async (address) => {
+      beneficiaryAddresses.map(async (address) => {
         return contracts.beneficiary.getBeneficiary(address);
       }),
     );
+    console.log(beneficiaries)
     const beneficiaryData = await (
       await Promise.all(
         beneficiaries.map(async (ipfsHash) => {
@@ -33,7 +33,9 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   }
 
   useEffect(() => {
-    getBeneficiaries();
+    if(contracts){
+      getBeneficiaries();
+    }
   }, [contracts]);
 
   return <BeneficiaryGrid isProposal={false} />;
