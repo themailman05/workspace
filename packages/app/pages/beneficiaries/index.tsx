@@ -6,11 +6,11 @@ import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
+  const [benefeciaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>([])
 
-  const [beneficiaryCardProps, setBeneficiaryCardProps] = useState<BeneficiaryCardProps[]>([])
-
-  async function getBeneficiaryList() {
+  async function getBeneficiaries() {
     const beneficiaryList = await contracts.beneficiary.getBeneficiaryList();
+    console.log(beneficiaryList)
     const beneficiaries = await Promise.all(
       beneficiaryList.map(async (address) => {
         return contracts.beneficiary.getBeneficiary(address);
@@ -29,11 +29,12 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       const benefificaryCardData: BeneficiaryCardProps = { ...beneficiaryJson };
       return benefificaryCardData;
     });
-    setBeneficiaryCardProps(beneficiaryData)
+    setBeneficiaries(beneficiaryData)
   }
 
   useEffect(() => {
-    getBeneficiaryList();
+    getBeneficiaries();
   }, [contracts]);
+
   return <BeneficiaryGrid isProposal={false} />;
 }

@@ -60,8 +60,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
   {
     uint256 _currentTime = block.timestamp;
     if (
-      lockedBalances[msg.sender]._end == 0 ||
-      lockedBalances[msg.sender]._end < _currentTime
+      lockedBalances[_address]._end == 0 ||
+      lockedBalances[_address]._end < _currentTime
     ) {
       return 0;
     }
