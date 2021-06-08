@@ -107,13 +107,21 @@ describe('BeneficiaryGovernance', function () {
   
       ).to.be.revertedWith( "Beneficiary proposal is pending or already exists!");
     });
-    it("should prevent to create a BTP proposal for an address which haven't registered before", async function () {
+    it("should prevent to create a BTP proposal for an address which hasn't been registered before", async function () {
       
       await this.mockPop.connect(proposer3).approve(this.BNPContract.address, parseEther('3000'));
       await expect(
         this.BNPContract.connect(proposer3).createProposal(beneficiary2.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BTP)
   
       ).to.be.revertedWith( "Beneficiary doesnt exist!");
+    });
+    it("should prevent to create a BNP proposal for an address which has been registered before", async function () {
+      await this.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await this.mockPop.connect(proposer3).approve(this.BNPContract.address, parseEther('3000'));
+      await expect(
+        this.BNPContract.connect(proposer3).createProposal(beneficiary2.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP)
+  
+      ).to.be.revertedWith( "Beneficiary proposal is pending or already exists!");
     });
   });
   describe("voting", function () {
@@ -303,7 +311,7 @@ describe('BeneficiaryGovernance', function () {
       await this.mockPop.mint(proposer2.address, parseEther("2000"));
 
       const BeneficiaryRegistry = await ethers.getContractFactory('BeneficiaryRegistry');
-      const beneficiaryRegistryContract = await BeneficiaryRegistry.connect(governance).deploy();
+      const beneficiaryRegistryContract = await BeneficiaryRegistry.deploy();
      
       const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryGovernance");
       this.BNPContract = await BeneficiaryNomination.deploy(
@@ -314,8 +322,8 @@ describe('BeneficiaryGovernance', function () {
       );
      
       // pass the Beneficiary governance contract address as the governance address for the beneficiary registry contract
-      await beneficiaryRegistryContract.connect(governance).nominateNewGovernance(this.BNPContract.address);
-      await beneficiaryRegistryContract.connect(governance).nominateNewCouncil(this.BNPContract.address);
+      await beneficiaryRegistryContract.nominateNewGovernance(this.BNPContract.address);
+      await beneficiaryRegistryContract.nominateNewCouncil(this.BNPContract.address);
 
       // create a BNP proposal
        await this.mockPop.connect(proposer1).approve(this.BNPContract.address, parseEther('2000'));
