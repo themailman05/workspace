@@ -1,24 +1,24 @@
 import React from 'react';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import IpfsUpload from './IpfsUpload';
+import { Navigation } from './PropsalForm';
 
 interface HIProps {
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  
   headerImage: string;
   setHeaderImage: UpdateState<string>;
-  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  navigation: Navigation;
   visible: boolean;
 }
 
 export default function HeaderImage({
-  currentStep,
-  setCurrentStep,
+  
   headerImage,
   setHeaderImage,
-  setStepLimit,
+  navigation,
   visible
 }: HIProps): JSX.Element {
+  const { currentStep, setCurrentStep, setStepLimit } = navigation;
   if (visible) {
     return (
       <IpfsUpload

@@ -1,17 +1,15 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
 import ProgressBar from 'components/ProgressBar';
+import { Navigation } from './PropsalForm';
 
-interface NavProps {
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
-  stepLimit: number;
+interface NavigationButtonProps {
+  navigation: Navigation;
 }
-export default function Navigation({
-  currentStep,
-  setCurrentStep,
-  stepLimit,
-}: NavProps) {
-  console.log({ currentStep, stepLimit });
+
+export default function NavigationButtons({
+  navigation,
+}: NavigationButtonProps) {
+  const { currentStep, setCurrentStep, stepLimit } = navigation;
   const progressPercentage =
     currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / 10);
   return (

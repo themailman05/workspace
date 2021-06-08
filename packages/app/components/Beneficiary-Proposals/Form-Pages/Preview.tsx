@@ -2,10 +2,9 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
+import { Navigation } from './PropsalForm';
 
 interface PreviewProps {
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   name: string;
   ethereumAddress: string;
   missionStatement: string;
@@ -15,6 +14,7 @@ interface PreviewProps {
   additionalImages: string[];
   impactReports: string[];
   socialMediaLinks: string;
+  navigation: Navigation;
   visible: boolean;
 }
 
@@ -54,8 +54,6 @@ export const uploadJsonToIpfs = (submissionData) => {
 };
 
 export default function Preview({
-  currentStep,
-  setCurrentStep,
   name,
   ethereumAddress,
   missionStatement,
@@ -65,8 +63,10 @@ export default function Preview({
   additionalImages,
   impactReports,
   socialMediaLinks,
-  visible
+  navigation,
+  visible,
 }: PreviewProps): JSX.Element {
+  const { currentStep, setCurrentStep } = navigation;
   if (visible) {
     const submissionData = {
       name,

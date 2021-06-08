@@ -1,24 +1,24 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+import { Navigation } from './PropsalForm';
 
 interface PIProps {
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
+  
   profileImage: string;
   setProfileImage: UpdateState<string>;
-  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  navigation: Navigation;
   visible: boolean;
 }
 
 export default function ProfileImage({
-  currentStep,
-  setCurrentStep,
+  
   profileImage,
   setProfileImage,
-  setStepLimit,
+  navigation,
   visible
 }: PIProps) {
+  const { currentStep, setCurrentStep, setStepLimit } = navigation;
   if (visible) {
     return (
       <IpfsUpload

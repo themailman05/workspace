@@ -1,24 +1,22 @@
 import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
+import { Navigation } from './PropsalForm';
 
 interface MSProps {
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   missionStatement: string;
   setMissionStatement: UpdateState<string>;
-  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  navigation: Navigation;
   visible: boolean;
 }
 
 export default function MissionStatement({
-  currentStep,
-  setCurrentStep,
   missionStatement,
   setMissionStatement,
-  setStepLimit,
-  visible
+  navigation,
+  visible,
 }: MSProps): JSX.Element {
+  const { currentStep, setCurrentStep, setStepLimit } = navigation;
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

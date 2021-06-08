@@ -11,7 +11,7 @@ import ProfileImage from './ProfileImage';
 import ProofOfOwnership from './ProofOfOwnership';
 import Preview from './Preview';
 import SocialMediaLinks from './SocialMediaLinks';
-import Navigation from './Navigation';
+import NavigationButtons from './NavigationButtons';
 
 import useLocalStorageState from 'use-local-storage-state';
 import { Toaster } from 'react-hot-toast';
@@ -88,72 +88,54 @@ export default function PropsalForm(): JSX.Element {
         visible={currentStep === 1}
       />
       <EthereumAddress
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         ethereumAddress={ethereumAddress}
         setEthereumAddress={setEthereumAddress}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 2}
       />
       <MissionStatement
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         missionStatement={missionStatement}
         setMissionStatement={setMissionStatement}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 3}
       />
       <ProofOfOwnership
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         proofOfOwnership={proofOfOwnership}
         setProofOfOwnership={setProofOfOwnership}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 4}
       />
       <ProfileImage
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         profileImage={profileImage}
         setProfileImage={setProfileImage}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 5}
       />
       <HeaderImage
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         headerImage={headerImage}
         setHeaderImage={setHeaderImage}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 6}
       />
       <AdditionalImages
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         additionalImages={additionalImages}
         setAdditionalImages={setAdditionalImages}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 7}
       />
       <ImpactReportsAudits
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         impactReports={impactReports}
         setImpactReports={setImpactReports}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 8}
       />
       <SocialMediaLinks
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         socialMediaLinks={socialMediaLinks}
         setSocialMediaLinks={setSocialMediaLinks}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
         visible={currentStep === 9}
       />
       <Preview
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
         name={name}
         ethereumAddress={ethereumAddress}
         missionStatement={missionStatement}
@@ -163,13 +145,10 @@ export default function PropsalForm(): JSX.Element {
         additionalImages={additionalImages}
         impactReports={impactReports}
         socialMediaLinks={socialMediaLinks}
+        navigation={navigation}
         visible={currentStep === 10}
       />
-      <Navigation
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
-        stepLimit={stepLimit}
-      />
+      <NavigationButtons navigation={navigation} />
       <Toaster />
     </div>
   );
