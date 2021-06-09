@@ -128,12 +128,12 @@ export default function PropsalForm(): JSX.Element {
         navigation={navigation}
         visible={currentStep === 9}
       />
-      {/* <Preview
+      <Preview
         form={form}
         setForm={setForm}
         navigation={navigation}
         visible={currentStep === 10}
-      /> */}
+      />
       <NavigationButtons navigation={navigation} />
       <Toaster />
     </div>

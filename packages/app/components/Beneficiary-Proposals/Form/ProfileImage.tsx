@@ -16,6 +16,10 @@ export default function ProfileImage({
   visible,
 }: PIProps) {
   const [profileImage, setProfileImage] = useState<string>('');
+
+  useEffect(() => {
+    setProfileImage(form?.profileImage)
+  }, [form])
   useEffect(() => {
     // handle input validation and updating parent form
     setForm({ ...form, profileImage });

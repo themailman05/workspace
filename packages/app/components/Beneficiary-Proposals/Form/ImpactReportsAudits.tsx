@@ -16,6 +16,9 @@ export default function AdditionalImages({
   visible,
 }: IRProps): JSX.Element {
   const [impactReports, setImpactReports] = useState<string[]>([]);
+  // useEffect(() => {
+  //   setImpactReports(form?.impactReports);
+  // }, [form]);
   useEffect(() => {
     // handle input validation and updating parent form
     setForm({ ...form, impactReports });

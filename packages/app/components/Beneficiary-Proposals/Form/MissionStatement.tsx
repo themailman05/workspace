@@ -18,6 +18,10 @@ export default function MissionStatement({
 }: MSProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [missionStatement, setMissionStatement] = useState<string>('');
+
+  useEffect(() => {
+    setMissionStatement(form?.missionStatement)
+  }, [form])
   
   useEffect(() => {
     // handle input validation and updating parent form

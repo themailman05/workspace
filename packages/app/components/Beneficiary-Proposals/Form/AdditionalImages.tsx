@@ -16,10 +16,16 @@ export default function AdditionalImages({
   visible,
 }: Props): JSX.Element {
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  
+  // useEffect(() => {
+  //   setAdditionalImages(form?.additionalImages);
+  // }, [form]);
+
   useEffect(() => {
     // handle input validation and updating parent form
     setForm({ ...form, additionalImages });
   }, [additionalImages]);
+
   if (visible) {
     return (
       <IpfsUpload

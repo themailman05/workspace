@@ -17,6 +17,11 @@ export default function ProofOfOwnership({
 }: PoPProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [proofOfOwnership, setProofOfOwnership] = useState<string>('');
+  
+  useEffect(() => {
+    setProofOfOwnership(form?.proofOfOwnership)
+  }, [form])
+  
   useEffect(() => {
     // handle input validation and updating parent form
     if (isValid(proofOfOwnership)) {

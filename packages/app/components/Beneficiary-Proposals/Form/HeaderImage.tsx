@@ -17,6 +17,9 @@ export default function HeaderImage({
 }: HIProps): JSX.Element {
   const [headerImage, setHeaderImage] = useState<string>('');
   useEffect(() => {
+    setHeaderImage(form?.headerImage)
+  }, [form])
+  useEffect(() => {
     // handle input validation and updating parent form
     setForm({ ...form, headerImage });
   }, [headerImage]);
