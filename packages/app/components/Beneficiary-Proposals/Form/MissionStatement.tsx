@@ -17,20 +17,14 @@ export default function MissionStatement({
   visible,
 }: MSProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const [missionStatement, setMissionStatement] = useState<string>('');
 
-  useEffect(() => {
-    setMissionStatement(form?.missionStatement)
-  }, [form])
-  
-  useEffect(() => {
+  function updateMissionStatement(event) {
+    const missionStatement = event.target.value;
     // handle input validation and updating parent form
-    if (isValid(missionStatement)) {
-      setForm({ ...form, missionStatement });
-    }
-  }, [missionStatement]);
+    if (isValid(missionStatement)) setForm({ ...form, missionStatement });
+  }
 
-  const isValid = (missionStatement) => missionStatement.length > 0
+  const isValid = (missionStatement) => missionStatement.length > 0;
 
   if (visible) {
     return (
@@ -38,15 +32,15 @@ export default function MissionStatement({
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
           3 - Please share the beneficiary's mission statement
         </h2>
-        {missionStatement.length > 0 ? (
+        {form.missionStatement.length > 0 ? (
           <React.Fragment>
             <div className="mt-1 relative rounded-md shadow-sm">
               <textarea
                 name="missionstatement"
                 id="missionstatement"
                 rows={10}
-                value={missionStatement}
-                onChange={(event) => setMissionStatement(event.target.value)}
+                value={form.missionStatement}
+                onChange={updateMissionStatement}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 placeholder="Mission Statement"
               />
@@ -69,8 +63,8 @@ export default function MissionStatement({
                 name="name"
                 id="name"
                 rows={10}
-                value={missionStatement}
-                onChange={(event) => setMissionStatement(event.target.value)}
+                value={form.missionStatement}
+                onChange={updateMissionStatement}
                 className="block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
                 placeholder="Mission Statement"
                 aria-invalid="true"

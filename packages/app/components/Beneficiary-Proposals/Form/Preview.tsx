@@ -36,7 +36,11 @@ export default function Preview({
     headerImage,
     additionalImages,
     impactReports,
-    socialMediaLinks,
+    twitterUrl,
+    linkedinUrl,
+    facebookUrl,
+    instagramUrl,
+    githubUrl,
   } = form;
 
   function uploadJsonToIpfs(submissionData) {
@@ -79,7 +83,11 @@ export default function Preview({
       name: '',
       profileImage: '',
       proofOfOwnership: '',
-      socialMediaLinks: '[]',
+      twitterUrl: '',
+      linkedinUrl: '',
+      facebookUrl: '',
+      instagramUrl: '',
+      githubUrl: '',
     });
   }
 
@@ -93,7 +101,11 @@ export default function Preview({
       headerImage,
       additionalImages,
       impactReports,
-      socialMediaLinks,
+      twitterUrl,
+      linkedinUrl,
+      facebookUrl,
+      instagramUrl,
+      githubUrl,
     };
     const beneficaryProposal: DummyBeneficiaryProposal = {
       name,
@@ -112,6 +124,11 @@ export default function Preview({
       votesFor: 0,
       currentStage: 'Open',
       stageDeadline: twoDaysInAdvance(),
+      twitterUrl,
+      linkedinUrl,
+      facebookUrl,
+      instagramUrl,
+      githubUrl,
     };
     return (
       <div>

@@ -15,21 +15,15 @@ export default function ProfileImage({
   navigation,
   visible,
 }: PIProps) {
-  const [profileImage, setProfileImage] = useState<string>('');
-
-  useEffect(() => {
-    setProfileImage(form?.profileImage)
-  }, [form])
-  useEffect(() => {
-    // handle input validation and updating parent form
+  function updateProfileImage(profileImage) {
     setForm({ ...form, profileImage });
-  }, [profileImage]);
+  }
   if (visible) {
     return (
       <IpfsUpload
         stepName={'5 - UPLOAD PROFILE IMAGE'}
-        localState={profileImage}
-        setLocalState={setProfileImage}
+        localState={form.profileImage}
+        setLocalState={updateProfileImage}
         imageDescription={'a Profile Image'}
         imageInstructions={
           'Upload a square image, ideally 150px x 150px and less than 5mb'

@@ -15,20 +15,15 @@ export default function AdditionalImages({
   navigation,
   visible,
 }: IRProps): JSX.Element {
-  const [impactReports, setImpactReports] = useState<string[]>([]);
-  // useEffect(() => {
-  //   setImpactReports(form?.impactReports);
-  // }, [form]);
-  useEffect(() => {
-    // handle input validation and updating parent form
+  function updateImpactReports(impactReports) {
     setForm({ ...form, impactReports });
-  }, [impactReports]);
+  }
   if (visible) {
     return (
       <IpfsUpload
         stepName={'8 - Upload Impact Reports'}
-        localState={impactReports}
-        setLocalState={setImpactReports}
+        localState={form.impactReports}
+        setLocalState={updateImpactReports}
         imageDescription={'Impact Reports'}
         imageInstructions={
           'Impact report uploads are limited to up to a maximum of four PDFs, each with a maximum size of 5mb.'

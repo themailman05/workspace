@@ -30,7 +30,11 @@ export interface Form {
   name: string;
   profileImage: string;
   proofOfOwnership: string;
-  socialMediaLinks: string;
+  twitterUrl: string;
+  linkedinUrl: string;
+  facebookUrl: string;
+  instagramUrl: string;
+  githubUrl: string;
 }
 
 export default function PropsalForm(): JSX.Element {
@@ -45,7 +49,11 @@ export default function PropsalForm(): JSX.Element {
     name: '',
     profileImage: '',
     proofOfOwnership: '',
-    socialMediaLinks: '[]',
+    twitterUrl: 'www.twitter.com/popcorndao',
+    linkedinUrl: 'www.linkedin.com/popcorndao',
+    facebookUrl: 'www.fb.com/popcorndao',
+    instagramUrl: 'www.instagram.com/popcorndao',
+    githubUrl: 'www.github.com/popcorndao',
   });
 
   useEffect(() => {

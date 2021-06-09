@@ -16,21 +16,14 @@ export default function Name({
   visible,
 }: NameProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const [name, setName] = useState<string>('');
-
-  useEffect(() => {
-    setName(form?.name)
-  }, [form])
-
-  useEffect(() => {
-    // handle input validation and updating parent form
+  function isValid(name) {
+    return name.length > 0;
+  }
+  function updateName(event) {
+    const name = event.target.value;
     if (isValid(name)) {
       setForm({ ...form, name });
     }
-  }, [name]);
-
-  function isValid(name) {
-    return name.length > 0;
   }
 
   if (visible) {
@@ -39,15 +32,15 @@ export default function Name({
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
           1 - First things first, what's the name of the beneficiary?
         </h2>
-        {name.length > 0 ? (
+        {form.name.length > 0 ? (
           <React.Fragment>
             <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
                 name="name"
                 id="name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
+                value={form.name}
+                onChange={updateName}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 placeholder="Beneficiary Name"
               />
@@ -72,8 +65,8 @@ export default function Name({
                 type="text"
                 name="name"
                 id="name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
+                value={form.name}
+                onChange={updateName}
                 className="block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
                 placeholder="Beneficiary Name"
                 aria-invalid="true"

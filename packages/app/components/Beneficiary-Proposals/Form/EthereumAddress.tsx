@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import web3 from 'web3';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
 import { Form, Navigation } from './ProposalForm';
-import { useEffect } from 'react';
 
 interface EProps {
   form: Form;
@@ -18,18 +17,14 @@ export default function EtherumAddress({
   visible,
 }: EProps): JSX.Element {
   const { currentStep, setStepLimit, setCurrentStep } = navigation;
-  const [ethereumAddress, setEthereumAddress] = useState<string>('');
 
-  useEffect(() => {
-    setEthereumAddress(form?.ethereumAddress)
-  }, [form])
-
-  useEffect(() => {
+  function updateEthereumAddress(event) {
+    const ethereumAddress = event.target.value;
     // handle input validation and updating parent form
     if (web3.utils.isAddress(ethereumAddress)) {
       setForm({ ...form, ethereumAddress });
     }
-  }, [ethereumAddress]);
+  }
 
   if (visible) {
     return (
@@ -37,15 +32,15 @@ export default function EtherumAddress({
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
           2 - What's the Ethereum address grants will be sent to?
         </h2>
-        {web3.utils.isAddress(ethereumAddress) ? (
+        {web3.utils.isAddress(form.ethereumAddress) ? (
           <React.Fragment>
             <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
                 name="ethaddress"
                 id="ethaddress"
-                value={ethereumAddress}
-                onChange={(event) => setEthereumAddress(event.target.value)}
+                value={form.ethereumAddress}
+                onChange={updateEthereumAddress}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 placeholder="Ethererum Address"
               />
@@ -70,8 +65,8 @@ export default function EtherumAddress({
                 type="text"
                 name="ethaddress"
                 id="ethaddress"
-                value={ethereumAddress}
-                onChange={(event) => setEthereumAddress(event.target.value)}
+                value={form.ethereumAddress}
+                onChange={updateEthereumAddress}
                 className="block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
                 placeholder="Etherum Address"
                 aria-invalid="true"

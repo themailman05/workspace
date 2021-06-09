@@ -13,25 +13,17 @@ export default function AdditionalImages({
   form,
   setForm,
   navigation,
-  visible,  
+  visible,
 }: Props): JSX.Element {
-  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
-  
-  // useEffect(() => {
-  //   setAdditionalImages(form?.additionalImages);
-  // }, [form]);
-
-  useEffect(() => {
-    // handle input validation and updating parent form
+  function updateAdditionalImages(additionalImages) {
     setForm({ ...form, additionalImages });
-  }, [additionalImages]);
-
+  }
   if (visible) {
     return (
       <IpfsUpload
         stepName={'7 - Upload Additional Images'}
-        localState={additionalImages}
-        setLocalState={setAdditionalImages}
+        localState={form.additionalImages}
+        setLocalState={updateAdditionalImages}
         imageDescription={'Additional Images'}
         imageInstructions={
           'The ideal image size and aspect ratio are 1200px X 675px and 16:9, respectively.'

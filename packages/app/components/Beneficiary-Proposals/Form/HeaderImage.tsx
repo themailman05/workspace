@@ -15,20 +15,15 @@ export default function HeaderImage({
   navigation,
   visible,
 }: HIProps): JSX.Element {
-  const [headerImage, setHeaderImage] = useState<string>('');
-  useEffect(() => {
-    setHeaderImage(form?.headerImage)
-  }, [form])
-  useEffect(() => {
-    // handle input validation and updating parent form
+  function updateHeaderImage(headerImage) {
     setForm({ ...form, headerImage });
-  }, [headerImage]);
+  }
   if (visible) {
     return (
       <IpfsUpload
         stepName={'6 - UPLOAD HEADER IMAGE'}
-        localState={headerImage}
-        setLocalState={setHeaderImage}
+        localState={form.headerImage}
+        setLocalState={updateHeaderImage}
         imageDescription={'a Header Image'}
         imageInstructions={
           'Ideal dimensions - 1500px x 500px and less than 5mb'

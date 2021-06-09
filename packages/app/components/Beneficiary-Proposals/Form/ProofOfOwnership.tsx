@@ -16,18 +16,10 @@ export default function ProofOfOwnership({
   visible,
 }: PoPProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const [proofOfOwnership, setProofOfOwnership] = useState<string>('');
-  
-  useEffect(() => {
-    setProofOfOwnership(form?.proofOfOwnership)
-  }, [form])
-  
-  useEffect(() => {
-    // handle input validation and updating parent form
-    if (isValid(proofOfOwnership)) {
-      setForm({ ...form, proofOfOwnership });
-    }
-  }, [proofOfOwnership]);
+  function updateProofOfOwnership(event) {
+    const proofOfOwnership = event.target.value;
+    if (isValid(proofOfOwnership)) setForm({ ...form, proofOfOwnership });
+  }
 
   function isValid(name) {
     return name.length > 0;
@@ -46,15 +38,15 @@ export default function ProofOfOwnership({
           Input the Ethereum address shared in step 2 on the beneficiary's
           website or a tweet on the beneficiary's official Twitter account.
         </label>
-        {proofOfOwnership.length > 0 ? (
+        {form.proofOfOwnership.length > 0 ? (
           <React.Fragment>
             <div className="mt-1 relative rounded-md shadow-sm">
               <input
                 type="text"
                 name="proofofownership"
                 id="proofofownership"
-                value={proofOfOwnership}
-                onChange={(event) => setProofOfOwnership(event.target.value)}
+                value={form.proofOfOwnership}
+                onChange={updateProofOfOwnership}
                 className="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                 placeholder="Proof of ownership"
               />
@@ -77,8 +69,8 @@ export default function ProofOfOwnership({
                 type="text"
                 name="proofofownership"
                 id="proofofownership"
-                value={proofOfOwnership}
-                onChange={(event) => setProofOfOwnership(event.target.value)}
+                value={form.proofOfOwnership}
+                onChange={updateProofOfOwnership}
                 className="block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md"
                 placeholder="Proof of ownership"
                 aria-invalid="true"
