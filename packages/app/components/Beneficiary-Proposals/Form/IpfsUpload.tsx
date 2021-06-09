@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { DropzoneRootProps, useDropzone } from 'react-dropzone';
+import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
-import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
 import { DocumentAddIcon, PhotographIcon } from '@heroicons/react/solid';
+import { Form, Navigation } from './ProposalForm';
 
 const baseStyle = {
   flex: 1,
@@ -76,11 +76,7 @@ export const uploadImageToPinata = (files, setProfileImage) => {
   });
 };
 
-function uploadMultipleImagesToPinata(
-  files,
-  currentLocalStorageVal,
-  setLocalStorageVal,
-) {
+function uploadMultipleImagesToPinata(files, localState, setLocalState) {
   toast.dismiss();
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -100,8 +96,7 @@ function uploadMultipleImagesToPinata(
       .then((result) => {
         const hash = JSON.parse(result).IpfsHash;
         newImageHashes.push(hash);
-
-        setLocalStorageVal(newImageHashes);
+        setLocalState(newImageHashes);
         toast.dismiss();
         success();
       })
@@ -114,28 +109,26 @@ function uploadMultipleImagesToPinata(
 
 interface IpfsProps {
   stepName: string;
-  currentStep: number;
-  setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
-  localStorageFile: string | string[];
-  setLocalStorage: UpdateState<string> | UpdateState<string[]>;
+  localState: string | string[];
+  setLocalState:
+    | React.Dispatch<React.SetStateAction<string>>
+    | React.Dispatch<React.SetStateAction<string[]>>;
   imageDescription: string;
   imageInstructions: string;
   fileType: string;
   numMaxFiles: number;
-  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  navigation: Navigation;
 }
 
 export default function IpfsUpload({
   stepName,
-  currentStep,
-  setCurrentStep,
-  localStorageFile,
-  setLocalStorage,
+  localState,
+  setLocalState,
   imageDescription,
   imageInstructions,
   fileType,
   numMaxFiles,
-  setStepLimit,
+  navigation,
 }: IpfsProps) {
   const [files, setFiles] = useState([]);
   const {
@@ -155,12 +148,12 @@ export default function IpfsUpload({
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
         if (numMaxFiles === 1) {
-          uploadImageToPinata(acceptedFiles, setLocalStorage);
+          uploadImageToPinata(acceptedFiles, setLocalState);
         } else {
           uploadMultipleImagesToPinata(
             acceptedFiles,
-            localStorageFile,
-            setLocalStorage,
+            localState,
+            setLocalState,
           );
         }
       }
@@ -184,14 +177,13 @@ export default function IpfsUpload({
     }),
     [isDragActive, isDragReject, isDragAccept],
   );
-  // Hack to avoid netlify build breaking.
   const rootProps = getRootProps({ style }) as any;
   return (
     <div className="mx-auto content-center grid justify-items-stretch">
       <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
         {stepName}
       </h2>
-      {!localStorageFile || localStorageFile.length === 0 ? (
+      {!localState || localState.length === 0 ? (
         <div {...rootProps}>
           <input {...getInputProps()} />
           <div className="mt-1 sm:mt-0 sm:col-span-2">
@@ -227,37 +219,29 @@ export default function IpfsUpload({
       ) : (
         <div></div>
       )}
-      {numMaxFiles === 1 && localStorageFile && fileType === 'image/*' ? (
+      {numMaxFiles === 1 && localState && fileType === 'image/*' ? (
         <DisplayImages
-          localStorageFile={localStorageFile}
-          setLocalStorage={setLocalStorage}
-          setCurrentStep={setCurrentStep}
-          currentStep={currentStep}
-          setStepLimit={setStepLimit}
+          localState={localState}
+          setLocalState={setLocalState}
+          navigation={navigation}
         />
       ) : (
         <> </>
       )}
-      {numMaxFiles > 1 &&
-      localStorageFile.length > 0 &&
-      fileType === 'image/*' ? (
+      {numMaxFiles > 1 && localState.length > 0 && fileType === 'image/*' ? (
         <DisplayImages
-          localStorageFile={localStorageFile}
-          setLocalStorage={setLocalStorage}
-          setCurrentStep={setCurrentStep}
-          currentStep={currentStep}
-          setStepLimit={setStepLimit}
+          localState={localState}
+          setLocalState={setLocalState}
+          navigation={navigation}
         />
       ) : (
         <> </>
       )}
-      {numMaxFiles > 1 && localStorageFile.length > 0 && fileType === '.pdf' ? (
+      {numMaxFiles > 1 && localState.length > 0 && fileType === '.pdf' ? (
         <DisplayPDFs
-          localStorageFile={localStorageFile}
-          setLocalStorage={setLocalStorage}
-          setCurrentStep={setCurrentStep}
-          currentStep={currentStep}
-          setStepLimit={setStepLimit}
+          localState={localState}
+          setLocalState={setLocalState}
+          navigation={navigation}
         />
       ) : (
         <> </>

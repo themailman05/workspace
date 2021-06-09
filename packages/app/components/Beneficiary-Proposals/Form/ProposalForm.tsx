@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import NavBar from '../../NavBar/NavBar';
 import Intro from './Intro';
 import Name from './Name';
@@ -12,10 +12,7 @@ import ProofOfOwnership from './ProofOfOwnership';
 import Preview from './Preview';
 import NavigationButtons from './NavigationButtons';
 import SocialMedia from './SocialMedia';
-
-import useLocalStorageState from 'use-local-storage-state';
 import { Toaster } from 'react-hot-toast';
-import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
 
 export interface Navigation {
   currentStep: number;
@@ -24,80 +21,39 @@ export interface Navigation {
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
-export interface FormData {
-  name: string;
-  setName: UpdateState<string>;
-  ethereumAddress: string;
-  setEthereumAddress: UpdateState<string>;
-  missionStatement: string;
-  setMissionStatement: UpdateState<string>;
-  proofOfOwnership: string;
-  setProofOfOwnership: UpdateState<string>;
-  profileImage: string;
-  setProfileImage: UpdateState<string>;
-  headerImage: string;
-  setHeaderImage: UpdateState<string>;
+export interface Form {
   additionalImages: string[];
-  setAdditionalImages: UpdateState<string[]>;
+  ethereumAddress: string;
+  headerImage: string;
   impactReports: string[];
-  setImpactReports: UpdateState<string[]>;
+  missionStatement: string;
+  name: string;
+  profileImage: string;
+  proofOfOwnership: string;
   socialMediaLinks: string;
-  setSocialMediaLinks: UpdateState<string>;
 }
 
 export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
-  const [name, setName] = useLocalStorageState<string>('name', '');
-  const [ethereumAddress, setEthereumAddress] =
-    useLocalStorageState<string>('');
-  const [missionStatement, setMissionStatement] = useLocalStorageState<string>(
-    'missionStatement',
-    '',
-  );
-  const [proofOfOwnership, setProofOfOwnership] = useLocalStorageState<string>(
-    'proofOfOwnership',
-    '',
-  );
-  const [profileImage, setProfileImage] = useLocalStorageState<string>(
-    'img',
-    null,
-  );
-  const [headerImage, setHeaderImage] = useLocalStorageState<string>(
-    'headerimg',
-    null,
-  );
-  const [additionalImages, setAdditionalImages] = useLocalStorageState<
-    string[]
-  >('additionalimages', []);
-  const [impactReports, setImpactReports] = useLocalStorageState<string[]>(
-    'impactreports',
-    [],
-  );
-  const [socialMediaLinks, setSocialMediaLinks] = useLocalStorageState<string>(
-    'socialMediaLinks',
-    '[]',
-  );
-  const formData = {
-    name,
-    setName,
-    ethereumAddress,
-    setEthereumAddress,
-    missionStatement,
-    setMissionStatement,
-    proofOfOwnership,
-    setProofOfOwnership,
-    profileImage,
-    setProfileImage,
-    headerImage,
-    setHeaderImage,
-    additionalImages,
-    setAdditionalImages,
-    impactReports,
-    setImpactReports,
-    socialMediaLinks,
-    setSocialMediaLinks,
-  } as FormData;
+  const [form, setForm] = useState<Form>({
+    additionalImages: [],
+    ethereumAddress: '',
+    headerImage: '',
+    impactReports: [],
+    missionStatement: '',
+    name: '',
+    profileImage: '',
+    proofOfOwnership: '',
+    socialMediaLinks: '[]',
+  });
+
+  useEffect(() => {
+    const formData = localStorage.getItem('beneficiaryNominationProposal');
+    if (formData !== null) {
+      setForm(JSON.parse(formData));
+    }
+  }, []);
 
   const navigation: Navigation = {
     currentStep,
@@ -106,63 +62,78 @@ export default function PropsalForm(): JSX.Element {
     setStepLimit,
   };
 
+  useEffect(() => {
+    //global validation, submission and saving to localstorage can be handled here
+    // if (isValid(form)) {
+    localStorage.setItem('beneficiaryNominationProposal', JSON.stringify(form));
+    // }
+  }, [form]);
+
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
-      <Intro
-        formData={formData}
-        navigation={navigation}
-      />
+      <Intro form={form} setForm={setForm} navigation={navigation} />
       <Name
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 1}
       />
       <EthereumAddress
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 2}
       />
       <MissionStatement
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 3}
       />
       <ProofOfOwnership
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 4}
       />
       <ProfileImage
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 5}
       />
       <HeaderImage
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 6}
       />
+
       <AdditionalImages
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 7}
       />
       <ImpactReportsAudits
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 8}
       />
       <SocialMedia
-        formData={formData}
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 9}
       />
-      <Preview
-        formData={formData}
+      {/* <Preview
+        form={form}
+        setForm={setForm}
         navigation={navigation}
         visible={currentStep === 10}
-      />
+      /> */}
       <NavigationButtons navigation={navigation} />
       <Toaster />
     </div>

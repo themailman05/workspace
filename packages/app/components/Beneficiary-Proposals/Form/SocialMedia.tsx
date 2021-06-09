@@ -2,21 +2,12 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { CheckIcon, TrashIcon } from '@heroicons/react/solid';
 import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-
-interface SocialMediaLinks {
-  platform: string;
-  url: string;
-}
-
-interface SMProps {
-  socialMediaLinks: string;
-  setSocialMediaLinks: UpdateState<string>;
-}
+import { useEffect } from 'react';
 
 function AddSocialMedia({
   socialMediaLinks,
   setSocialMediaLinks,
-}: SMProps): JSX.Element {
+}): JSX.Element {
   const [platform, setPlatform] = useState<string>('Facebook');
   const [url, setUrl] = useState<string>('');
   return (
@@ -89,7 +80,7 @@ function AddSocialMedia({
   );
 }
 
-function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }: SMProps) {
+function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }) {
   return (
     <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -164,12 +155,19 @@ function SocialMediaTable({ socialMediaLinks, setSocialMediaLinks }: SMProps) {
 }
 
 export default function SocialMedia({
-  formData,
+  form,
+  setForm,
   navigation,
   visible,
 }): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const { socialMediaLinks, setSocialMediaLinks } = formData;
+  const [socialMediaLinks, setSocialMediaLinks] = useState('[]');
+
+  useEffect(() => {
+    // handle input validation and updating parent form
+    setForm({ ...form, socialMediaLinks });
+  }, [socialMediaLinks]);
+
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

@@ -1,31 +1,44 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { FormData, Navigation } from './ProposalForm';
+import { Form, Navigation } from './ProposalForm';
 
 interface PoPProps {
-  formData: FormData;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function ProofOfOwnership({
-  formData,
+  form,
+  setForm,
   navigation,
   visible,
 }: PoPProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const { proofOfOwnership, setProofOfOwnership } = formData;
+  const [proofOfOwnership, setProofOfOwnership] = useState<string>('');
+  useEffect(() => {
+    // handle input validation and updating parent form
+    if (isValid(proofOfOwnership)) {
+      setForm({ ...form, proofOfOwnership });
+    }
+  }, [proofOfOwnership]);
+
+  function isValid(name) {
+    return name.length > 0;
+  }
+
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center px-10">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          4 - Please share a proof of ownership
+          4 - Proof of ownership
         </h2>
         <label
           htmlFor="email"
           className="block text-sm font-medium text-gray-700"
         >
-          Post the Ethereum address shared in step 2 on the beneficiary's
+          Input the Ethereum address shared in step 2 on the beneficiary's
           website or a tweet on the beneficiary's official Twitter account.
         </label>
         {proofOfOwnership.length > 0 ? (

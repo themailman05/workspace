@@ -1,21 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import web3 from 'web3';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { FormData, Navigation } from './ProposalForm';
+import { Form, Navigation } from './ProposalForm';
+import { useEffect } from 'react';
 
 interface EProps {
-  formData: FormData;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function EtherumAddress({
-  formData,
+  form,
+  setForm,
   navigation,
   visible,
 }: EProps): JSX.Element {
   const { currentStep, setStepLimit, setCurrentStep } = navigation;
-  const { ethereumAddress, setEthereumAddress } = formData;
+  const [ethereumAddress, setEthereumAddress] = useState<string>('');
+
+  useEffect(() => {
+    setEthereumAddress(form?.ethereumAddress)
+  }, [form])
+
+  useEffect(() => {
+    // handle input validation and updating parent form
+    if (web3.utils.isAddress(ethereumAddress)) {
+      setForm({ ...form, ethereumAddress });
+    }
+  }, [ethereumAddress]);
+
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

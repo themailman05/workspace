@@ -1,20 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { FormData, Navigation } from './ProposalForm';
+import { Form, Navigation } from './ProposalForm';
+import { useEffect } from 'react';
 
 interface MSProps {
-  formData: FormData;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function MissionStatement({
-  formData,
+  form,
+  setForm,
   navigation,
   visible,
 }: MSProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const { missionStatement, setMissionStatement } = formData;
+  const [missionStatement, setMissionStatement] = useState<string>('');
+  
+  useEffect(() => {
+    // handle input validation and updating parent form
+    if (isValid(missionStatement)) {
+      setForm({ ...form, missionStatement });
+    }
+  }, [missionStatement]);
+
+  const isValid = (missionStatement) => missionStatement.length > 0
+
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

@@ -1,22 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { UpdateState } from 'use-local-storage-state/src/useLocalStorageStateBase';
-import { FormData, Navigation } from './ProposalForm';
+import { Form, Navigation } from './ProposalForm';
 
 interface NameProps {
-  formData: FormData;
-
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function Name({
-  formData,
+  form,
+  setForm,
   navigation,
-  visible
+  visible,
 }: NameProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const { name, setName } = formData;
+  const [name, setName] = useState<string>('');
+
+  useEffect(() => {
+    setName(form?.name)
+  }, [form])
+
+  useEffect(() => {
+    // handle input validation and updating parent form
+    if (isValid(name)) {
+      setForm({ ...form, name });
+    }
+  }, [name]);
+
+  function isValid(name) {
+    return name.length > 0;
+  }
+
   if (visible) {
     return (
       <div className="mx-auto content-center justify-items-center">

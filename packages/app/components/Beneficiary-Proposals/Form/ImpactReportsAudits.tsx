@@ -1,35 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import IpfsUpload from './IpfsUpload';
-import { FormData, Navigation } from './ProposalForm';
+import { Form, Navigation } from './ProposalForm';
 
 interface IRProps {
-  formData: FormData;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
   navigation: Navigation;
   visible: boolean;
 }
 
 export default function AdditionalImages({
-  formData,
+  form,
+  setForm,
   navigation,
   visible,
 }: IRProps): JSX.Element {
-  const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const { impactReports, setImpactReports } = formData;
+  const [impactReports, setImpactReports] = useState<string[]>([]);
+  useEffect(() => {
+    // handle input validation and updating parent form
+    setForm({ ...form, impactReports });
+  }, [impactReports]);
   if (visible) {
     return (
       <IpfsUpload
         stepName={'8 - Upload Impact Reports'}
-        currentStep={currentStep}
-        setCurrentStep={setCurrentStep}
-        localStorageFile={impactReports}
-        setLocalStorage={setImpactReports}
+        localState={impactReports}
+        setLocalState={setImpactReports}
         imageDescription={'Impact Reports'}
         imageInstructions={
           'Impact report uploads are limited to up to a maximum of four PDFs, each with a maximum size of 5mb.'
         }
         fileType={'.pdf'}
         numMaxFiles={4}
-        setStepLimit={setStepLimit}
+        navigation={navigation}
       />
     );
   } else {

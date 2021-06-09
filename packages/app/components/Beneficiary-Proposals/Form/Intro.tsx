@@ -1,41 +1,21 @@
-import { FormData, Navigation } from './ProposalForm';
+import { Form, Navigation } from './ProposalForm';
 
 interface IntroProps {
-  formData: FormData;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
   navigation: Navigation;
 }
 
 export default function Intro({
-  formData,
+  form,
+  setForm,
   navigation,
 }: IntroProps): JSX.Element {
-  const {
-    name,
-    setName,
-    setEthereumAddress,
-    setMissionStatement,
-    setProofOfOwnership,
-    setProfileImage,
-    setHeaderImage,
-    setAdditionalImages,
-    setImpactReports,
-    setSocialMediaLinks,
-  } = formData;
   const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
-
-  function clearLocalStorage() {
-    setCurrentStep(1);
-    setName.reset();
-    setEthereumAddress.reset();
-    setMissionStatement.reset();
-    setProofOfOwnership.reset();
-    setProfileImage.reset();
-    setHeaderImage.reset();
-    setAdditionalImages.reset();
-    setImpactReports.reset();
-    setSocialMediaLinks.reset();
-    setStepLimit(1);
-  }
+  // const { name } = form;
+  // console.log({form});
+  console.log({form});
+  const name = 'temp'
   if (currentStep === 0) {
     return (
       <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
@@ -82,7 +62,20 @@ export default function Intro({
             <div className="mt-3 sm:mt-0 sm:ml-3">
               <a
                 onClick={() => {
-                  clearLocalStorage();
+                  setCurrentStep(1);
+                  setStepLimit(1);
+
+                  setForm({
+                    additionalImages: [],
+                    ethereumAddress: '',
+                    headerImage: '',
+                    impactReports: [],
+                    missionStatement: '',
+                    name: '',
+                    profileImage: '',
+                    proofOfOwnership: '',
+                    socialMediaLinks: '',
+                  });
                 }}
                 className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10"
               >
