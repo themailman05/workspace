@@ -101,7 +101,6 @@ function uploadMultipleImagesToPinata(files, localState, setLocalState) {
         success();
       })
       .catch((error) => {
-        console.log({ error });
         uploadError('Error uploading to IPFS');
       });
   });

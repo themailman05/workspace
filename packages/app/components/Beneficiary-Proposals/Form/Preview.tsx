@@ -52,8 +52,7 @@ export default function Preview({
       .then((response) => response.text())
       .then((result) => {
         const hash = JSON.parse(result).IpfsHash;
-        console.log({ hash });
-        window.alert(hash);
+        window.alert(hash); // Temporary
         toast.dismiss();
         success();
         clearLocalStorage();

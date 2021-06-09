@@ -35,7 +35,6 @@ export default function SocialMedia({
 
   function setUrl(event) {
     const url = event.target.value;
-    console.log({url});
     switch (platform) {
       case 'Twitter': {
         setForm({ ...form, twitterUrl: url });

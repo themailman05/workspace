@@ -79,7 +79,6 @@ export const DisplayPDFs: React.FC<DisplayFilesProps> = ({
       {Array.isArray(localState) ? (
         <div>
           {localState.map((IpfsHash, i) => {
-            console.log({IpfsHash});
             return (
               <div key={IpfsHash} className="row-auto justify-self-center">
                 <a
