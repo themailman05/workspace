@@ -13,7 +13,7 @@ describe('Pool', function () {
     [owner, depositor, depositor1, depositor2, depositor3, depositor4, depositor5, rewardsManager] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mockDai = await MockERC20.deploy("DAI", "DAI");
+    this.mockDai = await MockERC20.deploy("DAI", "DAI",18);
     await this.mockDai.mint(depositor.address, DepositorInitial);
     await this.mockDai.mint(depositor1.address, DepositorInitial);
     await this.mockDai.mint(depositor2.address, DepositorInitial);
@@ -21,7 +21,7 @@ describe('Pool', function () {
     await this.mockDai.mint(depositor4.address, DepositorInitial);
     await this.mockDai.mint(depositor5.address, DepositorInitial);
 
-    this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX");
+    this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX",18);
 
     MockYearnV1Vault = await ethers.getContractFactory("MockYearnV1Vault");
     this.mockYearnVault = await MockYearnV1Vault.deploy(this.mockCrvUSDX.address);
