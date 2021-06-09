@@ -13,7 +13,7 @@ export default function AdditionalImages({
   form,
   setForm,
   navigation,
-  visible,
+  visible,  
 }: Props): JSX.Element {
   const [additionalImages, setAdditionalImages] = useState<string[]>([]);
   

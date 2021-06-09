@@ -162,9 +162,9 @@ export default function SocialMedia({
 }): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [socialMediaLinks, setSocialMediaLinks] = useState('[]');
-  // useEffect(() => {
-  //   setSocialMediaLinks(form?.socialMediaLinks);
-  // }, [form]);
+  useEffect(() => {
+    setSocialMediaLinks(form?.socialMediaLinks);
+  }, [form]);
   useEffect(() => {
     // handle input validation and updating parent form
     setForm({ ...form, socialMediaLinks });

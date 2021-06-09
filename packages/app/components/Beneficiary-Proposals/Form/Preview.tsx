@@ -1,10 +1,11 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
-import { FormData, Navigation } from './ProposalForm';
+import { Form, Navigation } from './ProposalForm';
 
 interface PreviewProps {
-  formData: FormData;
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
   navigation: Navigation;
   visible: boolean;
 }
@@ -20,7 +21,8 @@ const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
 export default function Preview({
-  formData,
+  form,
+  setForm,
   navigation,
   visible,
 }: PreviewProps): JSX.Element {
@@ -35,16 +37,7 @@ export default function Preview({
     additionalImages,
     impactReports,
     socialMediaLinks,
-    setName,
-    setEthereumAddress,
-    setMissionStatement,
-    setProofOfOwnership,
-    setProfileImage,
-    setHeaderImage,
-    setAdditionalImages,
-    setImpactReports,
-    setSocialMediaLinks,
-  } = formData;
+  } = form;
 
   function uploadJsonToIpfs(submissionData) {
     var myHeaders = new Headers();
@@ -76,16 +69,18 @@ export default function Preview({
 
   function clearLocalStorage() {
     setCurrentStep(1);
-    setName.reset();
-    setEthereumAddress.reset();
-    setMissionStatement.reset();
-    setProofOfOwnership.reset();
-    setProfileImage.reset();
-    setHeaderImage.reset();
-    setAdditionalImages.reset();
-    setImpactReports.reset();
-    setSocialMediaLinks.reset();
     setStepLimit(1);
+    setForm({
+      additionalImages: [],
+      ethereumAddress: '',
+      headerImage: '',
+      impactReports: [],
+      missionStatement: '',
+      name: '',
+      profileImage: '',
+      proofOfOwnership: '',
+      socialMediaLinks: '[]',
+    });
   }
 
   if (visible) {
