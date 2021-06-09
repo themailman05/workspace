@@ -53,5 +53,5 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
 
   console.log(benefeciaries);
 
-  return <BeneficiaryGrid isProposal={false} benefeciaries={benefeciaries} />;
+  return <BeneficiaryGrid isProposal={false} cardProps={benefeciaries} />;
 }

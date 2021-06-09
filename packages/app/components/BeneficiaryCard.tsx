@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { social } from '../fixtures/social';
-import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
+import { BeneficiaryCardProps, DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
 
 interface IVotingRow {
   name: string;
@@ -8,7 +8,7 @@ interface IVotingRow {
 }
 
 interface IBeneficiaryProposalCard {
-  beneficiaryProposal: DummyBeneficiaryProposal;
+  displayData: DummyBeneficiaryProposal | BeneficiaryCardProps;
   isProposal: boolean;
 }
 
@@ -52,16 +52,16 @@ function VotingInformation(
 }
 
 export default function BeneficiaryProposalCard({
-  beneficiaryProposal,
+  displayData,
   isProposal,
 }: IBeneficiaryProposalCard): JSX.Element {
   return (
     <Link
-      key={beneficiaryProposal.name}
+      key={displayData?.name}
       href={
         isProposal
-          ? 'beneficiary-proposals/' + beneficiaryProposal.ethereumAddress
-          : 'beneficiaries/' + beneficiaryProposal.ethereumAddress
+          ? 'beneficiary-proposals/' + displayData?.ethereumAddress
+          : 'beneficiaries/' + displayData?.ethereumAddress
       }
     >
       <a>
@@ -69,21 +69,21 @@ export default function BeneficiaryProposalCard({
           <div className="aspect-w-3 aspect-h-2">
             <img
               className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
-              src={beneficiaryProposal.profileImageURL}
+              src={displayData?.profileImageURL}
               alt=""
             />
           </div>
           <div className="space-y-2 my-2">
             <div>
               <h3 className="mx-4 mt-4 text-lg font-bold text-gray-800 leading-snug">
-                {beneficiaryProposal.name}
+                {displayData?.name}
               </h3>
               <p className="mx-4 my-4 text-m font-medium  text-gray-700">
-                {beneficiaryProposal.missionStatement}
+                {displayData?.missionStatement}
               </p>
             </div>
             {isProposal ? (
-              <VotingInformation {...beneficiaryProposal} />
+              <VotingInformation {...displayData as DummyBeneficiaryProposal} />
             ) : (
               <div> </div>
             )}

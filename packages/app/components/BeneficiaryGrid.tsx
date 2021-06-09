@@ -8,9 +8,11 @@ import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import * as Icon from 'react-feather';
 
-import { BeneficiaryCardProps, Stage } from '../interfaces/beneficiaries';
-
-import { beneficiaryProposalFixtures } from '../fixtures/beneficiaryProposals';
+import {
+  BeneficiaryCardProps,
+  DummyBeneficiaryProposal,
+  Stage,
+} from '../interfaces/beneficiaries';
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
@@ -31,12 +33,15 @@ function Header({ title, subtitle }) {
   );
 }
 
-interface BeneficiaryGridProps{
-  isProposal:boolean;
-  benefeciaries:BeneficiaryCardProps[]
+interface BeneficiaryGridProps {
+  isProposal: boolean;
+  cardProps: DummyBeneficiaryProposal[] | BeneficiaryCardProps[];
 }
 
-export default function BeneficiaryGrid({ isProposal, benefeciaries }:BeneficiaryGridProps) {
+export default function BeneficiaryGrid({
+  isProposal,
+  cardProps,
+}: BeneficiaryGridProps) {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [stageFilter, setStageFilter] = useState<Stage>('All');
@@ -159,20 +164,26 @@ export default function BeneficiaryGrid({ isProposal, benefeciaries }:Beneficiar
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
         {/* TODO update this to be more flexible regarding proposals and beneficiaries*/}
         {/* TODO update this to display real data*/}
-        {beneficiaryProposalFixtures
-          .filter((beneficiaryProposal) => {
-            return (
-              beneficiaryProposal.name
-                .toLowerCase()
-                .includes(searchFilter.toLowerCase()) &&
-              (beneficiaryProposal.currentStage === stageFilter ||
-                stageFilter === 'All')
-            );
+
+        {cardProps
+          ?.filter((cardProp) => {
+            return cardProp?.name
+              .toLowerCase()
+              .includes(searchFilter.toLowerCase());
           })
-          .map((beneficiaryProposal) => (
+          .filter((cardProp) => {
+            if (isProposal) {
+              return (
+                (cardProp as DummyBeneficiaryProposal)?.currentStage ===
+                  stageFilter || stageFilter === 'All'
+              );
+            }
+            return true;
+          })
+          .map((cardProp) => (
             <BeneficiaryCard
-              key={beneficiaryProposal.stageDeadline.toString()}
-              beneficiaryProposal={beneficiaryProposal}
+              key={cardProp?.ethereumAddress}
+              displayData={cardProp}
               isProposal={isProposal}
             />
           ))}
