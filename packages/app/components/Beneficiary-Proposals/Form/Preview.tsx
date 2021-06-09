@@ -1,14 +1,7 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
 import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
-import { Form, Navigation } from './ProposalForm';
-
-interface PreviewProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-  visible: boolean;
-}
+import { FormStepProps } from './ProposalForm';
 
 function twoDaysInAdvance() {
   var now = new Date();
@@ -25,7 +18,7 @@ export default function Preview({
   setForm,
   navigation,
   visible,
-}: PreviewProps): JSX.Element {
+}: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const {
     name,

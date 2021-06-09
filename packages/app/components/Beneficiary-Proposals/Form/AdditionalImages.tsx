@@ -1,20 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { Form, Navigation } from './ProposalForm';
-
-interface Props {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-  visible: boolean;
-}
+import { FormStepProps } from './ProposalForm';
 
 export default function AdditionalImages({
   form,
   setForm,
   navigation,
   visible,
-}: Props): JSX.Element {
+}: FormStepProps): JSX.Element {
   function updateAdditionalImages(additionalImages) {
     setForm({ ...form, additionalImages });
   }

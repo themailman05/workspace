@@ -21,6 +21,13 @@ export interface Navigation {
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
 }
 
+export interface FormStepProps {
+  form: Form;
+  setForm: React.Dispatch<React.SetStateAction<Form>>;
+  navigation: Navigation;
+  visible: boolean;
+}
+
 export interface Form {
   additionalImages: string[];
   ethereumAddress: string;
@@ -49,11 +56,11 @@ export default function PropsalForm(): JSX.Element {
     name: '',
     profileImage: '',
     proofOfOwnership: '',
-    twitterUrl: 'www.twitter.com/popcorndao',
-    linkedinUrl: 'www.linkedin.com/popcorndao',
-    facebookUrl: 'www.fb.com/popcorndao',
-    instagramUrl: 'www.instagram.com/popcorndao',
-    githubUrl: 'www.github.com/popcorndao',
+    twitterUrl: '',
+    linkedinUrl: '',
+    facebookUrl: '',
+    instagramUrl: '',
+    githubUrl: '',
   });
 
   useEffect(() => {
@@ -80,7 +87,12 @@ export default function PropsalForm(): JSX.Element {
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
-      <Intro form={form} setForm={setForm} navigation={navigation} />
+      <Intro
+        form={form}
+        setForm={setForm}
+        navigation={navigation}
+        visible={currentStep === 0}
+      />
       <Name
         form={form}
         setForm={setForm}

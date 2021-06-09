@@ -1,19 +1,14 @@
-import { Form, Navigation } from './ProposalForm';
-
-interface IntroProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-}
+import { Form, FormStepProps, Navigation } from './ProposalForm';
 
 export default function Intro({
   form,
   setForm,
   navigation,
-}: IntroProps): JSX.Element {
+  visible,
+}: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
   const { name } = form;
-  if (currentStep === 0) {
+  if (visible) {
     return (
       <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
         <div className="sm:text-center lg:text-left">

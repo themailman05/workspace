@@ -1,20 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { Form, Navigation } from './ProposalForm';
-
-interface NameProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-  visible: boolean;
-}
+import { FormStepProps } from './ProposalForm';
 
 export default function Name({
   form,
   setForm,
   navigation,
   visible,
-}: NameProps): JSX.Element {
+}: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   function isValid(name) {
     return name.length > 0;

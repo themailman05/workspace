@@ -1,21 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { Form, Navigation } from './ProposalForm';
-import { useEffect } from 'react';
-
-interface MSProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-  visible: boolean;
-}
+import { FormStepProps } from './ProposalForm';
 
 export default function MissionStatement({
   form,
   setForm,
   navigation,
   visible,
-}: MSProps): JSX.Element {
+}: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
 
   function updateMissionStatement(event) {

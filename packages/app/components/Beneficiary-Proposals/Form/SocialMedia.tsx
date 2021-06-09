@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { CheckIcon } from '@heroicons/react/solid';
 import SocialMediaTable from './SocialMediaTable';
+import { FormStepProps } from './ProposalForm';
 
 export default function SocialMedia({
   form,
   setForm,
   navigation,
   visible,
-}): JSX.Element {
+}: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [platform, setPlatform] = useState<string>('Facebook');
 
@@ -34,6 +35,7 @@ export default function SocialMedia({
 
   function setUrl(event) {
     const url = event.target.value;
+    console.log({url});
     switch (platform) {
       case 'Twitter': {
         setForm({ ...form, twitterUrl: url });

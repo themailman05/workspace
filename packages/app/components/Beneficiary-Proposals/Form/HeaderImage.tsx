@@ -1,20 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { Form, Navigation } from './ProposalForm';
-
-interface HIProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-  visible: boolean;
-}
+import { FormStepProps } from './ProposalForm';
 
 export default function HeaderImage({
   form,
   setForm,
   navigation,
   visible,
-}: HIProps): JSX.Element {
+}: FormStepProps): JSX.Element {
   function updateHeaderImage(headerImage) {
     setForm({ ...form, headerImage });
   }

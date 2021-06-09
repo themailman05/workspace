@@ -1,20 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { Form, Navigation } from './ProposalForm';
+import { FormStepProps } from './ProposalForm';
 
-interface PoPProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-  visible: boolean;
-}
 
 export default function ProofOfOwnership({
   form,
   setForm,
   navigation,
   visible,
-}: PoPProps): JSX.Element {
+}: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   function updateProofOfOwnership(event) {
     const proofOfOwnership = event.target.value;

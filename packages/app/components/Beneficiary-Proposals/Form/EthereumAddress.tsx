@@ -1,21 +1,14 @@
 import React from 'react';
 import web3 from 'web3';
 import { ExclamationCircleIcon, CheckIcon } from '@heroicons/react/solid';
-import { Form, Navigation } from './ProposalForm';
-
-interface EProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
-  navigation: Navigation;
-  visible: boolean;
-}
+import { FormStepProps } from './ProposalForm';
 
 export default function EtherumAddress({
   form,
   setForm,
   navigation,
   visible,
-}: EProps): JSX.Element {
+}: FormStepProps): JSX.Element {
   const { currentStep, setStepLimit, setCurrentStep } = navigation;
 
   function updateEthereumAddress(event) {
