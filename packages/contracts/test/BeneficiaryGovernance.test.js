@@ -2,7 +2,8 @@ const { expect } = require('chai');
 const { parseEther } = require("ethers/lib/utils");
 let owner,governance,nonOwner;
 let proposer1,proposer2,proposer3,beneficiary,beneficiary2;
-
+let voter1,voter2,voter3,voter4,voter5;
+import { waffle, ethers } from "hardhat";
 const ProposalType = { BNP: 0, BTP: 1};
 const Vote = { Yes: 0, No: 1};
 const ProposalStatus= {New:0, ChallengePeriod:1, PendingFinalization:2, Passed:3, Failed:4};
@@ -29,8 +30,8 @@ describe('BeneficiaryGovernance', function () {
       voter5,
     ] = await ethers.getSigners();
 
-    MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+    const MockERC20 = await ethers.getContractFactory("MockERC20");
+    this.mockPop = await MockERC20.deploy("TestPOP", "TPOP",18);
     await this.mockPop.mint(owner.address, parseEther("50"));
     await this.mockPop.mint(nonOwner.address, parseEther("50"));
     await this.mockPop.mint(beneficiary.address, parseEther("50"));
@@ -38,9 +39,9 @@ describe('BeneficiaryGovernance', function () {
     await this.mockPop.mint(proposer1.address, parseEther("1500"));
     await this.mockPop.mint(proposer2.address, parseEther("3000"));
     await this.mockPop.mint(proposer3.address, parseEther("3000"));
+
     const Staking = await ethers.getContractFactory("Staking");
     this.mockStaking = await waffle.deployMockContract(owner, Staking.interface.format());
-
     const BeneficiaryRegistry = await ethers.getContractFactory("BeneficiaryRegistry");
     this.mockBeneficiaryRegistry = await waffle.deployMockContract(owner, BeneficiaryRegistry.interface.format());
 
@@ -140,8 +141,8 @@ describe('BeneficiaryGovernance', function () {
         BeneficiaryRegistry.interface.format()
       );
 
-      MockERC20 = await ethers.getContractFactory("MockERC20");
-      this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+      const MockERC20 = await ethers.getContractFactory("MockERC20");
+      this.mockPop = await MockERC20.deploy("TestPOP", "TPOP",18);
       await this.mockPop.mint(beneficiary.address, parseEther("50"));
       await this.mockPop.mint(proposer1.address, parseEther("2000"));
       await this.mockPop.mint(proposer2.address, parseEther("2000"));
@@ -302,8 +303,8 @@ describe('BeneficiaryGovernance', function () {
 
 
 
-      MockERC20 = await ethers.getContractFactory("MockERC20");
-      this.mockPop = await MockERC20.deploy("TestPOP", "TPOP");
+      const MockERC20 = await ethers.getContractFactory("MockERC20");
+      this.mockPop = await MockERC20.deploy("TestPOP", "TPOP",18);
       await this.mockPop.mint(beneficiary.address, parseEther("50"));
       await this.mockPop.mint(governance.address, parseEther("50"));
       await this.mockPop.mint(beneficiary2.address, parseEther("50"));
