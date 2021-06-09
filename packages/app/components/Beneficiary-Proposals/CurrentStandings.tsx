@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import ProgressBar from '../ProgressBar';
-var { DateTime } = require('luxon');
+import { DateTime } from 'luxon';
 
 const getTimeLeft = (stageDeadline: Date): string => {
   const date1 = DateTime.fromISO(new Date().toISOString());
