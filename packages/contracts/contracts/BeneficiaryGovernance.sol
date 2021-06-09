@@ -283,6 +283,7 @@ contract BeneficiaryGovernance is Governed {
     }
 
     if (proposal.proposalType == ProposalType.BeneficiaryTakedownProposal) {
+      beneficiaryRegistry.approveOwner(address(this));
       beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
     }
   }
