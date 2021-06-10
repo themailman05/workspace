@@ -11,7 +11,8 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   );
 
   async function getBeneficiaries() {
-    const beneficiaryAddresses = await contracts.beneficiary.getBeneficiaryList();
+    const beneficiaryAddresses =
+      await contracts.beneficiary.getBeneficiaryList();
     const ipfsHashes = await Promise.all(
       beneficiaryAddresses.map(async (address) => {
         return contracts.beneficiary.getBeneficiary(address);
@@ -20,25 +21,22 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     const beneficiaryData = await (
       await Promise.all(
         ipfsHashes.map((ipfsHash) => {
-          const url =
-            'https://gateway.pinata.cloud/ipfs/' +
-            getIpfsHashFromBytes32(ipfsHash);
-          return fetch(url).then((response) => response.json());
+          return fetch(
+            `${process.env.IPFS_URL}${getIpfsHashFromBytes32(ipfsHash)}`,
+          ).then((response) => response.json());
         }),
       )
     ).map((beneficiaryJson) => {
-      //TODO parse social media links
       const benefificaryCardData: BeneficiaryCardProps = {
         name: beneficiaryJson.name,
         missionStatement: beneficiaryJson.missionStatement,
-        twitterUrl: '',
-        linkedinUrl: '',
-        facebookUrl: '',
-        instagramUrl: '',
-        githubUrl: '',
-        dribbleUrl: '',
+        twitterUrl: beneficiaryJson.twitterUrl,
+        linkedinUrl: beneficiaryJson.linkedinUrl,
+        facebookUrl: beneficiaryJson.facebookUrl,
+        instagramUrl: beneficiaryJson.instagramUrl,
+        githubUrl: beneficiaryJson.githubUrl,
         ethereumAddress: beneficiaryJson.ethereumAddress,
-        profileImageURL: `https://gateway.pinata.cloud/ipfs/${beneficiaryJson.profileImage}`,
+        profileImageURL: beneficiaryJson.profileImage,
       };
       return benefificaryCardData;
     });
@@ -50,8 +48,6 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       getBeneficiaries();
     }
   }, [contracts]);
-
-  console.log(benefeciaries);
 
   return <BeneficiaryGrid isProposal={false} cardProps={benefeciaries} />;
 }

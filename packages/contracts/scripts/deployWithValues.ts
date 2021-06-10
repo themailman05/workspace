@@ -106,7 +106,7 @@ export default async function deploy(ethers): Promise<void> {
       async (beneficiary) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
-          getBytes32FromIpfsHash("QmdUny7b8uz3HkYfoUjucTkJgtbEZxwacWaWoivxpj9nJb"),
+          getBytes32FromIpfsHash("Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"),
           { gasLimit: 3000000 }
         );
       },

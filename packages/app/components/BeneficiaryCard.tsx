@@ -1,6 +1,9 @@
 import Link from 'next/link';
-import { social } from '../fixtures/social';
-import { BeneficiaryCardProps, DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
+import * as Icon from 'react-feather';
+import {
+  BeneficiaryCardProps,
+  DummyBeneficiaryProposal,
+} from '../interfaces/beneficiaries';
 
 interface IVotingRow {
   name: string;
@@ -69,7 +72,7 @@ export default function BeneficiaryProposalCard({
           <div className="aspect-w-3 aspect-h-2">
             <img
               className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
-              src={displayData?.profileImageURL}
+              src={`${process.env.IPFS_URL}${displayData?.profileImageURL}`}
               alt=""
             />
           </div>
@@ -83,7 +86,9 @@ export default function BeneficiaryProposalCard({
               </p>
             </div>
             {isProposal ? (
-              <VotingInformation {...displayData as DummyBeneficiaryProposal} />
+              <VotingInformation
+                {...(displayData as DummyBeneficiaryProposal)}
+              />
             ) : (
               <div> </div>
             )}
@@ -98,17 +103,45 @@ export default function BeneficiaryProposalCard({
                 <span className="px-2 bg-white text-sm text-gray-500"></span>
               </div>
             </div>
-            <div className="flex space-x-6 mx-4 justify-center">
-              {social.map((item) => (
+            <div
+              className="flex space-x-6 mx-4 justify-center"
+              onClick={(e) => e.stopPropagation()}
+            >
                 <a
-                  key={item.name}
-                  href={item.href}
+                  href={`https://${displayData?.twitterUrl}`}
+                  target="_blank"
                   className="text-gray-400 hover:text-gray-500"
                 >
-                  <span className="sr-only">{item.name}</span>
-                  <item.icon aria-hidden="true" />
+                  <Icon.Twitter aria-hidden="true" />
                 </a>
-              ))}
+                <a
+                  href={`https://${displayData?.facebookUrl}`}
+                  target="_blank"
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <Icon.Facebook aria-hidden="true" />
+                </a>
+                <a
+                  href={`https://${displayData?.instagramUrl}`}
+                  target="_blank"
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <Icon.Instagram aria-hidden="true" />
+                </a>
+                <a
+                  href={`https://${displayData?.githubUrl}`}
+                  target="_blank"
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <Icon.GitHub aria-hidden="true" />
+                </a>
+                <a
+                  href={`https://${displayData?.linkedinUrl}`}
+                  target="_blank"
+                  className="text-gray-400 hover:text-gray-500"
+                >
+                  <Icon.Linkedin aria-hidden="true" />
+                </a>
             </div>
           </div>
         </div>
