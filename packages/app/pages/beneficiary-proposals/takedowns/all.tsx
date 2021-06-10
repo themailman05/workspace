@@ -5,9 +5,9 @@ import { beneficiaryProposalFixtures } from 'fixtures/beneficiaryProposals';
 export default function BeneficiaryPageWrapper(): JSX.Element {
   return (
     <BeneficiaryGrid
-      title={'Beneficiary Proposals'}
+      title={'Takedown Proposals'}
       subtitle={
-        'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations.'
+        'Takedowns have been triggered againt the following beneficiaries. Browse and vote in takedown elections.'
       }
       isProposal={true}
       cardProps={beneficiaryProposalFixtures}

@@ -3,7 +3,10 @@ import { store } from '../context/store';
 import NavBar from './NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import BeneficiaryCard from 'components/BeneficiaryCard';
-import StageExplanations from 'components/Beneficiary-Proposals/StageExplanations';
+import {
+  ProposalStageExplanations,
+  TakedownStageExplanations,
+} from 'components/Beneficiary-Proposals/StageExplanations';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import * as Icon from 'react-feather';
@@ -34,11 +37,15 @@ function Header({ title, subtitle }) {
 }
 
 interface BeneficiaryGridProps {
+  title: string;
+  subtitle: string;
   isProposal: boolean;
   cardProps: DummyBeneficiaryProposal[] | BeneficiaryCardProps[];
 }
 
 export default function BeneficiaryGrid({
+  title,
+  subtitle,
   isProposal,
   cardProps,
 }: BeneficiaryGridProps) {
@@ -48,20 +55,7 @@ export default function BeneficiaryGrid({
   return (
     <div className="w-full bg-gray-900 pb-16">
       <NavBar />
-      {isProposal ? (
-        <Header
-          title="Beneficiary Proposals"
-          subtitle="You choose which social initiatives are included in grant elections.
-        Browse and vote on beneficiary nominations."
-        />
-      ) : (
-        <Header
-          title="Eligible Beneficiaries"
-          subtitle="Beneficiary organizations that have passed the voting process and
-            are eligible to receive grants"
-        />
-      )}
-
+      <Header title={title} subtitle={subtitle} />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
         <div className="relative text-gray-600 focus-within:text-gray-400 ">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">
@@ -72,7 +66,7 @@ export default function BeneficiaryGrid({
               type="search"
               name="searchfilter"
               className="py-2 w-full text-xl text-black bg-white rounded-md pl-10 focus:outline-none focus:bg-white focus:text-gray-900"
-              placeholder="Search Eligible Beneficiaries"
+              placeholder={'Search ' + title}
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
             ></input>
@@ -86,7 +80,12 @@ export default function BeneficiaryGrid({
                 dispatch(
                   setSingleActionModal({
                     title: 'Beneficiary Nomination Proposal Timeline',
-                    content: <StageExplanations />,
+                    content:
+                      title === 'Eligible Beneficiaries' ? (
+                        <ProposalStageExplanations />
+                      ) : (
+                        <TakedownStageExplanations />
+                      ),
                     visible: true,
                     onConfirm: {
                       label: 'Close',
@@ -185,6 +184,7 @@ export default function BeneficiaryGrid({
               key={cardProp?.ethereumAddress}
               displayData={cardProp}
               isProposal={isProposal}
+              isTakedown={title === 'Takedown Proposals'}
             />
           ))}
       </ul>

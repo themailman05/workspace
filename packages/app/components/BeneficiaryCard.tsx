@@ -12,6 +12,7 @@ interface IVotingRow {
 interface IBeneficiaryProposalCard {
   displayData: DummyBeneficiaryProposal | BeneficiaryCardProps;
   isProposal: boolean;
+  isTakedown: boolean;
 }
 
 function VotingRow(data: IVotingRow): JSX.Element {
@@ -53,18 +54,25 @@ function VotingInformation(
   );
 }
 
+function getLink(isProposal, isTakedown, ethereumAddress) {
+  if (isProposal) {
+    return 'beneficiary-proposals/' + ethereumAddress;
+  } else if (isTakedown) {
+    return 'beneficiary-proposals/takedowns/' + ethereumAddress;
+  } else {
+    return 'beneficiaries/' + ethereumAddress;
+  }
+}
+
 export default function BeneficiaryProposalCard({
   displayData,
   isProposal,
+  isTakedown,
 }: IBeneficiaryProposalCard): JSX.Element {
   return (
     <Link
       key={displayData?.name}
-      href={
-        isProposal
-          ? 'beneficiary-proposals/' + displayData?.ethereumAddress
-          : 'beneficiaries/' + displayData?.ethereumAddress
-      }
+      href={getLink(isProposal, isTakedown, displayData?.ethereumAddress)}
     >
       <a>
         <div className="m-0 shadow-sm w-100 h-auto rounded-lg bg-white border-b border-gray-200 ">

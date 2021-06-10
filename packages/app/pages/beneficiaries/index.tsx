@@ -50,5 +50,14 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  return <BeneficiaryGrid isProposal={false} cardProps={benefeciaries} />;
+  return (
+    <BeneficiaryGrid
+      title={'Eligible Beneficiaries'}
+      subtitle={
+        'Beneficiary organizations that have passed the voting process and are eligible to receive grants'
+      }
+      isProposal={false}
+      cardProps={benefeciaries}
+    />
+  );
 }
