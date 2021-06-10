@@ -312,20 +312,19 @@ describe('BeneficiaryGovernance', function () {
       await this.mockPop.mint(proposer2.address, parseEther("2000"));
 
       const BeneficiaryRegistry = await ethers.getContractFactory('BeneficiaryRegistry');
-      const beneficiaryRegistryContract = await BeneficiaryRegistry.deploy();
+      this.beneficiaryRegistryContract = await BeneficiaryRegistry.deploy();
      
       const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryGovernance");
       this.BNPContract = await BeneficiaryNomination.deploy(
         this.mockStaking.address,
-        beneficiaryRegistryContract.address,
+        this.beneficiaryRegistryContract.address,
         this.mockPop.address,
         governance.address
       );
      
       // pass the Beneficiary governance contract address as the governance address for the beneficiary registry contract
-      await beneficiaryRegistryContract.nominateNewGovernance(this.BNPContract.address);
-      await beneficiaryRegistryContract.nominateNewCouncil(this.BNPContract.address);
-
+      await this.beneficiaryRegistryContract.transferOwnership(this.BNPContract.address);
+      
       // create a BNP proposal
        await this.mockPop.connect(proposer1).approve(this.BNPContract.address, parseEther('2000'));
        await this.BNPContract.connect(proposer1).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP);
@@ -413,7 +412,7 @@ describe('BeneficiaryGovernance', function () {
     //finalize 
    await this.BNPContract.connect(governance).finalize(PROPOSALID);
 
-   expect(await this.BRContract.beneficiaryExists(beneficiary.address)).to.equal(true);
+   expect(await this.beneficiaryRegistryContract.beneficiaryExists(beneficiary.address)).to.equal(true);
  });
  it("should remove beneficiary after a successful BTP voting", async function() {
 
@@ -459,7 +458,7 @@ describe('BeneficiaryGovernance', function () {
   //finalize
  await this.BNPContract.connect(governance).finalize(PROPOSALID_BTP);
 
- expect(await this.BRContract.beneficiaryExists(beneficiary.address)).to.equal(false);
+ expect(await this.beneficiaryRegistryContract.beneficiaryExists(beneficiary.address)).to.equal(false);
 });
 
   });

@@ -32,21 +32,20 @@ contract BeneficiaryRegistry is
   }
   modifier onlyApproved(address _address) {
     require(
-      approvedOwners[_address] || approvedCouncils[_address],
-      "invalid address"
+      approved[_address],
+      "Only the approved user may perform this action"
     );
     _;
   }
 
-  mapping(address => bool) private approvedCouncils;
-  mapping(address => bool) private approvedOwners;
+  mapping(address => bool) private approved;
 
   function approveCouncil(address account) external override onlyCouncil {
-    approvedOwners[account] = true;
+    approved[account] = true;
   }
 
   function approveOwner(address account) public override onlyOwner {
-    approvedCouncils[account] = true;
+    approved[account] = true;
   }
 
   constructor() Ownable() CouncilControlled(msg.sender) {}
