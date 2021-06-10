@@ -1,28 +1,51 @@
-import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
-import { social } from '../fixtures/social';
-import Link from 'next/link';
+import {
+  Beneficiary,
+  DummyBeneficiaryProposal,
+} from '../interfaces/beneficiaries';
+import * as Icon from 'react-feather';
 
 // TODO: Limit social media links to contents of beneficiaryProposal once we link to contracts
 
 export default function SocialMediaLinks(
-  beneficiaryProposal: DummyBeneficiaryProposal,
+  displayData: Beneficiary | DummyBeneficiaryProposal,
 ): JSX.Element {
   return (
-    <div>
-      <p className="text-3xl text-black py-4">Social Media</p>
-      <div className="flex space-x-6 my-4">
-        {social.map((item) => (
-          <Link href={item.href}>
-            <a
-              key={item.name}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <span className="sr-only">{item.name}</span>
-              <item.icon aria-hidden="true" />
-            </a>
-          </Link>
-        ))}
-      </div>
-    </div>
+    <>
+      <a
+        href={`https://${displayData?.twitterUrl}`}
+        target="_blank"
+        className="text-gray-400 hover:text-gray-500"
+      >
+        <Icon.Twitter aria-hidden="true" />
+      </a>
+      <a
+        href={`https://${displayData?.facebookUrl}`}
+        target="_blank"
+        className="text-gray-400 hover:text-gray-500"
+      >
+        <Icon.Facebook aria-hidden="true" />
+      </a>
+      <a
+        href={`https://${displayData?.instagramUrl}`}
+        target="_blank"
+        className="text-gray-400 hover:text-gray-500"
+      >
+        <Icon.Instagram aria-hidden="true" />
+      </a>
+      <a
+        href={`https://${displayData?.githubUrl}`}
+        target="_blank"
+        className="text-gray-400 hover:text-gray-500"
+      >
+        <Icon.GitHub aria-hidden="true" />
+      </a>
+      <a
+        href={`https://${displayData?.linkedinUrl}`}
+        target="_blank"
+        className="text-gray-400 hover:text-gray-500"
+      >
+        <Icon.Linkedin aria-hidden="true" />
+      </a>
+    </>
   );
 }

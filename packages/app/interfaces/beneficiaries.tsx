@@ -14,13 +14,17 @@ export interface BeneficiaryCardProps {
   githubUrl?: string;
   dribbleUrl?: string;
   ethereumAddress: string;
-  profileImageURL: string;
+  profileImage: string;
 }
 
-export interface DummyBeneficiaryProposal extends BeneficiaryCardProps {
-  headerImageURL: string;
-  photoURLs?: string[];
+export interface Beneficiary extends BeneficiaryCardProps{
+  headerImage: string;
+  additionalImages?: string[];
   impactReports?: string[];
+  proofOfOwnership: string;
+}
+
+export interface DummyBeneficiaryProposal extends Beneficiary {
   votesFor: number;
   votesAgainst: number;
   currentStage: Stage;

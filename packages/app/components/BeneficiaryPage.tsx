@@ -8,28 +8,31 @@ import Verification from 'components/Verification';
 import Voting from 'components/Beneficiary-Proposals/Voting';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
 import { beneficiaryProposalFixture as beneficiaryProposal } from '../fixtures/beneficiaryProposals';
-import { DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
+import {
+  Beneficiary,
+  DummyBeneficiaryProposal,
+} from 'interfaces/beneficiaries';
+import SocialMedia from './SocialMedia';
 
-interface Props {
-  isProposal: boolean,
-  beneficiaryProposal?: DummyBeneficiaryProposal
+interface BeneficiaryPageProps {
+  isProposal: boolean;
   isProposalPreview?: boolean;
+  displayData?: Beneficiary | DummyBeneficiaryProposal;
 }
 
-const defaultProps: Props = {
-  isProposal: true,
-  beneficiaryProposal: beneficiaryProposal,
-  isProposalPreview: false
-}
-export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal, isProposalPreview }): JSX.Element {
+export default function BeneficiaryPage({
+  isProposal,
+  isProposalPreview = false,
+  displayData,
+}: BeneficiaryPageProps): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
-      {!isProposalPreview ? <NavBar /> : <div></div>}
-      <ImageHeader {...beneficiaryProposal} />
-      {isProposal ? <Voting {...beneficiaryProposal} /> : <div></div>}
+      {!isProposalPreview && <NavBar />}
+      <ImageHeader {...displayData} />
+      {isProposal && <Voting {...(displayData as DummyBeneficiaryProposal)} />}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-        <PhotoSideBar {...beneficiaryProposal} />
-        <MissionStatement {...beneficiaryProposal} />
+        <PhotoSideBar {...displayData} />
+        <MissionStatement missionStatement={displayData?.missionStatement}/>
       </div>
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -37,13 +40,11 @@ export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal
         </div>
       </div>
       <div className="mx-48 my-8">
-        <Verification {...beneficiaryProposal} />
-        <ImpactReportLinks {...beneficiaryProposal} />
-        <SocialMediaLinks {...beneficiaryProposal} />
+        <Verification {...displayData} />
+        <ImpactReportLinks {...displayData} />
+        {/*<SocialMedia {...displayData} />*/}
       </div>
-      {!isProposal ? <TriggerTakedownProposal /> : <div></div>}
+      {!isProposal && <TriggerTakedownProposal />}
     </div>
   );
 }
-
-BeneficiaryPage.defaultProps = defaultProps;

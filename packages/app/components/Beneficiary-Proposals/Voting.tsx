@@ -4,15 +4,15 @@ import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
 
-export default function Voting(beneficiaryProposal: DummyBeneficiaryProposal) {
+export default function Voting(displayData: DummyBeneficiaryProposal) {
   return (
     <div>
-      {beneficiaryProposal.currentStage === 'Open' ? (
-        <OpenVoting {...beneficiaryProposal} />
-      ) : beneficiaryProposal.currentStage === 'Challenge' ? (
-        <ChallengePeriodVoting {...beneficiaryProposal} />
+      {displayData.currentStage === 'Open' ? (
+        <OpenVoting {...displayData} />
+      ) : displayData.currentStage === 'Challenge' ? (
+        <ChallengePeriodVoting {...displayData} />
       ) : (
-        <CompletedVoting {...beneficiaryProposal} />
+        <CompletedVoting {...displayData} />
       )}
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">

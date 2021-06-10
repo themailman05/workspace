@@ -4,6 +4,7 @@ import {
   BeneficiaryCardProps,
   DummyBeneficiaryProposal,
 } from '../interfaces/beneficiaries';
+import SocialMediaLinks from './SocialMediaLinks';
 
 interface IVotingRow {
   name: string;
@@ -107,41 +108,7 @@ export default function BeneficiaryProposalCard({
               className="flex space-x-6 mx-4 justify-center"
               onClick={(e) => e.stopPropagation()}
             >
-                <a
-                  href={`https://${displayData?.twitterUrl}`}
-                  target="_blank"
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <Icon.Twitter aria-hidden="true" />
-                </a>
-                <a
-                  href={`https://${displayData?.facebookUrl}`}
-                  target="_blank"
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <Icon.Facebook aria-hidden="true" />
-                </a>
-                <a
-                  href={`https://${displayData?.instagramUrl}`}
-                  target="_blank"
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <Icon.Instagram aria-hidden="true" />
-                </a>
-                <a
-                  href={`https://${displayData?.githubUrl}`}
-                  target="_blank"
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <Icon.GitHub aria-hidden="true" />
-                </a>
-                <a
-                  href={`https://${displayData?.linkedinUrl}`}
-                  target="_blank"
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <Icon.Linkedin aria-hidden="true" />
-                </a>
+              <SocialMediaLinks {...displayData} />
             </div>
           </div>
         </div>

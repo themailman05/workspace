@@ -1,7 +1,7 @@
-import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
+import { Beneficiary, DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
 
 export default function Verfication(
-  beneficiaryProposal: DummyBeneficiaryProposal,
+  displayData: Beneficiary | DummyBeneficiaryProposal,
 ): JSX.Element {
   return (
     <div>
@@ -10,10 +10,10 @@ export default function Verfication(
         <p className="text-lg font-bold text-gray-700">Ethereum Address</p>
         <span className="text-base text-gray-700 flex flex-row">
           <a
-            href={beneficiaryProposal.ethereumAddress}
+            href={displayData?.ethereumAddress}
             className=" text-gray-400 hover:text-gray-500 underline"
           >
-            <p>{beneficiaryProposal.ethereumAddress}</p>
+            <p>{displayData?.ethereumAddress}</p>
           </a>
         </span>
       </span>
@@ -22,10 +22,10 @@ export default function Verfication(
         <p className="text-lg font-bold text-gray-700">Proof of ownership</p>
         <span className="text-base text-gray-700 flex flex-row">
           <a
-            href={beneficiaryProposal.proofOfOwnership}
+            href={displayData?.proofOfOwnership}
             className=" text-gray-400 hover:text-gray-500 underline"
           >
-            <p>{beneficiaryProposal.proofOfOwnership}</p>
+            <p>{displayData?.proofOfOwnership}</p>
           </a>
         </span>
       </span>
