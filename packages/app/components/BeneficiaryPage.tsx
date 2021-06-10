@@ -42,7 +42,7 @@ export default function BeneficiaryPage({
       <div className="mx-48 my-8">
         <Verification {...displayData} />
         <ImpactReportLinks {...displayData} />
-        {/*<SocialMedia {...displayData} />*/}
+        <SocialMedia {...displayData} />
       </div>
       {!isProposal && <TriggerTakedownProposal />}
     </div>

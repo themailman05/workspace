@@ -40,7 +40,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
         //On the single beneficiary page
         //Therefore using this hack here for now
         ethereumAddress: beneficiaryAddresses[0],
-        profileImageURL: beneficiaryJson.profileImage,
+        profileImage: beneficiaryJson.profileImage,
       };
       return benefificaryCardData;
     });
