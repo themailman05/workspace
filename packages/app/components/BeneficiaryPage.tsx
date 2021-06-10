@@ -33,7 +33,7 @@ export default function BeneficiaryPage({
       <ImageHeader {...displayData} />
       {isProposal && <Voting {...(displayData as DummyBeneficiaryProposal)} />}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-        <PhotoSideBar {...displayData} />
+        <PhotoSideBar {...displayData as DummyBeneficiaryProposal} />
         <MissionStatement missionStatement={displayData?.missionStatement}/>
       </div>
       <div className="relative">
@@ -42,7 +42,7 @@ export default function BeneficiaryPage({
         </div>
       </div>
       <div className="mx-48 my-8">
-        <Verification {...displayData} />
+        <Verification {...displayData as DummyBeneficiaryProposal} />
         <ImpactReportLinks {...displayData} />
         <SocialMedia {...displayData} />
       </div>
