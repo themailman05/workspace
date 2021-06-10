@@ -5,9 +5,12 @@ import { DateTime } from 'luxon';
 
 const getTimeLeft = (stageDeadline: Date): string => {
   const date1 = DateTime.fromISO(new Date().toISOString());
-  const date2 = DateTime.fromISO(stageDeadline.toISOString());
-  const diff = date2.diff(date1, ['hours', 'minutes','seconds']).toObject();
-  return diff.hours + ":" + diff.minutes + ":" + parseInt(diff.seconds)
+  // TODO: Remove conditional below when we get deadline from contract
+  const date2 = stageDeadline
+    ? DateTime.fromISO(stageDeadline.toISOString())
+    : DateTime.fromISO(new Date().toISOString());
+  const diff = date2.diff(date1, ['hours', 'minutes', 'seconds']).toObject();
+  return diff.hours + ':' + diff.minutes + ':' + parseInt(diff.seconds);
 };
 
 export default function CurrentStandings(
