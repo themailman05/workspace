@@ -1,11 +1,12 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
-import { connectors } from 'containers/Web3/connectors';
+import { connectors } from '../../context/Web3/connectors';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
 import NavbarLink from './NavbarLinks';
 import { GrantsMenu } from './GrantsMenu';
+import { ProposalsMenu } from './ProposalsMenu';
 
 export default function Navbar(): JSX.Element {
   const context = useWeb3React<Web3Provider>();
@@ -21,6 +22,7 @@ export default function Navbar(): JSX.Element {
   } = context;
   const router = useRouter();
   const [showGrants, setShowGrants] = useState(false);
+  const [showProposals, setShowProposals] = useState(false);
 
   return (
     <>
@@ -53,6 +55,24 @@ export default function Navbar(): JSX.Element {
               url="/docs/Popcorn_whitepaper_v1.pdf"
               isActive={false}
               target="_window"
+              />
+          </li>
+          <li>
+            <NavbarLink
+              label="Beneficiaries"
+              url="/beneficiaries"
+              isActive={router.pathname === '/beneficiaries'}
+            />
+          </li>
+          <li>
+            <NavbarLink
+              label="Proposals"
+              onClick={() => setShowProposals(!showProposals)}
+              isActive={router.pathname === '/proposals'}
+            />
+            <ProposalsMenu
+              visible={showProposals}
+              toggleSubMenu={() => setShowProposals(!showProposals)}
             />
           </li>
         

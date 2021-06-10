@@ -2,9 +2,9 @@ import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
 import { useContext  } from 'react';
 import { useEffect } from 'react';
-import {  networkMap } from '../containers/Web3/connectors';
-import { setSingleActionModal } from './actions';
-import { store } from './store';
+import { networkMap } from '../context/Web3/connectors';
+import { setSingleActionModal } from '../context/actions';
+import { store } from '../context/store';
 
 
 

@@ -3,17 +3,17 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-import { connectors } from '../../containers/Web3/connectors';
-import ElectionSection from 'containers/GrantElections/ElectionSection';
-import NavBar from '../../containers/NavBar/NavBar';
-import { ContractsContext } from '../../app/contracts';
-import { GrantElectionAdapter, ElectionTerm } from '@popcorn/utils/Contracts';
+import { connectors } from '../../context/Web3/connectors';
+import ElectionSection from 'components/GrantElections/ElectionSection';
+import NavBar from '../../components/NavBar/NavBar';
+import { ContractsContext } from '../../context/Web3/contracts';
+
 import { BigNumber, utils } from 'ethers';
 import capitalize from '@popcorn/utils/capitalize';
-import { ElectionTermIntToName } from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
-import { ElectionsContext } from '../../app/elections';
-import { store } from 'app/store';
-import { setDualActionModal, setSingleActionModal } from '../../app/actions';
+import GrantElectionAdapter, { ElectionTerm, ElectionTermIntToName } from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
+import { ElectionsContext } from '../../context/Web3/elections';
+import { store } from '../../context/store';
+import { setDualActionModal, setSingleActionModal } from '../../context/actions';
 
 export interface IGrantRoundFilter {
   active: boolean;

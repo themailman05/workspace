@@ -1,11 +1,11 @@
 import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
 import { useState, useEffect, useContext } from 'react';
-import { connectors } from '../../containers/Web3/connectors';
+import { connectors } from '../../context/Web3/connectors';
 import { utils } from 'ethers';
-import NavBar from '../../containers/NavBar/NavBar';
+import NavBar from '../../components/NavBar/NavBar';
 import DropdownSelect from 'components/DropdownSelect';
-import { ContractsContext } from 'app/contracts';
+import { ContractsContext } from '../../context/Web3/contracts';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import MainActionButton from 'components/MainActionButton';

@@ -1,5 +1,5 @@
-import GrantRound from '../../components/Grants/GrantRound';
-import Sidebar from '../../components/Sidebar/Sidebar';
+import GrantRound from '../Grants/GrantRound';
+import Sidebar from '../Sidebar/Sidebar';
 import {
   IGrantRoundFilter,
   PendingVotes,

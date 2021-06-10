@@ -1,5 +1,6 @@
 import React from 'react';
 import { CircularProgress } from '@material-ui/core';
+
 export interface DualActionModalProps {
   title: string;
   content: React.ReactElement | string;

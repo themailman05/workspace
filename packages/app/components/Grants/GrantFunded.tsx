@@ -1,5 +1,5 @@
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
-import { ContractsContext } from 'app/contracts';
+import { ContractsContext } from '../../context/Web3/contracts';
 import { useContext, useEffect, useState } from 'react';
 import { Check } from 'react-feather';
 import { BeneficiaryMetadata } from './BeneficiaryCard';

@@ -10,7 +10,7 @@ export const GrantsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
   const router = useRouter();
   if (!visible) return <></>;
   return (
-    <div className="absolute z-10 left-1/3 transform  -translate-x-1 mt-5 px-2 w-screen max-w-xs sm:px-0">
+    <div className="absolute z-10  transform  -translate-x-1 mt-5 px-2 w-screen max-w-xs sm:px-0">
       <nav
         className="mx-auto px-4 py-8 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5"
         aria-labelledby="solutionsHeading"
