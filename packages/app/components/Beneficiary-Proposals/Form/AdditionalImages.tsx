@@ -8,11 +8,12 @@ export default function AdditionalImages({
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  
   function updateAdditionalImages(additionalImages) {
     setForm({ ...form, additionalImages });
   }
-  if (visible) {
-    return (
+  return (
+    visible && (
       <IpfsUpload
         stepName={'7 - Upload Additional Images'}
         localState={form.additionalImages}
@@ -25,8 +26,6 @@ export default function AdditionalImages({
         numMaxFiles={4}
         navigation={navigation}
       />
-    );
-  } else {
-    return <></>;
-  }
+    )
+  );
 }

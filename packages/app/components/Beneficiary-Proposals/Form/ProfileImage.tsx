@@ -11,8 +11,8 @@ export default function ProfileImage({
   function updateProfileImage(profileImage) {
     setForm({ ...form, profileImage });
   }
-  if (visible) {
-    return (
+  return (
+    visible && (
       <IpfsUpload
         stepName={'5 - UPLOAD PROFILE IMAGE'}
         localState={form.profileImage}
@@ -25,8 +25,6 @@ export default function ProfileImage({
         numMaxFiles={1}
         navigation={navigation}
       />
-    );
-  } else {
-    return <></>;
-  }
+    )
+  );
 }

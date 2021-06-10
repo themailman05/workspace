@@ -12,7 +12,6 @@ export default function SocialMedia({
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [platform, setPlatform] = useState<string>('Facebook');
 
-  
   function getUrl(platform) {
     switch (platform) {
       case 'Twitter': {
@@ -59,9 +58,8 @@ export default function SocialMedia({
     }
   }
 
-
-  if (visible) {
-    return (
+  return (
+    visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
           9 - Upload social media links
@@ -122,10 +120,7 @@ export default function SocialMedia({
           </div>
         </div>
 
-        <SocialMediaTable
-          form={form}
-          setForm={setForm}
-        />
+        <SocialMediaTable form={form} setForm={setForm} />
         <div className="row-auto my-2 justify-self-center">
           <button
             onClick={() => {
@@ -139,8 +134,6 @@ export default function SocialMedia({
           </button>
         </div>
       </div>
-    );
-  } else {
-    return <></>;
-  }
+    )
+  );
 }

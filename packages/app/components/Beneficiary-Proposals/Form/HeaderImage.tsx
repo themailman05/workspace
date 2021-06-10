@@ -11,8 +11,8 @@ export default function HeaderImage({
   function updateHeaderImage(headerImage) {
     setForm({ ...form, headerImage });
   }
-  if (visible) {
-    return (
+  return (
+    visible && (
       <IpfsUpload
         stepName={'6 - UPLOAD HEADER IMAGE'}
         localState={form.headerImage}
@@ -25,8 +25,6 @@ export default function HeaderImage({
         numMaxFiles={1}
         navigation={navigation}
       />
-    );
-  } else {
-    return <></>;
-  }
+    )
+  );
 }

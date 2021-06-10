@@ -79,9 +79,7 @@ export default function PropsalForm(): JSX.Element {
 
   useEffect(() => {
     //global validation, submission and saving to localstorage can be handled here
-    // if (isValid(form)) {
     localStorage.setItem('beneficiaryNominationProposal', JSON.stringify(form));
-    // }
   }, [form]);
 
   return (
@@ -129,7 +127,6 @@ export default function PropsalForm(): JSX.Element {
         navigation={navigation}
         visible={currentStep === 6}
       />
-
       <AdditionalImages
         form={form}
         setForm={setForm}

@@ -20,21 +20,6 @@ export default function Preview({
   visible,
 }: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const {
-    name,
-    ethereumAddress,
-    missionStatement,
-    proofOfOwnership,
-    profileImage,
-    headerImage,
-    additionalImages,
-    impactReports,
-    twitterUrl,
-    linkedinUrl,
-    facebookUrl,
-    instagramUrl,
-    githubUrl,
-  } = form;
 
   function uploadJsonToIpfs(submissionData) {
     var myHeaders = new Headers();
@@ -83,46 +68,8 @@ export default function Preview({
     });
   }
 
-  if (visible) {
-    const submissionData = {
-      name,
-      ethereumAddress,
-      missionStatement,
-      proofOfOwnership,
-      profileImage,
-      headerImage,
-      additionalImages,
-      impactReports,
-      twitterUrl,
-      linkedinUrl,
-      facebookUrl,
-      instagramUrl,
-      githubUrl,
-    };
-    const beneficaryProposal: DummyBeneficiaryProposal = {
-      name,
-      missionStatement,
-      ethereumAddress,
-      proofOfOwnership,
-      profileImageURL: 'https://gateway.pinata.cloud/ipfs/' + profileImage,
-      headerImageURL: 'https://gateway.pinata.cloud/ipfs/' + headerImage,
-      impactReports: impactReports.map(
-        (IpfsHash) => 'https://gateway.pinata.cloud/ipfs/' + IpfsHash,
-      ),
-      photoURLs: additionalImages.map(
-        (IpfsHash) => 'https://gateway.pinata.cloud/ipfs/' + IpfsHash,
-      ),
-      votesAgainst: 0,
-      votesFor: 0,
-      currentStage: 'Open',
-      stageDeadline: twoDaysInAdvance(),
-      twitterUrl,
-      linkedinUrl,
-      facebookUrl,
-      instagramUrl,
-      githubUrl,
-    };
-    return (
+  return (
+    visible && (
       <div>
         <div className="md:flex md:items-center md:justify-between my-8 mx-4">
           <div className="flex-1 min-w-0">
@@ -144,7 +91,7 @@ export default function Preview({
               type="button"
               className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={() => {
-                uploadJsonToIpfs(submissionData);
+                uploadJsonToIpfs(form);
               }}
             >
               Submit
@@ -154,12 +101,10 @@ export default function Preview({
 
         <BeneficiaryPage
           isProposal={false}
-          beneficiaryProposal={beneficaryProposal}
+          beneficiaryProposal={form}
           isProposalPreview={true}
         />
       </div>
-    );
-  } else {
-    return <></>;
-  }
+    )
+  );
 }

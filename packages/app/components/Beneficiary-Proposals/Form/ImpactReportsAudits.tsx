@@ -2,7 +2,7 @@ import React from 'react';
 import IpfsUpload from './IpfsUpload';
 import { FormStepProps } from './ProposalForm';
 
-export default function AdditionalImages({
+export default function ImpactReportsAudits({
   form,
   setForm,
   navigation,
@@ -11,8 +11,8 @@ export default function AdditionalImages({
   function updateImpactReports(impactReports) {
     setForm({ ...form, impactReports });
   }
-  if (visible) {
-    return (
+  return (
+    visible && (
       <IpfsUpload
         stepName={'8 - Upload Impact Reports'}
         localState={form.impactReports}
@@ -25,8 +25,6 @@ export default function AdditionalImages({
         numMaxFiles={4}
         navigation={navigation}
       />
-    );
-  } else {
-    return <></>;
-  }
+    )
+  );
 }

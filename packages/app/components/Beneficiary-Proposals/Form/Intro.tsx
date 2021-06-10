@@ -51,33 +51,32 @@ export default function Intro({
             ) : (
               <></>
             )}
-            <div className="mt-3 sm:mt-0 sm:ml-3">
-              <a
-                onClick={() => {
-                  setCurrentStep(1);
-                  setStepLimit(1);
+            <button
+              onClick={() => {
+                setCurrentStep(1);
+                setStepLimit(1);
 
-                  setForm({
-                    additionalImages: [],
-                    ethereumAddress: '',
-                    headerImage: '',
-                    impactReports: [],
-                    missionStatement: '',
-                    name: '',
-                    profileImage: '',
-                    proofOfOwnership: '',
-                    twitterUrl: '',
-                    linkedinUrl: '',
-                    facebookUrl: '',
-                    instagramUrl: '',
-                    githubUrl: '',
-                  });
-                }}
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10"
-              >
-                Start new proposal
-              </a>
-            </div>
+                setForm({
+                  additionalImages: [],
+                  ethereumAddress: '',
+                  headerImage: '',
+                  impactReports: [],
+                  missionStatement: '',
+                  name: '',
+                  profileImage: '',
+                  proofOfOwnership: '',
+                  twitterUrl: '',
+                  linkedinUrl: '',
+                  facebookUrl: '',
+                  instagramUrl: '',
+                  githubUrl: '',
+                });
+              }}
+              type="button"
+              className="w-80 flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 md:py-4 md:text-lg md:px-10 mt-3 sm:mt-0"
+            >
+              Start new proposal
+            </button>
           </div>
         </div>
       </main>
