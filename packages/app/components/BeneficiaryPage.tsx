@@ -18,12 +18,14 @@ interface BeneficiaryPageProps {
   isProposal: boolean;
   isProposalPreview?: boolean;
   displayData?: Beneficiary | DummyBeneficiaryProposal;
+  isTakedown: boolean
 }
 
 export default function BeneficiaryPage({
   isProposal,
   isProposalPreview = false,
   displayData,
+  isTakedown = false
 }: BeneficiaryPageProps): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
