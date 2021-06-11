@@ -1,13 +1,7 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
-import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
 import toast from 'react-hot-toast';
 import { FormStepProps } from './ProposalForm';
-
-function twoDaysInAdvance() {
-  var now = new Date();
-  now.setHours(now.getHours() + 48);
-  return now;
-}
+import { useRouter } from 'next/router'
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -20,7 +14,7 @@ export default function Preview({
   visible,
 }: FormStepProps): JSX.Element {
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-
+  const router = useRouter()
   function uploadJsonToIpfs(submissionData) {
     var myHeaders = new Headers();
     myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -41,7 +35,7 @@ export default function Preview({
         toast.dismiss();
         success();
         clearLocalStorage();
-        setTimeout(() => (window.location.href = '/'), 3000);
+        setTimeout(() => (router.push('/')), 3000);
       })
       .catch((error) => {
         uploadError('Error uploading submission data to IPFS');
