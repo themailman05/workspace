@@ -1,7 +1,7 @@
-import NavBar from './../../containers/NavBar/NavBar';
+import NavBar from '../NavBar/NavBar';
 import Link from 'next/link';
 import { useContext } from 'react';
-import { ElectionsContext } from '../../app/elections';
+import { ElectionsContext } from '../../context/Web3/elections';
 import Icon from 'components/Icon';
 export const LandingPage = () => {
   const { elections } = useContext(ElectionsContext);

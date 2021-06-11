@@ -2,13 +2,13 @@ import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
 import React, { useContext, useEffect } from 'react';
 import { createContext, useState } from 'react';
-import { connectors, networkMap } from '../containers/Web3/connectors';
+import { connectors, networkMap } from './connectors';
 import {
   NoEthereumProviderError,
   UserRejectedRequestError as UserRejectedRequestErrorInjected,
 } from '@web3-react/injected-connector';
-import { store } from './store';
-import { setSingleActionModal } from './actions';
+import { store } from '../store';
+import { setSingleActionModal } from '../actions';
 
 import {
   GrantElections,

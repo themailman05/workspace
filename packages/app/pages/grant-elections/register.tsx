@@ -1,16 +1,16 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
-import { ContractsContext } from 'app/contracts';
-import Navbar from 'containers/NavBar/NavBar';
-import { connectors } from 'containers/Web3/connectors';
+import { ContractsContext } from '../../context/Web3/contracts';
+import Navbar from 'components/NavBar/NavBar';
+import { connectors } from '../../context/Web3/connectors';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useContext } from 'react';
 import SingleActionModal, { DefaultSingleActionModalProps } from 'components/Modal/SingleActionModal';
 import Icon from 'components/Icon';
-import { ElectionsContext } from '../../app/elections';
-import { store } from 'app/store';
-import { setSingleActionModal } from 'app/actions';
+import { ElectionsContext } from '../../context/Web3/elections';
+import { store } from '../../context/store';
+import { setSingleActionModal } from '../../context/actions';
 
 export default function Register(): JSX.Element {
   const context = useWeb3React<Web3Provider>();

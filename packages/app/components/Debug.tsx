@@ -1,7 +1,7 @@
-import { store } from "app/store";
+import { store } from "../context/store";
 import { useRouter } from "next/router";
 import React, { useContext, useEffect } from "react";
-import { setDualActionWideModal } from '../app/actions';
+import { setDualActionWideModal } from '../context/actions';
 export function Debug() {
   const { dispatch} = useContext(store);
   const router = useRouter();
