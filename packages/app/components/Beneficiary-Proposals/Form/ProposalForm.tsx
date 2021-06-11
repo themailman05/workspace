@@ -43,24 +43,26 @@ export interface Form {
   githubUrl: string;
 }
 
+export const defaultFormData: Form = {
+  additionalImages: [],
+  ethereumAddress: '',
+  headerImage: '',
+  impactReports: [],
+  missionStatement: '',
+  name: '',
+  profileImage: '',
+  proofOfOwnership: '',
+  twitterUrl: '',
+  linkedinUrl: '',
+  facebookUrl: '',
+  instagramUrl: '',
+  githubUrl: '',
+}
+
 export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
-  const [formData, setFormData] = useState<Form>({
-    additionalImages: [],
-    ethereumAddress: '',
-    headerImage: '',
-    impactReports: [],
-    missionStatement: '',
-    name: '',
-    profileImage: '',
-    proofOfOwnership: '',
-    twitterUrl: '',
-    linkedinUrl: '',
-    facebookUrl: '',
-    instagramUrl: '',
-    githubUrl: '',
-  });
+  const [formData, setFormData] = useState<Form>(defaultFormData);
 
   useEffect(() => {
     const formData = localStorage.getItem('beneficiaryNominationProposal');

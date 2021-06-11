@@ -1,6 +1,6 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
 import toast from 'react-hot-toast';
-import { Form, FormStepProps } from './ProposalForm';
+import { defaultFormData, Form, FormStepProps } from './ProposalForm';
 import { useRouter } from 'next/router';
 
 const success = () => toast.success('Successful upload to IPFS');
@@ -45,21 +45,7 @@ export default function Preview({
   function clearLocalStorage() {
     setCurrentStep(1);
     setStepLimit(1);
-    setFormData({
-      additionalImages: [],
-      ethereumAddress: '',
-      headerImage: '',
-      impactReports: [],
-      missionStatement: '',
-      name: '',
-      profileImage: '',
-      proofOfOwnership: '',
-      twitterUrl: '',
-      linkedinUrl: '',
-      facebookUrl: '',
-      instagramUrl: '',
-      githubUrl: '',
-    });
+    setFormData(defaultFormData);
   }
 
   return (

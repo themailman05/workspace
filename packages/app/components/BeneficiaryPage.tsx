@@ -21,7 +21,6 @@ const defaultProps: Props = {
   isProposalPreview: false
 }
 export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal, isProposalPreview }): JSX.Element {
-  console.log({beneficiaryProposal});
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview ? <NavBar /> : <div></div>}
