@@ -8,8 +8,9 @@ import "./IBeneficiaryRegistry.sol";
 import "./IGrantRegistry.sol";
 import "./IRandomNumberConsumer.sol";
 import "./Governed.sol";
+import "./RewardParticipation.sol";
 
-contract GrantElections is Governed {
+contract GrantElections is RewardParticipation, Governed {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -36,6 +37,7 @@ contract GrantElections is Governed {
     ElectionConfiguration electionConfiguration;
     uint256 startTime;
     bool exists;
+    bytes32 vaultId;
   }
 
   struct ElectionConfiguration {
@@ -119,6 +121,10 @@ contract GrantElections is Governed {
     e.electionTerm = _grantTerm;
     e.startTime = block.timestamp;
     e.exists = true;
+    //Should i add error checking?
+    e.vaultId = _initializeVault(
+      keccak256(abi.encodePacked(_grantTerm, block.timestamp))
+    );
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
   }
@@ -322,6 +328,7 @@ contract GrantElections is Governed {
       _usedVoiceCredits <= _stakedVoiceCredits,
       "Insufficient voice credits"
     );
+    _addShares(election.vaultId, msg.sender, _usedVoiceCredits);
   }
 
   function _recalculateRanking(
@@ -411,6 +418,7 @@ contract GrantElections is Governed {
     grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
     emit GrantCreated(_electionTerm, _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
+    _openVault(_election.vaultId);
   }
 
   function _setDefaults() internal {
