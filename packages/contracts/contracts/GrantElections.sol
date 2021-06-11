@@ -7,14 +7,11 @@ import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 import "./IGrantRegistry.sol";
 import "./IRandomNumberConsumer.sol";
-import "./Governed.sol";
 import "./RewardParticipation.sol";
 
-contract GrantElections is RewardParticipation, Governed {
+contract GrantElections is RewardParticipation {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
-
-  IERC20 public immutable POP;
 
   struct Vote {
     address voter;
@@ -86,12 +83,11 @@ contract GrantElections is RewardParticipation, Governed {
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
-  ) Governed(_governance) {
+  ) RewardParticipation(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     grantRegistry = _grantRegistry;
     randomNumberConsumer = _randomNumberConsumer;
-    POP = _pop;
     _setDefaults();
   }
 
@@ -123,7 +119,10 @@ contract GrantElections is RewardParticipation, Governed {
     e.exists = true;
     //Should i add error checking?
     e.vaultId = _initializeVault(
-      keccak256(abi.encodePacked(_grantTerm, block.timestamp))
+      keccak256(abi.encodePacked(_grantTerm, block.timestamp)),
+      block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
+        electionDefaults[_term].votingPeriod
+      )
     );
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
