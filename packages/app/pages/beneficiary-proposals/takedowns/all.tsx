@@ -7,7 +7,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     <BeneficiaryGrid
       title={'Takedown Proposals'}
       subtitle={
-        'Takedowns have been triggered againt the following beneficiaries. Browse and vote in takedown elections.'
+        'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
       }
       isProposal={true}
       cardProps={beneficiaryProposalFixtures}
