@@ -1,36 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
-import { DocumentAddIcon, PhotographIcon } from '@heroicons/react/solid';
-import { Form, Navigation } from './ProposalForm';
-
-const baseStyle = {
-  flex: 1,
-  display: 'flex',
-  alignItems: 'center',
-  padding: '20px',
-  borderWidth: 2,
-  borderRadius: 2,
-  borderColor: '#eeeeee',
-  borderStyle: 'dashed',
-  backgroundColor: '#fafafa',
-  color: '#bdbdbd',
-  outline: 'none',
-  transition: 'border .24s ease-in-out',
-};
-
-const activeStyle = {
-  borderColor: '#2196f3',
-};
-
-const acceptStyle = {
-  borderColor: '#00e676',
-};
-
-const rejectStyle = {
-  borderColor: '#ff1744',
-};
+import * as Icon from 'react-feather';
+import { Navigation } from './ProposalForm';
 
 const FIVE_MB = 5 * 1000 * 1024;
 
@@ -167,16 +140,8 @@ export default function IpfsUpload({
     },
   });
 
-  const style = useMemo(
-    () => ({
-      ...baseStyle,
-      ...(isDragActive ? activeStyle : {}),
-      ...(isDragAccept ? acceptStyle : {}),
-      ...(isDragReject ? rejectStyle : {}),
-    }),
-    [isDragActive, isDragReject, isDragAccept],
-  );
-  const rootProps = getRootProps({ style }) as any;
+  
+  const rootProps = getRootProps() as any;
   return (
     <div className="mx-auto content-center grid justify-items-stretch">
       <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
@@ -189,9 +154,9 @@ export default function IpfsUpload({
             <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
               <div className="space-y-1 text-center">
                 {fileType === 'image/*' ? (
-                  <PhotographIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <Icon.Image className="mx-auto h-12 w-12 text-gray-400" />
                 ) : (
-                  <DocumentAddIcon className="mx-auto h-12 w-12 text-gray-400" />
+                  <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
                 )}
                 <div className="flex text-sm text-gray-600">
                   <label
