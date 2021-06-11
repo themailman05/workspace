@@ -48,6 +48,10 @@ contract BeneficiaryRegistry is
     approved[account] = true;
   }
 
+  function _resetApproved(address _address) internal {
+    approved[_address] = false;
+  }
+
   constructor() Ownable() CouncilControlled(msg.sender) {}
 
   /**
@@ -80,6 +84,7 @@ contract BeneficiaryRegistry is
     override
     onlyApproved(msg.sender)
   {
+    _resetApproved(msg.sender);
     require(beneficiaryExists(_address), "exists");
     delete beneficiariesList[beneficiariesMap[_address].listPointer];
     delete beneficiariesMap[_address];
