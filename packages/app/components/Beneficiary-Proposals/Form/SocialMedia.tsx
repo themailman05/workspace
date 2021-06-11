@@ -5,29 +5,29 @@ import { FormStepProps } from './ProposalForm';
 
 export default function SocialMedia({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [platform, setPlatform] = useState<string>('Facebook');
 
   function getUrl(platform) {
     switch (platform) {
       case 'Twitter': {
-        return form.twitterUrl;
+        return formData.twitterUrl;
       }
       case 'LinkedIn': {
-        return form.linkedinUrl;
+        return formData.linkedinUrl;
       }
       case 'Instagram': {
-        return form.instagramUrl;
+        return formData.instagramUrl;
       }
       case 'GitHub': {
-        return form.githubUrl;
+        return formData.githubUrl;
       }
       case 'Facebook': {
-        return form.facebookUrl;
+        return formData.facebookUrl;
       }
     }
   }
@@ -36,23 +36,23 @@ export default function SocialMedia({
     const url = event.target.value;
     switch (platform) {
       case 'Twitter': {
-        setForm({ ...form, twitterUrl: url });
+        setFormData({ ...formData, twitterUrl: url });
         break;
       }
       case 'LinkedIn': {
-        setForm({ ...form, linkedinUrl: url });
+        setFormData({ ...formData, linkedinUrl: url });
         break;
       }
       case 'Instagram': {
-        setForm({ ...form, instagramUrl: url });
+        setFormData({ ...formData, instagramUrl: url });
         break;
       }
       case 'GitHub': {
-        setForm({ ...form, githubUrl: url });
+        setFormData({ ...formData, githubUrl: url });
         break;
       }
       case 'Facebook': {
-        setForm({ ...form, facebookUrl: url });
+        setFormData({ ...formData, facebookUrl: url });
         break;
       }
     }
@@ -120,7 +120,7 @@ export default function SocialMedia({
           </div>
         </div>
 
-        <SocialMediaTable form={form} setForm={setForm} />
+        <SocialMediaTable form={form} />
         <div className="row-auto my-2 justify-self-center">
           <button
             onClick={() => {

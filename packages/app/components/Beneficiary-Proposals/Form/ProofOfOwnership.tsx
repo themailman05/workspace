@@ -4,12 +4,12 @@ import ControlledTextInput from './ControlledTextInput';
 
 export default function ProofOfOwnership({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  const [formData, setFormData] = form;
   function updateProofOfOwnership(value: string): void {
-    setForm({ ...form, proofOfOwnership: value });
+    setFormData({ ...formData, proofOfOwnership: value });
   }
 
   function isValid(name: string): boolean {
@@ -30,7 +30,7 @@ export default function ProofOfOwnership({
           website or a tweet on the beneficiary's official Twitter account.
         </label>
         <ControlledTextInput
-          inputValue={form.proofOfOwnership}
+          inputValue={formData.proofOfOwnership}
           id="proofofownership"
           placeholder="Proof of Ownership"
           errorMessage="The proof of ownership cannot be left blank."

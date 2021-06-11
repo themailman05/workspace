@@ -4,18 +4,18 @@ import { FormStepProps } from './ProposalForm';
 
 export default function ProfileImage({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps) {
+  const [formData, setFormData] = form;
   function updateProfileImage(profileImage) {
-    setForm({ ...form, profileImage });
+    setFormData({ ...formData, profileImage });
   }
   return (
     visible && (
       <IpfsUpload
         stepName={'5 - UPLOAD PROFILE IMAGE'}
-        localState={form.profileImage}
+        localState={formData.profileImage}
         setLocalState={updateProfileImage}
         imageDescription={'a Profile Image'}
         imageInstructions={

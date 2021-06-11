@@ -3,30 +3,36 @@
 import { TrashIcon } from '@heroicons/react/solid';
 import Link from 'next/link';
 import React from 'react';
+import { Form } from './ProposalForm';
 
-export default function SocialMediaTable({ form, setForm }) {
+interface SocialMediaTableProps {
+  form: [Form, React.Dispatch<React.SetStateAction<Form>>];
+}
+
+export default function SocialMediaTable({ form }: SocialMediaTableProps) {
+  const [formData, setFormData] = form;
   const { twitterUrl, linkedinUrl, facebookUrl, instagramUrl, githubUrl } =
-    form;
+    formData;
   function clearUrl(platform) {
     switch (platform) {
       case 'Twitter': {
-        setForm({ ...form, twitterUrl: '' });
+        setFormData({ ...formData, twitterUrl: '' });
         break;
       }
       case 'LinkedIn': {
-        setForm({ ...form, linkedinUrl: '' });
+        setFormData({ ...formData, linkedinUrl: '' });
         break;
       }
       case 'Instagram': {
-        setForm({ ...form, instagramUrl: '' });
+        setFormData({ ...formData, instagramUrl: '' });
         break;
       }
       case 'GitHub': {
-        setForm({ ...form, githubUrl: '' });
+        setFormData({ ...formData, githubUrl: '' });
         break;
       }
       case 'Facebook': {
-        setForm({ ...form, facebookUrl: '' });
+        setFormData({ ...formData, facebookUrl: '' });
         break;
       }
     }

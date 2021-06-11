@@ -1,7 +1,7 @@
 import BeneficiaryPage from '../../BeneficiaryPage';
 import toast from 'react-hot-toast';
-import { FormStepProps } from './ProposalForm';
-import { useRouter } from 'next/router'
+import { Form, FormStepProps } from './ProposalForm';
+import { useRouter } from 'next/router';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -9,13 +9,13 @@ const uploadError = (errMsg: string) => toast.error(errMsg);
 
 export default function Preview({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  const router = useRouter();
+  const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  const router = useRouter()
-  function uploadJsonToIpfs(submissionData) {
+  function uploadJsonToIpfs(submissionData: Form) {
     var myHeaders = new Headers();
     myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
     myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
@@ -35,7 +35,7 @@ export default function Preview({
         toast.dismiss();
         success();
         clearLocalStorage();
-        setTimeout(() => (router.push('/')), 3000);
+        setTimeout(() => router.push('/'), 3000);
       })
       .catch((error) => {
         uploadError('Error uploading submission data to IPFS');
@@ -45,7 +45,7 @@ export default function Preview({
   function clearLocalStorage() {
     setCurrentStep(1);
     setStepLimit(1);
-    setForm({
+    setFormData({
       additionalImages: [],
       ethereumAddress: '',
       headerImage: '',
@@ -85,7 +85,7 @@ export default function Preview({
               type="button"
               className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={() => {
-                uploadJsonToIpfs(form);
+                uploadJsonToIpfs(formData);
               }}
             >
               Submit
@@ -95,7 +95,7 @@ export default function Preview({
 
         <BeneficiaryPage
           isProposal={false}
-          beneficiaryProposal={form}
+          beneficiaryProposal={formData}
           isProposalPreview={true}
         />
       </div>

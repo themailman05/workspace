@@ -4,16 +4,15 @@ import ControlledTextInput from './ControlledTextInput';
 
 export default function Name({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
-
+  const [formData, setFormData] = form;
   function isValid(name): boolean {
     return name.length > 0;
   }
   function updateName(value: string): void {
-    setForm({ ...form, name: value });
+    setFormData({ ...formData, name: value });
   }
 
   return (
@@ -23,7 +22,7 @@ export default function Name({
           1 - First things first, what's the name of the beneficiary?
         </h2>
         <ControlledTextInput
-          inputValue={form.name}
+          inputValue={formData.name}
           id="name"
           placeholder="Beneficiary Name"
           errorMessage="Beneficiary name cannot be blank."

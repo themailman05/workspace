@@ -4,19 +4,18 @@ import { FormStepProps } from './ProposalForm';
 
 export default function AdditionalImages({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
-  
+  const [formData, setFormData] = form;
   function updateAdditionalImages(additionalImages) {
-    setForm({ ...form, additionalImages });
+    setFormData({ ...formData, additionalImages });
   }
   return (
     visible && (
       <IpfsUpload
         stepName={'7 - Upload Additional Images'}
-        localState={form.additionalImages}
+        localState={formData.additionalImages}
         setLocalState={updateAdditionalImages}
         imageDescription={'Additional Images'}
         imageInstructions={

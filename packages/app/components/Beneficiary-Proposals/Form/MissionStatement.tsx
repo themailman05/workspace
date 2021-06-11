@@ -4,13 +4,12 @@ import ControlledTextInput from './ControlledTextInput';
 
 export default function MissionStatement({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
-
+  const [formData, setFormData] = form;
   function updateMissionStatement(value: string): void {
-    setForm({ ...form, missionStatement: value });
+    setFormData({ ...formData, missionStatement: value });
   }
 
   function isValid(missionStatement: string): boolean {
@@ -24,7 +23,7 @@ export default function MissionStatement({
           3 - Please share the beneficiary's mission statement
         </h2>
         <ControlledTextInput
-          inputValue={form.missionStatement}
+          inputValue={formData.missionStatement}
           id="missionstatement"
           placeholder="Mission Statement"
           errorMessage="The mission statement cannot be blank."

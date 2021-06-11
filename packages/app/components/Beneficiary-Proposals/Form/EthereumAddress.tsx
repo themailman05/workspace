@@ -4,13 +4,12 @@ import ControlledTextInput from './ControlledTextInput';
 
 export default function EtherumAddress({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
-
+  const [formData, setFormData] = form;
   function updateEthereumAddress(value: string): void {
-    setForm({ ...form, ethereumAddress: value });
+    setFormData({ ...formData, ethereumAddress: value });
   }
 
   return (
@@ -20,7 +19,7 @@ export default function EtherumAddress({
           2 - What's the Ethereum address grants will be sent to?
         </h2>
         <ControlledTextInput
-          inputValue={form.ethereumAddress}
+          inputValue={formData.ethereumAddress}
           id="ethereumAddress"
           placeholder="Ethererum Address"
           errorMessage="Please enter a valid ethereum address"

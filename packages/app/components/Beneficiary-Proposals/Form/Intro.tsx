@@ -1,13 +1,12 @@
-import { Form, FormStepProps, Navigation } from './ProposalForm';
+import { FormStepProps } from './ProposalForm';
 
 export default function Intro({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
-  const { name } = form;
   if (visible) {
     return (
       <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
@@ -37,7 +36,7 @@ export default function Intro({
           </p>
           <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
             {/* Check for partially completed form */}
-            {name !== '' ? (
+            {formData.name !== '' ? (
               <div className="rounded-md shadow">
                 <a
                   onClick={() => {
@@ -56,7 +55,7 @@ export default function Intro({
                 setCurrentStep(1);
                 setStepLimit(1);
 
-                setForm({
+                setFormData({
                   additionalImages: [],
                   ethereumAddress: '',
                   headerImage: '',

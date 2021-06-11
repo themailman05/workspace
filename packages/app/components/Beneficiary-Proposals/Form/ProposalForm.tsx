@@ -22,8 +22,7 @@ export interface Navigation {
 }
 
 export interface FormStepProps {
-  form: Form;
-  setForm: React.Dispatch<React.SetStateAction<Form>>;
+  form: [Form, React.Dispatch<React.SetStateAction<Form>>];
   navigation: Navigation;
   visible: boolean;
 }
@@ -47,7 +46,7 @@ export interface Form {
 export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
-  const [form, setForm] = useState<Form>({
+  const [formData, setFormData] = useState<Form>({
     additionalImages: [],
     ethereumAddress: '',
     headerImage: '',
@@ -66,7 +65,7 @@ export default function PropsalForm(): JSX.Element {
   useEffect(() => {
     const formData = localStorage.getItem('beneficiaryNominationProposal');
     if (formData !== null) {
-      setForm(JSON.parse(formData));
+      setFormData(JSON.parse(formData));
     }
   }, []);
 
@@ -79,75 +78,64 @@ export default function PropsalForm(): JSX.Element {
 
   useEffect(() => {
     //global validation, submission and saving to localstorage can be handled here
-    localStorage.setItem('beneficiaryNominationProposal', JSON.stringify(form));
-  }, [form]);
+    localStorage.setItem('beneficiaryNominationProposal', JSON.stringify(formData));
+  }, [formData]);
 
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
       <Intro
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 0}
       />
       <Name
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 1}
       />
       <EthereumAddress
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 2}
       />
       <MissionStatement
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 3}
       />
       <ProofOfOwnership
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 4}
       />
       <ProfileImage
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 5}
       />
       <HeaderImage
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 6}
       />
       <AdditionalImages
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 7}
       />
       <ImpactReportsAudits
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 8}
       />
       <SocialMedia
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 9}
       />
       <Preview
-        form={form}
-        setForm={setForm}
+        form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 10}
       />

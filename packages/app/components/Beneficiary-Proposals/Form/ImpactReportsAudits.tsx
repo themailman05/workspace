@@ -4,18 +4,18 @@ import { FormStepProps } from './ProposalForm';
 
 export default function ImpactReportsAudits({
   form,
-  setForm,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  const [formData, setFormData] = form;
   function updateImpactReports(impactReports) {
-    setForm({ ...form, impactReports });
+    setFormData({ ...formData, impactReports });
   }
   return (
     visible && (
       <IpfsUpload
         stepName={'8 - Upload Impact Reports'}
-        localState={form.impactReports}
+        localState={formData.impactReports}
         setLocalState={updateImpactReports}
         imageDescription={'Impact Reports'}
         imageInstructions={
