@@ -119,7 +119,7 @@ contract GrantElections is RewardParticipation {
     e.exists = true;
     //Should i add error checking?
     e.vaultId = _initializeVault(
-      keccak256(abi.encodePacked(_grantTerm, block.timestamp)),
+      keccak256(abi.encodePacked(_term, block.timestamp)),
       block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
         electionDefaults[_term].votingPeriod
       )
@@ -196,6 +196,10 @@ contract GrantElections is RewardParticipation {
       _ranking[i] = electionRanking[_term][i];
     }
     return _ranking;
+  }
+
+  function getVaultId(ElectionTerm _term) public view returns (bytes32) {
+    return elections[uint8(_term)].vaultId;
   }
 
   /**

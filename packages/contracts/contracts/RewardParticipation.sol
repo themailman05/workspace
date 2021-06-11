@@ -67,7 +67,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     returns (bytes32)
   {
     require(vaults[vaultId_].endTime == 0, "Vault must not exist");
-    require(endTime_ > block.timestamp, "Invalid end block");
+    require(endTime_ > block.timestamp, "end must be in the future");
     require(
       POP.balanceOf(address(this)) >= rewardBudget,
       "not enough funds for vault"
@@ -90,6 +90,10 @@ contract RewardParticipation is Governed, ReentrancyGuard {
    */
   function _openVault(bytes32 vaultId_) internal vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VAULT_INIT, "Vault must be initialized");
+    require(
+      vaults[vaultId_].endTime <= block.timestamp,
+      "wait till endTime is over"
+    );
 
     vaults[vaultId_].status = VAULT_OPEN;
 
@@ -117,15 +121,17 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     uint256 total;
     for (uint256 i = 0; i < numEntries; i++) {
       bytes32 vaultId = rewardedVaults[msg.sender][i];
-      uint256 shares = vaults[vaultId].shareBalances[msg.sender];
-      uint256 reward =
-        vaults[vaultId].tokenBalance.mul(shares).div(
-          vaults[vaultId].unclaimedShares
+      if (vaults[vaultId].status == VAULT_OPEN) {
+        uint256 shares = vaults[vaultId].shareBalances[msg.sender];
+        uint256 reward =
+          vaults[vaultId].tokenBalance.mul(shares).div(
+            vaults[vaultId].unclaimedShares
+          );
+        vaults[vaultId].tokenBalance = vaults[vaultId].tokenBalance.sub(reward);
+        vaults[vaultId].unclaimedShares = vaults[vaultId].unclaimedShares.sub(
+          shares
         );
-      vaults[vaultId].tokenBalance = vaults[vaultId].tokenBalance.sub(reward);
-      vaults[vaultId].unclaimedShares = vaults[vaultId].unclaimedShares.sub(
-        shares
-      );
+      }
     }
 
     require(total > 0, "No rewards");
@@ -138,20 +144,20 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     emit RewardsClaimed(msg.sender, total);
   }
 
-  /* ========== RESTRICTED FUNCTIONS ========== */
-
-  function setRewardsBudget(uint256 amount) external onlyGovernance {
-    require(amount > 0, "must be larger 0");
-    rewardBudget = amount;
-    emit RewardBudgetChanged(amount);
-  }
-
   function _numRewardedVaults(address account_)
     internal
     view
     returns (uint256)
   {
     return rewardedVaults[account_].length;
+  }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
+
+  function setRewardsBudget(uint256 amount) external onlyGovernance {
+    require(amount > 0, "must be larger 0");
+    rewardBudget = amount;
+    emit RewardBudgetChanged(amount);
   }
 
   /* ========== MODIFIERS ========== */
