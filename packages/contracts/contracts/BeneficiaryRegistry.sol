@@ -37,7 +37,7 @@ contract BeneficiaryRegistry is
 
   function _onlyOwnerOrCouncil() internal view {
     require(
-      msg.sender == owner() || msg.sender == nominatedCouncil,
+      msg.sender == owner() || msg.sender == getCouncil(),
       "Only the owner or council may perform this action"
     );
   }

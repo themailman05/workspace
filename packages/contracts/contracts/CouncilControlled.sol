@@ -38,6 +38,10 @@ contract CouncilControlled {
     );
   }
 
+  function getCouncil() public view returns (address) {
+    return council;
+  }
+
   event CouncilNominated(address newCouncil);
   event CouncilChanged(address oldCouncil, address newCouncil);
 }
