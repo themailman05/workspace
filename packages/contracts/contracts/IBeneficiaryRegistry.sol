@@ -9,12 +9,4 @@ interface IBeneficiaryRegistry {
     external;
 
   function revokeBeneficiary(address _address) external;
-
-  function approveOwner(address _address) external;
-
-  function approveCouncil(address _address) external;
-
-  function revokeApprovedCouncil(address account) external;
-
-  function revokeApprovedOwner(address account) external;
 }

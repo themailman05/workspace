@@ -37,32 +37,9 @@ contract BeneficiaryRegistry is
 
   function _onlyOwnerOrCouncil() internal view {
     require(
-      approvedCouncil[msg.sender] || approvedOwner[msg.sender],
+      msg.sender == owner() || msg.sender == nominatedCouncil,
       "Only the owner or council may perform this action"
     );
-  }
-
-  mapping(address => bool) private approvedOwner;
-  mapping(address => bool) private approvedCouncil;
-
-  function approveCouncil(address account) external override onlyCouncil {
-    approvedCouncil[account] = true;
-  }
-
-  function approveOwner(address account) external override onlyOwner {
-    approvedOwner[account] = true;
-  }
-
-  function revokeApprovedCouncil(address account)
-    external
-    override
-    onlyCouncil
-  {
-    approvedCouncil[account] = false;
-  }
-
-  function revokeApprovedOwner(address account) external override onlyOwner {
-    approvedOwner[account] = false;
   }
 
   constructor() Ownable() CouncilControlled(msg.sender) {}

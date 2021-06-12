@@ -418,7 +418,6 @@ describe('BeneficiaryGovernance', function () {
  });
  it("should remove beneficiary after a successful BTP voting", async function() {
 
-  await this.beneficiaryRegistryContract.approveOwner(this.BNPContract.address);
   await this.beneficiaryRegistryContract.transferOwnership(this.BNPContract.address);
   // register beneficiary:
    //three yes votes
