@@ -31,15 +31,11 @@ contract BeneficiaryRegistry is
     _;
   }
   modifier onlyOwnerOrCouncil(address _address) {
-    _onlyOwnerOrCouncil();
-    _;
-  }
-
-  function _onlyOwnerOrCouncil() internal view {
     require(
       msg.sender == owner() || msg.sender == getCouncil(),
       "Only the owner or council may perform this action"
     );
+    _;
   }
 
   constructor() Ownable() CouncilControlled(msg.sender) {}
