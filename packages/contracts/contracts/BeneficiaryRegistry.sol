@@ -30,26 +30,39 @@ contract BeneficiaryRegistry is
     require(_address == address(_address), "invalid address");
     _;
   }
-  modifier onlyApproved(address _address) {
-    require(
-      approved[_address],
-      "Only the approved user may perform this action"
-    );
+  modifier onlyOwnerOrCouncil(address _address) {
+    _onlyOwnerOrCouncil();
     _;
   }
 
-  mapping(address => bool) private approved;
+  function _onlyOwnerOrCouncil() internal view {
+    require(
+      approvedCouncil[msg.sender] || approvedOwner[msg.sender],
+      "Only the owner or council may perform this action"
+    );
+  }
+
+  mapping(address => bool) private approvedOwner;
+  mapping(address => bool) private approvedCouncil;
 
   function approveCouncil(address account) external override onlyCouncil {
-    approved[account] = true;
+    approvedCouncil[account] = true;
   }
 
-  function approveOwner(address account) public override onlyOwner {
-    approved[account] = true;
+  function approveOwner(address account) external override onlyOwner {
+    approvedOwner[account] = true;
   }
 
-  function _resetApproved(address _address) internal {
-    approved[_address] = false;
+  function revokeApprovedCouncil(address account)
+    external
+    override
+    onlyCouncil
+  {
+    approvedCouncil[account] = false;
+  }
+
+  function revokeApprovedOwner(address account) external override onlyOwner {
+    approvedOwner[account] = false;
   }
 
   constructor() Ownable() CouncilControlled(msg.sender) {}
@@ -82,9 +95,8 @@ contract BeneficiaryRegistry is
   function revokeBeneficiary(address _address)
     external
     override
-    onlyApproved(msg.sender)
+    onlyOwnerOrCouncil(msg.sender)
   {
-    _resetApproved(msg.sender);
     require(beneficiaryExists(_address), "exists");
     delete beneficiariesList[beneficiariesMap[_address].listPointer];
     delete beneficiariesMap[_address];
