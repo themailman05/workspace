@@ -321,9 +321,9 @@ describe('BeneficiaryGovernance', function () {
         this.mockPop.address,
         governance.address
       );
-     
+      
       // pass the Beneficiary governance contract address as the governance address for the beneficiary registry contract
-      await this.beneficiaryRegistryContract.transferOwnership(this.BNPContract.address);
+   
       
       // create a BNP proposal
        await this.mockPop.connect(proposer1).approve(this.BNPContract.address, parseEther('2000'));
@@ -392,6 +392,8 @@ describe('BeneficiaryGovernance', function () {
  });
    it("should register the beneficiary after a successful BNP voting", async function() {
  
+   await this.beneficiaryRegistryContract.transferOwnership(this.BNPContract.address);
+
     //three yes votes
     await this.mockStaking.mock.getVoiceCredits.returns(20);
     await this.BNPContract.connect(voter1).vote(PROPOSALID,Vote.Yes);
@@ -416,6 +418,8 @@ describe('BeneficiaryGovernance', function () {
  });
  it("should remove beneficiary after a successful BTP voting", async function() {
 
+  await this.beneficiaryRegistryContract.approveOwner(this.BNPContract.address);
+  await this.beneficiaryRegistryContract.transferOwnership(this.BNPContract.address);
   // register beneficiary:
    //three yes votes
    await this.mockStaking.mock.getVoiceCredits.returns(80);
@@ -432,6 +436,9 @@ describe('BeneficiaryGovernance', function () {
    
    //finalize 
   await this.BNPContract.connect(governance).finalize(PROPOSALID);
+
+  //await this.beneficiaryRegistryContract.approveOwner(this.BNPContract.address);
+
 
   //create takedown proposal
   await this.mockPop.connect(proposer2).approve(this.BNPContract.address, parseEther('2000'));
