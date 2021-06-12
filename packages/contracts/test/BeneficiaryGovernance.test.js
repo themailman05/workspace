@@ -469,4 +469,105 @@ describe('BeneficiaryGovernance', function () {
 });
 
   });
+
+describe("claimBond", function () {
+    beforeEach(async function () {
+
+      const Staking = await ethers.getContractFactory("Staking");
+      this.mockStaking = await waffle.deployMockContract(
+        governance,
+        Staking.interface.format()
+      );
+
+
+
+      const MockERC20 = await ethers.getContractFactory("MockERC20");
+      this.mockPop = await MockERC20.deploy("TestPOP", "TPOP",18);
+      await this.mockPop.mint(beneficiary.address, parseEther("50"));
+      await this.mockPop.mint(governance.address, parseEther("50"));
+      await this.mockPop.mint(beneficiary2.address, parseEther("50"));
+      await this.mockPop.mint(proposer1.address, parseEther("2000"));
+      await this.mockPop.mint(proposer2.address, parseEther("2000"));
+
+      const BeneficiaryRegistry = await ethers.getContractFactory('BeneficiaryRegistry');
+      this.beneficiaryRegistryContract = await BeneficiaryRegistry.deploy();
+     
+      const BeneficiaryNomination = await ethers.getContractFactory("BeneficiaryGovernance");
+      this.BNPContract = await BeneficiaryNomination.deploy(
+        this.mockStaking.address,
+        this.beneficiaryRegistryContract.address,
+        this.mockPop.address,
+        governance.address
+      );
+      
+      // pass the Beneficiary governance contract address as the governance address for the beneficiary registry contract
+   
+      
+      // create a BNP proposal
+       await this.mockPop.connect(proposer1).approve(this.BNPContract.address, parseEther('2000'));
+       await this.BNPContract.connect(proposer1).createProposal(beneficiary.address, ethers.utils.formatBytes32String("testCid"),ProposalType.BNP);
+
+    });
+    it("should prevent claiming bond whith address other than the proposer address", async function() {
+   
+      await expect(this.BNPContract.connect(owner).claimBond(PROPOSALID)).to.be.revertedWith("only the proposer may call this function");
+   });
+   it("should prevent claiming bond for a proposal which has not passed.", async function() {
+        //one yes vote
+        await this.mockStaking.mock.getVoiceCredits.returns(20);
+        await this.BNPContract.connect(voter1).vote(PROPOSALID,Vote.Yes);
+  
+        //two no votes
+        await this.mockStaking.mock.getVoiceCredits.returns(40);
+        await this.BNPContract.connect(voter2).vote(PROPOSALID,Vote.No);
+        await this.mockStaking.mock.getVoiceCredits.returns(50);
+        await this.BNPContract.connect(voter3).vote(PROPOSALID,Vote.No);
+  
+        ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
+        ethers.provider.send("evm_mine");
+  
+        await this.mockStaking.mock.getVoiceCredits.returns(60);
+        await this.BNPContract.connect(voter4).finalize(PROPOSALID);
+   
+    await expect(this.BNPContract.connect(proposer1).claimBond(PROPOSALID)).to.be.revertedWith("Proposal failed or is processing!");
+ });
+    it("should be able to claim bond after a proposal passed.", async function() {
+       
+      await this.beneficiaryRegistryContract.transferOwnership(this.BNPContract.address);
+
+      //three yes votes
+      await this.mockStaking.mock.getVoiceCredits.returns(20);
+      await this.BNPContract.connect(voter1).vote(PROPOSALID,Vote.Yes);
+      await this.mockStaking.mock.getVoiceCredits.returns(30);
+      await this.BNPContract.connect(voter2).vote(PROPOSALID,Vote.Yes);
+      await this.mockStaking.mock.getVoiceCredits.returns(40);
+      await this.BNPContract.connect(voter3).vote(PROPOSALID,Vote.Yes);
+      ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
+      ethers.provider.send("evm_mine");
+      //two no votes
+      await this.mockStaking.mock.getVoiceCredits.returns(30);
+      await this.BNPContract.connect(voter4).vote(PROPOSALID,Vote.No);
+      await this.mockStaking.mock.getVoiceCredits.returns(20);
+      await this.BNPContract.connect(voter5).vote(PROPOSALID,Vote.No);
+      ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
+      ethers.provider.send("evm_mine");
+      
+      //finalize 
+      await this.BNPContract.connect(governance).finalize(PROPOSALID);
+
+      
+         //claim bond
+         const amount = parseEther("2000");
+
+      expect(await this.BNPContract.connect(proposer1).claimBond(PROPOSALID))
+      .to.emit(this.BNPContract, "BondWithdrawn")
+      .withArgs(proposer1.address, amount);
+
+      expect(
+        await this.mockPop.connect(proposer1).balanceOf(proposer1.address)
+      ).to.equal(parseEther("2000"));
+
+    });
+  
+  });
 });

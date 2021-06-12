@@ -75,6 +75,7 @@ contract BeneficiaryGovernance is Governed {
   );
 
   event Finalize(uint256 indexed proposalId);
+  event BondWithdrawn(address _address, uint256 amount);
 
   modifier onlyProposer(uint256 proposalId) {
     require(
@@ -296,11 +297,12 @@ contract BeneficiaryGovernance is Governed {
       proposals[proposalId].status == ProposalStatus.Passed,
       "Proposal failed or is processing!"
     );
-    POP.safeTransferFrom(
-      address(this),
-      msg.sender,
-      proposals[proposalId].configurationOptions.proposalBond
-    );
+    uint256 amount = proposals[proposalId].configurationOptions.proposalBond;
+
+    POP.approve(address(this), amount);
+    POP.safeTransferFrom(address(this), msg.sender, amount);
+
+    emit BondWithdrawn(msg.sender, amount);
   }
 
   /**
