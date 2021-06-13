@@ -96,7 +96,6 @@ contract BeneficiaryGovernance is Governed {
     _;
   }
 
-  //constructor
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
@@ -170,6 +169,9 @@ contract BeneficiaryGovernance is Governed {
     return proposalId;
   }
 
+  /**
+   * @notice checks beneficiary exists or doesn't exist before creating beneficiary nomination proposal or takedown proposal
+   */
   function _assertProposalPreconditions(
     ProposalType _type,
     address _beneficiary
@@ -341,17 +343,17 @@ contract BeneficiaryGovernance is Governed {
   }
 
   /**
-@notice returns number of created proposals
- */
+   * @notice returns number of created proposals
+   */
   function getNumberOfProposals() public view returns (uint256) {
     return proposals.length;
   }
 
-  /** 
-  @notice gets number of votes
-  @param  proposalId id of the proposal
-  @return number of votes to a proposal
-  */
+  /**
+   * @notice gets number of votes
+   * @param  proposalId id of the proposal
+   * @return number of votes to a proposal
+   */
   function getNumberOfVoters(uint256 proposalId)
     external
     view
@@ -360,12 +362,12 @@ contract BeneficiaryGovernance is Governed {
     return proposals[proposalId].voterCount;
   }
 
-  /** 
-  @notice checks if someone has voted to a specific proposal or not
-  @param  proposalId id of the proposal
-  @param  voter IPFS content hash
-  @return true or false
-  */
+  /**
+   * @notice checks if someone has voted to a specific proposal or not
+   * @param  proposalId id of the proposal
+   * @param  voter IPFS content hash
+   * @return true or false
+   */
   function hasVoted(uint256 proposalId, address voter)
     external
     view
