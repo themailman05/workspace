@@ -289,12 +289,12 @@ describe("GrantElections", function () {
 
   describe("initialization", function () {
     it("should successfully initialize an election if one hasn't already been created", async function () {
-      await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
-      await ethers.provider.send("evm_mine", []);
-
+      const currentBlockNumber = await ethers.provider.getBlockNumber();
+      const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
+      
       await expect(contracts.grantElections.initialize(GRANT_TERM.QUARTER))
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, 1625097601);
+        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp+1);
     });
 
     it("should set correct election metadata", async function () {
