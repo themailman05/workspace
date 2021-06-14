@@ -6,7 +6,7 @@ import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [beneficiaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>(
+  const [benefeciaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>(
     [],
   );
 
@@ -36,8 +36,9 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
         facebookUrl: '',
         instagramUrl: '',
         githubUrl: '',
+        dribbleUrl: '',
         ethereumAddress: beneficiaryJson.ethereumAddress,
-        profileImage: `https://gateway.pinata.cloud/ipfs/${beneficiaryJson.profileImage}`,
+        profileImageURL: `https://gateway.pinata.cloud/ipfs/${beneficiaryJson.profileImage}`,
       };
       return benefificaryCardData;
     });
@@ -50,7 +51,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  console.log(beneficiaries);
+  console.log(benefeciaries);
 
-  return <BeneficiaryGrid isProposal={false} cardProps={beneficiaries} />;
+  return <BeneficiaryGrid isProposal={false} benefeciaries={benefeciaries} />;
 }
