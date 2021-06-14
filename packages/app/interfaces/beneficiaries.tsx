@@ -21,9 +21,8 @@ export interface BeneficiaryCardProps {
   facebookUrl?: string;
   instagramUrl?: string;
   githubUrl?: string;
-  dribbleUrl?: string;
   ethereumAddress: string;
-  profileImageURL: string;
+  profileImage: string;
 }
 
 export interface ProposalCardProps extends BeneficiaryCardProps {
@@ -36,6 +35,12 @@ export interface ProposalCardProps extends BeneficiaryCardProps {
 export interface DummyBeneficiaryProposal extends ProposalCardProps {
   headerImageURL: string;
   photoURLs?: string[];
+  impactReports?: string[];
+}
+
+export interface Beneficiary extends BeneficiaryCardProps{
+  headerImage: string;
+  additionalImages?: string[];
   impactReports?: string[];
   proofOfOwnership: string;
 }
