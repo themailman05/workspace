@@ -11,11 +11,10 @@ contract RewardParticipation is Governed, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
   /* ========== STATE VARIABLES ========== */
-  uint128 immutable VAULT_INIT = 0;
-  uint128 immutable VAULT_OPEN = 1;
+  enum VaultStatus {INIT, OPEN}
 
   struct Vault {
-    uint128 status; // 0 - init, 1 - open
+    VaultStatus status;
     uint256 endTime;
     uint256 unclaimedShares;
     uint256 tokenBalance;
@@ -54,7 +53,11 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     return vaults[vaultId_].shareBalances[beneficiary_] > 0;
   }
 
-  function getVaultStatus(bytes32 vaultId_) external view returns (uint128) {
+  function getVaultStatus(bytes32 vaultId_)
+    external
+    view
+    returns (VaultStatus)
+  {
     return vaults[vaultId_].status;
   }
 
@@ -77,7 +80,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
       "not enough funds for vault"
     );
 
-    vaults[vaultId_].status = VAULT_INIT;
+    vaults[vaultId_].status = VaultStatus.INIT;
     vaults[vaultId_].endTime = endTime_;
     vaults[vaultId_].tokenBalance = rewardBudget;
 
@@ -93,13 +96,16 @@ contract RewardParticipation is Governed, ReentrancyGuard {
    * @param vaultId_ Vault ID in bytes32
    */
   function _openVault(bytes32 vaultId_) internal vaultExists(vaultId_) {
-    require(vaults[vaultId_].status == VAULT_INIT, "Vault must be initialized");
+    require(
+      vaults[vaultId_].status == VaultStatus.INIT,
+      "Vault must be initialized"
+    );
     require(
       vaults[vaultId_].endTime <= block.timestamp,
       "wait till endTime is over"
     );
 
-    vaults[vaultId_].status = VAULT_OPEN;
+    vaults[vaultId_].status = VaultStatus.OPEN;
 
     emit VaultOpened(vaultId_);
   }
@@ -109,7 +115,10 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     address account_,
     uint256 shares_
   ) internal vaultExists(vaultId_) {
-    require(vaults[vaultId_].status == VAULT_INIT, "Vault must be initialized");
+    require(
+      vaults[vaultId_].status == VaultStatus.INIT,
+      "Vault must be initialized"
+    );
     vaults[vaultId_].unclaimedShares = vaults[vaultId_].unclaimedShares.add(
       shares_
     );
@@ -125,7 +134,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     uint256 total;
     for (uint256 i = 0; i < numEntries; i++) {
       bytes32 vaultId = rewardedVaults[msg.sender][i];
-      if (vaults[vaultId].status == VAULT_OPEN) {
+      if (vaults[vaultId].status == VaultStatus.OPEN) {
         uint256 shares = vaults[vaultId].shareBalances[msg.sender];
         uint256 reward =
           vaults[vaultId].tokenBalance.mul(shares).div(
