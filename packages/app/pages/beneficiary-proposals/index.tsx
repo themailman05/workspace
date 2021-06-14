@@ -38,7 +38,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           instagramUrl: ipfsData.instagramUrl,
           githubUrl: ipfsData.githubUrl,
           ethereumAddress: ipfsData.ethereumAddress,
-          profileImageURL: `${process.env.IPFS_URL}${ipfsData.profileImage}`,
+          profileImage: `${process.env.IPFS_URL}${ipfsData.profileImage}`,
           votesFor: proposal.yesCount,
           votesAgainst: proposal.noCount,
           status: Number(proposal.status.toString()),
