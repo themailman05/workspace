@@ -17,7 +17,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       }),
     );
 
-    const proposalsData = await await Promise.all(
+    const proposalsData = await Promise.all(
       proposals.map(async (proposal) => {
         const ipfsData = await fetch(
           `${process.env.IPFS_URL}${getIpfsHashFromBytes32(
