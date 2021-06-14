@@ -3,7 +3,7 @@ import { store } from '../../context/store';
 
 import { setDualActionModal } from '../../context/actions';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-import CurrentStandings from './CurrentStandings';
+import CurrentStandings from '../Beneficiary-Proposals/CurrentStandings';
 
 export default function ChallengePeriodVoting(
   beneficiaryProposal: DummyBeneficiaryProposal,

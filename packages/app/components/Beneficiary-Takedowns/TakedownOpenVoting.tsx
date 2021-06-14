@@ -4,7 +4,7 @@ import { RadioGroup } from '@headlessui/react';
 
 import { setDualActionModal } from '../../context/actions';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-import CurrentStandings from './CurrentStandings';
+import CurrentStandings from '../Beneficiary-Proposals/CurrentStandings';
 
 type VoteOptions =
   | {

@@ -4,15 +4,21 @@ import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
 
-export default function Voting(displayData: DummyBeneficiaryProposal) {
+interface VotingProps {
+  displayData: DummyBeneficiaryProposal;
+  isTakedown: boolean;
+}
+
+export default function Voting({ displayData, isTakedown }: VotingProps) {
   return (
     <div>
+
       {displayData.currentStage === 'Open' ? (
-        <OpenVoting {...displayData} />
+        <OpenVoting displayData={displayData} isTakedown={isTakedown} />
       ) : displayData.currentStage === 'Challenge' ? (
-        <ChallengePeriodVoting {...displayData} />
+        <ChallengePeriodVoting displayData={displayData} isTakedown={isTakedown}/>
       ) : (
-        <CompletedVoting {...displayData} />
+        <CompletedVoting displayData={displayData} isTakedown={isTakedown}/>
       )}
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">

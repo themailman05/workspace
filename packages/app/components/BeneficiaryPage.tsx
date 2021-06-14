@@ -7,7 +7,10 @@ import SocialMediaLinks from 'components/SocialMediaLinks';
 import Verification from 'components/Verification';
 import Voting from 'components/Beneficiary-Proposals/Voting';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
-import { beneficiaryProposalFixture as beneficiaryProposal } from '../fixtures/beneficiaryProposals';
+import {
+  beneficiaryProposalFixture as beneficiaryProposal,
+  beneficiaryProposalFixture,
+} from '../fixtures/beneficiaryProposals';
 import {
   Beneficiary,
   DummyBeneficiaryProposal,
@@ -18,23 +21,31 @@ interface BeneficiaryPageProps {
   isProposal: boolean;
   isProposalPreview?: boolean;
   displayData?: Beneficiary | DummyBeneficiaryProposal;
-  isTakedown: boolean
+  isTakedown: boolean;
 }
 
 export default function BeneficiaryPage({
   isProposal,
   isProposalPreview = false,
   displayData,
-  isTakedown = false
+  isTakedown = false,
 }: BeneficiaryPageProps): JSX.Element {
+  // TODO: Source data from BNP contract and IPFS
+  displayData = beneficiaryProposalFixture;
+  console.log({ isTakedown, isProposal });
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview && <NavBar />}
       <ImageHeader {...displayData} />
-      {isProposal && <Voting {...(displayData as DummyBeneficiaryProposal)} />}
+      {isProposal && (
+        <Voting
+          displayData={displayData as DummyBeneficiaryProposal}
+          isTakedown={isTakedown}
+        />
+      )}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-        <PhotoSideBar {...displayData as DummyBeneficiaryProposal} />
-        <MissionStatement missionStatement={displayData?.missionStatement}/>
+        <PhotoSideBar {...(displayData as DummyBeneficiaryProposal)} />
+        <MissionStatement missionStatement={displayData?.missionStatement} />
       </div>
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -42,7 +53,7 @@ export default function BeneficiaryPage({
         </div>
       </div>
       <div className="mx-48 my-8">
-        <Verification {...displayData as DummyBeneficiaryProposal} />
+        <Verification {...(displayData as DummyBeneficiaryProposal)} />
         <ImpactReportLinks {...displayData} />
         <SocialMedia {...displayData} />
       </div>

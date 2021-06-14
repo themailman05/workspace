@@ -1,5 +1,5 @@
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-import CurrentStandings from './CurrentStandings';
+import CurrentStandings from '../Beneficiary-Proposals/CurrentStandings';
 
 export default function CompletedVoting(beneficiaryProposal: DummyBeneficiaryProposal): JSX.Element {
   return (
