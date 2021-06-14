@@ -54,6 +54,10 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     return vaults[vaultId_].shareBalances[beneficiary_] > 0;
   }
 
+  function getVaultStatus(bytes32 vaultId_) external view returns (uint128) {
+    return vaults[vaultId_].status;
+  }
+
   /* ========== MUTATIVE FUNCTIONS ========== */
 
   /**
@@ -127,6 +131,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
           vaults[vaultId].tokenBalance.mul(shares).div(
             vaults[vaultId].unclaimedShares
           );
+        total = total.add(reward);
         vaults[vaultId].tokenBalance = vaults[vaultId].tokenBalance.sub(reward);
         vaults[vaultId].unclaimedShares = vaults[vaultId].unclaimedShares.sub(
           shares

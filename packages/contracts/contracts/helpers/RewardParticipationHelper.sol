@@ -29,4 +29,8 @@ contract RewardParticipationHelper is RewardParticipation {
   ) external {
     _addShares(vaultId_, account_, shares_);
   }
+
+  function numRewardedVaults(address account_) external view returns (uint256) {
+    return _numRewardedVaults(account_);
+  }
 }
