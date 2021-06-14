@@ -21,6 +21,8 @@ import {
   BeneficiaryRegistry__factory,
   ERC20,
   ERC20__factory,
+  BeneficiaryGovernance,
+  BeneficiaryGovernance__factory,
 } from '@popcorn/contracts/typechain';
 
 export interface Contracts {
@@ -29,8 +31,8 @@ export interface Contracts {
   election: GrantElections;
   pop: ERC20;
   grant: GrantRegistry;
+  beneficiaryGovernance:BeneficiaryGovernance;
 }
-
 
 interface ContractsContext {
   contracts: Contracts;
@@ -47,7 +49,9 @@ function getErrorMessage(error: Error) {
   if (error instanceof NoEthereumProviderError) {
     return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.';
   } else if (error instanceof UnsupportedChainIdError) {
-    return `You're connected to an unsupported network. Please connect to ${networkMap[Number(process.env.CHAIN_ID)]}.`;
+    return `You're connected to an unsupported network. Please connect to ${
+      networkMap[Number(process.env.CHAIN_ID)]
+    }.`;
   } else if (error instanceof UserRejectedRequestErrorInjected) {
     return 'Please authorize this website to access your Ethereum account.';
   } else {
@@ -113,6 +117,10 @@ export default function ContractsWrapper({
       pop: ERC20__factory.connect(process.env.ADDR_POP, library),
       grant: GrantRegistry__factory.connect(
         process.env.ADDR_GRANT_REGISTRY,
+        library,
+      ),
+      beneficiaryGovernance: BeneficiaryGovernance__factory.connect(
+        process.env.ADDR_BENEFICIARY_GOVERNANCE,
         library,
       ),
     });

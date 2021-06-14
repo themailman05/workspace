@@ -1,6 +1,5 @@
 import BeneficiaryGrid from 'components/BeneficiaryGrid';
 import { ContractsContext } from 'context/Web3/contracts';
-import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
@@ -10,38 +9,43 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   const [proposals, setProposals] = useState<BeneficiaryCardProps[]>([]);
 
   async function getProposals() {
-    //Where do the proposals get stored?
-    const proposalAddresses =
-      await contracts.beneficiary.getBeneficiaryList();
-    const ipfsHashes = await Promise.all(
-      proposalAddresses.map(async (address) => {
-        return contracts.beneficiary.getBeneficiary(address);
+    const numProposals =
+      await contracts.beneficiaryGovernance.getNumberOfProposals();
+    const proposals = await Promise.all(
+      new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
+        return contracts.beneficiaryGovernance.proposals(i);
       }),
     );
-    const proposalsData = await (
-      await Promise.all(
-        ipfsHashes.map((ipfsHash) => {
-          return fetch(
-            `${process.env.IPFS_URL}${getIpfsHashFromBytes32(ipfsHash)}`,
-          ).then((response) => response.json());
-        }),
-      )
-    ).map((proposalJson) => {
-      //TODO parse social media links
-      const benefificaryCardData: BeneficiaryCardProps = {
-        name: proposalJson.name,
-        missionStatement: proposalJson.missionStatement,
-        twitterUrl: '',
-        linkedinUrl: '',
-        facebookUrl: '',
-        instagramUrl: '',
-        githubUrl: '',
-        dribbleUrl: '',
-        ethereumAddress: proposalJson.ethereumAddress,
-        profileImageURL: `${process.env.IPFS_URL}${proposalJson.profileImage}`,
-      };
-      return benefificaryCardData;
-    });
+
+    const proposalsData = await await Promise.all(
+      proposals.map(async (proposal) => {
+        const ipfsData = await fetch(
+          `${process.env.IPFS_URL}${getIpfsHashFromBytes32(
+            proposal.applicationCid,
+          )}`,
+        ).then((response) => response.json());
+
+        const deadline = new Date((Number(proposal.startTime.toString()) +
+          Number(proposal.configurationOptions.votingPeriod.toString()) +
+          Number(proposal.configurationOptions.vetoPeriod.toString()))*1000)
+
+        return {
+          name: ipfsData.name,
+          missionStatement: ipfsData.missionStatement,
+          twitterUrl: ipfsData.twitterUrl,
+          linkedinUrl: ipfsData.linkedinUrl,
+          facebookUrl: ipfsData.facebookUrl,
+          instagramUrl: ipfsData.instagramUrl,
+          githubUrl: ipfsData.githubUrl,
+          ethereumAddress: ipfsData.ethereumAddress,
+          profileImageURL: `${process.env.IPFS_URL}${ipfsData.profileImage}`,
+          votesFor: proposal.yesCount,
+          votesAgainst: proposal.noCount,
+          status: Number(proposal.status.toString()),
+          stageDeadline: deadline
+        };
+      }),
+    );
     setProposals(proposalsData);
   }
 
@@ -51,6 +55,5 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  console.log(proposals);
-  return <BeneficiaryGrid isProposal={true} benefeciaries={proposals} />;
+  return <BeneficiaryGrid isProposal={true} cardProps={proposals} />;
 }

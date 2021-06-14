@@ -2,7 +2,16 @@
 // TODO: Refer to TS definition files once contracts are finalised
 // TODO: Improve social media links - change
 
-export type Stage = 'All' | 'Open' | 'Challenge' | 'Closed';
+import { BigNumber } from "ethers";
+
+export enum Status {
+  Open=0,
+  Challenge=1,
+  Completed=2,
+  Passed=3,
+  Failed=4,
+  All=5,
+}
 
 export interface BeneficiaryCardProps {
   name: string;
@@ -17,13 +26,16 @@ export interface BeneficiaryCardProps {
   profileImageURL: string;
 }
 
-export interface DummyBeneficiaryProposal extends BeneficiaryCardProps {
+export interface ProposalCardProps extends BeneficiaryCardProps {
+  votesFor: BigNumber;
+  votesAgainst: BigNumber;
+  status: Status;
+  stageDeadline: Date;
+}
+
+export interface DummyBeneficiaryProposal extends ProposalCardProps {
   headerImageURL: string;
   photoURLs?: string[];
   impactReports?: string[];
-  votesFor: number;
-  votesAgainst: number;
-  currentStage: Stage;
-  stageDeadline: Date;
   proofOfOwnership: string;
 }
