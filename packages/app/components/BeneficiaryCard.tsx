@@ -59,14 +59,13 @@ export default function BeneficiaryProposalCard({
   displayData,
   isProposal,
 }: IBeneficiaryProposalCard): JSX.Element {
+  const pathname = isProposal
+    ? 'beneficiary-proposals/' + displayData.ethereumAddress
+    : 'beneficiaries/' + displayData.ethereumAddress;
   return (
     <Link
       key={displayData.name}
-      href={
-        isProposal
-          ? 'beneficiary-proposals/' + displayData.ethereumAddress
-          : 'beneficiaries/' + displayData.ethereumAddress
-      }
+      href={{ pathname, query: { address: displayData.ethereumAddress } }}
     >
       <a>
         <div className="m-0 shadow-sm w-100 h-auto rounded-lg bg-white border-b border-gray-200 ">
