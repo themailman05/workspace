@@ -32,6 +32,7 @@ export default function TriggerTakedownProposal(): JSX.Element {
                   label: 'Confirm Takedown Proposal',
                   onClick: () => {
                     triggerTakedownProposal();
+                    setDualActionModal(false);
                   },
                 },
                 onDismiss: {

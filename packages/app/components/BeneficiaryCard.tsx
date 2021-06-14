@@ -69,7 +69,7 @@ export default function BeneficiaryProposalCard({
           <div className="aspect-w-3 aspect-h-2">
             <img
               className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
-              src={beneficiaryProposal.profileImageURL}
+              src={beneficiaryProposal.profileImage}
               alt=""
             />
           </div>

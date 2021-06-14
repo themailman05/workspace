@@ -5,16 +5,26 @@ import PhotoSideBar from 'components/PhotoSideBar';
 import MissionStatement from 'components/MissionStatement';
 import SocialMediaLinks from 'components/SocialMediaLinks';
 import Verification from 'components/Verification';
-import Voting from 'components/Beneficiary-Proposals/Voting';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
 import { beneficiaryProposalFixture as beneficiaryProposal } from '../fixtures/beneficiaryProposals';
+import { DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
 
-export default function BeneficiaryPage({ isProposal }): JSX.Element {
+interface Props {
+  isProposal: boolean,
+  beneficiaryProposal?: DummyBeneficiaryProposal
+  isProposalPreview?: boolean;
+}
+
+const defaultProps: Props = {
+  isProposal: true,
+  beneficiaryProposal: beneficiaryProposal,
+  isProposalPreview: false
+}
+export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal, isProposalPreview }): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
-      <NavBar />
+      {!isProposalPreview ? <NavBar /> : <div></div>}
       <ImageHeader {...beneficiaryProposal} />
-      {isProposal ? <Voting {...beneficiaryProposal} /> : <div></div>}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...beneficiaryProposal} />
         <MissionStatement {...beneficiaryProposal} />
@@ -33,3 +43,5 @@ export default function BeneficiaryPage({ isProposal }): JSX.Element {
     </div>
   );
 }
+
+BeneficiaryPage.defaultProps = defaultProps;

@@ -4,7 +4,7 @@
 
 export type Stage = 'All' | 'Open' | 'Challenge' | 'Closed';
 
-export interface DummyBeneficiaryProposal {
+export interface BeneficiaryCardProps {
   name: string;
   missionStatement: string;
   twitterUrl?: string;
@@ -12,12 +12,18 @@ export interface DummyBeneficiaryProposal {
   facebookUrl?: string;
   instagramUrl?: string;
   githubUrl?: string;
-  dribbleUrl?: string;
   ethereumAddress: string;
-  profileImageURL: string;
-  headerImageURL: string;
-  photoURLs?: string[];
+  profileImage: string;
+}
+
+export interface Beneficiary extends BeneficiaryCardProps{
+  headerImage: string;
+  additionalImages?: string[];
   impactReports?: string[];
+  proofOfOwnership: string;
+}
+
+export interface DummyBeneficiaryProposal extends Beneficiary {
   votesFor: number;
   votesAgainst: number;
   currentStage: Stage;
