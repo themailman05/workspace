@@ -1,5 +1,5 @@
 const { expect } = require("chai");
-const { waffle } = require("hardhat");
+const { waffle, ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
 const { parseEther, parseUnits } = require("ethers/lib/utils");
 const provider = waffle.provider;
@@ -29,7 +29,9 @@ describe("Pool", function () {
     ] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mock3Crv = await MockERC20.deploy("3Crv", "3Crv", 18);
+    this.mock3Crv = await (
+      await MockERC20.deploy("3Crv", "3Crv", 18)
+    ).deployed();
     await this.mock3Crv.mint(depositor.address, DepositorInitial);
     await this.mock3Crv.mint(depositor1.address, DepositorInitial);
     await this.mock3Crv.mint(depositor2.address, DepositorInitial);
@@ -37,43 +39,52 @@ describe("Pool", function () {
     await this.mock3Crv.mint(depositor4.address, DepositorInitial);
     await this.mock3Crv.mint(depositor5.address, DepositorInitial);
 
-    this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX", 18);
-
+    this.mockCrvUSDX = await (
+      await MockERC20.deploy("crvUSDX", "crvUSDX", 18)
+    ).deployed();
     MockYearnV1Vault = await ethers.getContractFactory("MockYearnV1Vault");
-    this.mockYearnVault = await MockYearnV1Vault.deploy(
-      this.mockCrvUSDX.address
-    );
+    this.mockYearnVault = await (
+      await MockYearnV1Vault.deploy(this.mockCrvUSDX.address)
+    ).deployed();
 
     MockCurveMetapool = await ethers.getContractFactory("MockCurveMetapool");
-    this.mockCurveMetapool = await MockCurveMetapool.deploy(
-      this.mockCrvUSDX.address,
-      this.mock3Crv.address
-    );
+    this.mockCurveMetapool = await (
+      await MockCurveMetapool.deploy(
+        this.mockCrvUSDX.address,
+        this.mock3Crv.address
+      )
+    ).deployed();
 
     MockCurveRegistry = await ethers.getContractFactory("MockCurveRegistry");
-    this.mockCurveRegistry = await MockCurveRegistry.deploy(
-      this.mockCurveMetapool.address
-    );
+    this.mockCurveRegistry = await (
+      await MockCurveRegistry.deploy(this.mockCurveMetapool.address)
+    ).deployed();
 
     MockCurveAddressProvider = await ethers.getContractFactory(
       "MockCurveAddressProvider"
     );
-    this.mockCurveAddressProvider = await MockCurveAddressProvider.deploy(
-      this.mockCurveRegistry.address
-    );
+    this.mockCurveAddressProvider = await (
+      await MockCurveAddressProvider.deploy(this.mockCurveRegistry.address)
+    ).deployed();
 
     Pool = await ethers.getContractFactory("Pool");
-    this.Pool = await Pool.deploy(
-      this.mock3Crv.address,
-      this.mockYearnVault.address,
-      this.mockCurveAddressProvider.address,
-      rewardsManager.address
-    );
+    this.Pool = await (
+      await Pool.deploy(
+        this.mock3Crv.address,
+        this.mockYearnVault.address,
+        this.mockCurveAddressProvider.address,
+        rewardsManager.address
+      )
+    ).deployed();
     await this.Pool.deployed();
+    BlockLockHelper = await ethers.getContractFactory("BlockLockHelper");
+    this.blockLockHelper = await (
+      await BlockLockHelper.deploy(this.Pool.address, this.mock3Crv.address)
+    ).deployed();
   });
 
   describe("constructor", async function () {
-    it.only("should be constructed with correct addresses", async function () {
+    it("should be constructed with correct addresses", async function () {
       expect(await this.Pool.threeCrv()).to.equal(this.mock3Crv.address);
       expect(await this.Pool.curveAddressProvider()).to.equal(
         this.mockCurveAddressProvider.address
@@ -1403,6 +1414,37 @@ describe("Pool", function () {
           parseUnits("2139866479243654574040", "wei")
         );
       });
+    });
+  });
+
+  describe("block lock modifier", async function () {
+    it("prevents a deposit and withdrawal in the same block", async function () {
+      await this.mock3Crv.mint(this.blockLockHelper.address, parseEther("1000"));
+      await expect(
+        this.blockLockHelper.depositThenWithdraw()
+      ).to.be.revertedWith("Locked until next block");
+    });
+
+    it("prevents a withdrawal and deposit in the same block", async function () {
+      await this.mock3Crv.mint(this.blockLockHelper.address, parseEther("1000"));
+      await this.blockLockHelper.deposit();
+      await expect(
+        this.blockLockHelper.withdrawThenDeposit()
+      ).to.be.revertedWith("Locked until next block");
+    });
+
+    it("prevents a deposit and a transfer in the same block", async function () {
+      await this.mock3Crv.mint(this.blockLockHelper.address, parseEther("1000"));
+      await expect(
+        this.blockLockHelper.depositThenTransfer()
+      ).to.be.revertedWith("Locked until next block");
+    });
+
+    it("prevents a deposit and transferFrom in the same block", async function () {
+      await this.mock3Crv.mint(this.blockLockHelper.address, parseEther("1000"));
+      await expect(
+        this.blockLockHelper.depositThenTransferFrom()
+      ).to.be.revertedWith("Locked until next block");
     });
   });
 });
