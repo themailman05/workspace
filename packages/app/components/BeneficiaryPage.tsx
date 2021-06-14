@@ -5,7 +5,6 @@ import PhotoSideBar from 'components/PhotoSideBar';
 import MissionStatement from 'components/MissionStatement';
 import SocialMediaLinks from 'components/SocialMediaLinks';
 import Verification from 'components/Verification';
-import Voting from 'components/Beneficiary-Proposals/Voting';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
 import { beneficiaryProposalFixture as beneficiaryProposal } from '../fixtures/beneficiaryProposals';
 import { DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
@@ -26,7 +25,6 @@ export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview ? <NavBar /> : <div></div>}
       <ImageHeader {...beneficiaryProposal} />
-      {isProposal ? <Voting {...beneficiaryProposal} /> : <div></div>}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...beneficiaryProposal} />
         <MissionStatement {...beneficiaryProposal} />

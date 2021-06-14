@@ -1,6 +1,10 @@
 import Link from 'next/link';
+import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
 import { social } from '../fixtures/social';
-import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
+import {
+  BeneficiaryCardProps,
+  ProposalCardProps,
+} from '../interfaces/beneficiaries';
 
 interface IVotingRow {
   name: string;
@@ -8,7 +12,7 @@ interface IVotingRow {
 }
 
 interface IBeneficiaryProposalCard {
-  beneficiaryProposal: DummyBeneficiaryProposal;
+  displayData: BeneficiaryCardProps | ProposalCardProps;
   isProposal: boolean;
 }
 
@@ -24,44 +28,44 @@ function VotingRow(data: IVotingRow): JSX.Element {
 }
 
 function VotingInformation(
-  beneficiaryProposal: DummyBeneficiaryProposal,
+  beneficiaryProposal: ProposalCardProps,
 ): JSX.Element {
   return (
     <div>
-      <VotingRow name={'Status'} value={beneficiaryProposal.currentStage} />
+      <VotingRow name={'Status'} value={String(beneficiaryProposal.status)} />
       <VotingRow
         name={'Voting Deadline'}
         value={beneficiaryProposal.stageDeadline.toLocaleString()}
       />
       <VotingRow
         name={'Votes For'}
-        value={beneficiaryProposal.votesFor.toString()}
+        value={formatAndRoundBigNumber(beneficiaryProposal.votesFor)}
       />
       <VotingRow
         name={'Votes Against'}
-        value={beneficiaryProposal.votesAgainst.toString()}
+        value={formatAndRoundBigNumber(beneficiaryProposal.votesAgainst)}
       />
       <VotingRow
         name={'Total Votes'}
-        value={(
-          beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst
-        ).toString()}
+        value={formatAndRoundBigNumber(
+          beneficiaryProposal.votesFor.add(beneficiaryProposal.votesAgainst),
+        )}
       />
     </div>
   );
 }
 
 export default function BeneficiaryProposalCard({
-  beneficiaryProposal,
+  displayData,
   isProposal,
 }: IBeneficiaryProposalCard): JSX.Element {
   return (
     <Link
-      key={beneficiaryProposal.name}
+      key={displayData.name}
       href={
         isProposal
-          ? 'beneficiary-proposals/' + beneficiaryProposal.ethereumAddress
-          : 'beneficiaries/' + beneficiaryProposal.ethereumAddress
+          ? 'beneficiary-proposals/' + displayData.ethereumAddress
+          : 'beneficiaries/' + displayData.ethereumAddress
       }
     >
       <a>
@@ -69,21 +73,21 @@ export default function BeneficiaryProposalCard({
           <div className="aspect-w-3 aspect-h-2">
             <img
               className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
-              src={beneficiaryProposal.profileImageURL}
+              src={displayData.profileImage}
               alt=""
             />
           </div>
           <div className="space-y-2 my-2">
             <div>
               <h3 className="mx-4 mt-4 text-lg font-bold text-gray-800 leading-snug">
-                {beneficiaryProposal.name}
+                {displayData.name}
               </h3>
               <p className="mx-4 my-4 text-m font-medium  text-gray-700">
-                {beneficiaryProposal.missionStatement}
+                {displayData.missionStatement}
               </p>
             </div>
             {isProposal ? (
-              <VotingInformation {...beneficiaryProposal} />
+              <VotingInformation {...(displayData as ProposalCardProps)} />
             ) : (
               <div> </div>
             )}
