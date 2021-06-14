@@ -10,21 +10,17 @@ import { beneficiaryProposalFixture as beneficiaryProposal } from '../fixtures/b
 import { DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
 
 interface Props {
-  isProposal: boolean;
-  beneficiaryProposal?: DummyBeneficiaryProposal;
+  isProposal: boolean,
+  beneficiaryProposal?: DummyBeneficiaryProposal
   isProposalPreview?: boolean;
 }
 
 const defaultProps: Props = {
   isProposal: true,
   beneficiaryProposal: beneficiaryProposal,
-  isProposalPreview: false,
-};
-export default function BeneficiaryPage<Props>({
-  isProposal,
-  beneficiaryProposal,
-  isProposalPreview,
-}): JSX.Element {
+  isProposalPreview: false
+}
+export default function BeneficiaryPage<Props>({ isProposal, beneficiaryProposal, isProposalPreview }): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview ? <NavBar /> : <div></div>}
