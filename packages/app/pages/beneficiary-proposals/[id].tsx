@@ -11,54 +11,44 @@ export default function BeneficiaryProposalPageWrapper(): JSX.Element {
   const [proposal, setProposal] = useState<BeneficiaryCardProps>();
   const { id } = router.query;
   async function getProposal() {
-    const numProposals =
-      await contracts.beneficiaryGovernance.getNumberOfProposals();
-    const proposals = await Promise.all(
-      new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
-        return contracts.beneficiaryGovernance.proposals(i);
-      }),
+    const proposalId = await contracts.beneficiaryGovernance.getProposalId(
+      id as string,
     );
-    const proposalsData = await Promise.all(
-      proposals.map(async (proposal) => {
-        const ipfsData = await fetch(
-          `${process.env.IPFS_URL}${getIpfsHashFromBytes32(
-            proposal.applicationCid,
-          )}`,
-        ).then((response) => response.json());
+    const proposal = await contracts.beneficiaryGovernance.proposals(
+      proposalId,
+    );
+    const ipfsData = await fetch(
+      `${process.env.IPFS_URL}${getIpfsHashFromBytes32(
+        proposal.applicationCid,
+      )}`,
+    ).then((response) => response.json());
 
-        const deadline = new Date(
-          (Number(proposal.startTime.toString()) +
-            Number(proposal.configurationOptions.votingPeriod.toString()) +
-            Number(proposal.configurationOptions.vetoPeriod.toString())) *
-            1000,
-        );
-        return {
-          name: ipfsData.name,
-          missionStatement: ipfsData.missionStatement,
-          twitterUrl: ipfsData.twitterUrl,
-          linkedinUrl: ipfsData.linkedinUrl,
-          facebookUrl: ipfsData.facebookUrl,
-          instagramUrl: ipfsData.instagramUrl,
-          githubUrl: ipfsData.githubUrl,
-          ethereumAddress: ipfsData.ethereumAddress,
-          additionalImages: ipfsData.additionalImages,
-          impactReports: ipfsData.impactReports,
-          proofOfOwnership: ipfsData.proofOfOwnership,
-          headerImage: ipfsData.headerImage,
-          profileImage: `${process.env.IPFS_URL}${ipfsData.profileImage}`,
-          votesFor: proposal.yesCount,
-          votesAgainst: proposal.noCount,
-          status: Number(proposal.status.toString()),
-          stageDeadline: deadline,
-        };
-      }),
+    const deadline = new Date(
+      (Number(proposal.startTime.toString()) +
+        Number(proposal.configurationOptions.votingPeriod.toString()) +
+        Number(proposal.configurationOptions.vetoPeriod.toString())) *
+        1000,
     );
-
-    setProposal(
-      proposalsData.filter((proposalData) => {
-        return proposalData.ethereumAddress === id;
-      })[0] as BeneficiaryCardProps,
-    );
+    const proposalData = {
+      name: ipfsData.name,
+      missionStatement: ipfsData.missionStatement,
+      twitterUrl: ipfsData.twitterUrl,
+      linkedinUrl: ipfsData.linkedinUrl,
+      facebookUrl: ipfsData.facebookUrl,
+      instagramUrl: ipfsData.instagramUrl,
+      githubUrl: ipfsData.githubUrl,
+      ethereumAddress: ipfsData.ethereumAddress,
+      additionalImages: ipfsData.additionalImages,
+      impactReports: ipfsData.impactReports,
+      proofOfOwnership: ipfsData.proofOfOwnership,
+      headerImage: ipfsData.headerImage,
+      profileImage: ipfsData.profileImage,
+      votesFor: proposal.yesCount,
+      votesAgainst: proposal.noCount,
+      status: Number(proposal.status.toString()),
+      stageDeadline: deadline,
+    };
+    setProposal(proposalData as BeneficiaryCardProps);
   }
 
   useEffect(() => {
