@@ -179,7 +179,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardBudgetChanged(amount);
   }
 
-  function contributeToRewardBalance(uint256 amount) external {
+  function contributeRewardBalance(uint256 amount) external {
     require(amount > 0, "must be larger 0");
     POP.safeTransferFrom(msg.sender, address(this), amount);
     rewardBalance = rewardBalance.add(amount);

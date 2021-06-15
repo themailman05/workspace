@@ -168,7 +168,7 @@ describe("RewardParticipation", function () {
         .setRewardsBudget(parseEther("10"));
         await contracts.rewardParticipationHelper
         .connect(owner)
-        .contributeToRewardBalance(parseEther("10"));
+        .contributeRewardBalance(parseEther("10"));
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
@@ -198,7 +198,7 @@ describe("RewardParticipation", function () {
         .setRewardsBudget(parseEther("10"));
       await contracts.rewardParticipationHelper
         .connect(owner)
-        .contributeToRewardBalance(parseEther("30"));
+        .contributeRewardBalance(parseEther("30"));
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
