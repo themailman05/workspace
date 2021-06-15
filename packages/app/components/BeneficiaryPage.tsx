@@ -5,7 +5,6 @@ import PhotoSideBar from 'components/PhotoSideBar';
 import MissionStatement from 'components/MissionStatement';
 import SocialMediaLinks from 'components/SocialMediaLinks';
 import Verification from 'components/Verification';
-import Voting from 'components/Beneficiary-Proposals/Voting';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
 import {
   beneficiaryProposalFixture as beneficiaryProposal,
@@ -16,6 +15,7 @@ import {
   DummyBeneficiaryProposal,
 } from 'interfaces/beneficiaries';
 import SocialMedia from './SocialMedia';
+import Voting from './Beneficiary-Proposals/TakedownVoting';
 
 interface BeneficiaryPageProps {
   isProposal: boolean;

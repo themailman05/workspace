@@ -15,6 +15,7 @@ export default function ImpactReportLinks(
             <span className="text-base text-gray-700 flex flex-row">
               <a
                 href={`${process.env.IPFS_URL}${reportUrl}`}
+                target="blank"
                 className=" text-gray-400 hover:text-gray-500 underline"
               >
                 <p>Link to report {index + 1}</p>

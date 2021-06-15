@@ -12,7 +12,6 @@ export interface BeneficiaryCardProps {
   facebookUrl?: string;
   instagramUrl?: string;
   githubUrl?: string;
-  dribbleUrl?: string;
   ethereumAddress: string;
   profileImage: string;
 }
