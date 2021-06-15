@@ -7,13 +7,21 @@ import { useContext, useEffect, useState } from 'react';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [takedownProposals, setTakedownProposals] = useState<BeneficiaryCardProps[]>([]);
+  const [takedownProposals, setTakedownProposals] = useState<
+    BeneficiaryCardProps[]
+  >([]);
 
   async function getProposals() {
-    
-    const proposals = await contracts.beneficiaryGovernance.getTakedownProposals();
-
-    const proposalsData = await Promise.all(
+    const numProposals =
+      await contracts.beneficiaryGovernance.getNumberOfProposals();
+    const proposals = await (
+      await Promise.all(
+        new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
+          return contracts.beneficiaryGovernance.proposals(i);
+        }),
+      )
+    ).filter((proposal) => proposal.proposalType === 1);
+    const proposalsData = await await Promise.all(
       proposals.map(async (proposal) => {
         const ipfsData = await fetch(
           `${process.env.IPFS_URL}${getIpfsHashFromBytes32(
@@ -21,9 +29,12 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           )}`,
         ).then((response) => response.json());
 
-        const deadline = new Date((Number(proposal.startTime.toString()) +
-          Number(proposal.configurationOptions.votingPeriod.toString()) +
-          Number(proposal.configurationOptions.vetoPeriod.toString()))*1000)
+        const deadline = new Date(
+          (Number(proposal.startTime.toString()) +
+            Number(proposal.configurationOptions.votingPeriod.toString()) +
+            Number(proposal.configurationOptions.vetoPeriod.toString())) *
+            1000,
+        );
 
         return {
           name: ipfsData.name,
@@ -38,10 +49,11 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           votesFor: proposal.yesCount,
           votesAgainst: proposal.noCount,
           status: Number(proposal.status.toString()),
-          stageDeadline: deadline
+          stageDeadline: deadline,
         };
       }),
     );
+
     setTakedownProposals(proposalsData);
   }
 
@@ -50,7 +62,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       getProposals();
     }
   }, [contracts]);
-  
+
   return (
     <BeneficiaryGrid
       title={'Takedown Proposals'}

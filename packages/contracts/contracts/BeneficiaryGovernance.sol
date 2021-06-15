@@ -350,32 +350,6 @@ contract BeneficiaryGovernance is Governed {
   }
 
   /**
-   * @notice returns number of takedown proposals
-   */
-  function getNumberOfTakedownProposals() public view returns (uint256) {
-    uint256 numberOfTakedownProposals = 0;
-    for (uint256 i = 0; i < proposals.length; i++) {
-      if (proposals[i].proposalType == 1) {
-        numberOfTakedownProposals.add(1);
-      }
-    }
-    return numberOfTakedownProposals;
-  }
-
-  /**
-   * @notice returns takedown proposals
-   */
-  function getTakedownProposals() public view returns (Proposal[]) {
-    Proposal[] takedownProposals;
-    for (uint256 i = 0; i < proposals.length; i++) {
-      if (proposals[i].proposalType == 1) {
-        takedownProposals.push(proposals[i]);
-      }
-    }
-    return takedownProposals;
-  }
-
-  /**
    * @notice gets number of votes
    * @param  proposalId id of the proposal
    * @return number of votes to a proposal
