@@ -4,8 +4,6 @@ import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
 
-import { beneficiaryProposalFixtures } from 'fixtures/beneficiaryProposals';
-
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [proposals, setProposals] = useState<BeneficiaryCardProps[]>([]);
