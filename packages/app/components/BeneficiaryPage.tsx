@@ -30,9 +30,7 @@ export default function BeneficiaryPage({
   displayData,
   isTakedown = false,
 }: BeneficiaryPageProps): JSX.Element {
-  // TODO: Source data from BNP contract and IPFS
   displayData = beneficiaryProposalFixture;
-  console.log({ isTakedown, isProposal });
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview && <NavBar />}
