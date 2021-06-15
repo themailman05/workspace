@@ -29,7 +29,7 @@ describe("Pool", function () {
     ] = await ethers.getSigners();
 
     MockERC20 = await ethers.getContractFactory("MockERC20");
-    this.mock3Crv = await MockERC20.deploy("3Crv", "3Crv");
+    this.mock3Crv = await MockERC20.deploy("3Crv", "3Crv", 18);
     await this.mock3Crv.mint(depositor.address, DepositorInitial);
     await this.mock3Crv.mint(depositor1.address, DepositorInitial);
     await this.mock3Crv.mint(depositor2.address, DepositorInitial);
@@ -37,7 +37,7 @@ describe("Pool", function () {
     await this.mock3Crv.mint(depositor4.address, DepositorInitial);
     await this.mock3Crv.mint(depositor5.address, DepositorInitial);
 
-    this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX");
+    this.mockCrvUSDX = await MockERC20.deploy("crvUSDX", "crvUSDX", 18);
 
     MockYearnV1Vault = await ethers.getContractFactory("MockYearnV1Vault");
     this.mockYearnVault = await MockYearnV1Vault.deploy(
@@ -73,7 +73,7 @@ describe("Pool", function () {
   });
 
   describe("constructor", async function () {
-    it("should be constructed with correct addresses", async function () {
+    it.only("should be constructed with correct addresses", async function () {
       expect(await this.Pool.threeCrv()).to.equal(this.mock3Crv.address);
       expect(await this.Pool.curveAddressProvider()).to.equal(
         this.mockCurveAddressProvider.address
