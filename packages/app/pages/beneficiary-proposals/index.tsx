@@ -11,11 +11,13 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   async function getProposals() {
     const numProposals =
       await contracts.beneficiaryGovernance.getNumberOfProposals();
-    const proposals = await Promise.all(
-      new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
-        return contracts.beneficiaryGovernance.proposals(i);
-      }),
-    );
+    const proposals = await (
+      await Promise.all(
+        new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
+          return contracts.beneficiaryGovernance.proposals(i);
+        }),
+      )
+    ).filter((proposal) => proposal.proposalType === 0);
 
     const proposalsData = await await Promise.all(
       proposals.map(async (proposal) => {
@@ -25,9 +27,12 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           )}`,
         ).then((response) => response.json());
 
-        const deadline = new Date((Number(proposal.startTime.toString()) +
-          Number(proposal.configurationOptions.votingPeriod.toString()) +
-          Number(proposal.configurationOptions.vetoPeriod.toString()))*1000)
+        const deadline = new Date(
+          (Number(proposal.startTime.toString()) +
+            Number(proposal.configurationOptions.votingPeriod.toString()) +
+            Number(proposal.configurationOptions.vetoPeriod.toString())) *
+            1000,
+        );
 
         return {
           name: ipfsData.name,
@@ -42,7 +47,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           votesFor: proposal.yesCount,
           votesAgainst: proposal.noCount,
           status: Number(proposal.status.toString()),
-          stageDeadline: deadline
+          stageDeadline: deadline,
         };
       }),
     );
