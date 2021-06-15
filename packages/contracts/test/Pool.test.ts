@@ -1,5 +1,4 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { Contract } from "ethers";
 import {
   BlockLockHelper,
   MockCurveAddressProvider,
@@ -9,11 +8,11 @@ import {
   MockYearnV1Vault,
   Pool,
 } from "../typechain";
+import { expect } from "chai";
+import { waffle, ethers } from"hardhat";
+import { parseEther, parseUnits} from"ethers/lib/utils";
+import { BigNumber } from "ethers";
 
-const { expect } = require("chai");
-const { waffle, ethers } = require("hardhat");
-const { BigNumber } = require("ethers");
-const { parseEther, parseUnits } = require("ethers/lib/utils");
 const provider = waffle.provider;
 
 interface Contracts {
@@ -262,7 +261,7 @@ describe("Pool", function () {
         deposit1Amount
       );
       expect(await contracts.pool.balanceOf(depositor2.address)).to.equal(
-        parseUnits("93000000231961650583225", "wei")
+        parseEther("93000.000231961650583225")
       );
     });
 
@@ -286,14 +285,14 @@ describe("Pool", function () {
         .to.emit(contracts.pool, "WithdrawalFee")
         .withArgs(
           rewardsManager.address,
-          parseUnits("49949999968342950238", "wei")
+          parseEther("49.949999968342950238")
         )
         .and.emit(contracts.pool, "ManagementFee")
-        .withArgs(parseUnits("6337747701362", "wei"))
+        .withArgs(parseEther("0.000006337747701362"))
         .and.emit(contracts.pool, "Withdrawal")
         .withArgs(
           depositor1.address,
-          parseUnits("9940049993700247097462", "wei")
+          parseEther("9940.049993700247097462")
         );
       expect(await contracts.pool.balanceOf(depositor1.address)).to.equal(
         parseEther("0")
@@ -303,7 +302,7 @@ describe("Pool", function () {
         depositor1.address
       );
       expect(depositor13CrvBalance).to.equal(
-        parseUnits("99940049993700247097462", "wei")
+        parseEther("99940.049993700247097462")
       );
     });
 
@@ -328,17 +327,17 @@ describe("Pool", function () {
         .to.emit(contracts.pool, "WithdrawalFee")
         .withArgs(
           rewardsManager.address,
-          parseUnits("90818181713530417847", "wei")
+          parseEther("90.818181713530417847")
         )
         .and.to.emit(contracts.pool, "Withdrawal")
         .withArgs(
           depositor.address,
-          parseUnits("18072818160992553151633", "wei")
+          parseEther("18072.818160992553151633")
         )
         .and.to.emit(contracts.pool, "PerformanceFee")
-        .withArgs(parseUnits("1999999997464899074118", "wei"))
+        .withArgs(parseEther("1999.999997464899074118"))
         .and.to.emit(contracts.pool, "ManagementFee")
-        .withArgs(parseUnits("25350990805449", "wei"));
+        .withArgs(parseEther("0.000025350990805449"));
       expect(await contracts.pool.balanceOf(depositor.address)).to.equal(
         parseEther("0")
       );
@@ -346,7 +345,7 @@ describe("Pool", function () {
         depositor.address
       );
       expect(depositor3CrvBalance).to.equal(
-        parseUnits("108072818160992553151633", "wei")
+        parseEther("108072.818160992553151633")
       );
     });
 
@@ -361,45 +360,45 @@ describe("Pool", function () {
         [
           depositor1,
           parseEther("2000"),
-          parseUnits("3000000002535100003213", "wei"),
+          parseEther("3000.000002535100003213"),
           parseEther("97000"),
         ],
         [
           depositor2,
           parseEther("3000"),
-          parseUnits("3000000007605300019280", "wei"),
+          parseEther("3000.000007605300019280"),
           parseEther("97000"),
         ],
         [
           depositor1,
           parseEther("4000"),
-          parseUnits("7000000017745716061053", "wei"),
+          parseEther("7000.000017745716061053"),
           parseEther("93000"),
         ],
         [
           depositor1,
           parseEther("5000"),
-          parseUnits("12000000043096766189588", "wei"),
+          parseEther("12000.000043096766189588"),
           parseEther("88000"),
         ],
         [
           depositor2,
           parseEther("6000"),
-          parseUnits("9000000045631890260283", "wei"),
+          parseEther("9000.000045631890260283"),
           parseEther("91000"),
         ],
       ];
 
       for (let [depositor, deposit, poolBalance, threeCrvBalance] of deposits) {
         await contracts.mock3Crv
-          .connect(depositor)
-          .approve(contracts.pool.address, deposit);
-        await contracts.pool.connect(depositor).deposit(deposit);
+          .connect(depositor as SignerWithAddress)
+          .approve(contracts.pool.address, deposit as BigNumber);
+        await contracts.pool.connect(depositor as SignerWithAddress).deposit(deposit as BigNumber);
 
-        expect(await contracts.pool.balanceOf(depositor.address)).to.equal(
+        expect(await contracts.pool.balanceOf((depositor as SignerWithAddress).address)).to.equal(
           poolBalance
         );
-        expect(await contracts.mock3Crv.balanceOf(depositor.address)).to.equal(
+        expect(await contracts.mock3Crv.balanceOf((depositor as SignerWithAddress).address)).to.equal(
           threeCrvBalance
         );
       }
@@ -412,7 +411,7 @@ describe("Pool", function () {
         .to.emit(contracts.pool, "Withdrawal")
         .withArgs(
           depositor1.address,
-          parseUnits("16773834263376130016313", "wei")
+          parseEther("16773.834263376130016313")
         );
 
       let withdrawal2Amount = parseEther("9000");
@@ -420,7 +419,7 @@ describe("Pool", function () {
         .to.emit(contracts.pool, "Withdrawal")
         .withArgs(
           depositor2.address,
-          parseUnits("12580375689558972816713", "wei")
+          parseEther("12580.375689558972816713")
         );
     });
 
@@ -434,7 +433,7 @@ describe("Pool", function () {
       }
 
       expect(await contracts.pool.balanceOf(depositor1.address)).to.equal(
-        parseUnits("10000000057039755457900", "wei")
+        parseEther("10000.000057039755457900")
       );
       expect(await contracts.mock3Crv.balanceOf(depositor1.address)).to.equal(
         parseEther("90000")
@@ -447,7 +446,7 @@ describe("Pool", function () {
       await contracts.pool.connect(depositor2).deposit(deposit2Amount);
 
       expect(await contracts.pool.balanceOf(depositor2.address)).to.equal(
-        parseUnits("10000000126755001606683", "wei")
+        parseEther("10000.000126755001606683")
       );
       expect(await contracts.mock3Crv.balanceOf(depositor2.address)).to.equal(
         parseEther("90000")
@@ -465,7 +464,7 @@ describe("Pool", function () {
         depositor1.address
       );
       expect(depositor13CrvBalance).to.equal(
-        parseUnits("108072818055823130548334", "wei")
+        parseEther("108072.818055823130548334")
       );
 
       let withdrawal2Amount = await contracts.pool.balanceOf(depositor2.address);
@@ -477,7 +476,7 @@ describe("Pool", function () {
         depositor2.address
       );
       expect(depositor23CrvBalance).to.equal(
-        parseUnits("108072818170364129617973", "wei")
+        parseEther("108072.818170364129617973")
       );
     });
 
@@ -502,7 +501,7 @@ describe("Pool", function () {
       await contracts.pool.connect(depositor2).deposit(deposit2Amount);
 
       expect(await contracts.pool.balanceOf(depositor2.address)).to.equal(
-        parseUnits("10000000012675500016066", "wei")
+        parseEther("10000.000012675500016066")
       );
       expect(await contracts.mock3Crv.balanceOf(depositor2.address)).to.equal(
         parseEther("90000")
@@ -519,7 +518,7 @@ describe("Pool", function () {
         depositor1.address
       );
       expect(depositor13CrvBalance).to.equal(
-        parseUnits("108072818088623487624407", "wei")
+        parseEther("108072.818088623487624407")
       );
 
       let withdrawal2Amount = parseEther("10000");
@@ -528,7 +527,7 @@ describe("Pool", function () {
         depositor2.address
       );
       expect(depositor23CrvBalance).to.equal(
-        parseUnits("108072818025625959262892", "wei")
+        parseEther("108072.818025625959262892")
       );
     });
 
@@ -543,30 +542,33 @@ describe("Pool", function () {
       }
       const makeDeposit = _makeDeposit.bind(this);
       let deposits = [
-        [depositor1, "1000", "9081818108608730563", "1807281803613137382053"],
+        [depositor1, 
+          "1000", 
+          "9.081818108608730563", 
+          "1807.281803613137382053"],
         [
           depositor2,
           "10000",
-          "90818181201211623327",
-          "18072818059041113042109",
+          "90.818181201211623327",
+          "18072.818059041113042109",
         ],
         [
           depositor3,
           "100000",
-          "908181813163291857804",
-          "180728180819495079703126",
+          "908.181813163291857804",
+          "180728.180819495079703126",
         ],
         [
           depositor4,
           "1000000",
-          "9081818143145389612876",
-          "1807281810485932532962407",
+          "9081.818143145389612876",
+          "1807281.810485932532962407",
         ],
         [
           depositor5,
           "100000000",
-          "908181815466069292556697",
-          "180728181277747789218782716",
+          "908181.815466069292556697",
+          "180728181.277747789218782716",
         ],
       ];
 
@@ -583,9 +585,9 @@ describe("Pool", function () {
         let withdrawalAmount = await contracts.pool.balanceOf(depositor.address);
         await expect(contracts.pool.connect(depositor).withdraw(withdrawalAmount))
           .to.emit(contracts.pool, "WithdrawalFee")
-          .withArgs(rewardsManager.address, parseUnits(fee, "wei"))
+          .withArgs(rewardsManager.address, parseEther(fee))
           .and.emit(contracts.pool, "Withdrawal")
-          .withArgs(depositor.address, parseUnits(withdrawal, "wei"));
+          .withArgs(depositor.address, parseEther(withdrawal));
         expect(await contracts.pool.balanceOf(depositor.address)).to.equal(
           parseEther("0")
         );
@@ -612,16 +614,16 @@ describe("Pool", function () {
         .to.emit(contracts.pool, "WithdrawalFee")
         .withArgs(
           rewardsManager.address,
-          parseUnits("49949999968342950238", "wei")
+          parseEther("49.949999968342950238")
         )
         .and.emit(contracts.pool, "Withdrawal")
         .withArgs(
           depositor.address,
-          parseUnits("9940049993700247097462", "wei")
+          parseEther("9940.049993700247097462")
         );
       expect(
         await contracts.pool.connect(depositor).valueFor(parseEther("10000"))
-      ).to.equal(parseUnits("9999999993662252301966", "wei"));
+      ).to.equal(parseEther("9999.999993662252301966"));
     });
 
     it("when underlying vault value increases", async function () {
@@ -633,16 +635,16 @@ describe("Pool", function () {
         .to.emit(contracts.pool, "WithdrawalFee")
         .withArgs(
           rewardsManager.address,
-          parseUnits("90818181713530500364", "wei")
+          parseEther("90.818181713530500364")
         )
         .and.emit(contracts.pool, "Withdrawal")
         .withArgs(
           depositor.address,
-          parseUnits("18072818160992569572596", "wei")
+          parseEther("18072.818160992569572596")
         );
       expect(
         await contracts.pool.connect(depositor).valueFor(parseEther("10000"))
-      ).to.equal(parseUnits("18181818160866967073418", "wei"));
+      ).to.equal(parseEther("18181.818160866967073418"));
     });
 
     it("is unchanged by other deposits", async function () {
@@ -685,16 +687,16 @@ describe("Pool", function () {
         .to.emit(contracts.pool, "WithdrawalFee")
         .withArgs(
           rewardsManager.address,
-          parseUnits("49949999588457686018", "wei")
+          parseEther("49.949999588457686018")
         )
         .and.emit(contracts.pool, "Withdrawal")
         .withArgs(
           depositor.address,
-          parseUnits("9940049918103079517632", "wei")
+          parseEther("9940.049918103079517632")
         );
       expect(
         await contracts.pool.connect(depositor).valueFor(parseEther("10000"))
-      ).to.equal(parseUnits("9999999917609146360367", "wei"));
+      ).to.equal(parseEther("9999.999917609146360367"));
     });
 
     it("calculating value for a single pool token", async function () {
@@ -704,7 +706,7 @@ describe("Pool", function () {
       let valueForOneShare = await contracts.pool.valueFor(parseEther("1"));
       let pricePerPoolToken = await contracts.pool.pricePerPoolToken();
       expect(pricePerPoolToken).to.equal(
-        parseUnits("1000000000000000000", "wei")
+        parseEther("1")
       );
       expect(valueForOneShare).to.equal(pricePerPoolToken);
     });
@@ -731,7 +733,7 @@ describe("Pool", function () {
           contracts.pool.address
         );
         expect(await contracts.pool.valueFor(managementTokenBalance)).to.equal(
-          parseUnits("195950797560009930000", "wei")
+          parseEther("195.950797560009930000")
         );
       });
 
@@ -750,7 +752,7 @@ describe("Pool", function () {
           contracts.pool.address
         );
         expect(await contracts.pool.valueFor(managementTokenBalance)).to.equal(
-          parseUnits("3831601130322330000", "wei")
+          parseEther("3.831601130322330000")
         );
       });
 
@@ -779,10 +781,10 @@ describe("Pool", function () {
           contracts.pool.address
         );
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("666814242093680000", "wei")
+          parseEther("0.666814242093680000")
         );
         expect(await contracts.pool.valueFor(managementTokenBalance)).to.equal(
-          parseUnits("3331857579063154670000", "wei")
+          parseEther("3331.857579063154670000")
         );
       });
     });
@@ -828,7 +830,7 @@ describe("Pool", function () {
           .withArgs(parseEther("2000"));
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.25"));
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1171874999999999218", "wei")
+          parseEther("1.171874999999999218")
         );
         await expect(
           contracts.pool.connect(depositor).withdraw(parseEther("10000"))
@@ -844,15 +846,15 @@ describe("Pool", function () {
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.5"));
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1499999999999985000", "wei")
+          parseEther("1.499999999999985000")
         );
         await expect(contracts.pool.connect(depositor).withdraw(parseEther("10000")))
           .to.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("2999999999999910000000", "wei"));
+          .withArgs(parseEther("2999.999999999910000000"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.25"));
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1171874999999987616", "wei")
+          parseEther("1.171874999999987616")
         );
         await expect(
           contracts.pool.connect(depositor).withdraw(parseEther("10000"))
@@ -860,11 +862,11 @@ describe("Pool", function () {
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.75"));
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1640624999999990022", "wei")
+          parseEther("1.640624999999990022")
         );
         await expect(contracts.pool.connect(depositor).withdraw(parseEther("10000")))
           .to.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("562500000000009844199", "wei"));
+          .withArgs(parseEther("562.500000000009844199"));
       });
     });
 
@@ -892,20 +894,20 @@ describe("Pool", function () {
         // Total pool value:   $10,000
         // Pool share value:   $0
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1000000000000000000", "wei")
+          parseEther("1")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("10000000000000000000000", "wei")
+          parseEther("10000")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("0", "wei")
+          parseEther("0")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("10000000000000000000000", "wei")
+          parseEther("10000")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("0", "wei"));
+        ).to.equal(parseEther("0"));
 
         // Increase vault share value by 10% in each period
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.1"));
@@ -914,7 +916,7 @@ describe("Pool", function () {
         // Total pool value: $11,000
         // Gain this period: $1,000
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("11000000000000000000000", "wei")
+          parseEther("11000")
         );
 
         // We've had assets worth $11,000 under management for 30 days.
@@ -930,39 +932,39 @@ describe("Pool", function () {
           .withArgs(
             depositor2.address,
             parseEther("10000"),
-            parseUnits("9268684182739424164739", "wei")
+            parseEther("9268.684182739424164739")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("18070200189169093390", "wei"))
+          .withArgs(parseEther("18.070200189169093390"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("196714509056494691150", "wei"));
+          .withArgs(parseEther("196.714509056494691150"));
 
         // yVault share price: $1.10
         // Pool token price:   $1.07
         // Total pool value: $20,999
         // Pool share value: $210
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1078901794779290999", "wei")
+          parseEther("1.078901794779290999")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("20999999999999999999999", "wei")
+          parseEther("20999.999999999999999999")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("195552601013312919691", "wei")
+          parseEther("195.552601013312919691")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("19464236783752737084430", "wei")
+          parseEther("19464.236783752737084430")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("210982052207022683999", "wei"));
+        ).to.equal(parseEther("210.982052207022683999"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.21"));
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $23,099
         // Gain this period: $2,100
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("23099999999999999980907", "wei")
+          parseEther("23099.999999999999980907")
         );
 
         // Management fee:  $38
@@ -975,39 +977,39 @@ describe("Pool", function () {
           .withArgs(
             depositor3.address,
             parseEther("10000"),
-            parseUnits("8590850647936403988756", "wei")
+            parseEther("8590.850647936403988756")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("37947420397255096088", "wei"))
+          .withArgs(parseEther("37.947420397255096088"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("413100469018671896216", "wei"));
+          .withArgs(parseEther("413.100469018671896216"));
 
         // yVault share price: $1.21
         // Pool token price:   $1.16
         // Total pool value: $33,099
         // Pool share value: $670
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1164029082777953898", "wei")
+          parseEther("1.164029082777953898")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("33099999999999999972643", "wei")
+          parseEther("33099.999999999999972643")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("576180813993524413211", "wei")
+          parseEther("576.180813993524413211")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("28435715644669352566706", "wei")
+          parseEther("28435.715644669352566706")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("670691224427153681645", "wei"));
+        ).to.equal(parseEther("670.691224427153681645"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.331"));
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $36,409
         // Gain this period: $3,310
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("36409999999999999972643", "wei")
+          parseEther("36409.999999999999972643")
         );
 
         // Management fee:  $59
@@ -1020,39 +1022,39 @@ describe("Pool", function () {
           .withArgs(
             depositor4.address,
             parseEther("10000"),
-            parseUnits("7962588151680626739316", "wei")
+            parseEther("7962.588151680626739316")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("59812362626149699076", "wei"))
+          .withArgs(parseEther("59.812362626149699076"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("651125024977092699983", "wei"));
+          .withArgs(parseEther("651.125024977092699983"));
 
         // yVault share price: $1.33
         // Pool token price:   $1.25
         // Total pool value: $46,409
         // Pool share value: $1,421
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1255873066584435389", "wei")
+          parseEther("1.255873066584435389")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("46409999999999999999997", "wei")
+          parseEther("46409.999999999999999997")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("1132248629592609527246", "wei")
+          parseEther("1132.248629592609527246")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("36954371611949064420057", "wei")
+          parseEther("36954.371611949064420057")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("1421960558582517159569", "wei"));
+        ).to.equal(parseEther("1421.960558582517159569"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.4641"));
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $51,509
         // Gain this period: $5,100
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("51050999999999999965129", "wei")
+          parseEther("51050.999999999999965129")
         );
 
         // Management fee:  $83
@@ -1065,39 +1067,39 @@ describe("Pool", function () {
           .withArgs(
             depositor5.address,
             parseEther("10000"),
-            parseUnits("7380271485514908578001", "wei")
+            parseEther("7380.271485514908578001")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("83863799077933762366", "wei"))
+          .withArgs(parseEther("83.863799077933762366"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("912952036531259911967", "wei"));
+          .withArgs(parseEther("912.952036531259911967"));
 
         // yVault share price: $1.46
         // Pool token price:   $1.35
         // Total pool value: $61,051
         // Pool share value: $2,513
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1354963705552911186", "wei")
+          parseEther("1.354963705552911186")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("61050999999999999958298", "wei")
+          parseEther("61050.999999999999958298")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("1854900978345582084005", "wei")
+          parseEther("1854.900978345582084005")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("45057295446216945554817", "wei")
+          parseEther("45057.295446216945554817")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("2513323503052915070634", "wei"));
+        ).to.equal(parseEther("2513.323503052915070634"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.6105"));
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $67,155
         // Gain this period: $6,104
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("67155683013455365028990", "wei")
+          parseEther("67155.683013455365028990")
         );
 
         // Withdrawal:      $14,531
@@ -1109,44 +1111,44 @@ describe("Pool", function () {
           .to.emit(contracts.pool, "Withdrawal")
           .withArgs(
             depositor1.address,
-            parseUnits("14531014389071920408612", "wei")
+            parseEther("14531.014389071920408612")
           )
           .and.emit(contracts.pool, "WithdrawalFee")
           .withArgs(
             rewardsManager.address,
-            parseUnits("73020172809406635219", "wei")
+            parseEther("73.020172809406635219")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("110319651610560690151", "wei"))
+          .withArgs(parseEther("110.319651610560690151"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("1200878359670507442544", "wei"));
+          .withArgs(parseEther("1200.878359670507442544"));
 
         // yVault share price: $1.61
         // Pool token price:   $1.46
         // Total pool value: $52,537
         // Pool share value: $3,999
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1461865321509609514", "wei")
+          parseEther("1.461865321509609514")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("52537029798358941570768", "wei")
+          parseEther("52537.029798358941570768")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("2735957051477138623771", "wei")
+          parseEther("2735.957051477138623771")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("35938351519348502094583", "wei")
+          parseEther("35938.351519348502094583")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("3999600734694200341682", "wei"));
+        ).to.equal(parseEther("3999.600734694200341682"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.77155"));
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $57,790
         // Gain this period: $5,253
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("57790732778194835731107", "wei")
+          parseEther("57790.732778194835731107")
         );
 
         // Withdrawal:      $14,531
@@ -1158,44 +1160,44 @@ describe("Pool", function () {
           .to.emit(contracts.pool, "Withdrawal")
           .withArgs(
             depositor2.address,
-            parseUnits("14531014396621263740531", "wei")
+            parseEther("14531.014396621263740531")
           )
           .and.emit(contracts.pool, "WithdrawalFee")
           .withArgs(
             rewardsManager.address,
-            parseUnits("73020172847343033872", "wei")
+            parseEther("73.020172847343033872")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("94935427953760421735", "wei"))
+          .withArgs(parseEther("94.935427953760421735"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("1033479609066377901922", "wei"));
+          .withArgs(parseEther("1033.479609066377901922"));
 
         // yVault share price: $1.77
         // Pool token price:   $1.57
         // Total pool value: $43,170
         // Pool share value: $5,423
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1577209119921754896", "wei")
+          parseEther("1.577209119921754896")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("43172079555503537691253", "wei")
+          parseEther("43172.079555503537691253")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("3438740844014982475820", "wei")
+          parseEther("3438.740844014982475820")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("27372451129146921781893", "wei")
+          parseEther("27372.451129146921781893")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("5423613420227922796924", "wei"));
+        ).to.equal(parseEther("5423.613420227922796924"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("1.948705"));
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $47,489
         // Gain this period: $4,319
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("47489287511053891436009", "wei")
+          parseEther("47489.287511053891436009")
         );
 
         // Withdrawal:      $14,531
@@ -1207,44 +1209,44 @@ describe("Pool", function () {
           .to.emit(contracts.pool, "Withdrawal")
           .withArgs(
             depositor3.address,
-            parseUnits("14531014404170597252971", "wei")
+            parseEther("14531.014404170597252971")
           )
           .and.emit(contracts.pool, "WithdrawalFee")
           .withArgs(
             rewardsManager.address,
-            parseUnits("73020172885279383180", "wei")
+            parseEther("73.020172885279383180")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("78012781917556041316", "wei"))
+          .withArgs(parseEther("78.012781917556041316"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("849257448943225220778", "wei"));
+          .withArgs(parseEther("849.257448943225220778"));
 
         // yVault share price: $1.94
         // Pool token price:   $1.70
         // Total pool value: $32,876
         // Pool share value: $6,762
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1701653751109902531", "wei")
+          parseEther("1.701653751109902531")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("32870634280767728644562", "wei")
+          parseEther("32870.634280767728644562")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("3974016230957624413311", "wei")
+          parseEther("3974.016230957624413311")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("19316875868153159730628", "wei")
+          parseEther("19316.875868153159730628")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("6762399626380791344490", "wei"));
+        ).to.equal(parseEther("6762.399626380791344490"));
 
         await contracts.mockYearnVault.setPricePerFullShare(parseEther("2.1435755"));
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $36,157
         // Gain this period: $3,281
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("36157697708844501510705", "wei")
+          parseEther("36157.697708844501510705")
         );
 
         // Withdrawal:      $14,531
@@ -1256,37 +1258,37 @@ describe("Pool", function () {
           .to.emit(contracts.pool, "Withdrawal")
           .withArgs(
             depositor4.address,
-            parseUnits("14531014411720133218912", "wei")
+            parseEther("14531.014411720133218912")
           )
           .and.emit(contracts.pool, "WithdrawalFee")
           .withArgs(
             rewardsManager.address,
-            parseUnits("73020172923216749843", "wei")
+            parseEther("73.020172923216749843")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("59397871264007155545", "wei"))
+          .withArgs(parseEther("59.397871264007155545"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("646613072658360970655", "wei"));
+          .withArgs(parseEther("646.613072658360970655"));
 
         // yVault share price: $2.14
         // Pool token price:   $1.83
         // Total pool value:   $21,539
         // Pool share value:   $7,989
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1835917287119214652", "wei")
+          parseEther("1.835917287119214652")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("21539044470963270327618", "wei")
+          parseEther("21539.044470963270327618")
         );
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("4351762752672665867679", "wei")
+          parseEther("4351.762752672665867679")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("11732034238187574445680", "wei")
+          parseEther("11732.034238187574445680")
         );
         expect(
           await contracts.pool.valueFor(await contracts.pool.balanceOf(contracts.pool.address))
-        ).to.equal(parseUnits("7989476467073319460124", "wei"));
+        ).to.equal(parseEther("7989.476467073319460124"));
 
         await contracts.mockYearnVault.setPricePerFullShare(
           parseEther("2.3579330499999998")
@@ -1294,7 +1296,7 @@ describe("Pool", function () {
         await provider.send("evm_increaseTime", [30 * 24 * 60 * 60]);
         // Total pool value: $23,693
         // Gain this period: $2,155
-        //expect(await contracts.pool.totalValue()).to.equal(parseUnits("23692948918059595340694", "wei"));
+        //expect(await contracts.pool.totalValue()).to.equal(parseEther("23692948918059595340694"));
 
         // Withdrawal:      $14,531
         // Withdrawal fee:  $73
@@ -1305,45 +1307,45 @@ describe("Pool", function () {
           .to.emit(contracts.pool, "Withdrawal")
           .withArgs(
             depositor5.address,
-            parseUnits("14531014419269154460980", "wei")
+            parseEther("14531.014419269154460980")
           )
           .and.emit(contracts.pool, "WithdrawalFee")
           .withArgs(
             rewardsManager.address,
-            parseUnits("73020172961151529954", "wei")
+            parseEther("73.020172961151529954")
           )
           .and.emit(contracts.pool, "ManagementFee")
-          .withArgs(parseUnits("38921469531378942543", "wei"))
+          .withArgs(parseEther("38.921469531378942543"))
           .and.emit(contracts.pool, "PerformanceFee")
-          .withArgs(parseUnits("423704258595388095259", "wei"));
+          .withArgs(parseEther("423.704258595388095259"));
 
         // yVault share price: $2.35
         // Pool token price:   $1.98
         // Total pool value:   $9,074
         expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseUnits("1980774457168340005", "wei")
+          parseEther("1.980774457168340005")
         );
         expect(await contracts.pool.totalValue()).to.equal(
-          parseUnits("9074295672583813578036", "wei")
+          parseEther("9074.295672583813578036")
         );
         let poolBalance = await contracts.pool.balanceOf(contracts.pool.address);
 
         // All external depositors have withdrawn their pool tokens. The only remaining balance is owned by the pool.
         expect(poolBalance).to.equal(
-          parseUnits("4581185727503861003163", "wei")
+          parseEther("4581.185727503861003163")
         );
         expect(await contracts.pool.totalSupply()).to.equal(
-          parseUnits("4581185727503861003163", "wei")
+          parseEther("4581.185727503861003163")
         );
 
         // $9,074 in management and performance fees drawn as pool tokens over pool lifetime
         expect(await contracts.pool.valueFor(poolBalance)).to.equal(
-          parseUnits("9074295672583813578036", "wei")
+          parseEther("9074.295672583813578036")
         );
 
         // $365 in withdrawal fees sent as DAI to rewardsManager over pool lifetime
         expect(await contracts.mock3Crv.balanceOf(rewardsManager.address)).to.equal(
-          parseUnits("365100864426397332068", "wei")
+          parseEther("365.100864426397332068")
         );
       });
     });
@@ -1444,12 +1446,12 @@ describe("Pool", function () {
         await provider.send("evm_increaseTime", [365 * 24 * 60 * 60]);
         await contracts.pool.takeFees();
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(
-          parseUnits("1199467748800196974433", "wei")
+          parseEther("1199.467748800196974433")
         );
         await contracts.pool.withdrawAccruedFees();
         expect(await contracts.pool.balanceOf(contracts.pool.address)).to.equal(0);
         expect(await contracts.mock3Crv.balanceOf(rewardsManager.address)).to.equal(
-          parseUnits("2139866479243654574040", "wei")
+          parseEther("2139.866479243654574040")
         );
       });
     });
