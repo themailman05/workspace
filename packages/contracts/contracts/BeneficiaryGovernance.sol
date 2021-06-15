@@ -355,7 +355,7 @@ contract BeneficiaryGovernance is Governed {
   function getNumberOfTakedownProposals() public view returns (uint256) {
     uint256 numberOfTakedownProposals = 0;
     for (uint256 i = 0; i < proposals.length; i++) {
-      if (proposals[i].proposalType == BeneficiaryTakedownProposal) {
+      if (proposals[i].proposalType == 1) {
         numberOfTakedownProposals.add(1);
       }
     }
@@ -365,11 +365,7 @@ contract BeneficiaryGovernance is Governed {
   /**
    * @notice returns takedown proposals
    */
-  function getTakedownProposals()
-    public
-    view
-    returns (bytes[] applicationCids)
-  {
+  function getTakedownProposals() public view returns (Proposal[]) {
     Proposal[] takedownProposals;
     for (uint256 i = 0; i < proposals.length; i++) {
       if (proposals[i].proposalType == 1) {
