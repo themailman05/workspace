@@ -13,8 +13,8 @@ import * as Icon from 'react-feather';
 
 import {
   BeneficiaryCardProps,
-  DummyBeneficiaryProposal,
-  Stage,
+  ProposalCardProps,
+  Status,
 } from '../interfaces/beneficiaries';
 
 function classNames(...classes) {
@@ -37,21 +37,22 @@ function Header({ title, subtitle }) {
 }
 
 interface BeneficiaryGridProps {
+  isProposal: boolean;
+  cardProps: ProposalCardProps[] | BeneficiaryCardProps[];
   title: string;
   subtitle: string;
-  isProposal: boolean;
-  cardProps: DummyBeneficiaryProposal[] | BeneficiaryCardProps[];
 }
 
 export default function BeneficiaryGrid({
-  title,
-  subtitle,
   isProposal,
   cardProps,
+  title,
+  subtitle
 }: BeneficiaryGridProps) {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
-  const [stageFilter, setStageFilter] = useState<Stage>('All');
+  const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
+
   return (
     <div className="w-full bg-gray-900 pb-16">
       <NavBar />
@@ -103,7 +104,7 @@ export default function BeneficiaryGrid({
                 <>
                   <div>
                     <Menu.Button className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
-                      {stageFilter}
+                      {Status[statusFilter]}
                       <ChevronDownIcon
                         className="-mr-1 ml-2 h-5 w-5"
                         aria-hidden="true"
@@ -125,30 +126,28 @@ export default function BeneficiaryGrid({
                       className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                     >
                       <div>
-                        {['All', 'Open', 'Challenge', 'Completed'].map(
-                          (stage: Stage) => {
-                            return (
-                              <Menu.Item>
-                                {({ active }) => {
-                                  return (
-                                    <a
-                                      href="#"
-                                      onClick={() => setStageFilter(stage)}
-                                      className={classNames(
-                                        active
-                                          ? 'bg-gray-100 text-gray-900'
-                                          : 'text-gray-700',
-                                        'block px-4 py-2 text-sm',
-                                      )}
-                                    >
-                                      {stage}
-                                    </a>
-                                  );
-                                }}
-                              </Menu.Item>
-                            );
-                          },
-                        )}
+                        {new Array(6).fill(undefined).map((x, status) => {
+                          return (
+                            <Menu.Item>
+                              {({ active }) => {
+                                return (
+                                  <a
+                                    href="#"
+                                    onClick={() => setStatusFilter(status)}
+                                    className={classNames(
+                                      active
+                                        ? 'bg-gray-100 text-gray-900'
+                                        : 'text-gray-700',
+                                      'block px-4 py-2 text-sm',
+                                    )}
+                                  >
+                                    {Status[status]}
+                                  </a>
+                                );
+                              }}
+                            </Menu.Item>
+                          );
+                        })}
                       </div>
                     </Menu.Items>
                   </Transition>
@@ -173,8 +172,8 @@ export default function BeneficiaryGrid({
           .filter((cardProp) => {
             if (isProposal) {
               return (
-                (cardProp as DummyBeneficiaryProposal)?.currentStage ===
-                  stageFilter || stageFilter === 'All'
+                (cardProp as ProposalCardProps)?.status ===
+                  statusFilter || statusFilter === Status.All
               );
             }
             return true;
