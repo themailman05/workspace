@@ -37,17 +37,15 @@ export default async function deploy(ethers): Promise<void> {
     ).deployed();
 
     const grantRegistry = await (
-      await (await ethers.getContractFactory("GrantRegistry")).deploy(
-        beneficiaryRegistry.address
-      )
+      await (
+        await ethers.getContractFactory("GrantRegistry")
+      ).deploy(beneficiaryRegistry.address)
     ).deployed();
 
     const mockPop = await (
-      await (await ethers.getContractFactory("MockERC20")).deploy(
-        "TestPOP",
-        "TPOP",
-        18
-      )
+      await (
+        await ethers.getContractFactory("MockERC20")
+      ).deploy("TestPOP", "TPOP", 18)
     ).deployed();
 
     const staking = await (
@@ -55,7 +53,9 @@ export default async function deploy(ethers): Promise<void> {
     ).deployed();
 
     const randomNumberConsumer = await (
-      await (await ethers.getContractFactory("RandomNumberConsumer")).deploy(
+      await (
+        await ethers.getContractFactory("RandomNumberConsumer")
+      ).deploy(
         process.env.ADDR_CHAINLINK_VRF_COORDINATOR,
         process.env.ADDR_CHAINLINK_LINK_TOKEN,
         process.env.ADDR_CHAINLINK_KEY_HASH
@@ -63,7 +63,9 @@ export default async function deploy(ethers): Promise<void> {
     ).deployed();
 
     const grantElections = await (
-      await (await ethers.getContractFactory("GrantElections")).deploy(
+      await (
+        await ethers.getContractFactory("GrantElections")
+      ).deploy(
         staking.address,
         beneficiaryRegistry.address,
         grantRegistry.address,
@@ -118,14 +120,16 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(0, 3),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance.connect(beneficiary).createProposal(
-          beneficiary.address,
-          getBytes32FromIpfsHash(
-            "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
-          ),
-          0,
-          { gasLimit: 3000000 }
-        );
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(
+              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+            ),
+            0,
+            { gasLimit: 3000000 }
+          );
       },
       { concurrency: 1 }
     );
@@ -137,14 +141,16 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(3, 6),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance.connect(beneficiary).createProposal(
-          beneficiary.address,
-          getBytes32FromIpfsHash(
-            "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
-          ),
-          0,
-          { gasLimit: 3000000 }
-        );
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(
+              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+            ),
+            0,
+            { gasLimit: 3000000 }
+          );
       },
       { concurrency: 1 }
     );
@@ -158,18 +164,44 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(6, 10),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance.connect(beneficiary).createProposal(
-          beneficiary.address,
-          getBytes32FromIpfsHash(
-            "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
-          ),
-          0,
-          { gasLimit: 3000000 }
-        );
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(
+              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+            ),
+            0,
+            { gasLimit: 3000000 }
+          );
       },
       { concurrency: 1 }
     );
+  };
 
+  const addBeneficiaryTakedownProposals = async (): Promise<void> => {
+    console.log("reducing voting period to 0");
+    await contracts.beneficiaryGovernance
+      .connect(accounts[0])
+      .setConfiguration(2 * 60 * 60, 2 * 60 * 60, parseEther("2000"));
+    console.log("adding beneficiary takedown proposals...");
+
+    await bluebird.map(
+      bennies.slice(11),
+      async (beneficiary) => {
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(
+              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+            ),
+            1,
+            { gasLimit: 3000000 }
+          );
+      },
+      { concurrency: 1 }
+    );
   };
 
   const voteOnProposals = async (): Promise<void> => {
@@ -182,11 +214,21 @@ export default async function deploy(ethers): Promise<void> {
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(4, 1);
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(5, 1);
 
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6)
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7)
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8)
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8);
   };
 
+  const voteOnTakedownProposals = async (): Promise<void> => {
+    console.log("vote on beneficiary takedown proposals ...");
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(12, 0);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(11, 1);
+    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(11, 1);
+    await contracts.beneficiaryGovernance.connect(bennies[2]).vote(14, 0);
+
+    // await contracts.beneficiaryGovernance.connect(bennies[4]).finalize(11)
+    // await contracts.beneficiaryGovernance.connect(bennies[5]).finalize(12)
+  };
 
   const addBeneficiariesToRegistry = async (): Promise<void> => {
     console.log("adding beneficiaries to registry ...");
@@ -228,7 +270,10 @@ export default async function deploy(ethers): Promise<void> {
       async (account) => {
         return contracts.mockPop
           .connect(account)
-          .approve(contracts.beneficiaryGovernance.address, parseEther("10000"));
+          .approve(
+            contracts.beneficiaryGovernance.address,
+            parseEther("10000")
+          );
       },
       { concurrency: 1 }
     );
@@ -428,17 +473,15 @@ export default async function deploy(ethers): Promise<void> {
     console.log("initializing yearly election ...");
     await contracts.grantElections.initialize(GrantTerm.Year);
     await new Promise((r) => setTimeout(r, 20000));
-    await registerBeneficiariesForElection(
-      GrantTerm.Year,
-      bennies.slice(18)
-    );
+    await registerBeneficiariesForElection(GrantTerm.Year, bennies.slice(18));
     await displayElectionMetadata(GrantTerm.Year);
   };
 
-  const setElectionContractAsGovernanceForGrantRegistry = async (): Promise<void> => {
-    await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
-    await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
-  };
+  const setElectionContractAsGovernanceForGrantRegistry =
+    async (): Promise<void> => {
+      await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
+      await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
+    };
 
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");
@@ -485,9 +528,11 @@ ADDR_GRANT_ELECTION=${contracts.grantElections.address}
   await addBeneficiariesToRegistry();
   await mintPOP();
   await addBeneficiaryProposals();
+  await addBeneficiaryTakedownProposals();
   await approveForStaking();
   await stakePOP();
-  await voteOnProposals()
+  await voteOnProposals();
+  await voteOnTakedownProposals();
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
