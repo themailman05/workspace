@@ -29,6 +29,7 @@ export default function BeneficiaryProposalPageWrapper(): JSX.Element {
         Number(proposal.configurationOptions.vetoPeriod.toString())) *
         1000,
     );
+
     const proposalData = {
       name: ipfsData.name,
       missionStatement: ipfsData.missionStatement,
