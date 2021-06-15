@@ -7,9 +7,9 @@ import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 import "./IGrantRegistry.sol";
 import "./IRandomNumberConsumer.sol";
-import "./RewardParticipation.sol";
+import "./ParticipationReward.sol";
 
-contract GrantElections is RewardParticipation {
+contract GrantElections is ParticipationReward {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -83,7 +83,7 @@ contract GrantElections is RewardParticipation {
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
-  ) RewardParticipation(_pop, _governance) {
+  ) ParticipationReward(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     grantRegistry = _grantRegistry;

@@ -4,14 +4,14 @@ import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "../RewardParticipation.sol";
+import "../ParticipationReward.sol";
 
-contract RewardParticipationHelper is RewardParticipation {
+contract RewardParticipationHelper is ParticipationReward {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   constructor(IERC20 _pop, address _governance)
-    RewardParticipation(_pop, _governance)
+    ParticipationReward(_pop, _governance)
   {}
 
   function initializeVault(bytes32 vaultId_, uint256 endTime_) external {

@@ -32,6 +32,10 @@ async function deployContracts(): Promise<Contracts> {
     ).deploy(mockPop.address, governance.address)
   ).deployed();
 
+  await mockPop
+    .connect(owner)
+    .approve(rewardParticipationHelper.address, parseEther("1000000"));
+
   return {
     mockPop,
     rewardParticipationHelper,
@@ -57,14 +61,6 @@ describe("RewardParticipation", function () {
       await expect(
         contracts.rewardParticipationHelper.initializeVault(vaultId, now)
       ).to.be.revertedWith("end must be in the future");
-    });
-    it("contract must hold enough funds to open new vault", async function () {
-      await contracts.rewardParticipationHelper
-        .connect(governance)
-        .setRewardsBudget(parseEther("10"));
-      await expect(
-        contracts.rewardParticipationHelper.initializeVault(vaultId, end)
-      ).to.be.revertedWith("not enough funds for vault");
     });
     it("should initialize a vault successfully", async function () {
       await contracts.rewardParticipationHelper
@@ -170,12 +166,9 @@ describe("RewardParticipation", function () {
       await contracts.rewardParticipationHelper
         .connect(governance)
         .setRewardsBudget(parseEther("10"));
-      await contracts.mockPop
+        await contracts.rewardParticipationHelper
         .connect(owner)
-        .transfer(
-          contracts.rewardParticipationHelper.address,
-          parseEther("10")
-        );
+        .contributeToRewardBalance(parseEther("10"));
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
@@ -195,20 +188,17 @@ describe("RewardParticipation", function () {
       )
         .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
         .withArgs(owner.address, parseEther("5"));
-      
+
       const newBalance = await contracts.mockPop.balanceOf(owner.address);
-      expect(newBalance).to.equal(oldBalance.add(parseEther("5")))
+      expect(newBalance).to.equal(oldBalance.add(parseEther("5")));
     });
     it("adds rewardedVaults to user address when voting and deletes them after claiming rewards", async function () {
       await contracts.rewardParticipationHelper
         .connect(governance)
         .setRewardsBudget(parseEther("10"));
-      await contracts.mockPop
+      await contracts.rewardParticipationHelper
         .connect(owner)
-        .transfer(
-          contracts.rewardParticipationHelper.address,
-          parseEther("30")
-        );
+        .contributeToRewardBalance(parseEther("30"));
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
@@ -216,16 +206,20 @@ describe("RewardParticipation", function () {
         1000
       );
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(owner.address)
+        await contracts.rewardParticipationHelper.numRewardedVaults(
+          owner.address
+        )
       ).to.equal(1);
-    
+
       ethers.provider.send("evm_increaseTime", [604800]);
       ethers.provider.send("evm_mine", []);
 
       await contracts.rewardParticipationHelper.openVault(vaultId);
-      await contracts.rewardParticipationHelper.connect(owner).claimRewards()
+      await contracts.rewardParticipationHelper.connect(owner).claimRewards();
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(owner.address)
+        await contracts.rewardParticipationHelper.numRewardedVaults(
+          owner.address
+        )
       ).to.equal(0);
 
       now = await (await ethers.provider.getBlock("latest")).timestamp;
@@ -254,7 +248,9 @@ describe("RewardParticipation", function () {
       );
 
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(owner.address)
+        await contracts.rewardParticipationHelper.numRewardedVaults(
+          owner.address
+        )
       ).to.equal(2);
 
       ethers.provider.send("evm_increaseTime", [604800]);
@@ -268,7 +264,9 @@ describe("RewardParticipation", function () {
         .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
         .withArgs(owner.address, parseEther("20"));
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(owner.address)
+        await contracts.rewardParticipationHelper.numRewardedVaults(
+          owner.address
+        )
       ).to.equal(0);
     });
   });

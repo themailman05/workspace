@@ -6,12 +6,12 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./Governed.sol";
 
-contract RewardParticipation is Governed, ReentrancyGuard {
+contract ParticipationReward is Governed, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   /* ========== STATE VARIABLES ========== */
-  enum VaultStatus {INIT, OPEN}
+  enum VaultStatus {init, open}
 
   struct Vault {
     VaultStatus status;
@@ -23,7 +23,8 @@ contract RewardParticipation is Governed, ReentrancyGuard {
 
   IERC20 public immutable POP;
   uint256 public rewardBudget;
-  uint256 public totalVaultedBalance;
+  uint256 public rewardBalance;
+  uint256 public totalVaultsBudget;
   mapping(bytes32 => Vault) public vaults;
   mapping(address => bytes32[]) public rewardedVaults;
 
@@ -35,6 +36,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
   event RewardClaimed(bytes32 vaultId, address account_, uint256 amount);
   event RewardsClaimed(address account_, uint256 amount);
   event SharesAdded(bytes32 vaultId_, address account_, uint256 shares_);
+  event RewardBalanceIncreased(address account, uint256 amount);
 
   /* ========== CONSTRUCTOR ========== */
 
@@ -75,16 +77,12 @@ contract RewardParticipation is Governed, ReentrancyGuard {
   {
     require(vaults[vaultId_].endTime == 0, "Vault must not exist");
     require(endTime_ > block.timestamp, "end must be in the future");
-    require(
-      POP.balanceOf(address(this)) >= rewardBudget,
-      "not enough funds for vault"
-    );
 
-    vaults[vaultId_].status = VaultStatus.INIT;
+    vaults[vaultId_].status = VaultStatus.init;
     vaults[vaultId_].endTime = endTime_;
     vaults[vaultId_].tokenBalance = rewardBudget;
 
-    totalVaultedBalance = totalVaultedBalance.add(rewardBudget);
+    totalVaultsBudget = totalVaultsBudget.add(rewardBudget);
 
     emit VaultInitialized(vaultId_);
     return vaultId_;
@@ -97,7 +95,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
    */
   function _openVault(bytes32 vaultId_) internal vaultExists(vaultId_) {
     require(
-      vaults[vaultId_].status == VaultStatus.INIT,
+      vaults[vaultId_].status == VaultStatus.init,
       "Vault must be initialized"
     );
     require(
@@ -105,7 +103,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
       "wait till endTime is over"
     );
 
-    vaults[vaultId_].status = VaultStatus.OPEN;
+    vaults[vaultId_].status = VaultStatus.open;
 
     emit VaultOpened(vaultId_);
   }
@@ -116,7 +114,7 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     uint256 shares_
   ) internal vaultExists(vaultId_) {
     require(
-      vaults[vaultId_].status == VaultStatus.INIT,
+      vaults[vaultId_].status == VaultStatus.init,
       "Vault must be initialized"
     );
     vaults[vaultId_].unclaimedShares = vaults[vaultId_].unclaimedShares.add(
@@ -134,23 +132,17 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     uint256 total;
     for (uint256 i = 0; i < numEntries; i++) {
       bytes32 vaultId = rewardedVaults[msg.sender][i];
-      if (vaults[vaultId].status == VaultStatus.OPEN) {
-        uint256 shares = vaults[vaultId].shareBalances[msg.sender];
-        uint256 reward =
-          vaults[vaultId].tokenBalance.mul(shares).div(
-            vaults[vaultId].unclaimedShares
-          );
-        total = total.add(reward);
-        vaults[vaultId].tokenBalance = vaults[vaultId].tokenBalance.sub(reward);
-        vaults[vaultId].unclaimedShares = vaults[vaultId].unclaimedShares.sub(
-          shares
-        );
+      if (vaults[vaultId].status == VaultStatus.open) {
+        total = total.add(_claimVaultReward(vaultId));
       }
     }
 
     require(total > 0, "No rewards");
+    require(total <= rewardBalance, "not enough funds for payout");
 
-    totalVaultedBalance = totalVaultedBalance.sub(total);
+    totalVaultsBudget = totalVaultsBudget.sub(total);
+    rewardBalance = rewardBalance.sub(total);
+
     delete rewardedVaults[msg.sender];
 
     POP.safeTransfer(msg.sender, total);
@@ -166,12 +158,32 @@ contract RewardParticipation is Governed, ReentrancyGuard {
     return rewardedVaults[account_].length;
   }
 
+  function _claimVaultReward(bytes32 vaultId) internal returns (uint256) {
+    uint256 shares = vaults[vaultId].shareBalances[msg.sender];
+    uint256 reward =
+      vaults[vaultId].tokenBalance.mul(shares).div(
+        vaults[vaultId].unclaimedShares
+      );
+    vaults[vaultId].tokenBalance = vaults[vaultId].tokenBalance.sub(reward);
+    vaults[vaultId].unclaimedShares = vaults[vaultId].unclaimedShares.sub(
+      shares
+    );
+    return reward;
+  }
+
   /* ========== RESTRICTED FUNCTIONS ========== */
 
   function setRewardsBudget(uint256 amount) external onlyGovernance {
     require(amount > 0, "must be larger 0");
     rewardBudget = amount;
     emit RewardBudgetChanged(amount);
+  }
+
+  function contributeToRewardBalance(uint256 amount) external {
+    require(amount > 0, "must be larger 0");
+    POP.safeTransferFrom(msg.sender, address(this), amount);
+    rewardBalance = rewardBalance.add(amount);
+    emit RewardBalanceIncreased(msg.sender, amount);
   }
 
   /* ========== MODIFIERS ========== */
