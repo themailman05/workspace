@@ -22,7 +22,8 @@ export default function Verfication(
         <p className="text-lg font-bold text-gray-700">Proof of ownership</p>
         <span className="text-base text-gray-700 flex flex-row">
           <a
-            href={displayData?.proofOfOwnership}
+            href={`https://${beneficiaryProposal.proofOfOwnership}`}
+            target="blank"
             className=" text-gray-400 hover:text-gray-500 underline"
           >
             <p>{displayData?.proofOfOwnership}</p>

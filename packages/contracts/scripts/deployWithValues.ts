@@ -205,7 +205,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(voters, async (voter) => {
       return contracts.staking
         .connect(voter)
-        .stake(utils.parseEther("1000"), 604800 * 52 * 4);
+        .stake(utils.parseEther("1000"), 86400 * 365 * 4);
     });
   };
 
