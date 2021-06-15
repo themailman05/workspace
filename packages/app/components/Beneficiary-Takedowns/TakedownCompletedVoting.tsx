@@ -1,12 +1,12 @@
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import CurrentStandings from '../Beneficiary-Proposals/CurrentStandings';
 
-export default function CompletedVoting(beneficiaryProposal: DummyBeneficiaryProposal): JSX.Element {
+export default function CompletedVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
   return (
     <div className="content-center mx-48">
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-2/3 justify-self-center flex flex-row justify-between">
-          {beneficiaryProposal.votesFor > beneficiaryProposal.votesAgainst ? (
+          {displayData.votesFor > displayData.votesAgainst ? (
             <div>
               <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
                 The beneficiary takedown proposal passed.
@@ -27,7 +27,7 @@ export default function CompletedVoting(beneficiaryProposal: DummyBeneficiaryPro
           )}
         </span>
       </div>
-      <CurrentStandings {...beneficiaryProposal} />
+      <CurrentStandings {...displayData} />
     </div>
   );
 };

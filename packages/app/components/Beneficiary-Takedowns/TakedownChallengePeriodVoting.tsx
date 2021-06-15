@@ -6,19 +6,19 @@ import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import CurrentStandings from '../Beneficiary-Proposals/CurrentStandings';
 
 export default function ChallengePeriodVoting(
-  beneficiaryProposal: DummyBeneficiaryProposal,
+  displayData: DummyBeneficiaryProposal,
 ): JSX.Element {
   const { dispatch } = useContext(store);
 
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {beneficiaryProposal.currentStage} vote on {beneficiaryProposal.name}
+        {displayData.currentStage} vote on {displayData.name}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            {beneficiaryProposal.name} is in the second phase of takedown
+            {displayData.name} is in the second phase of takedown
             voting, known as the challenge period. Here, users are able to vote
             to veto the takedown proposal. This additional phase prevents
             exploits where a flood of late votes swings the results.
@@ -62,7 +62,7 @@ export default function ChallengePeriodVoting(
           Veto Takedown Proposal Vote
         </button>
       </div>
-      <CurrentStandings {...beneficiaryProposal} />
+      <CurrentStandings {...displayData} />
     </div>
   );
 }

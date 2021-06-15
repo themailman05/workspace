@@ -20,7 +20,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-const OpenVoting = (beneficiaryProposal: DummyBeneficiaryProposal) => {
+const OpenVoting = (displayData: DummyBeneficiaryProposal) => {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>({
     name: 'Reject Proposal',
@@ -30,8 +30,8 @@ const OpenVoting = (beneficiaryProposal: DummyBeneficiaryProposal) => {
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {beneficiaryProposal.currentStage} takedown vote on{' '}
-        {beneficiaryProposal.name}
+        {displayData.currentStage} takedown vote on{' '}
+        {displayData.name}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
@@ -192,7 +192,7 @@ const OpenVoting = (beneficiaryProposal: DummyBeneficiaryProposal) => {
           Cast Vote
         </button>
 
-        <CurrentStandings {...beneficiaryProposal} />
+        <CurrentStandings {...displayData} />
       </div>
     </div>
   );
