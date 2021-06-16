@@ -206,7 +206,7 @@ describe("RewardParticipation", function () {
         1000
       );
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(
+        await contracts.rewardParticipationHelper.userVaultLength(
           owner.address
         )
       ).to.equal(1);
@@ -217,7 +217,7 @@ describe("RewardParticipation", function () {
       await contracts.rewardParticipationHelper.openVault(vaultId);
       await contracts.rewardParticipationHelper.connect(owner).claimRewards();
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(
+        await contracts.rewardParticipationHelper.userVaultLength(
           owner.address
         )
       ).to.equal(0);
@@ -248,7 +248,7 @@ describe("RewardParticipation", function () {
       );
 
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(
+        await contracts.rewardParticipationHelper.userVaultLength(
           owner.address
         )
       ).to.equal(2);
@@ -264,7 +264,7 @@ describe("RewardParticipation", function () {
         .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
         .withArgs(owner.address, parseEther("20"));
       expect(
-        await contracts.rewardParticipationHelper.numRewardedVaults(
+        await contracts.rewardParticipationHelper.userVaultLength(
           owner.address
         )
       ).to.equal(0);

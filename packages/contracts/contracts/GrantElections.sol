@@ -118,16 +118,16 @@ contract GrantElections is ParticipationReward {
     e.startTime = block.timestamp;
     e.exists = true;
 
-    uint256 vaultId = _initializeVault(
-      keccak256(abi.encodePacked(_term, block.timestamp)),
-      block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
-        electionDefaults[_term].votingPeriod
-      )
-    );
-    if (vaultId != 0) {
-       e.vaultId = vaultId;
+    bytes32 vaultId =
+      _initializeVault(
+        keccak256(abi.encodePacked(_term, block.timestamp)),
+        block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
+          electionDefaults[_term].votingPeriod
+        )
+      );
+    if (vaultId != "") {
+      e.vaultId = vaultId;
     }
-   
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
   }

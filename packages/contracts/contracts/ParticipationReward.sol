@@ -84,7 +84,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
     totalVaultsBudget = totalVaultsBudget.add(rewardBudget);
     if (totalVaultsBudget > rewardBalance) {
-      return 0;
+      return "";
     }
 
     emit VaultInitialized(vaultId_);
@@ -153,11 +153,11 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardsClaimed(msg.sender, total);
   }
 
-    function claimLatestRewards() external nonReentrant {
+  function claimLatestRewards() external nonReentrant {
     uint256 numEntries = _userVaultLength(msg.sender);
     uint256 index;
     uint256 total;
-    
+
     if (numEntries >= 20) {
       index = numEntries.sub(21);
     }
@@ -180,11 +180,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardsClaimed(msg.sender, total);
   }
 
-  function _userVaultLength(address account_)
-    internal
-    view
-    returns (uint256)
-  {
+  function _userVaultLength(address account_) internal view returns (uint256) {
     return userVaults[account_].length;
   }
 
