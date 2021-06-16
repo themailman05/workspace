@@ -3,6 +3,7 @@ import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 import bluebird from "bluebird";
 import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { getBytes32FromIpfsHash } from "@popcorn/utils/src/ipfsHashManipulation";
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 
@@ -105,7 +106,7 @@ export default async function deploy(ethers): Promise<void> {
       async (beneficiary) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
-          ethers.utils.formatBytes32String("1234"),
+          getBytes32FromIpfsHash("Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"),
           { gasLimit: 3000000 }
         );
       },
