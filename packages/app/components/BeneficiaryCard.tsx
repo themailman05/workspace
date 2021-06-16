@@ -91,29 +91,6 @@ export default function BeneficiaryProposalCard({
             ) : (
               <div> </div>
             )}
-            <div className="relative">
-              <div
-                className="absolute inset-0 flex items-center"
-                aria-hidden="true"
-              >
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="px-2 bg-white text-sm text-gray-500"></span>
-              </div>
-            </div>
-            <div className="flex space-x-6 mx-4 justify-center">
-              {social.map((item) => (
-                <a
-                  key={item.name}
-                  href={item.href}
-                  className="text-gray-400 hover:text-gray-500"
-                >
-                  <span className="sr-only">{item.name}</span>
-                  <item.icon aria-hidden="true" />
-                </a>
-              ))}
-            </div>
           </div>
         </div>
       </a>

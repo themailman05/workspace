@@ -10,7 +10,7 @@ import * as Icon from 'react-feather';
 
 import {
   BeneficiaryCardProps,
-  ProposalCardProps,
+  DummyBeneficiaryProposal,
   Status,
 } from '../interfaces/beneficiaries';
 
@@ -35,7 +35,7 @@ function Header({ title, subtitle }) {
 
 interface BeneficiaryGridProps {
   isProposal: boolean;
-  cardProps: ProposalCardProps[] | BeneficiaryCardProps[];
+  cardProps: DummyBeneficiaryProposal[] | BeneficiaryCardProps[];
 }
 
 export default function BeneficiaryGrid({
@@ -173,8 +173,8 @@ export default function BeneficiaryGrid({
           .filter((cardProp) => {
             if (isProposal) {
               return (
-                (cardProp as ProposalCardProps)?.status ===
-                  statusFilter || statusFilter === Status.All
+                (cardProp as DummyBeneficiaryProposal)?.status ===
+                statusFilter || statusFilter === 5
               );
             }
             return true;

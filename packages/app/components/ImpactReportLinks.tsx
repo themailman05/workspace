@@ -1,12 +1,12 @@
-import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
+import { Beneficiary, DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
 
 export default function ImpactReportLinks(
-  beneficiaryProposal: DummyBeneficiaryProposal,
+  displayData: Beneficiary | DummyBeneficiaryProposal,
 ): JSX.Element {
   return (
     <div>
       <p className="text-3xl text-black py-4">Impact Reports/Audits</p>
-      {beneficiaryProposal.impactReports.map((reportUrl, index) => {
+      {displayData?.impactReports?.map((reportUrl, index) => {
         return (
           <span className="flex flex-row justify-between">
             <p className="text-lg font-bold text-gray-700">
