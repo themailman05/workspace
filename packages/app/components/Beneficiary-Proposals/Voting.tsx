@@ -1,12 +1,7 @@
-import React from 'react';
-import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-
+import { DummyBeneficiaryProposal, Status } from '../../interfaces/beneficiaries';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
-import TakedownChallengePeriodVoting from 'components/Beneficiary-Takedowns/TakedownChallengePeriodVoting';
-import TakedownCompletedVoting from 'components/Beneficiary-Takedowns/TakedownCompletedVoting';
-import TakedownOpenVoting from 'components/Beneficiary-Takedowns/TakedownOpenVoting';
 
 interface VotingProps {
   displayData: DummyBeneficiaryProposal;
@@ -14,30 +9,22 @@ interface VotingProps {
 }
 
 function ProposalVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
-  return displayData.currentStage === 'Open' ? (
+  return displayData.status === Status.Open ? (
     <OpenVoting {... displayData} />
-  ) : displayData.currentStage === 'Challenge' ? (
+  ) : displayData.status === Status.Challenge ? (
     <ChallengePeriodVoting {... displayData} />
   ) : (
     <CompletedVoting {... displayData} />
   );
 }
 
-function TakedownVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
-  return displayData.currentStage === 'Open' ? (
-    <TakedownOpenVoting {... displayData} />
-  ) : displayData.currentStage === 'Challenge' ? (
-    <TakedownChallengePeriodVoting {... displayData} />
-  ) : (
-    <TakedownCompletedVoting {... displayData} />
-  );
-}
-
 export default function Voting({ displayData, isTakedown }: VotingProps) {
   return (
     <div>
-      {isTakedown ? (
-        <TakedownVoting {...displayData} />
+      {displayData.status === Status.Open ? (
+        <OpenVoting {...displayData} />
+      ) : displayData.status === Status.Challenge ? (
+        <ChallengePeriodVoting {...displayData} />
       ) : (
         <ProposalVoting {...displayData} />
       )}

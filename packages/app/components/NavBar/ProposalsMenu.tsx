@@ -34,7 +34,7 @@ export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                 <Icon.Info className="mr-4" />
                 <NavbarLink
                   label="View Beneficiary Takedown Proposals"
-                  url="/beneficiary-takedown-proposals"
+                  url="/beneficiary-proposals/takedowns/all"
                   onClick={toggleSubMenu}
                   isActive={
                     router.pathname === '/beneficiary-takedown-proposals'

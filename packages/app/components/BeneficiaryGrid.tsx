@@ -3,15 +3,18 @@ import { store } from '../context/store';
 import NavBar from './NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import BeneficiaryCard from 'components/BeneficiaryCard';
-import StageExplanations from 'components/Beneficiary-Proposals/StageExplanations';
+import {
+  ProposalStageExplanations,
+  TakedownStageExplanations,
+} from 'components/Beneficiary-Proposals/StageExplanations';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import * as Icon from 'react-feather';
 
 import {
   BeneficiaryCardProps,
-  DummyBeneficiaryProposal,
-  Stage,
+  ProposalCardProps,
+  Status,
 } from '../interfaces/beneficiaries';
 
 function classNames(...classes) {
@@ -35,33 +38,25 @@ function Header({ title, subtitle }) {
 
 interface BeneficiaryGridProps {
   isProposal: boolean;
-  cardProps: DummyBeneficiaryProposal[] | BeneficiaryCardProps[];
+  cardProps: ProposalCardProps[] | BeneficiaryCardProps[];
+  title: string;
+  subtitle: string;
 }
 
 export default function BeneficiaryGrid({
   isProposal,
   cardProps,
+  title,
+  subtitle
 }: BeneficiaryGridProps) {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
-  const [stageFilter, setStageFilter] = useState<Stage>('All');
+  const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
+
   return (
     <div className="w-full bg-gray-900 pb-16">
       <NavBar />
-      {isProposal ? (
-        <Header
-          title="Beneficiary Proposals"
-          subtitle="You choose which social initiatives are included in grant elections.
-        Browse and vote on beneficiary nominations."
-        />
-      ) : (
-        <Header
-          title="Eligible Beneficiaries"
-          subtitle="Beneficiary organizations that have passed the voting process and
-            are eligible to receive grants"
-        />
-      )}
-
+      <Header title={title} subtitle={subtitle} />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
         <div className="relative text-gray-600 focus-within:text-gray-400 ">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">
@@ -72,7 +67,7 @@ export default function BeneficiaryGrid({
               type="search"
               name="searchfilter"
               className="py-2 w-full text-xl text-black bg-white rounded-md pl-10 focus:outline-none focus:bg-white focus:text-gray-900"
-              placeholder="Search Eligible Beneficiaries"
+              placeholder={'Search ' + title}
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
             ></input>
@@ -86,7 +81,12 @@ export default function BeneficiaryGrid({
                 dispatch(
                   setSingleActionModal({
                     title: 'Beneficiary Nomination Proposal Timeline',
-                    content: <StageExplanations />,
+                    content:
+                      title === 'Eligible Beneficiaries' ? (
+                        <ProposalStageExplanations />
+                      ) : (
+                        <TakedownStageExplanations />
+                      ),
                     visible: true,
                     onConfirm: {
                       label: 'Close',
@@ -104,7 +104,7 @@ export default function BeneficiaryGrid({
                 <>
                   <div>
                     <Menu.Button className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
-                      {stageFilter}
+                      {Status[statusFilter]}
                       <ChevronDownIcon
                         className="-mr-1 ml-2 h-5 w-5"
                         aria-hidden="true"
@@ -126,30 +126,28 @@ export default function BeneficiaryGrid({
                       className="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
                     >
                       <div>
-                        {['All', 'Open', 'Challenge', 'Completed'].map(
-                          (stage: Stage) => {
-                            return (
-                              <Menu.Item>
-                                {({ active }) => {
-                                  return (
-                                    <a
-                                      href="#"
-                                      onClick={() => setStageFilter(stage)}
-                                      className={classNames(
-                                        active
-                                          ? 'bg-gray-100 text-gray-900'
-                                          : 'text-gray-700',
-                                        'block px-4 py-2 text-sm',
-                                      )}
-                                    >
-                                      {stage}
-                                    </a>
-                                  );
-                                }}
-                              </Menu.Item>
-                            );
-                          },
-                        )}
+                        {new Array(6).fill(undefined).map((x, status) => {
+                          return (
+                            <Menu.Item>
+                              {({ active }) => {
+                                return (
+                                  <a
+                                    href="#"
+                                    onClick={() => setStatusFilter(status)}
+                                    className={classNames(
+                                      active
+                                        ? 'bg-gray-100 text-gray-900'
+                                        : 'text-gray-700',
+                                      'block px-4 py-2 text-sm',
+                                    )}
+                                  >
+                                    {Status[status]}
+                                  </a>
+                                );
+                              }}
+                            </Menu.Item>
+                          );
+                        })}
                       </div>
                     </Menu.Items>
                   </Transition>
@@ -174,8 +172,8 @@ export default function BeneficiaryGrid({
           .filter((cardProp) => {
             if (isProposal) {
               return (
-                (cardProp as DummyBeneficiaryProposal)?.currentStage ===
-                  stageFilter || stageFilter === 'All'
+                (cardProp as ProposalCardProps)?.status ===
+                  statusFilter || statusFilter === Status.All
               );
             }
             return true;
@@ -185,6 +183,7 @@ export default function BeneficiaryGrid({
               key={cardProp?.ethereumAddress}
               displayData={cardProp}
               isProposal={isProposal}
+              isTakedown={title === 'Takedown Proposals'}
             />
           ))}
       </ul>

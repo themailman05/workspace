@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "./Defended.sol";
 
 interface YearnVault is IERC20 {
   function token() external view returns (address);
@@ -49,7 +50,7 @@ interface ThreeCrv is IERC20 {}
 
 interface CrvLPToken is IERC20 {}
 
-contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
+contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable, Defended {
   using SafeMath for uint256;
   using SafeERC20 for ThreeCrv;
   using SafeERC20 for CrvLPToken;
@@ -71,6 +72,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
   uint256 public performanceFee = 2000;
   uint256 public poolTokenHWM = 1e18;
   uint256 public feesUpdatedAt;
+  mapping(address => uint256) public blockLocks;
 
   event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address indexed to, uint256 amount);
@@ -104,14 +106,21 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
     feesUpdatedAt = block.timestamp;
   }
 
+  modifier blockLocked() {
+    require(blockLocks[msg.sender] < block.number, "Locked until next block");
+    _;
+  }
+
   function deposit(uint256 amount)
     external
+    defend
     nonReentrant
     whenNotPaused
+    blockLocked
     returns (uint256)
   {
     require(amount <= threeCrv.balanceOf(msg.sender), "Insufficient balance");
-
+    _lockForBlock(msg.sender);
     _takeFees();
 
     uint256 poolTokens = _issuePoolTokensForAmount(msg.sender, amount);
@@ -128,10 +137,12 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
   function withdraw(uint256 amount)
     external
     nonReentrant
+    blockLocked
     returns (uint256, uint256)
   {
     require(amount <= balanceOf(msg.sender), "Insufficient pool token balance");
 
+    _lockForBlock(msg.sender);
     _takeFees();
 
     uint256 threeCrvAmount = _withdrawPoolTokens(msg.sender, amount);
@@ -370,5 +381,26 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
 
   function unpauseContract() external onlyOwner {
     _unpause();
+  }
+
+  function _lockForBlock(address account) internal {
+    blockLocks[account] = block.number;
+  }
+
+  function transfer(address recipient, uint256 amount)
+    public
+    override
+    blockLocked
+    returns (bool)
+  {
+    return super.transfer(recipient, amount);
+  }
+
+  function transferFrom(
+    address sender,
+    address recipient,
+    uint256 amount
+  ) public override blockLocked returns (bool) {
+    return super.transferFrom(sender, recipient, amount);
   }
 }
