@@ -5,12 +5,12 @@
 import { BigNumber } from "ethers";
 
 export enum Status {
-  Open=0,
-  Challenge=1,
-  Completed=2,
-  Passed=3,
-  Failed=4,
-  All=5,
+  Open,
+  Challenge,
+  Completed,
+  Passed,
+  Failed,
+  All,
 }
 
 export interface BeneficiaryCardProps {

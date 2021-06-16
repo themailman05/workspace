@@ -35,7 +35,7 @@ export default function OpenVoting(
           <p className="mb-4 text-base font-medium text-gray-900">
             The organization is currently in the first phase of voting, users
             have 48 hours to vote on the nomination. If the beneficiary passes
-            with a majority, the process moves onto the challenge step.
+            with a majority, the process moves onto the challenge period.
           </p>
         </span>
       </div>
