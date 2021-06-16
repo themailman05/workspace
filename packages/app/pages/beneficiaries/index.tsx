@@ -36,7 +36,10 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
         facebookUrl: beneficiaryJson.facebookUrl,
         instagramUrl: beneficiaryJson.instagramUrl,
         githubUrl: beneficiaryJson.githubUrl,
-        ethereumAddress: beneficiaryJson.ethereumAddress,
+        //Since the dummy data ethAddress doesnt match any address in the contract we cant pull the correct IPFS hash
+        //On the single beneficiary page
+        //Therefore using this hack here for now
+        ethereumAddress: beneficiaryAddresses[0],
         profileImage: beneficiaryJson.profileImage,
       };
       return benefificaryCardData;

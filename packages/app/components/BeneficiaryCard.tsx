@@ -1,3 +1,4 @@
+import { BigNumber } from 'ethers';
 import Link from 'next/link';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
 import { social } from '../fixtures/social';
@@ -85,7 +86,7 @@ export default function BeneficiaryProposalCard({
           <div className="aspect-w-3 aspect-h-2">
             <img
               className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
-              src={displayData.profileImage}
+              src={`${process.env.IPFS_URL}${displayData?.profileImage}`}
               alt=""
             />
           </div>

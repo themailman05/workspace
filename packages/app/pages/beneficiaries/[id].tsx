@@ -2,7 +2,7 @@ import BeneficiaryPage from 'components/BeneficiaryPage';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
-import { getBytes32FromIpfsHash, getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
+import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Beneficiary } from 'interfaces/beneficiaries';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
@@ -17,8 +17,6 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     const ipfsData = await fetch(
       `${process.env.IPFS_URL}${getIpfsHashFromBytes32(ipfsHash)}`,
     ).then((response) => response.json());
-
-    console.log(ipfsData)
     setBeneficiary(ipfsData);
   }
 

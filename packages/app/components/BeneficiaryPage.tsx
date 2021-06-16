@@ -12,7 +12,7 @@ import {
   DummyBeneficiaryProposal,
 } from 'interfaces/beneficiaries';
 import SocialMedia from './SocialMedia';
-import Voting from './Beneficiary-Proposals/Voting/Voting';
+import Voting from './Beneficiary-Proposals/Voting';
 
 interface BeneficiaryPageProps {
   isProposal: boolean;
