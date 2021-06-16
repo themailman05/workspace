@@ -36,10 +36,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
         facebookUrl: beneficiaryJson.facebookUrl,
         instagramUrl: beneficiaryJson.instagramUrl,
         githubUrl: beneficiaryJson.githubUrl,
-        //Since the dummy data ethAddress doesnt match any address in the contract we cant pull the correct IPFS hash
-        //On the single beneficiary page
-        //Therefore using this hack here for now
-        ethereumAddress: beneficiaryAddresses[0],
+        ethereumAddress: beneficiaryJson.ethereumAddress,
         profileImage: beneficiaryJson.profileImage,
       };
       return benefificaryCardData;
@@ -53,5 +50,14 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  return <BeneficiaryGrid isProposal={false} cardProps={benefeciaries} />;
+  return (
+    <BeneficiaryGrid
+      title={'Eligible Beneficiaries'}
+      subtitle={
+        'Beneficiary organizations that have passed the voting process and are eligible to receive grants'
+      }
+      isProposal={false}
+      cardProps={benefeciaries}
+    />
+  );
 }

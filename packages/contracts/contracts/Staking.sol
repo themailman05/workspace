@@ -10,8 +10,9 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./Owned.sol";
 import "./IRewardsManager.sol";
+import "./Defended.sol";
 
-contract Staking is IStaking, Owned, ReentrancyGuard {
+contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -129,6 +130,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
     external
     override
     nonReentrant
+    defend
     updateReward(msg.sender)
   {
     uint256 _currentTime = block.timestamp;

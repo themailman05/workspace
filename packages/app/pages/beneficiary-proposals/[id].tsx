@@ -2,7 +2,7 @@ import BeneficiaryPage from 'components/BeneficiaryPage';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
-import {getIpfsHashFromBytes32} from "@popcorn/utils/ipfsHashManipulation";
+import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 
 export default function BeneficiaryProposalPageWrapper(): JSX.Element {
   const router = useRouter();
@@ -14,12 +14,9 @@ export default function BeneficiaryProposalPageWrapper(): JSX.Element {
     const ipfsHash = await contracts.beneficiary.getBeneficiary(
       router.query.id as string,
     );
-    console.log(ipfsHash)
     const ipfsData = await fetch(
       `${process.env.IPFS_URL}${getIpfsHashFromBytes32(ipfsHash)}`,
     ).then((response) => response.json());
-
-    console.log(ipfsData)
     setProposal(ipfsData);
   }
 
@@ -29,6 +26,5 @@ export default function BeneficiaryProposalPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  console.log(proposal)
-  return <BeneficiaryPage isProposal={true} />;
+  return <BeneficiaryPage isProposal={true} displayData={proposal} />;
 }
