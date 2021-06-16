@@ -26,7 +26,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   uint256 public rewardBalance;
   uint256 public totalVaultsBudget;
   mapping(bytes32 => Vault) public vaults;
-  mapping(address => bytes32[]) public rewardedVaults;
+  mapping(address => bytes32[]) public userVaults;
 
   /* ========== EVENTS ========== */
   event RewardBudgetChanged(uint256 amount);
@@ -83,6 +83,9 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     vaults[vaultId_].tokenBalance = rewardBudget;
 
     totalVaultsBudget = totalVaultsBudget.add(rewardBudget);
+    if (totalVaultsBudget > rewardBalance) {
+      return 0;
+    }
 
     emit VaultInitialized(vaultId_);
     return vaultId_;
@@ -122,16 +125,16 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     );
     vaults[vaultId_].shareBalances[account_] = shares_;
 
-    rewardedVaults[account_].push(vaultId_);
+    userVaults[account_].push(vaultId_);
 
     emit SharesAdded(vaultId_, account_, shares_);
   }
 
   function claimRewards() external nonReentrant {
-    uint256 numEntries = _numRewardedVaults(msg.sender);
+    uint256 numEntries = _userVaultLength(msg.sender);
     uint256 total;
     for (uint256 i = 0; i < numEntries; i++) {
-      bytes32 vaultId = rewardedVaults[msg.sender][i];
+      bytes32 vaultId = userVaults[msg.sender][i];
       if (vaults[vaultId].status == VaultStatus.open) {
         total = total.add(_claimVaultReward(vaultId));
       }
@@ -143,19 +146,46 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     totalVaultsBudget = totalVaultsBudget.sub(total);
     rewardBalance = rewardBalance.sub(total);
 
-    delete rewardedVaults[msg.sender];
+    delete userVaults[msg.sender];
 
     POP.safeTransfer(msg.sender, total);
 
     emit RewardsClaimed(msg.sender, total);
   }
 
-  function _numRewardedVaults(address account_)
+    function claimLatestRewards() external nonReentrant {
+    uint256 numEntries = _userVaultLength(msg.sender);
+    uint256 index;
+    uint256 total;
+    
+    if (numEntries >= 20) {
+      index = numEntries.sub(21);
+    }
+    for (index; index < numEntries; index++) {
+      bytes32 vaultId = userVaults[msg.sender][index];
+      if (vaults[vaultId].status == VaultStatus.open) {
+        total = total.add(_claimVaultReward(vaultId));
+        delete userVaults[msg.sender][index];
+      }
+    }
+
+    require(total > 0, "No rewards");
+    require(total <= rewardBalance, "not enough funds for payout");
+
+    totalVaultsBudget = totalVaultsBudget.sub(total);
+    rewardBalance = rewardBalance.sub(total);
+
+    POP.safeTransfer(msg.sender, total);
+
+    emit RewardsClaimed(msg.sender, total);
+  }
+
+  function _userVaultLength(address account_)
     internal
     view
     returns (uint256)
   {
-    return rewardedVaults[account_].length;
+    return userVaults[account_].length;
   }
 
   function _claimVaultReward(bytes32 vaultId) internal returns (uint256) {
@@ -179,7 +209,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardBudgetChanged(amount);
   }
 
-  function contributeRewardBalance(uint256 amount) external {
+  function contributeReward(uint256 amount) external {
     require(amount > 0, "must be larger 0");
     POP.safeTransferFrom(msg.sender, address(this), amount);
     rewardBalance = rewardBalance.add(amount);

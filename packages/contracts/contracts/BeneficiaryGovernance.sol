@@ -160,12 +160,18 @@ contract BeneficiaryGovernance is ParticipationReward {
     proposal.startTime = block.timestamp;
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
-    proposal.vaultId = _initializeVault(
+
+
+    uint256 vaultId = _initializeVault(
       keccak256(abi.encodePacked(proposalId, block.timestamp)),
       block.timestamp.add(DefaultConfigurations.votingPeriod).add(
         DefaultConfigurations.vetoPeriod
       )
     );
+    if (vaultId != 0) {
+      proposal.vaultId = vaultId;
+    }
+     
 
     pendingBeneficiaries[_beneficiary] = true;
 
