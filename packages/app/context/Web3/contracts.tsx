@@ -21,6 +21,8 @@ import {
   BeneficiaryRegistry__factory,
   ERC20,
   ERC20__factory,
+  BeneficiaryGovernance,
+  BeneficiaryGovernance__factory,
 } from '@popcorn/contracts/typechain';
 
 export interface Contracts {
@@ -29,6 +31,7 @@ export interface Contracts {
   election: GrantElections;
   pop: ERC20;
   grant: GrantRegistry;
+  beneficiaryGovernance:BeneficiaryGovernance;
 }
 
 
@@ -113,6 +116,10 @@ export default function ContractsWrapper({
       pop: ERC20__factory.connect(process.env.ADDR_POP, library),
       grant: GrantRegistry__factory.connect(
         process.env.ADDR_GRANT_REGISTRY,
+        library,
+      ),
+      beneficiaryGovernance: BeneficiaryGovernance__factory.connect(
+        process.env.ADDR_BENEFICIARY_GOVERNANCE,
         library,
       ),
     });
