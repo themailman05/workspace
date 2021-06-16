@@ -1,8 +1,7 @@
-import { DummyBeneficiaryProposal, Stage } from '../interfaces/beneficiaries';
+import { BigNumber } from 'ethers';
+import { DummyBeneficiaryProposal } from '../interfaces/beneficiaries';
 
 const randomIndex = () => Math.floor(Math.random() * 3);
-const getRandomStage = () =>
-  ['Open', 'Challenge', 'Completed'][randomIndex()] as Stage;
 
 const getDateSometimeInTheNext48Hours = () => {
   const now = new Date();
@@ -23,7 +22,6 @@ export const beneficiaryProposalFixtures: DummyBeneficiaryProposal[] =
       facebookUrl: '#',
       instagramUrl: '#',
       githubUrl: '#',
-      dribbleUrl: '#',
       ethereumAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
       headerImage:
         'https://pbs.twimg.com/profile_banners/64823914/1591143684/600x200',
@@ -34,8 +32,8 @@ export const beneficiaryProposalFixtures: DummyBeneficiaryProposal[] =
         'https://www.roomtoread.org/media/y15dlrxn/gep_anna_tanzania-logo.png?center=0.50013280362582158,0.5&mode=crop&width=1200&height=630&rnd=132630538660400000',
         'https://www.roomtoread.org/media/ydeb4qax/india_jridding.png?anchor=center&mode=crop&width=730&height=460&rnd=132267399952470000',
       ],
-      votesAgainst: Math.floor(Math.random() * 1000),
-      votesFor: Math.floor(Math.random() * 1000),
+      votesAgainst: BigNumber.from(Math.floor(Math.random() * 1000)),
+      votesFor: BigNumber.from(Math.floor(Math.random() * 1000)),
       currentStage: 'Challenge',
       stageDeadline: getDateSometimeInTheNext48Hours(),
       impactReports: [

@@ -2,6 +2,19 @@ import BeneficiaryPage from '../../BeneficiaryPage';
 import toast from 'react-hot-toast';
 import { defaultFormData, Form, FormStepProps } from './ProposalForm';
 import { useRouter } from 'next/router';
+import { useContext, useState } from 'react';
+import { ContractsContext } from 'context/Web3/contracts';
+import { useWeb3React } from '@web3-react/core';
+import { Web3Provider } from '@ethersproject/providers';
+import { connectors } from 'context/Web3/connectors';
+import { setSingleActionModal } from 'context/actions';
+import { dispatch } from 'react-hot-toast/dist/core/store';
+import { store } from 'context/store';
+import { useEffect } from 'react';
+import { format } from 'util';
+import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
+import { BigNumber } from 'ethers';
+import { getBytes32FromIpfsHash } from '@popcorn/utils/ipfsHashManipulation';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -12,34 +25,103 @@ export default function Preview({
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  const context = useWeb3React<Web3Provider>();
+  const { dispatch } = useContext(store);
+  const { contracts } = useContext(ContractsContext);
+  const { library, account, activate, active } = context;
   const router = useRouter();
   const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
-  function uploadJsonToIpfs(submissionData: Form) {
-    var myHeaders = new Headers();
-    myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-    myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-    myHeaders.append('Content-Type', 'application/json');
-    var raw = JSON.stringify(submissionData);
-    loading();
-    fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
-      method: 'POST',
-      headers: myHeaders,
-      body: raw,
-      redirect: 'follow',
-    })
-      .then((response) => response.text())
-      .then((result) => {
-        const hash = JSON.parse(result).IpfsHash;
-        window.alert(hash); // Temporary
-        toast.dismiss();
-        success();
-        clearLocalStorage();
-        setTimeout(() => router.push('/'), 3000);
-      })
-      .catch((error) => {
-        uploadError('Error uploading submission data to IPFS');
-      });
+  const [proposalBond, setProposalBond] = useState<BigNumber>();
+
+  async function checkPreConditions(): Promise<boolean> {
+    if (!contracts) {
+      return false;
+    }
+    if (!account) {
+      dispatch(
+        setSingleActionModal({
+          content: 'Connect your wallet to continue',
+          title: 'Connect your Wallet',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Connect',
+            onClick: () => {
+              activate(connectors.Injected);
+              dispatch(setSingleActionModal(false));
+            },
+          },
+        }),
+      );
+      return false;
+    }
+    const balance = await contracts.pop.balanceOf(account);
+    if (proposalBond > balance) {
+      dispatch(
+        setSingleActionModal({
+          content: `In order to create a proposal you need to post a Bond of ${formatAndRoundBigNumber(
+            proposalBond,
+          )} POP`,
+          title: 'You need more POP',
+          visible: true,
+          type: 'error',
+          onConfirm: {
+            label: 'Close',
+            onClick: () => {
+              dispatch(setSingleActionModal(false));
+            },
+          },
+        }),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  async function uploadJsonToIpfs(submissionData: Form): Promise<void> {
+    if (await checkPreConditions()) {
+      console.log('precondition success');
+      var myHeaders = new Headers();
+      myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
+      myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
+      myHeaders.append('Content-Type', 'application/json');
+      var raw = JSON.stringify(submissionData);
+      loading();
+      const ipfsHash = await fetch(
+        'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+        {
+          method: 'POST',
+          headers: myHeaders,
+          body: raw,
+          redirect: 'follow',
+        },
+      )
+        .then((response) => response.text())
+        .then((result) => {
+          return JSON.parse(result).IpfsHash;
+        })
+        .catch((error) => {
+          uploadError('Error uploading submission data to IPFS');
+        });
+
+      await (
+        await contracts.pop
+          .connect(library.getSigner())
+          .approve(contracts.beneficiaryGovernance.address, proposalBond)
+      ).wait();
+      await contracts.beneficiaryGovernance
+        .connect(library.getSigner())
+        .createProposal(
+          submissionData.ethereumAddress,
+          getBytes32FromIpfsHash(ipfsHash),
+          0,
+        );
+      toast.dismiss();
+      success();
+      setTimeout(() => router.push(`/beneficiary-proposals/${account}`), 1000);
+      clearLocalStorage();
+    }
   }
 
   function clearLocalStorage() {
@@ -47,6 +129,18 @@ export default function Preview({
     setStepLimit(1);
     setFormData(defaultFormData);
   }
+
+  async function getProposalBond(): Promise<BigNumber> {
+    const proposalDefaultConfigurations =
+      await contracts.beneficiaryGovernance.DefaultConfigurations();
+    return proposalDefaultConfigurations.proposalBond;
+  }
+
+  useEffect(() => {
+    if (contracts) {
+      getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
+    }
+  }, []);
 
   return (
     visible && (
@@ -81,7 +175,7 @@ export default function Preview({
 
         <BeneficiaryPage
           isProposal={false}
-          beneficiaryProposal={formData}
+          displayData={formData}
           isProposalPreview={true}
         />
       </div>

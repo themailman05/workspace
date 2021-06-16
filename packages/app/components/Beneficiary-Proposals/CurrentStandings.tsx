@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import ProgressBar from '../ProgressBar';
-import { DateTime } from 'luxon';
+import { DateTime } from "luxon";
 
 const getTimeLeft = (stageDeadline: Date): string => {
   const date1 = DateTime.fromISO(new Date().toISOString());
@@ -105,7 +105,9 @@ export default function CurrentStandings(
       <div className="grid my-2 justify-items-stretch">
         <p className="my-4  w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           Current voting period ends at{' '}
-          {beneficiaryProposal?.stageDeadline?.toLocaleString()}
+          {beneficiaryProposal?.stageDeadline
+            ? beneficiaryProposal.stageDeadline.toLocaleString()
+            : ''}
         </p>
         <p className="my-4 w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           {timeLeft !== '00:00:00'

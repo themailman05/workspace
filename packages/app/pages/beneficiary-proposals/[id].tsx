@@ -4,7 +4,6 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import {
-  BeneficiaryCardProps,
   DummyBeneficiaryProposal,
 } from 'interfaces/beneficiaries';
 
