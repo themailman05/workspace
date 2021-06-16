@@ -36,6 +36,8 @@ export interface DummyBeneficiaryProposal extends ProposalCardProps {
   headerImageURL: string;
   photoURLs?: string[];
   impactReports?: string[];
+  additionalImages?: string[];
+  proofOfOwnership: string;
 }
 
 export interface Beneficiary extends BeneficiaryCardProps{
