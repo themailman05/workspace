@@ -119,8 +119,8 @@ export default function Preview({
         );
       toast.dismiss();
       success();
+      setTimeout(() => router.push(`/beneficiary-proposals/${account}`), 1000);
       clearLocalStorage();
-      setTimeout(() => router.push(`/beneficiary-proposals/${account}`), 3000);
     }
   }
 
