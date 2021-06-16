@@ -42,7 +42,7 @@ export default function BeneficiaryPage({
         <ImpactReportLinks {...displayData} />
         <SocialMedia {...displayData} />
       </div>
-      {!isProposal && <TriggerTakedownProposal />}
+      {!isProposal && !isProposalPreview && <TriggerTakedownProposal />}
     </div>
   );
 }

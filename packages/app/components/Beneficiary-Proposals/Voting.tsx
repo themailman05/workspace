@@ -1,5 +1,4 @@
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-
 import ChallengePeriodVoting from './Voting/ChallengePeriodVoting';
 import CompletedVoting from './Voting/CompletedVoting';
 import OpenVoting from './Voting/OpenVoting';
