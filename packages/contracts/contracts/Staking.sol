@@ -10,8 +10,9 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./Owned.sol";
 import "./IRewardsManager.sol";
+import "./Defendend.sol";
 
-contract Staking is IStaking, Owned, ReentrancyGuard {
+contract Staking is IStaking, Owned, ReentrancyGuard, Defendend {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -46,7 +47,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard {
 
   /* ========== CONSTRUCTOR ========== */
 
-  constructor(IERC20 _pop) Owned(msg.sender) {
+  constructor(IERC20 _pop) Owned(msg.sender) Defendend(msg.sender) {
     POP = _pop;
   }
 
