@@ -23,7 +23,6 @@ export const beneficiaryProposalFixtures: DummyBeneficiaryProposal[] =
       facebookUrl: '#',
       instagramUrl: '#',
       githubUrl: '#',
-      dribbleUrl: '#',
       ethereumAddress: '0x70997970C51812dc3A010C7d01b50e0d17dc79C8',
       headerImage:
         'https://pbs.twimg.com/profile_banners/64823914/1591143684/600x200',
