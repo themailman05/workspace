@@ -3,7 +3,10 @@ import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
-import { BeneficiaryCardProps, DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
+import {
+  BeneficiaryCardProps,
+  DummyBeneficiaryProposal,
+} from 'interfaces/beneficiaries';
 
 export default function BeneficiaryProposalPageWrapper(): JSX.Element {
   const router = useRouter();
@@ -57,6 +60,5 @@ export default function BeneficiaryProposalPageWrapper(): JSX.Element {
       getProposal();
     }
   }, [contracts]);
-
   return <BeneficiaryPage isProposal={true} displayData={proposal} />;
 }
