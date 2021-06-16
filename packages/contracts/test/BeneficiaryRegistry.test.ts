@@ -35,14 +35,14 @@ describe("BeneficiaryRegistry", function () {
           ethers.utils.formatBytes32String("testCid")
         )
     ).to.be.revertedWith(
-      "Only the contract governance may perform this action"
+      "Ownable: caller is not the owner"
     );
   });
 
   it("Should not allow an unauthorized address to revoke a beneficiary", async function () {
     await expect(
       registry.connect(unauthed).revokeBeneficiary(beneficiary.address)
-    ).to.be.revertedWith("Only the contract council may perform this action");
+    ).to.be.revertedWith("Only the owner or council may perform this action");
   });
 
   it("Should revoke beneficiaries", async function () {
@@ -80,11 +80,11 @@ describe("BeneficiaryRegistry", function () {
     ).to.equal("testCid");
   });
 
-  it("Cannot nominate new governance as non-governance", async function () {
+  it("Cannot nominate new ownership as non-owner", async function () {
     await expect(
-      registry.connect(unauthed).nominateNewGovernance(unauthed.address)
+      registry.connect(unauthed).transferOwnership(unauthed.address)
     ).to.be.revertedWith(
-      "Only the contract governance may perform this action"
+      "Ownable: caller is not the owner"
     );
   });
 
