@@ -1,7 +1,10 @@
+import { BigNumber } from 'ethers';
 import Link from 'next/link';
+import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
+import { social } from '../fixtures/social';
 import {
   BeneficiaryCardProps,
-  DummyBeneficiaryProposal,
+  ProposalCardProps,
 } from '../interfaces/beneficiaries';
 
 interface IVotingRow {
@@ -10,8 +13,9 @@ interface IVotingRow {
 }
 
 interface IBeneficiaryProposalCard {
-  displayData: DummyBeneficiaryProposal | BeneficiaryCardProps;
+  displayData: BeneficiaryCardProps | ProposalCardProps;
   isProposal: boolean;
+  isTakedown: boolean;
 }
 
 function VotingRow(data: IVotingRow): JSX.Element {
@@ -26,44 +30,56 @@ function VotingRow(data: IVotingRow): JSX.Element {
 }
 
 function VotingInformation(
-  beneficiaryProposal: DummyBeneficiaryProposal,
+  beneficiaryProposal: ProposalCardProps,
 ): JSX.Element {
   return (
     <div>
-      <VotingRow name={'Status'} value={beneficiaryProposal.currentStage} />
+      <VotingRow name={'Status'} value={String(beneficiaryProposal.status)} />
       <VotingRow
         name={'Voting Deadline'}
         value={beneficiaryProposal.stageDeadline.toLocaleString()}
       />
       <VotingRow
         name={'Votes For'}
-        value={beneficiaryProposal.votesFor.toString()}
+        value={
+          (beneficiaryProposal.votesFor)}
       />
       <VotingRow
         name={'Votes Against'}
-        value={beneficiaryProposal.votesAgainst.toString()}
+        value={formatAndRoundBigNumber(beneficiaryProposal.votesAgainst)}
       />
       <VotingRow
         name={'Total Votes'}
-        value={(
-          beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst
-        ).toString()}
+        value={formatAndRoundBigNumber(
+          beneficiaryProposal.votesFor.add(beneficiaryProposal.votesAgainst),
+        )}
       />
     </div>
   );
 }
 
+function getLink(isProposal, isTakedown, ethereumAddress) {
+  if (isProposal) {
+    return 'beneficiary-proposals/' + ethereumAddress;
+  } else if (isTakedown) {
+    return 'beneficiary-proposals/takedowns/' + ethereumAddress;
+  } else {
+    return 'beneficiaries/' + ethereumAddress;
+  }
+}
+
 export default function BeneficiaryProposalCard({
   displayData,
   isProposal,
+  isTakedown,
 }: IBeneficiaryProposalCard): JSX.Element {
   return (
     <Link
-      key={displayData?.name}
+      key={displayData.name}
       href={
         isProposal
-          ? 'beneficiary-proposals/' + displayData?.ethereumAddress
-          : 'beneficiaries/' + displayData?.ethereumAddress
+          ? 'beneficiary-proposals/' + displayData.ethereumAddress
+          : 'beneficiaries/' + displayData.ethereumAddress
       }
     >
       <a>
@@ -78,16 +94,14 @@ export default function BeneficiaryProposalCard({
           <div className="space-y-2 my-2">
             <div>
               <h3 className="mx-4 mt-4 text-lg font-bold text-gray-800 leading-snug">
-                {displayData?.name}
+                {displayData.name}
               </h3>
               <p className="mx-4 my-4 text-m font-medium  text-gray-700">
-                {displayData?.missionStatement}
+                {displayData.missionStatement}
               </p>
             </div>
             {isProposal ? (
-              <VotingInformation
-                {...(displayData as DummyBeneficiaryProposal)}
-              />
+              <VotingInformation {...(displayData as ProposalCardProps)} />
             ) : (
               <div> </div>
             )}
