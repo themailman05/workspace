@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
+import "./Defended.sol";
 
 interface YearnVault is IERC20 {
   function token() external view returns (address);
@@ -49,7 +50,7 @@ interface ThreeCrv is IERC20 {}
 
 interface CrvLPToken is IERC20 {}
 
-contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
+contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable, Defended {
   using SafeMath for uint256;
   using SafeERC20 for ThreeCrv;
   using SafeERC20 for CrvLPToken;
@@ -112,6 +113,7 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable {
 
   function deposit(uint256 amount)
     external
+    defend
     nonReentrant
     whenNotPaused
     blockLocked
