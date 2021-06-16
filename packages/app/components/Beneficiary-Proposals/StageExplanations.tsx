@@ -39,7 +39,7 @@ export function TakedownStageExplanations(): JSX.Element {
         Takedown Initiated
       </h2>
       <p>
-        Any user with atleast 2k POP is able to initiate a takedown proposal.
+        Any user with atleast 2000 POP is able to initiate a takedown proposal.
       </p>
       <h2 className="text-lg leading-6 font-semibold text-indigo-900 uppercase tracking-wider my-4">
         Open Voting
@@ -47,7 +47,7 @@ export function TakedownStageExplanations(): JSX.Element {
       <p>
         In the first phase of voting, users have 48 hours to vote on the
         takedown. If the takedown passes with a majority, the process moves onto
-        the challenge step.
+        the challenge period.
       </p>
       <h2 className="text-lg leading-6 font-semibold text-indigo-900 uppercase tracking-wide my-4">
         Challenge Period
