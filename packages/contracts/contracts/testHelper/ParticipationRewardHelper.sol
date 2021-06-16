@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "../ParticipationReward.sol";
 
-contract RewardParticipationHelper is ParticipationReward {
+contract ParticipationRewardHelper is ParticipationReward {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 

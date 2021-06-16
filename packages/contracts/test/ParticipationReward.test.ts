@@ -2,11 +2,11 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, waffle } from "hardhat";
-import { MockERC20, RewardParticipationHelper } from "../typechain";
+import { MockERC20, ParticipationRewardHelper } from "../typechain";
 
 interface Contracts {
   mockPop: MockERC20;
-  rewardParticipationHelper: RewardParticipationHelper;
+  rewardParticipationHelper: ParticipationRewardHelper;
 }
 
 let owner: SignerWithAddress,
@@ -28,7 +28,7 @@ async function deployContracts(): Promise<Contracts> {
 
   const rewardParticipationHelper = await (
     await (
-      await ethers.getContractFactory("RewardParticipationHelper")
+      await ethers.getContractFactory("ParticipationRewardHelper")
     ).deploy(mockPop.address, governance.address)
   ).deployed();
 
@@ -168,7 +168,7 @@ describe("RewardParticipation", function () {
         .setRewardsBudget(parseEther("10"));
         await contracts.rewardParticipationHelper
         .connect(owner)
-        .contributeRewardBalance(parseEther("10"));
+        .contributeReward(parseEther("10"));
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
@@ -198,7 +198,7 @@ describe("RewardParticipation", function () {
         .setRewardsBudget(parseEther("10"));
       await contracts.rewardParticipationHelper
         .connect(owner)
-        .contributeRewardBalance(parseEther("30"));
+        .contributeReward(parseEther("30"));
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
