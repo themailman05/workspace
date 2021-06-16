@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
 import ProgressBar from '../ProgressBar';
-import { DateTime } from 'luxon';
+import { DateTime } from "luxon";
 
 const getTimeLeft = (stageDeadline: Date): string => {
   const date1 = DateTime.fromISO(new Date().toISOString());
-  const date2 = DateTime.fromISO(stageDeadline.toISOString());
-  const diff = date2.diff(date1, ['hours', 'minutes','seconds']).toObject();
-  return diff.hours + ":" + diff.minutes + ":" + parseInt(diff.seconds)
+  // TODO: Remove conditional below when we get deadline from contract
+  const date2 = stageDeadline
+    ? DateTime.fromISO(stageDeadline.toISOString())
+    : DateTime.fromISO(new Date().toISOString());
+  const diff = date2.diff(date1, ['hours', 'minutes', 'seconds']).toObject();
+  return diff.hours + ':' + diff.minutes + ':' + parseInt(diff.seconds);
 };
 
 export default function CurrentStandings(
@@ -80,7 +83,9 @@ export default function CurrentStandings(
       <div className="grid my-2 justify-items-stretch">
         <p className="my-4  w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           Current voting period ends at{' '}
-          {beneficiaryProposal.stageDeadline.toLocaleString()}
+          {beneficiaryProposal?.stageDeadline
+            ? beneficiaryProposal.stageDeadline.toLocaleString()
+            : ''}
         </p>
         <p className="my-4 w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           {timeLeft !== '00:00:00'
