@@ -3,10 +3,8 @@ import ImageHeader from 'components/ImageHeader';
 import ImpactReportLinks from 'components/ImpactReportLinks';
 import PhotoSideBar from 'components/PhotoSideBar';
 import MissionStatement from 'components/MissionStatement';
-import SocialMediaLinks from 'components/SocialMediaLinks';
 import Verification from 'components/Verification';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
-import { beneficiaryProposalFixture as beneficiaryProposal } from '../fixtures/beneficiaryProposals';
 import {
   Beneficiary,
   DummyBeneficiaryProposal,

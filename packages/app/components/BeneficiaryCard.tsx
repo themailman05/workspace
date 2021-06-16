@@ -1,10 +1,8 @@
 import Link from 'next/link';
-import * as Icon from 'react-feather';
 import {
   BeneficiaryCardProps,
   DummyBeneficiaryProposal,
 } from '../interfaces/beneficiaries';
-import SocialMediaLinks from './SocialMediaLinks';
 
 interface IVotingRow {
   name: string;
