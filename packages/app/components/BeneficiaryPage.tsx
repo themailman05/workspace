@@ -12,7 +12,7 @@ import {
   DummyBeneficiaryProposal,
 } from 'interfaces/beneficiaries';
 import SocialMedia from './SocialMedia';
-import Voting from './Beneficiary-Proposals/Voting';
+import Voting from './Beneficiary-Proposals/Voting/Voting';
 
 interface BeneficiaryPageProps {
   isProposal: boolean;
@@ -32,7 +32,7 @@ export default function BeneficiaryPage({
       {isProposal && <Voting {...(displayData as DummyBeneficiaryProposal)} />}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...displayData} />
-        <MissionStatement missionStatement={displayData?.missionStatement}/>
+        <MissionStatement missionStatement={displayData?.missionStatement} />
       </div>
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">

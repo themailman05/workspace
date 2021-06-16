@@ -5,9 +5,12 @@ import { DateTime } from 'luxon';
 
 const getTimeLeft = (stageDeadline: Date): string => {
   const date1 = DateTime.fromISO(new Date().toISOString());
-  const date2 = DateTime.fromISO(stageDeadline.toISOString());
-  const diff = date2.diff(date1, ['hours', 'minutes','seconds']).toObject();
-  return diff.hours + ":" + diff.minutes + ":" + parseInt(diff.seconds)
+  // TODO: Remove conditional below when we get deadline from contract
+  const date2 = stageDeadline
+    ? DateTime.fromISO(stageDeadline.toISOString())
+    : DateTime.fromISO(new Date().toISOString());
+  const diff = date2.diff(date1, ['hours', 'minutes', 'seconds']).toObject();
+  return diff.hours + ':' + diff.minutes + ':' + parseInt(diff.seconds);
 };
 
 export default function CurrentStandings(
@@ -16,13 +19,13 @@ export default function CurrentStandings(
   const [timeLeft, setTimeLeft] = useState<string>(
     getTimeLeft(beneficiaryProposal.stageDeadline),
   );
-
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(getTimeLeft(beneficiaryProposal.stageDeadline));
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
   return (
     <div>
       <div className="grid my-2 justify-items-stretch">
@@ -38,8 +41,14 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
           <ProgressBar
             progress={
-              (100 * beneficiaryProposal.votesFor) /
-              (beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst)
+              100 *
+              Number(
+                beneficiaryProposal.votesFor.div(
+                  beneficiaryProposal.votesFor.add(
+                    beneficiaryProposal.votesAgainst,
+                  ),
+                ),
+              )
             }
             progressColor={'bg-green-300'}
           />
@@ -58,8 +67,14 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between border-b-2 pb-2">
           <ProgressBar
             progress={
-              (100 * beneficiaryProposal.votesAgainst) /
-              (beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst)
+              100 *
+              Number(
+                beneficiaryProposal.votesAgainst.div(
+                  beneficiaryProposal.votesFor.add(
+                    beneficiaryProposal.votesAgainst,
+                  ),
+                ),
+              )
             }
             progressColor={'bg-red-400'}
           />
@@ -71,7 +86,9 @@ export default function CurrentStandings(
           <p className="text-lg font-medium text-gray-700">Total Votes</p>
           <span className="text-base text-gray-700 flex flex-row">
             <p>
-              {beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst}
+              {beneficiaryProposal.votesFor.add(
+                beneficiaryProposal.votesAgainst,
+              )}
             </p>
           </span>
         </span>

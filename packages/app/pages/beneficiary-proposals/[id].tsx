@@ -3,12 +3,12 @@ import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
-import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
+import { BeneficiaryCardProps, DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
 
 export default function BeneficiaryProposalPageWrapper(): JSX.Element {
   const router = useRouter();
   const { contracts } = useContext(ContractsContext);
-  const [proposal, setProposal] = useState<BeneficiaryCardProps>();
+  const [proposal, setProposal] = useState<DummyBeneficiaryProposal>();
   const { id } = router.query;
   async function getProposal() {
     const proposalId = await contracts.beneficiaryGovernance.getProposalId(
@@ -49,7 +49,7 @@ export default function BeneficiaryProposalPageWrapper(): JSX.Element {
       status: Number(proposal.status.toString()),
       stageDeadline: deadline,
     };
-    setProposal(proposalData as BeneficiaryCardProps);
+    setProposal(proposalData as DummyBeneficiaryProposal);
   }
 
   useEffect(() => {
@@ -58,5 +58,5 @@ export default function BeneficiaryProposalPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  return <BeneficiaryPage isProposal={true} beneficiaryProposal={proposal} />;
+  return <BeneficiaryPage isProposal={true} displayData={proposal} />;
 }
