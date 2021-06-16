@@ -1,8 +1,8 @@
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
+
 
 export default function Voting(displayData: DummyBeneficiaryProposal) {
   return (
