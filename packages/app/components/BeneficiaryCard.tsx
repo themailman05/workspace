@@ -42,7 +42,7 @@ function VotingInformation(
       <VotingRow
         name={'Votes For'}
         value={
-          (beneficiaryProposal.votesFor)}
+          formatAndRoundBigNumber(beneficiaryProposal.votesFor)}
       />
       <VotingRow
         name={'Votes Against'}
