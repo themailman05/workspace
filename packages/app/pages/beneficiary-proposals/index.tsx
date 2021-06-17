@@ -60,5 +60,14 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  return <BeneficiaryGrid isProposal={true} cardProps={proposals} />;
+  return (
+    <BeneficiaryGrid
+      isProposal={true}
+      cardProps={proposals}
+      title={'Eligible Beneficiaries'}
+      subtitle={
+        'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations'
+      }
+    />
+  );
 }

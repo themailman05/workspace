@@ -55,7 +55,6 @@ export default function Intro({
               onClick={() => {
                 setCurrentStep(1);
                 setStepLimit(1);
-
                 setFormData(defaultFormData);
               }}
               type="button"

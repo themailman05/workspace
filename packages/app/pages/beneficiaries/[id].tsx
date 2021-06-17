@@ -26,5 +26,11 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  return <BeneficiaryPage isProposal={false} displayData={benefeciary}/>;
+  return (
+    <BeneficiaryPage
+      isProposal={false}
+      displayData={benefeciary}
+      isTakedown={false}
+    />
+  );
 }
