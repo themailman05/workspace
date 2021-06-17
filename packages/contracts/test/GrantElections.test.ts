@@ -45,7 +45,7 @@ async function deployContracts(): Promise<Contracts> {
       await ethers.getContractFactory("MockERC20")
     ).deploy("TestPOP", "TPOP", 18)
   ).deployed();
-  await mockPop.mint(owner.address, parseEther("500"));
+  await mockPop.mint(owner.address, parseEther("2500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
   await mockPop.mint(beneficiary2.address, parseEther("500"));
   await mockPop.mint(beneficiary3.address, parseEther("500"));
@@ -92,7 +92,10 @@ async function deployContracts(): Promise<Contracts> {
       governance.address
     )
   ).deployed()) as GrantElections;
+  await mockPop.connect(owner).approve(grantElections.address, parseEther("100000"))  
+  await grantElections.connect(owner).contributeReward(parseEther("2000"))
   await grantElections.initialize(GRANT_TERM.MONTH);
+
   return {
     mockPop,
     mockStaking,
@@ -312,7 +315,8 @@ describe("GrantElections", function () {
       const popBalanceForElection = await contracts.mockPop.balanceOf(
         contracts.grantElections.address
       );
-      expect(popBalanceForElection).to.equal(parseEther("1000"));
+      //We funded 2000 POP in the beforeEach call to have a rewardBalance
+      expect(popBalanceForElection).to.equal(parseEther("3000"));
     });
   });
 
@@ -368,6 +372,21 @@ describe("GrantElections", function () {
       await expect(
         contracts.grantElections.initialize(GRANT_TERM.QUARTER)
       ).to.be.revertedWith("election not yet closed");
+    });
+    it("should not initialize a vault even the neede budget is larger than rewardBudget", async function () {
+      await contracts.grantElections.connect(governance).setRewardsBudget(parseEther("3000"))
+      await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
+      await ethers.provider.send("evm_mine", []);
+      const result = await contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER
+      );
+      expect(result)
+        .to.emit(contracts.grantElections, "ElectionInitialized")
+        .withArgs(GRANT_TERM.QUARTER, 1625097601);
+      expect(result)
+        .to.not.emit(contracts.grantElections, "VaultInitialized")
+      const election = await contracts.grantElections.elections(GRANT_TERM.QUARTER)
+      expect(election.vaultId).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000")
     });
   });
 

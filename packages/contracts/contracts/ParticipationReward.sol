@@ -78,14 +78,15 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     require(vaults[vaultId_].endTime == 0, "Vault must not exist");
     require(endTime_ > block.timestamp, "end must be in the future");
 
+    uint256 expectedVaultBudget = totalVaultsBudget.add(rewardBudget);
+    if (expectedVaultBudget > rewardBalance || rewardBalance == 0) {
+      return "";
+    }
+
+    totalVaultsBudget = expectedVaultBudget;
     vaults[vaultId_].status = VaultStatus.init;
     vaults[vaultId_].endTime = endTime_;
     vaults[vaultId_].tokenBalance = rewardBudget;
-
-    totalVaultsBudget = totalVaultsBudget.add(rewardBudget);
-    if (totalVaultsBudget > rewardBalance) {
-      return "";
-    }
 
     emit VaultInitialized(vaultId_);
     return vaultId_;

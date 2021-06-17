@@ -161,16 +161,10 @@ contract BeneficiaryGovernance is ParticipationReward {
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
 
-    bytes32 vaultId =
-      _initializeVault(
-        keccak256(abi.encodePacked(proposalId, block.timestamp)),
-        block.timestamp.add(DefaultConfigurations.votingPeriod).add(
-          DefaultConfigurations.vetoPeriod
-        )
-      );
-    if (vaultId != "") {
-      proposal.vaultId = vaultId;
-    }
+    proposal.vaultId = _initializeVault(
+      keccak256(abi.encodePacked(proposalId, block.timestamp)),
+      block.timestamp.add(DefaultConfigurations.votingPeriod)
+    );
 
     pendingBeneficiaries[_beneficiary] = true;
 
@@ -236,7 +230,9 @@ contract BeneficiaryGovernance is ParticipationReward {
       proposal.noCount = proposal.noCount.add(_voiceCredits);
     }
 
-    _addShares(proposal.vaultId, msg.sender, _voiceCredits);
+    if (proposal.vaultId != "") {
+      _addShares(proposal.vaultId, msg.sender, _voiceCredits);
+    }
 
     emit Vote(proposalId, msg.sender, _voiceCredits);
   }
@@ -281,7 +277,9 @@ contract BeneficiaryGovernance is ParticipationReward {
     }
 
     _resetBeneficiaryPendingState(proposal.beneficiary);
-    _openVault(proposal.vaultId);
+    if (proposal.vaultId != "") {
+      _openVault(proposal.vaultId);
+    }
 
     emit Finalize(proposalId);
   }

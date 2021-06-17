@@ -117,17 +117,12 @@ contract GrantElections is ParticipationReward {
     e.electionTerm = _grantTerm;
     e.startTime = block.timestamp;
     e.exists = true;
-
-    bytes32 vaultId =
-      _initializeVault(
-        keccak256(abi.encodePacked(_term, block.timestamp)),
-        block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
-          electionDefaults[_term].votingPeriod
-        )
-      );
-    if (vaultId != "") {
-      e.vaultId = vaultId;
-    }
+    e.vaultId = _initializeVault(
+      keccak256(abi.encodePacked(_term, block.timestamp)),
+      block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
+        electionDefaults[_term].votingPeriod
+      )
+    );
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
   }
@@ -335,7 +330,9 @@ contract GrantElections is ParticipationReward {
       _usedVoiceCredits <= _stakedVoiceCredits,
       "Insufficient voice credits"
     );
-    _addShares(election.vaultId, msg.sender, _usedVoiceCredits);
+    if (election.vaultId != "") {
+      _addShares(election.vaultId, msg.sender, _usedVoiceCredits);
+    }
   }
 
   function _recalculateRanking(
@@ -425,7 +422,10 @@ contract GrantElections is ParticipationReward {
     grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
     emit GrantCreated(_electionTerm, _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
-    _openVault(_election.vaultId);
+
+    if (_election.vaultId != "") {
+      _openVault(_election.vaultId);
+    }
   }
 
   function _setDefaults() internal {
