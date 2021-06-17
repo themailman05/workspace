@@ -1,17 +1,32 @@
-import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-import ChallengePeriodVoting from './Voting/ChallengePeriodVoting';
-import CompletedVoting from './Voting/CompletedVoting';
-import OpenVoting from './Voting/OpenVoting';
+import { DummyBeneficiaryProposal, Status } from '../../interfaces/beneficiaries';
+import ChallengePeriodVoting from './ChallengePeriodVoting';
+import CompletedVoting from './CompletedVoting';
+import OpenVoting from './OpenVoting';
 
-export default function Voting(displayData: DummyBeneficiaryProposal) {
+interface VotingProps {
+  displayData: DummyBeneficiaryProposal;
+  isTakedown: boolean;
+}
+
+function ProposalVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
+  return displayData.status === Status.Open ? (
+    <OpenVoting {... displayData} />
+  ) : displayData.status === Status.Challenge ? (
+    <ChallengePeriodVoting {... displayData} />
+  ) : (
+    <CompletedVoting {... displayData} />
+  );
+}
+
+export default function Voting({ displayData, isTakedown }: VotingProps) {
   return (
     <div>
-      {displayData.status === 0 ? (
+      {displayData.status === Status.Open ? (
         <OpenVoting {...displayData} />
-      ) : displayData.status === 1 ? (
+      ) : displayData.status === Status.Challenge ? (
         <ChallengePeriodVoting {...displayData} />
       ) : (
-        <CompletedVoting {...displayData} />
+        <ProposalVoting {...displayData} />
       )}
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">

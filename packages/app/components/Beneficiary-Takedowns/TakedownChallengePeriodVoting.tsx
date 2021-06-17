@@ -1,9 +1,9 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext } from 'react';
 import { store } from '../../context/store';
 
 import { setDualActionModal } from '../../context/actions';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-import CurrentStandings from './CurrentStandings';
+import CurrentStandings from '../Beneficiary-Proposals/CurrentStandings';
 
 export default function ChallengePeriodVoting(
   displayData: DummyBeneficiaryProposal,
@@ -18,19 +18,19 @@ export default function ChallengePeriodVoting(
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            {displayData.name} is in the second phase of voting, the
-            challenge period. Here, users are able to vote to veto the
-            nomination. This additional phase prevents exploits where a flood of
-            late “Yes” votes swings the results.
+            {displayData.name} is in the second phase of takedown
+            voting, known as the challenge period. Here, users are able to vote
+            to veto the takedown proposal. This additional phase prevents
+            exploits where a flood of late votes swings the results.
           </p>
         </span>
       </div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            At the end of the challenge period, if the nomination receives more
-            yes votes than no votes, the elected organization will become
-            eligible to receive grants as an eligible beneficiary
+            At the end of the challenge period, if the takedown proposal
+            receives more yes votes than no votes, the elected organization will
+            become ineligible to receive grants.
           </p>
         </span>
       </div>
@@ -59,7 +59,7 @@ export default function ChallengePeriodVoting(
             );
           }}
         >
-          Veto Proposal Vote
+          Veto Takedown Proposal Vote
         </button>
       </div>
       <CurrentStandings {...displayData} />

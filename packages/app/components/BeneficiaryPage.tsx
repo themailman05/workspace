@@ -5,29 +5,35 @@ import PhotoSideBar from 'components/PhotoSideBar';
 import MissionStatement from 'components/MissionStatement';
 import Verification from 'components/Verification';
 import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
-import {
-  Beneficiary,
-  DummyBeneficiaryProposal,
-} from 'interfaces/beneficiaries';
 import SocialMedia from './SocialMedia';
 import Voting from './Beneficiary-Proposals/Voting';
+import { Beneficiary, DummyBeneficiaryProposal } from 'interfaces/beneficiaries';
+import { beneficiaryProposalFixture } from 'fixtures/beneficiaryProposals';
 
 interface BeneficiaryPageProps {
   isProposal: boolean;
   isProposalPreview?: boolean;
   displayData?: Beneficiary | DummyBeneficiaryProposal;
+  isTakedown: boolean;
 }
 
 export default function BeneficiaryPage({
   isProposal,
   isProposalPreview = false,
   displayData,
+  isTakedown = false,
 }: BeneficiaryPageProps): JSX.Element {
+  displayData = beneficiaryProposalFixture;
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview && <NavBar />}
       <ImageHeader {...displayData} />
-      {isProposal && <Voting {...(displayData as DummyBeneficiaryProposal)} />}
+      {isProposal && (
+        <Voting
+          displayData={displayData as DummyBeneficiaryProposal}
+          isTakedown={isTakedown}
+        />
+      )}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...displayData as DummyBeneficiaryProposal} />
         <MissionStatement missionStatement={displayData?.missionStatement}/>

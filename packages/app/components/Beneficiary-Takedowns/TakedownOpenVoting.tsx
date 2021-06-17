@@ -1,42 +1,45 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { store } from '../../context/store';
 import { RadioGroup } from '@headlessui/react';
 
 import { setDualActionModal } from '../../context/actions';
 import { DummyBeneficiaryProposal } from '../../interfaces/beneficiaries';
-import CurrentStandings from './CurrentStandings';
+import CurrentStandings from '../Beneficiary-Proposals/CurrentStandings';
 
 type VoteOptions =
   | {
       name: 'Vote For Proposal';
-      description: 'Beneficiary would be eligible for grants';
+      description: 'Beneficiary would become ineligible for grants';
     }
   | {
       name: 'Reject Proposal';
-      description: 'Beneficiary would not be eligible for grants';
+      description: 'Beneficiary would remain eligible for grants';
     };
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-function OpenVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
-  const [selected, setSelected] = useState<VoteOptions>({
-    name: 'Vote For Proposal',
-    description: 'Beneficiary would be eligible for grants',
-  });
+const OpenVoting = (displayData: DummyBeneficiaryProposal) => {
   const { dispatch } = useContext(store);
+  const [selected, setSelected] = useState<VoteOptions>({
+    name: 'Reject Proposal',
+    description: 'Beneficiary would remain eligible for grants',
+  });
+
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {displayData.currentStage} vote on {displayData.name}
+        {displayData.currentStage} takedown vote on{' '}
+        {displayData.name}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            'The organization is currently in the first phase of voting, users
-            have 48 hours to vote on the nomination. If the beneficiary passes
-            with a majority, the process moves onto the challenge step.
+            The organization is currently in the first phase of takedown voting,
+            users have 48 hours to cast their vote. If the beneficiary takedown
+            proposal passes with a majority, the process moves onto the
+            challenge step.
           </p>
         </span>
       </div>
@@ -97,7 +100,7 @@ function OpenVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
                         'block text-sm',
                       )}
                     >
-                      'Beneficiary would be eligible for grants'
+                      Beneficiary would become ineligible for grants
                     </RadioGroup.Description>
                   </div>
                 </>
@@ -151,7 +154,7 @@ function OpenVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
                         'block text-sm',
                       )}
                     >
-                      Beneficiary would be ineligible for grants
+                      Beneficiary would remain eligible for grants
                     </RadioGroup.Description>
                   </div>
                 </>
@@ -193,6 +196,6 @@ function OpenVoting(displayData: DummyBeneficiaryProposal): JSX.Element {
       </div>
     </div>
   );
-}
+};
 
 export default OpenVoting;
