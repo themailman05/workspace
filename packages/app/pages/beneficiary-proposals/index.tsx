@@ -4,8 +4,6 @@ import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
 
-import { beneficiaryProposalFixtures } from 'fixtures/beneficiaryProposals';
-
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [proposals, setProposals] = useState<BeneficiaryCardProps[]>([]);
@@ -27,9 +25,12 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           )}`,
         ).then((response) => response.json());
 
-        const deadline = new Date((Number(proposal.startTime.toString()) +
-          Number(proposal.configurationOptions.votingPeriod.toString()) +
-          Number(proposal.configurationOptions.vetoPeriod.toString()))*1000)
+        const deadline = new Date(
+          (Number(proposal.startTime.toString()) +
+            Number(proposal.configurationOptions.votingPeriod.toString()) +
+            Number(proposal.configurationOptions.vetoPeriod.toString())) *
+            1000,
+        );
 
         return {
           name: ipfsData.name,
@@ -44,7 +45,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           votesFor: proposal.yesCount,
           votesAgainst: proposal.noCount,
           status: Number(proposal.status.toString()),
-          stageDeadline: deadline
+          stageDeadline: deadline,
         };
       }),
     );
@@ -57,5 +58,14 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
     }
   }, [contracts]);
 
-  return <BeneficiaryGrid isProposal={true} cardProps={proposals} />;
+  return (
+    <BeneficiaryGrid
+      isProposal={true}
+      cardProps={proposals}
+      title={'Eligible Beneficiaries'}
+      subtitle={
+        'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations'
+      }
+    />
+  );
 }
