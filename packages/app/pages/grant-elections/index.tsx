@@ -1,6 +1,5 @@
 import { LandingPage } from 'components/Grants/LandingPage';
 
-
 export interface IGrantRoundFilter {
   active: boolean;
   closed: boolean;
@@ -16,5 +15,5 @@ export interface IElectionVotes {
 }
 
 export default function GrantOverview() {
- return <LandingPage></LandingPage>
+  return <LandingPage></LandingPage>;
 }

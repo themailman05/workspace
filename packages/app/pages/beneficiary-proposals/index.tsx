@@ -1,16 +1,15 @@
-import BeneficiaryGrid from 'components/BeneficiaryGrid';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
+import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [proposals, setProposals] = useState<BeneficiaryCardProps[]>([]);
 
   async function getProposals() {
-    const numProposals =
-      await contracts.beneficiaryGovernance.getNumberOfProposals();
+    const numProposals = await contracts.beneficiaryGovernance.getNumberOfProposals();
     const proposals = await (
       await Promise.all(
         new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
@@ -62,12 +61,12 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
 
   return (
     <BeneficiaryGrid
-      isProposal={true}
-      cardProps={proposals}
       title={'Eligible Beneficiaries'}
       subtitle={
         'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations'
       }
+      cardProps={proposals}
+      isProposal
     />
   );
 }

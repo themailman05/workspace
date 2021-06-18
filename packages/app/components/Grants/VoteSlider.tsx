@@ -35,18 +35,26 @@ export default function VoteSlider({
   });
 
   function handleSliderChange(value: number) {
-      if (((voiceCredits - (pendingVotes[election.electionTerm].total)) <= 0)) {
-        if (pendingVotes[election.electionTerm].votes[beneficiary.address] > value) {
-          setVotesAssignedByUser(value);
-          assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
-        }
-        return;
+    if (voiceCredits - pendingVotes[election.electionTerm].total <= 0) {
+      if (
+        pendingVotes[election.electionTerm].votes[beneficiary.address] > value
+      ) {
+        setVotesAssignedByUser(value);
+        assignVotes(election.electionTerm, {
+          address: beneficiary.address,
+          votes: value,
+        });
       }
-      setVotesAssignedByUser(value);
-     assignVotes(election.electionTerm, { address: beneficiary.address, votes: value });
+      return;
+    }
+    setVotesAssignedByUser(value);
+    assignVotes(election.electionTerm, {
+      address: beneficiary.address,
+      votes: value,
+    });
   }
   if (election.electionStateStringShort !== 'voting') {
-    return <></>
+    return <></>;
   }
 
   return (
@@ -56,7 +64,7 @@ export default function VoteSlider({
         <span className="text-base text-gray-700 flex flex-row">
           <p className="font-medium">{beneficiary.totalVotes || 0}</p>
           <p className="mr-4">
-            {votesAssignedByuser > 0 && `+${votesAssignedByuser}`} 
+            {votesAssignedByuser > 0 && `+${votesAssignedByuser}`}
           </p>
         </span>
       </span>

@@ -6,7 +6,9 @@ import { connectors } from '../../context/Web3/connectors';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useContext } from 'react';
-import SingleActionModal, { DefaultSingleActionModalProps } from 'components/Modal/SingleActionModal';
+import SingleActionModal, {
+  DefaultSingleActionModalProps,
+} from 'components/Modal/SingleActionModal';
 import Icon from 'components/Icon';
 import { ElectionsContext } from '../../context/Web3/elections';
 import { store } from '../../context/store';
@@ -28,7 +30,6 @@ export default function Register(): JSX.Element {
     false,
   ]);
 
-
   function registerForElection(grant_term) {
     // Register for selected election
     setWait(true);
@@ -36,31 +37,39 @@ export default function Register(): JSX.Element {
     connected
       .registerForElection(account, grant_term)
       .then((res) => {
-        dispatch(setSingleActionModal({
-          content: `You have successfully registered for this grant election`,
-          title: 'Success!',
-          visible: true,
-          type: 'info',
-          onConfirm: {
-            label: 'Done',
-            onClick: () =>
-              dispatch(setSingleActionModal({ ...DefaultSingleActionModalProps })),
-          },
-        }));
+        dispatch(
+          setSingleActionModal({
+            content: `You have successfully registered for this grant election`,
+            title: 'Success!',
+            visible: true,
+            type: 'info',
+            onConfirm: {
+              label: 'Done',
+              onClick: () =>
+                dispatch(
+                  setSingleActionModal({ ...DefaultSingleActionModalProps }),
+                ),
+            },
+          }),
+        );
         setWait(false);
       })
       .catch((err) => {
-        dispatch(setSingleActionModal({
-          content: `There was an error registering you for this election: ${err.message}`,
-          title: 'Error',
-          visible: true,
-          type: 'error',
-          onConfirm: {
-            label: 'Go Back',
-            onClick: () =>
-              dispatch(setSingleActionModal({ ...DefaultSingleActionModalProps })),
-          },
-        }));
+        dispatch(
+          setSingleActionModal({
+            content: `There was an error registering you for this election: ${err.message}`,
+            title: 'Error',
+            visible: true,
+            type: 'error',
+            onConfirm: {
+              label: 'Go Back',
+              onClick: () =>
+                dispatch(
+                  setSingleActionModal({ ...DefaultSingleActionModalProps }),
+                ),
+            },
+          }),
+        );
         setWait(false);
       });
   }
@@ -76,7 +85,6 @@ export default function Register(): JSX.Element {
       ),
     );
   }
-
 
   useEffect(() => {
     if (account && contracts?.beneficiary) {

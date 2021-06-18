@@ -76,7 +76,7 @@ export default function BeneficiaryCard({
             />
           ) : (
             <GrantFunded beneficiary={beneficiary} election={election} />
-          ) }
+          )}
         </div>
       </div>
     </div>

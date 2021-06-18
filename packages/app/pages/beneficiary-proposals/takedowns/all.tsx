@@ -1,5 +1,5 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
-import BeneficiaryGrid from 'components/BeneficiaryGrid';
+import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
 import { ContractsContext } from 'context/Web3/contracts';
 
 import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
@@ -12,8 +12,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   >([]);
 
   async function getProposals() {
-    const numProposals =
-      await contracts.beneficiaryGovernance.getNumberOfProposals();
+    const numProposals = await contracts.beneficiaryGovernance.getNumberOfProposals();
     const proposals = await (
       await Promise.all(
         new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
@@ -69,8 +68,9 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       subtitle={
         'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
       }
-      isProposal={true}
       cardProps={takedownProposals}
+      isProposal
+      isTakedown
     />
   );
 }

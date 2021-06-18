@@ -1,12 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { ThemeProvider } from 'styled-components';
-import { MuiThemeProvider, StylesProvider } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import theme from '../styles/theme';
 import '../styles/globals.css';
 import Router from 'next/router';
-import GlobalLinearProgress from 'components/GlobalLinearProgress';
 import { StateProvider } from '../context/store';
 import { Web3ReactProvider } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
@@ -64,30 +59,21 @@ export default function MyApp(props) {
           rel="stylesheet"
         ></link>
       </Head>
-
-      <StylesProvider injectFirst>
-        <MuiThemeProvider theme={theme}>
-          <ThemeProvider theme={theme}>
-            <CssBaseline />
-            <GlobalLinearProgress visible={loading} />
-            <Web3ReactProvider getLibrary={getLibrary}>
-              <StateProvider>
-                <ContractsWrapper>
-                  <ElectionsProvider>
-                    <SingleActionModalContainer />
-                    <DualActionModalContainer />
-                    <DualActionWideModalContainer />
-                    <Component {...pageProps} />
-                    <SwapChainModal />
-                    <NotificationsContainer />
-                    <Debug />
-                  </ElectionsProvider>
-                </ContractsWrapper>
-              </StateProvider>
-            </Web3ReactProvider>
-          </ThemeProvider>
-        </MuiThemeProvider>
-      </StylesProvider>
+      <Web3ReactProvider getLibrary={getLibrary}>
+        <StateProvider>
+          <ContractsWrapper>
+            <ElectionsProvider>
+              <SingleActionModalContainer />
+              <DualActionModalContainer />
+              <DualActionWideModalContainer />
+              <Component {...pageProps} />
+              <SwapChainModal />
+              <NotificationsContainer />
+              <Debug />
+            </ElectionsProvider>
+          </ContractsWrapper>
+        </StateProvider>
+      </Web3ReactProvider>
     </React.Fragment>
   );
 }

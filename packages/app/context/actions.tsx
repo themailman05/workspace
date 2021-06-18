@@ -7,7 +7,10 @@ import {
 import { DualActionModalProps } from 'components/Modal/DualActionModal';
 import { DefaultDualActionModalProps } from '../components/Modal/DualActionModal';
 import { Notification } from '../components/Notifications/NotificationsContainer';
-import { DefaultDualActionWideModalProps, DualActionWideModalProps } from 'components/Modal/DualActionWideModal';
+import {
+  DefaultDualActionWideModalProps,
+  DualActionWideModalProps,
+} from 'components/Modal/DualActionWideModal';
 
 export const PUSH_NOTIFICATION = 'notifications/PUSH_NOTIFICATION';
 export const UNSET_NOTIFICATION = 'notifications/UNSET_NOTIFICATION';
@@ -41,7 +44,7 @@ export const pushNotification = (
 
 export interface UnsetNotificationAction {
   type: typeof UNSET_NOTIFICATION;
-  payload: number,
+  payload: number;
 }
 
 export const unsetNotification = (id: number): UnsetNotificationAction => {
@@ -53,14 +56,14 @@ export const unsetNotification = (id: number): UnsetNotificationAction => {
 
 export interface HideNotificationAction {
   type: typeof HIDE_NOTIFICATION;
-  payload: number,
+  payload: number;
 }
 export const hideNotification = (id: number): HideNotificationAction => {
   return {
     type: HIDE_NOTIFICATION,
     payload: id,
   };
-}
+};
 
 export interface ClearNotificationsAction {
   type: typeof CLEAR_NOTIFICATIONS;
@@ -104,7 +107,7 @@ export interface SetDualActionModalAction {
   payload: DualActionModalProps;
 }
 export const setDualActionModal = (
-  props: Partial<DualActionModalProps>| false,
+  props: Partial<DualActionModalProps> | false,
 ): SetDualActionModalAction => {
   if (!props) {
     return {
@@ -130,7 +133,7 @@ export interface SetDualActionWideModalAction {
   payload: DualActionWideModalProps;
 }
 export const setDualActionWideModal = (
-  props: Partial<DualActionWideModalProps>| false,
+  props: Partial<DualActionWideModalProps> | false,
 ): SetDualActionWideModalAction => {
   if (!props) {
     return {
@@ -150,4 +153,3 @@ export const setDualActionWideModal = (
     },
   };
 };
-

@@ -1,5 +1,5 @@
-import BeneficiaryPage from 'components/BeneficiaryPage';
+import BeneficiaryPage from "components/Beneficiaries/BeneficiaryPage";
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
-  return <BeneficiaryPage isProposal={true} isTakedown={true} />;
+  return <BeneficiaryPage isProposal isTakedown/>;
 }

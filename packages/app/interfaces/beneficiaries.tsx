@@ -2,7 +2,7 @@
 // TODO: Refer to TS definition files once contracts are finalised
 // TODO: Improve social media links - change
 
-import { BigNumber } from "ethers";
+import { BigNumber } from 'ethers';
 
 export enum Status {
   Open,
@@ -32,15 +32,14 @@ export interface ProposalCardProps extends BeneficiaryCardProps {
   stageDeadline: Date;
 }
 
-export interface DummyBeneficiaryProposal extends ProposalCardProps {
-  headerImageURL: string;
-  photoURLs?: string[];
+export interface BeneficiaryProposal extends ProposalCardProps {
+  headerImage: string;
   impactReports?: string[];
   additionalImages?: string[];
   proofOfOwnership: string;
 }
 
-export interface Beneficiary extends BeneficiaryCardProps{
+export interface Beneficiary extends BeneficiaryCardProps {
   headerImage: string;
   additionalImages?: string[];
   impactReports?: string[];

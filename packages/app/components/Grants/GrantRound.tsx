@@ -3,9 +3,7 @@ import { useEffect, useState } from 'react';
 import { useRef } from 'react';
 import BeneficiaryCard, { BeneficiaryMetadata } from './BeneficiaryCard';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
-import {
-  ElectionMetadata,
-} from '@popcorn/utils/Contracts';
+import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
 
 interface IGrantRound {
@@ -51,7 +49,10 @@ export default function GrantRound({
   }, [election]);
 
   const getBeneficiary = (address: string, votes): BeneficiaryMetadata => {
-    const beneficiary = beneficiariesHashMap[process.env.CHAIN_ID || '31337'][address.toLowerCase()];
+    const beneficiary =
+      beneficiariesHashMap[process.env.CHAIN_ID || '31337'][
+        address.toLowerCase()
+      ];
     beneficiary.totalVotes = votes[address];
     return beneficiary;
   };

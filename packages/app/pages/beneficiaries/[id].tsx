@@ -1,9 +1,9 @@
-import BeneficiaryPage from 'components/BeneficiaryPage';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Beneficiary } from 'interfaces/beneficiaries';
+import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const router = useRouter();
@@ -28,9 +28,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
 
   return (
     <BeneficiaryPage
-      isProposal={false}
       displayData={benefeciary}
-      isTakedown={false}
     />
   );
 }

@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
-import BeneficiaryGrid from 'components/BeneficiaryGrid';
 import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
+import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
@@ -11,8 +11,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   );
 
   async function getBeneficiaries() {
-    const beneficiaryAddresses =
-      await contracts.beneficiary.getBeneficiaryList();
+    const beneficiaryAddresses = await contracts.beneficiary.getBeneficiaryList();
 
     const ipfsHashes = await Promise.all(
       beneficiaryAddresses.map(async (address) => {
@@ -56,7 +55,6 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       subtitle={
         'Beneficiary organizations that have passed the voting process and are eligible to receive grants'
       }
-      isProposal={false}
       cardProps={benefeciaries}
     />
   );

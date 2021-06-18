@@ -81,7 +81,9 @@ export const LandingPage = () => {
                               {(elections[0] &&
                                 ['closed', 'finalized'].includes(
                                   elections[0]?.electionStateStringShort,
-                                  ) && <Icon type="x" /> ) || <Icon type="check" />}
+                                ) && <Icon type="x" />) || (
+                                <Icon type="check" />
+                              )}
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Election is{' '}
@@ -321,7 +323,9 @@ export const LandingPage = () => {
                               {(elections[1] &&
                                 ['closed', 'finalized'].includes(
                                   elections[1]?.electionStateStringShort,
-                                  ) && <Icon type="x" /> ) || <Icon type="check" />}
+                                ) && <Icon type="x" />) || (
+                                <Icon type="check" />
+                              )}
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Election is{' '}

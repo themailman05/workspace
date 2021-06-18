@@ -16,7 +16,10 @@ import {
   DUAL_ACTION_MODAL,
   DUAL_ACTION_WIDE_MODAL,
 } from './actions';
-import { DefaultDualActionWideModalProps, DualActionWideModalProps } from 'components/Modal/DualActionWideModal';
+import {
+  DefaultDualActionWideModalProps,
+  DualActionWideModalProps,
+} from 'components/Modal/DualActionWideModal';
 
 interface DefaultState {
   notifications: Notification[];
@@ -35,7 +38,7 @@ const initialState: DefaultState = {
   },
   dualActionWideModal: {
     ...DefaultDualActionWideModalProps,
-  }
+  },
 };
 
 const store = createContext(
