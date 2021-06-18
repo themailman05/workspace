@@ -28,14 +28,14 @@ export default function OpenVoting(
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {beneficiaryProposal.currentStage} vote on {beneficiaryProposal.name}
+        {beneficiaryProposal.status} vote on {beneficiaryProposal.name}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
             The organization is currently in the first phase of voting, users
             have 48 hours to vote on the nomination. If the beneficiary passes
-            with a majority, the process moves onto the challenge period.
+            with a majority, the process moves onto the challenge step.
           </p>
         </span>
       </div>

@@ -13,7 +13,7 @@ export default function ChallengePeriodVoting(
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {beneficiaryProposal.currentStage} vote on {beneficiaryProposal.name}
+        {beneficiaryProposal.status} vote on {beneficiaryProposal.name}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">

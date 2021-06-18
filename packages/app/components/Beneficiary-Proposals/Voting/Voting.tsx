@@ -1,14 +1,15 @@
-import { DummyBeneficiaryProposal } from '../../../interfaces/beneficiaries';
-import OpenVoting from './OpenVoting';
+import { DummyBeneficiaryProposal, Status } from "interfaces/beneficiaries";
 import ChallengePeriodVoting from "./ChallengePeriodVoting";
-import CompletedVoting from './CompletedVoting';
+import CompletedVoting from "./CompletedVoting";
+import OpenVoting from "./OpenVoting";
+
 
 export default function Voting(displayData: DummyBeneficiaryProposal) {
   return (
     <div>
-      {displayData.currentStage === 'Open' ? (
+      {displayData.status === Status.Open ? (
         <OpenVoting {...displayData} />
-      ) : displayData.currentStage === 'Challenge' ? (
+      ) : displayData.status === Status.Challenge ? (
         <ChallengePeriodVoting {...displayData} />
       ) : (
         <CompletedVoting {...displayData} />

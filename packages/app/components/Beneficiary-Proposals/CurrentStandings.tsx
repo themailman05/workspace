@@ -19,20 +19,20 @@ export default function CurrentStandings(
   const [timeLeft, setTimeLeft] = useState<string>(
     getTimeLeft(beneficiaryProposal.stageDeadline),
   );
-
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(getTimeLeft(beneficiaryProposal.stageDeadline));
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
   return (
     <div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="text-lg font-medium text-gray-700">Votes For</p>
           <span className="text-base text-gray-700 flex flex-row">
-            <p>{beneficiaryProposal.votesFor}</p>
+            <p>{Number(beneficiaryProposal?.votesFor)}</p>
           </span>
         </span>
       </div>
@@ -41,8 +41,16 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
           <ProgressBar
             progress={
-              (100 * beneficiaryProposal.votesFor) /
-              (beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst)
+              beneficiaryProposal?.votesFor
+                ? 100 *
+                  Number(
+                    beneficiaryProposal.votesFor.div(
+                      beneficiaryProposal.votesFor.add(
+                        beneficiaryProposal.votesAgainst,
+                      ),
+                    ),
+                  )
+                : 0
             }
             progressColor={'bg-green-300'}
           />
@@ -52,7 +60,7 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="text-lg font-medium text-gray-700">Votes Against</p>
           <span className="text-base text-gray-700 flex flex-row">
-            <p>{beneficiaryProposal.votesAgainst}</p>
+            <p>{Number(beneficiaryProposal?.votesAgainst)}</p>
           </span>
         </span>
       </div>
@@ -61,8 +69,16 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between border-b-2 pb-2">
           <ProgressBar
             progress={
-              (100 * beneficiaryProposal.votesAgainst) /
-              (beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst)
+              beneficiaryProposal?.votesAgainst
+                ? 100 *
+                  Number(
+                    beneficiaryProposal.votesAgainst.div(
+                      beneficiaryProposal.votesFor.add(
+                        beneficiaryProposal.votesAgainst,
+                      ),
+                    ),
+                  )
+                : 0
             }
             progressColor={'bg-red-400'}
           />
@@ -74,7 +90,13 @@ export default function CurrentStandings(
           <p className="text-lg font-medium text-gray-700">Total Votes</p>
           <span className="text-base text-gray-700 flex flex-row">
             <p>
-              {beneficiaryProposal.votesFor + beneficiaryProposal.votesAgainst}
+              {beneficiaryProposal?.votesFor
+                ? Number(
+                    beneficiaryProposal.votesFor.add(
+                      beneficiaryProposal.votesAgainst,
+                    ),
+                  )
+                : 0}
             </p>
           </span>
         </span>

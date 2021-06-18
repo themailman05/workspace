@@ -33,7 +33,7 @@ export interface ProposalCardProps extends BeneficiaryCardProps {
 }
 
 export interface DummyBeneficiaryProposal extends ProposalCardProps {
-  headerImageURL: string;
+  headerImage: string;
   photoURLs?: string[];
   impactReports?: string[];
   additionalImages?: string[];
