@@ -64,11 +64,11 @@ export default function BeneficiaryProposalCard({
     <Link
       key={displayData.name}
       href={
-        isProposal
-          ? 'beneficiary-proposals/' + displayData.ethereumAddress
-          : isTakedown
-          ? 'beneficiary-proposals/takedowns/' + displayData.ethereumAddress
-          : 'beneficiaries/' + displayData.ethereumAddress
+        isTakedown
+          ? '/beneficiary-proposals/takedowns/' + displayData.ethereumAddress
+          : isProposal
+          ? '/beneficiary-proposals/' + displayData.ethereumAddress
+          : '/beneficiaries/' + displayData.ethereumAddress
       }
     >
       <a>
