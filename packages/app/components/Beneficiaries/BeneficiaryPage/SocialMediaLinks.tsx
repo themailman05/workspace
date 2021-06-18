@@ -1,14 +1,10 @@
-import {
-  Beneficiary,
-  BaseBeneficiary,
-  BeneficiaryProposal,
-} from 'interfaces/beneficiaries';
+import { Beneficiary, BeneficiaryProposal } from 'interfaces/beneficiaries';
 import * as Icon from 'react-feather';
 
 // TODO: Limit social media links to contents of beneficiaryProposal once we link to contracts
 
 export default function SocialMediaLinks(
-  displayData: Beneficiary | BeneficiaryProposal | BaseBeneficiary,
+  displayData: Beneficiary | BeneficiaryProposal,
 ): JSX.Element {
   return (
     <>

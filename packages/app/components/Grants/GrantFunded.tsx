@@ -2,7 +2,6 @@ import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { ContractsContext } from '../../context/Web3/contracts';
 import { useContext, useEffect, useState } from 'react';
 import { Check } from 'react-feather';
-import { BeneficiaryMetadata } from './BeneficiaryCard';
 import { BaseBeneficiary } from 'interfaces/beneficiaries';
 
 interface GrantFundedProps {

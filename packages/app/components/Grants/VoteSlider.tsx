@@ -17,10 +17,10 @@ export default function VoteSlider({
 
   const sliderSteps = [
     [0, '0%'],
-    [voiceCredits * 0.25, '25%'],
-    [voiceCredits * 0.5, '50%'],
-    [voiceCredits * 0.75, '75%'],
-    [voiceCredits, '100%'],
+    [electionProps.voiceCredits * 0.25, '25%'],
+    [electionProps.voiceCredits * 0.5, '50%'],
+    [electionProps.voiceCredits * 0.75, '75%'],
+    [electionProps.voiceCredits, '100%'],
   ];
   const sliderMarks = {};
   sliderSteps.forEach(function (step) {
@@ -28,13 +28,13 @@ export default function VoteSlider({
   });
 
   function handleSliderChange(value: number) {
-    if (voiceCredits - pendingVotes[election.electionTerm].total <= 0) {
+    if (electionProps.voiceCredits - electionProps.pendingVotes[electionProps.election.electionTerm].total <= 0) {
       if (
-        pendingVotes[election.electionTerm].votes[beneficiary.ethereumAddress] >
+        electionProps.pendingVotes[electionProps.election.electionTerm].votes[beneficiary.ethereumAddress] >
         value
       ) {
         setVotesAssignedByUser(value);
-        assignVotes(election.electionTerm, {
+        electionProps.assignVotes(electionProps.election.electionTerm, {
           address: beneficiary.ethereumAddress,
           votes: value,
         });
@@ -42,12 +42,12 @@ export default function VoteSlider({
       return;
     }
     setVotesAssignedByUser(value);
-    assignVotes(election.electionTerm, {
+    electionProps.assignVotes(electionProps.election.electionTerm, {
       address: beneficiary.ethereumAddress,
       votes: value,
     });
   }
-  if (election.electionStateStringShort !== 'voting') {
+  if (electionProps.election.electionStateStringShort !== 'voting') {
     return <></>;
   }
 
@@ -56,21 +56,21 @@ export default function VoteSlider({
       <span className="flex flex-row justify-between">
         <p className="text-lg font-medium text-gray-700">Votes</p>
         <span className="text-base text-gray-700 flex flex-row">
-          <p className="font-medium">{totalVotes || 0}</p>
+          <p className="font-medium">{electionProps.totalVotes || 0}</p>
           <p className="mr-4">
             {votesAssignedByuser > 0 && `+${votesAssignedByuser}`}
           </p>
         </span>
       </span>
-      {assignVotes && voiceCredits > 0 && (
+      {electionProps.assignVotes && electionProps.voiceCredits > 0 && (
         <div className="w-11/12 ml-1 pb-3">
           <Slider
-            key={beneficiary?.address}
+            key={beneficiary?.ethereumAddress}
             className="mt-2"
             value={votesAssignedByuser}
             onChange={(value) => handleSliderChange(value)}
             min={0}
-            max={voiceCredits}
+            max={electionProps.voiceCredits}
             step={1}
             marks={sliderMarks}
             dotStyle={{ backgroundColor: '#93C5FD', border: '#93C5FD' }}

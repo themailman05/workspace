@@ -1,10 +1,10 @@
-import { Votes, Vote, PendingVotes } from 'pages/grant-elections/[type]';
-import { useEffect, useState } from 'react';
-import { useRef } from 'react';
-import BeneficiaryCard, { BeneficiaryMetadata } from './BeneficiaryCard';
-import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
+import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
+import { useEffect, useRef, useState } from 'react';
+import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
+import BeneficiaryCard from '../Beneficiaries/BeneficiaryCard';
 
 interface IGrantRound {
   voiceCredits: number;
@@ -39,7 +39,7 @@ export default function GrantRound({
   const ref = useRef(null);
   const [votes, setVotes] = useState<Votes>({ total: 0 });
   const [beneficiariesWithMetadata, setBeneficiaries] = useState<
-    BeneficiaryMetadata[]
+    BaseBeneficiary[]
   >([]);
 
   useEffect(() => {
@@ -48,12 +48,11 @@ export default function GrantRound({
     }
   }, [election]);
 
-  const getBeneficiary = (address: string, votes): BeneficiaryMetadata => {
+  const getBeneficiary = (address: string, votes): BaseBeneficiary => {
     const beneficiary =
       beneficiariesHashMap[process.env.CHAIN_ID || '31337'][
         address.toLowerCase()
       ];
-    beneficiary.totalVotes = votes[address];
     return beneficiary;
   };
 
@@ -83,13 +82,16 @@ export default function GrantRound({
     >
       {beneficiariesWithMetadata?.map((beneficiary) => (
         <BeneficiaryCard
-          key={beneficiary.address}
-          election={election}
-          beneficiary={beneficiary}
-          pendingVotes={pendingVotes}
-          voiceCredits={voiceCredits}
-          votesAssignedByUser={0}
-          assignVotes={assignVotes}
+          key={beneficiary.ethereumAddress}
+          electionProps={{
+            election: election,
+            pendingVotes: pendingVotes,
+            voiceCredits: voiceCredits,
+            votesAssignedByUser: 0,
+            assignVotes: assignVotes,
+            totalVotes: votes[beneficiary.ethereumAddress],
+          }}
+          displayData={beneficiary}
         />
       ))}
     </div>

@@ -7,6 +7,7 @@ import VoteSlider from 'components/Grants/VoteSlider';
 import { BaseBeneficiary, BaseProposal } from 'interfaces/beneficiaries';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
+import VotingInformation from './Proposals/Voting/VotingInformation';
 
 export interface ElectionProps {
   election: ElectionMetadata;
@@ -18,12 +19,11 @@ export interface ElectionProps {
   totalVotes: number;
 }
 
-export interface BeneficiaryCard {
+export interface BeneficiaryCardProps {
   displayData: BaseBeneficiary | BaseProposal;
   electionProps?: ElectionProps;
   isProposal?: boolean;
   isTakedown?: boolean;
-  isGrantElection?: boolean;
 }
 
 export default function BeneficiaryCard({
@@ -31,14 +31,22 @@ export default function BeneficiaryCard({
   electionProps,
   isProposal = false,
   isTakedown = false,
-  isGrantElection = false,
-}: BeneficiaryCard): JSX.Element {
+}: BeneficiaryCardProps): JSX.Element {
   return (
     <div
       key={displayData?.ethereumAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
-      <Link href={`/beneficiary/${displayData?.ethereumAddress}`} passHref>
+      <Link
+        href={`${
+          isTakedown
+            ? '/beneficiary-proposals/takedowns/'
+            : isProposal
+            ? '/beneficiary-proposals/'
+            : '/beneficiaries/'
+        }${displayData.ethereumAddress}`}
+        passHref
+      >
         <a>
           <div className="flex-shrink-0">
             <img
@@ -67,12 +75,8 @@ export default function BeneficiaryCard({
             <>
               {GrantElectionAdapter().isActive(electionProps.election) ? (
                 <VoteSlider
-                  key={displayData?.ethereumAddress}
-                  beneficiary={displayData}
-                  election={electionProps.election}
-                  pendingVotes={electionProps.pendingVotes}
-                  assignVotes={electionProps.assignVotes}
-                  voiceCredits={electionProps.voiceCredits}
+                  beneficiary={displayData as BaseBeneficiary}
+                  electionProps={electionProps}
                 />
               ) : (
                 <GrantFunded
