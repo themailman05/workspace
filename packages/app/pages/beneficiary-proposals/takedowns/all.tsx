@@ -12,7 +12,8 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
   >([]);
 
   async function getProposals() {
-    const numProposals = await contracts.beneficiaryGovernance.getNumberOfProposals();
+    const numProposals =
+      await contracts.beneficiaryGovernance.getNumberOfProposals();
     const proposals = await (
       await Promise.all(
         new Array(numProposals.toNumber()).fill(undefined).map(async (x, i) => {
@@ -44,7 +45,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           instagramUrl: ipfsData.instagramUrl,
           githubUrl: ipfsData.githubUrl,
           ethereumAddress: ipfsData.ethereumAddress,
-          profileImage: `${process.env.IPFS_URL}${ipfsData.profileImage}`,
+          profileImage: ipfsData.profileImage,
           votesFor: proposal.yesCount,
           votesAgainst: proposal.noCount,
           status: Number(proposal.status.toString()),
