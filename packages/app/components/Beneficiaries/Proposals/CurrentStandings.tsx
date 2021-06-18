@@ -23,13 +23,13 @@ export default function CurrentStandings(
   const [timeLeft, setTimeLeft] = useState<string>(
     getTimeLeft(displayData?.stageDeadline),
   );
-
   useEffect(() => {
     const interval = setInterval(() => {
       setTimeLeft(getTimeLeft(displayData?.stageDeadline));
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
   return (
     <div>
       <div className="grid my-2 justify-items-stretch">

@@ -6,7 +6,7 @@ import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
 
 export default function BeneficiaryPageWrapper(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [proposals, setProposals] = useState<BeneficiaryCardProps[]>([]);
+  const [proposals, setProposals] = useState<ProposalCardProps[]>([]);
 
   async function getProposals() {
     const numProposals = await contracts.beneficiaryGovernance.getNumberOfProposals();
@@ -18,7 +18,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       )
     ).filter((proposal) => proposal.proposalType === 0);
 
-    const proposalsData = await await Promise.all(
+    const proposalsData = await Promise.all(
       proposals.map(async (proposal) => {
         const ipfsData = await fetch(
           `${process.env.IPFS_URL}${getIpfsHashFromBytes32(
@@ -42,7 +42,7 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
           instagramUrl: ipfsData.instagramUrl,
           githubUrl: ipfsData.githubUrl,
           ethereumAddress: ipfsData.ethereumAddress,
-          profileImage: `${process.env.IPFS_URL}${ipfsData.profileImage}`,
+          profileImage: ipfsData.profileImage,
           votesFor: proposal.yesCount,
           votesAgainst: proposal.noCount,
           status: Number(proposal.status.toString()),
