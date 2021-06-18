@@ -1,4 +1,7 @@
-import { BeneficiaryCardProps, ProposalCardProps } from 'interfaces/beneficiaries';
+import {
+  BeneficiaryCardProps,
+  ProposalCardProps,
+} from 'interfaces/beneficiaries';
 import Link from 'next/link';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
 
@@ -34,7 +37,10 @@ function VotingInformation(
         name={'Voting Deadline'}
         value={beneficiaryProposal.stageDeadline.toLocaleString()}
       />
-      <VotingRow name={'Votes For'} value={formatAndRoundBigNumber(beneficiaryProposal.votesFor)} />
+      <VotingRow
+        name={'Votes For'}
+        value={formatAndRoundBigNumber(beneficiaryProposal.votesFor)}
+      />
       <VotingRow
         name={'Votes Against'}
         value={formatAndRoundBigNumber(beneficiaryProposal.votesAgainst)}
@@ -49,16 +55,6 @@ function VotingInformation(
   );
 }
 
-function getLink(isProposal, isTakedown, ethereumAddress) {
-  if (isProposal) {
-    return 'beneficiary-proposals/' + ethereumAddress;
-  } else if (isTakedown) {
-    return 'beneficiary-proposals/takedowns/' + ethereumAddress;
-  } else {
-    return 'beneficiaries/' + ethereumAddress;
-  }
-}
-
 export default function BeneficiaryProposalCard({
   displayData,
   isProposal,
@@ -70,6 +66,8 @@ export default function BeneficiaryProposalCard({
       href={
         isProposal
           ? 'beneficiary-proposals/' + displayData.ethereumAddress
+          : isTakedown
+          ? 'beneficiary-proposals/takedowns/' + displayData.ethereumAddress
           : 'beneficiaries/' + displayData.ethereumAddress
       }
     >

@@ -21,6 +21,7 @@ contract BeneficiaryGovernance is Governed {
   IBeneficiaryRegistry beneficiaryRegistry;
 
   mapping(address => bool) pendingBeneficiaries;
+  mapping(address => uint256) beneficiaryProposals;
   /**
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
@@ -163,7 +164,7 @@ contract BeneficiaryGovernance is Governed {
     proposal.configurationOptions = DefaultConfigurations;
 
     pendingBeneficiaries[_beneficiary] = true;
-
+    beneficiaryProposals[_beneficiary] = proposals.length;
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _applicationCid);
 
     return proposalId;
@@ -376,17 +377,12 @@ contract BeneficiaryGovernance is Governed {
     return proposals[proposalId].voters[voter];
   }
 
-/**
+  /**
    * @notice return proposalId given address
    * @param  beneficiary address of beneficiary
    * @return uint256
    */
-  function getProposalId(address beneficiary)
-    public
-    view
-    returns (uint256 ) {
-      for (uint256 i = 0; i < proposals.length; i++) {
-        if (proposals[i].beneficiary == beneficiary) return i;
-      }
-    }
+  function getProposalId(address beneficiary) public view returns (uint256) {
+    return beneficiaryProposals[beneficiary];
+  }
 }
