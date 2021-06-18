@@ -48,7 +48,7 @@ export default function GrantRound({
     }
   }, [election]);
 
-  const getBeneficiary = (address: string, votes): BaseBeneficiary => {
+  const getBeneficiary = (address: string): BaseBeneficiary => {
     const beneficiary =
       beneficiariesHashMap[process.env.CHAIN_ID || '31337'][
         address.toLowerCase()
@@ -60,7 +60,7 @@ export default function GrantRound({
     if (votes && election) {
       setBeneficiaries(
         election.registeredBeneficiaries.map((address) =>
-          getBeneficiary(address, votes),
+          getBeneficiary(address),
         ),
       );
     }

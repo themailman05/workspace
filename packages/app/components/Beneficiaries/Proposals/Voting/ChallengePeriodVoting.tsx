@@ -2,8 +2,6 @@ import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BeneficiaryProposal } from 'interfaces/beneficiaries';
-import { useState } from 'react';
-import { useEffect } from 'react';
 import { useContext } from 'react';
 import CurrentStandings from '../CurrentStandings';
 
@@ -17,6 +15,7 @@ export default function ChallengePeriodVoting({
   isTakedown,
 }: ChallengePeriodVotingProps): JSX.Element {
   const { dispatch } = useContext(store);
+  const { contracts } = useContext(ContractsContext);
 
   return (
     <div className="content-center mx-48">
@@ -70,8 +69,8 @@ export default function ChallengePeriodVoting({
                 onConfirm: {
                   label: 'Confirm Veto',
                   onClick: () => {
-                    //TODO add function call
-                    window.alert('to implement');
+                    //TODO is veto a vote.yes or vote.no?
+                    contracts.beneficiaryGovernance.vote(displayData.id, 0);
                   },
                 },
                 onDismiss: {

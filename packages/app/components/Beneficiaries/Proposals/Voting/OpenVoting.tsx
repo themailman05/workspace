@@ -1,6 +1,7 @@
 import { RadioGroup } from '@headlessui/react';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
+import { ContractsContext } from 'context/Web3/contracts';
 import { BeneficiaryProposal } from 'interfaces/beneficiaries';
 import { useContext, useState } from 'react';
 import CurrentStandings from '../CurrentStandings';
@@ -21,6 +22,7 @@ export default function OpenVoting({
 }: OpenVotingProps): JSX.Element {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
+  const { contracts } = useContext(ContractsContext);
 
   return (
     <div className="content-center mx-48">
@@ -155,7 +157,7 @@ export default function OpenVoting({
                 onConfirm: {
                   label: 'Confirm Vote',
                   onClick: () => {
-                    //TODO add real function
+                    contracts.beneficiaryGovernance.vote(displayData.id, selected)
                     dispatch(setDualActionModal(false))
                   },
                 },

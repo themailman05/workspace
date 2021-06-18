@@ -37,6 +37,7 @@ export interface BeneficiaryProposal extends BaseProposal {
   impactReports?: string[];
   additionalImages?: string[];
   proofOfOwnership: string;
+  id:number;
 }
 
 export interface Beneficiary extends BaseBeneficiary {
