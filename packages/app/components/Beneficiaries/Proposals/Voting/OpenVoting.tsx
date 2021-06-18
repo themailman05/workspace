@@ -170,7 +170,7 @@ export default function OpenVoting({
           Cast Vote
         </button>
 
-        <CurrentStandings {...displayData} />
+        {displayData && <CurrentStandings {...displayData} />}
       </div>
     </div>
   );

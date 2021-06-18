@@ -43,7 +43,7 @@ export default function CompletedVoting({
           )}
         </span>
       </div>
-      <CurrentStandings {...displayData} />
+      {displayData && <CurrentStandings {...displayData} />}
     </div>
   );
 }

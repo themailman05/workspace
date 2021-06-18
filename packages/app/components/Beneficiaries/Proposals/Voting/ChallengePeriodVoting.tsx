@@ -82,7 +82,7 @@ export default function ChallengePeriodVoting({
           {isTakedown ? 'Veto Takedown Proposal Vote' : 'Veto Proposal Vote'}
         </button>
       </div>
-      <CurrentStandings {...displayData} />
+      {displayData && <CurrentStandings {...displayData} />}
     </div>
   );
 }
