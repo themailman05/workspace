@@ -8,19 +8,15 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "./Defended.sol";
 import "./AffiliateToken.sol";
-
-interface ThreeCrv is IERC20 {}
-
-interface CrvLPToken is IERC20 {}
 
 contract Pool is AffiliateToken, Ownable, ReentrancyGuard {
   using SafeMath for uint256;
-  using SafeERC20 for ThreeCrv;
-  using SafeERC20 for CrvLPToken;
+  using SafeERC20 for IERC20;
 
-  ThreeCrv public threeCrv;
-  CrvLPToken public crvLPToken;
+  IERC20  public want;
   address public rewardsManager;
 
   uint256 constant BPS_DENOMINATOR = 10_000;
@@ -31,6 +27,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard {
   uint256 public performanceFee = 2000;
   uint256 public poolTokenHWM = 1e18;
   uint256 public feesUpdatedAt;
+  mapping(address => uint256) public blockLocks;
 
   event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
   event Withdrawal(address indexed to, uint256 amount);
@@ -42,18 +39,34 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard {
   event PerformanceFeeChanged(uint256 previousBps, uint256 newBps);
 
   constructor(
-    address threeCrv_,
+    address want_,
     address rewardsManager_
-  ) public AffiliateToken(threeCrv_, address(0), "Popcorn 3Crv Pool", "pop3Crv") {
-    require(address(threeCrv_) != address(0));
+  ) public AffiliateToken(want_, address(0), "Popcorn 3Crv Pool", "pop3Crv") {
+    require(address(want_) != address(0));
     require(rewardsManager_ != address(0));
 
-    threeCrv = ThreeCrv(threeCrv_);
+    want = IERC20(want_);
     rewardsManager = rewardsManager_;
     feesUpdatedAt = block.timestamp;
   }
 
-  function deposit(uint256 amount) public override nonReentrant returns (uint256) {
+  modifier blockLocked() {
+    require(blockLocks[msg.sender] < block.number, "Locked until next block");
+    _;
+  }
+
+  function deposit(uint256 amount) 
+    public 
+    override
+    defend
+    nonReentrant
+    whenNotPaused
+    blockLocked
+    returns (uint256) 
+  {
+
+    require(amount <= want.balanceOf(msg.sender), "Insufficient balance");
+    _lockForBlock(msg.sender);
     _takeFees();
 
     uint256 deposited = super.deposit(amount);
@@ -67,10 +80,12 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard {
     public 
     override
     nonReentrant
+    blockLocked
     returns (uint256)
   {
     require(amount <= balanceOf(msg.sender), "Insufficient pool token balance");
 
+    _lockForBlock(msg.sender);
     _takeFees();
 
     _burn(msg.sender, amount);
