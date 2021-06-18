@@ -1,8 +1,8 @@
-import Icon from 'components/Icon';
+import { CheckIcon, XIcon } from '@heroicons/react/solid';
 import Navbar from 'components/NavBar/NavBar';
 import { ElectionsContext } from 'context/Web3/elections';
 import Link from 'next/link';
-import { useContext } from 'react';
+import React, { useContext } from 'react';
 
 export interface IGrantRoundFilter {
   active: boolean;
@@ -69,21 +69,7 @@ export default function GrantOverview(): JSX.Element {
                         <ul className="space-y-4">
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg
-                                className="flex-shrink-0 h-6 w-6 text-green-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
+                              <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Vote for your favorite social impact organizations
@@ -96,8 +82,10 @@ export default function GrantOverview(): JSX.Element {
                               {(elections[0] &&
                                 ['closed', 'finalized'].includes(
                                   elections[0]?.electionStateStringShort,
-                                ) && <Icon type="x" />) || (
-                                <Icon type="check" />
+                                ) && (
+                                  <XIcon className="flex-shrink-0 h-6 w-6 text-red-500" />
+                                )) || (
+                                <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                               )}
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
@@ -110,21 +98,7 @@ export default function GrantOverview(): JSX.Element {
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg
-                                className="flex-shrink-0 h-6 w-6 text-green-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
+                              <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Receive POP tokens for participating
@@ -184,21 +158,7 @@ export default function GrantOverview(): JSX.Element {
                       <ul className="space-y-4">
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg
-                              className="flex-shrink-0 h-6 w-6 text-green-500"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
+                            <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
                             Our profits this year will fund organizations of{' '}
@@ -211,7 +171,11 @@ export default function GrantOverview(): JSX.Element {
                             {(elections[2] &&
                               ['closed', 'finalized'].includes(
                                 elections[2]?.electionStateStringShort,
-                              ) && <Icon type="x" />) || <Icon type="check" />}
+                              ) && (
+                                <XIcon className="flex-shrink-0 h-6 w-6 text-red-500" />
+                              )) || (
+                              <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
+                            )}
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
                             Election is{' '}
@@ -222,21 +186,7 @@ export default function GrantOverview(): JSX.Element {
 
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg
-                              className="flex-shrink-0 h-6 w-6 text-green-500"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
+                            <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
                             Receive POP tokens for participating
@@ -245,21 +195,7 @@ export default function GrantOverview(): JSX.Element {
 
                         <li className="flex items-start">
                           <div className="flex-shrink-0">
-                            <svg
-                              className="flex-shrink-0 h-6 w-6 text-green-500"
-                              xmlns="http://www.w3.org/2000/svg"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M5 13l4 4L19 7"
-                              />
-                            </svg>
+                            <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                           </div>
                           <p className="ml-3 text-base font-medium text-gray-500">
                             Support the environment, education and open source
@@ -311,21 +247,7 @@ export default function GrantOverview(): JSX.Element {
                         <ul className="space-y-4">
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg
-                                className="flex-shrink-0 h-6 w-6 text-green-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
+                              <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Vote for your favorite social impact organizations
@@ -338,8 +260,10 @@ export default function GrantOverview(): JSX.Element {
                               {(elections[1] &&
                                 ['closed', 'finalized'].includes(
                                   elections[1]?.electionStateStringShort,
-                                ) && <Icon type="x" />) || (
-                                <Icon type="check" />
+                                ) && (
+                                  <XIcon className="flex-shrink-0 h-6 w-6 text-red-500" />
+                                )) || (
+                                <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                               )}
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
@@ -352,21 +276,7 @@ export default function GrantOverview(): JSX.Element {
 
                           <li className="flex items-start">
                             <div className="flex-shrink-0">
-                              <svg
-                                className="flex-shrink-0 h-6 w-6 text-green-500"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                                aria-hidden="true"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth="2"
-                                  d="M5 13l4 4L19 7"
-                                />
-                              </svg>
+                              <CheckIcon className="flex-shrink-0 h-6 w-6 text-green-500" />
                             </div>
                             <p className="ml-3 text-base font-medium text-gray-500">
                               Receive POP tokens for participating
