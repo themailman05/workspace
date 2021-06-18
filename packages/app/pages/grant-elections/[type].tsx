@@ -145,7 +145,7 @@ export default function AllGrants() {
           type: 'info',
           onConfirm: {
             label: 'Done',
-            onClick: () => setSingleActionModal(false),
+            onClick: () => dispatch(setSingleActionModal(false)),
           },
         });
         let newElectionSignedUpForArray = electionsSignedUpFor;
@@ -160,7 +160,7 @@ export default function AllGrants() {
           type: 'error',
           onConfirm: {
             label: 'Go Back',
-            onClick: () => setSingleActionModal(false),
+            onClick: () => dispatch(setSingleActionModal(false)),
           },
         });
       });
@@ -370,7 +370,7 @@ export default function AllGrants() {
                     },
                     onDismiss: {
                       label: 'Cancel',
-                      onClick: () => setDualActionModal(false),
+                      onClick: () => dispatch(setDualActionModal(false)),
                     },
                   }),
                 );

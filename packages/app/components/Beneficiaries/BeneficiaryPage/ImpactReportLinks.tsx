@@ -1,7 +1,7 @@
 import {
   Beneficiary,
   BeneficiaryProposal,
-} from '../interfaces/beneficiaries';
+} from 'interfaces/beneficiaries';
 
 export default function ImpactReportLinks(
   displayData: Beneficiary | BeneficiaryProposal,

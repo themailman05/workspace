@@ -1,7 +1,4 @@
-import {
-  Beneficiary,
-  BeneficiaryProposal,
-} from '../interfaces/beneficiaries';
+import { Beneficiary, BeneficiaryProposal } from "interfaces/beneficiaries";
 
 export default function Verfication(
   displayData: Beneficiary | BeneficiaryProposal,

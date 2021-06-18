@@ -1,6 +1,6 @@
 import {
-  BeneficiaryCardProps,
-  ProposalCardProps,
+  BaseBeneficiary,
+  BaseProposal,
 } from 'interfaces/beneficiaries';
 import Link from 'next/link';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
@@ -11,7 +11,7 @@ interface IVotingRow {
 }
 
 interface IBeneficiaryProposalCard {
-  displayData: BeneficiaryCardProps | ProposalCardProps;
+  displayData: BaseBeneficiary | BaseProposal;
   isProposal: boolean;
   isTakedown: boolean;
 }
@@ -28,7 +28,7 @@ function VotingRow(data: IVotingRow): JSX.Element {
 }
 
 function VotingInformation(
-  beneficiaryProposal: ProposalCardProps,
+  beneficiaryProposal: BaseProposal,
 ): JSX.Element {
   return (
     <div>
@@ -90,7 +90,7 @@ export default function BeneficiaryProposalCard({
               </p>
             </div>
             {isProposal ? (
-              <VotingInformation {...(displayData as ProposalCardProps)} />
+              <VotingInformation {...(displayData as BaseProposal)} />
             ) : (
               <div> </div>
             )}

@@ -1,6 +1,9 @@
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
+import { ContractsContext } from 'context/Web3/contracts';
 import { BeneficiaryProposal } from 'interfaces/beneficiaries';
+import { useState } from 'react';
+import { useEffect } from 'react';
 import { useContext } from 'react';
 import CurrentStandings from '../CurrentStandings';
 
@@ -73,7 +76,7 @@ export default function ChallengePeriodVoting({
                 },
                 onDismiss: {
                   label: 'Cancel',
-                  onClick: () => setDualActionModal(false),
+                  onClick: () => dispatch(setDualActionModal(false)),
                 },
               }),
             );

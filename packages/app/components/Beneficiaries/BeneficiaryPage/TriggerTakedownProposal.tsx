@@ -1,9 +1,7 @@
-import React, { Fragment, useContext, useState } from 'react';
-import { store } from '../../context/store';
-import {
-  setSingleActionModal,
-  setDualActionModal,
-} from '../../context/actions';
+import { setDualActionModal, setSingleActionModal } from 'context/actions';
+import { store } from 'context/store';
+import { useContext } from 'react';
+
 
 export default function TriggerTakedownProposal(): JSX.Element {
   const { dispatch } = useContext(store);
@@ -32,12 +30,12 @@ export default function TriggerTakedownProposal(): JSX.Element {
                   label: 'Confirm Takedown Proposal',
                   onClick: () => {
                     triggerTakedownProposal();
-                    setDualActionModal(false);
+                    dispatch(setDualActionModal(false));
                   },
                 },
                 onDismiss: {
                   label: 'Cancel Takedown Proposal',
-                  onClick: () => setDualActionModal(false),
+                  onClick: () => dispatch(setDualActionModal(false)),
                 },
               }),
             );

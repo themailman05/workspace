@@ -109,6 +109,7 @@ export interface SetDualActionModalAction {
 export const setDualActionModal = (
   props: Partial<DualActionModalProps> | false,
 ): SetDualActionModalAction => {
+  console.log(props)
   if (!props) {
     return {
       type: DUAL_ACTION_MODAL,

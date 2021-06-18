@@ -1,17 +1,16 @@
-import { useContext, useEffect, useState } from 'react';
-import { ContractsContext } from '../../context/Web3/contracts';
-import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
+import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { useContext, useEffect, useState } from 'react';
+import { ContractsContext } from '../../context/Web3/contracts';
 
-export default function BeneficiaryPageWrapper(): JSX.Element {
+export default function BeneficiaryPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [benefeciaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>(
-    [],
-  );
+  const [benefeciaries, setBeneficiaries] = useState<BaseBeneficiary[]>([]);
 
   async function getBeneficiaries() {
-    const beneficiaryAddresses = await contracts.beneficiary.getBeneficiaryList();
+    const beneficiaryAddresses =
+      await contracts.beneficiary.getBeneficiaryList();
 
     const ipfsHashes = await Promise.all(
       beneficiaryAddresses.map(async (address) => {
@@ -27,18 +26,12 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
         }),
       )
     ).map((beneficiaryJson) => {
-      const benefificaryCardData: BeneficiaryCardProps = {
+      return {
         name: beneficiaryJson.name,
         missionStatement: beneficiaryJson.missionStatement,
-        twitterUrl: beneficiaryJson.twitterUrl,
-        linkedinUrl: beneficiaryJson.linkedinUrl,
-        facebookUrl: beneficiaryJson.facebookUrl,
-        instagramUrl: beneficiaryJson.instagramUrl,
-        githubUrl: beneficiaryJson.githubUrl,
         ethereumAddress: beneficiaryJson.ethereumAddress,
         profileImage: beneficiaryJson.profileImage,
       };
-      return benefificaryCardData;
     });
     setBeneficiaries(beneficiaryData);
   }

@@ -1,7 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { getBytes32FromIpfsHash } from '@popcorn/utils/ipfsHashManipulation';
 import { useWeb3React } from '@web3-react/core';
-import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage';
+import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage/BeneficiaryPage';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { connectors } from 'context/Web3/connectors';

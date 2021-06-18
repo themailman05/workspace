@@ -1,13 +1,13 @@
-import TriggerTakedownProposal from 'components/Beneficiaries/TriggerTakedownProposal';
 import NavBar from 'components/NavBar/NavBar';
 import { Beneficiary, BeneficiaryProposal } from 'interfaces/beneficiaries';
 import ImageHeader from './ImageHeader';
 import ImpactReportLinks from './ImpactReportLinks';
 import MissionStatement from './MissionStatement';
 import PhotoSideBar from './PhotoSideBar';
-import Voting from './Proposals/Voting/Voting';
+import Voting from '../Proposals/Voting/Voting';
 import SocialMedia from './SocialMedia';
 import Verification from './Verification';
+import TriggerTakedownProposal from './TriggerTakedownProposal';
 
 interface BeneficiaryPageProps {
   displayData: Beneficiary | BeneficiaryProposal;

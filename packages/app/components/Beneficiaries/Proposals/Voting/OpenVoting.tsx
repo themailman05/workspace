@@ -52,7 +52,7 @@ export default function OpenVoting({
               className={({ checked }) =>
                 `rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer focus:outline-none ${
                   checked
-                    ? 'bg-indigo-50 border-indigo-200 z-10'
+                    ? 'bg-indigo-50 border-indigo-200'
                     : 'border-gray-200'
                 }`
               }
@@ -98,7 +98,7 @@ export default function OpenVoting({
               className={({ checked }) =>
                 `rounded-bl-md rounded-br-md relative border p-4 flex cursor-pointer focus:outline-none ${
                   checked
-                    ? 'bg-indigo-50 border-indigo-200 z-10'
+                    ? 'bg-indigo-50 border-indigo-200'
                     : 'border-gray-200'
                 }`
               }
@@ -156,12 +156,12 @@ export default function OpenVoting({
                   label: 'Confirm Vote',
                   onClick: () => {
                     //TODO add real function
-                    window.alert('mehul');
+                    dispatch(setDualActionModal(false))
                   },
                 },
                 onDismiss: {
                   label: 'Cancel',
-                  onClick: () => setDualActionModal(false),
+                  onClick: () => dispatch(setDualActionModal(false)),
                 },
               }),
             );

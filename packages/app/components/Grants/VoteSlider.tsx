@@ -1,24 +1,17 @@
-import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
+import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
+import { BaseBeneficiary } from 'interfaces/beneficiaries';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';
-import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
-import { BeneficiaryMetadata } from './BeneficiaryCard';
 
 interface VoteSlider {
-  beneficiary: BeneficiaryMetadata;
-  election: ElectionMetadata;
-  assignVotes?: (grantTerm: number, vote: Vote) => void;
-  voiceCredits?: number;
-  pendingVotes: PendingVotes;
+  beneficiary: BaseBeneficiary;
+  electionProps: ElectionProps;
 }
 
 export default function VoteSlider({
   beneficiary,
-  election,
-  assignVotes,
-  voiceCredits,
-  pendingVotes,
+  electionProps,
 }: VoteSlider): JSX.Element {
   const [votesAssignedByuser, setVotesAssignedByUser] = useState(0);
 
@@ -37,11 +30,12 @@ export default function VoteSlider({
   function handleSliderChange(value: number) {
     if (voiceCredits - pendingVotes[election.electionTerm].total <= 0) {
       if (
-        pendingVotes[election.electionTerm].votes[beneficiary.address] > value
+        pendingVotes[election.electionTerm].votes[beneficiary.ethereumAddress] >
+        value
       ) {
         setVotesAssignedByUser(value);
         assignVotes(election.electionTerm, {
-          address: beneficiary.address,
+          address: beneficiary.ethereumAddress,
           votes: value,
         });
       }
@@ -49,7 +43,7 @@ export default function VoteSlider({
     }
     setVotesAssignedByUser(value);
     assignVotes(election.electionTerm, {
-      address: beneficiary.address,
+      address: beneficiary.ethereumAddress,
       votes: value,
     });
   }
@@ -62,7 +56,7 @@ export default function VoteSlider({
       <span className="flex flex-row justify-between">
         <p className="text-lg font-medium text-gray-700">Votes</p>
         <span className="text-base text-gray-700 flex flex-row">
-          <p className="font-medium">{beneficiary.totalVotes || 0}</p>
+          <p className="font-medium">{totalVotes || 0}</p>
           <p className="mr-4">
             {votesAssignedByuser > 0 && `+${votesAssignedByuser}`}
           </p>

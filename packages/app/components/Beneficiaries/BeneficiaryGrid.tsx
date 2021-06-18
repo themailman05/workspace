@@ -4,8 +4,8 @@ import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
 import {
-  BeneficiaryCardProps,
-  ProposalCardProps,
+  BaseBeneficiary,
+  BaseProposal,
   Status,
 } from 'interfaces/beneficiaries';
 import React, { Fragment, useContext, useState } from 'react';
@@ -34,7 +34,7 @@ function Header({ title, subtitle }) {
 interface BeneficiaryGridProps {
   title: string;
   subtitle: string;
-  cardProps: ProposalCardProps[] | BeneficiaryCardProps[];
+  cardProps: BaseProposal[] | BaseBeneficiary[];
   isProposal?: boolean;
   isTakedown?: boolean;
 }
@@ -165,7 +165,7 @@ export default function BeneficiaryGrid({
           .filter((cardProp) => {
             if (isProposal) {
               return (
-                (cardProp as ProposalCardProps)?.status === statusFilter ||
+                (cardProp as BaseProposal)?.status === statusFilter ||
                 statusFilter === Status.All
               );
             }
