@@ -2,20 +2,14 @@
 
 pragma solidity >=0.6.0 <0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./MockERC20.sol";
 
-contract MockCurveMetapool {
-  using SafeERC20 for MockERC20;
-
-  MockERC20 public lpToken;
-  MockERC20 public threeCrv;
-  MockERC20 token;
+contract MockCurveThreepool {
+  MockERC20 lpToken;
   MockERC20 dai;
   MockERC20 usdc;
   MockERC20 usdt;
+
   uint256 virtualPrice = 1e18;
 
   uint256 withdrawalSlippageBps = 10;
@@ -24,28 +18,19 @@ contract MockCurveMetapool {
   MockERC20[] tokens;
 
   constructor(
-    address token_,
     address lpToken_,
-    address threeCrv_,
     address dai_,
     address usdc_,
     address usdt_
   ) {
-    token = MockERC20(token_);
     lpToken = MockERC20(lpToken_);
-    threeCrv = MockERC20(threeCrv_);
     dai = MockERC20(dai_);
     usdc = MockERC20(usdc_);
     usdt = MockERC20(usdt_);
-    tokens = [token, threeCrv];
+    tokens = [dai, usdc, usdt];
   }
 
-  function coins() external view returns (address[2] memory) {
-    address[2] memory coins = [address(token), address(threeCrv)];
-    return coins;
-  }
-
-  function base_coins() external view returns (address[3] memory) {
+  function coins() external view returns (address[3] memory) {
     address[3] memory coins = [address(dai), address(usdc), address(usdt)];
     return coins;
   }
@@ -54,9 +39,8 @@ contract MockCurveMetapool {
     return virtualPrice;
   }
 
-  function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amounts)
+  function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amounts)
     external
-    returns (uint256)
   {
     uint256 lpTokens;
     for (uint8 i = 0; i < tokens.length; i++) {
@@ -64,14 +48,13 @@ contract MockCurveMetapool {
       lpToken.mint(msg.sender, amounts[i]);
       lpTokens += amounts[i];
     }
-    return lpTokens;
   }
 
   function remove_liquidity_one_coin(
     uint256 _token_amount,
     int128 i,
-    uint256 _min_amount
-  ) external returns (uint256) {
+    uint256 min_amount
+  ) external {
     lpToken.transferFrom(msg.sender, address(this), _token_amount);
 
     uint256 slippage = (_token_amount * withdrawalSlippageBps) / 10000;
@@ -81,7 +64,6 @@ contract MockCurveMetapool {
     tokens[i].approve(address(this), transferOut);
     tokens[i].mint(address(this), transferOut);
     tokens[i].transferFrom(address(this), msg.sender, transferOut);
-    return transferOut;
   }
 
   // Test helpers
