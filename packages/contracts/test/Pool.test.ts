@@ -1381,53 +1381,53 @@ describe("Pool", function () {
   });
 
   describe("governance", async function () {
-    xit("owner can set withdrawalFee", async function () {
+    it("owner can set withdrawalFee", async function () {
       await contracts.pool.connect(owner).setWithdrawalFee(20);
       expect(await contracts.pool.withdrawalFee()).to.equal(20);
     });
 
-    xit("non-owner cannot set withdrawalFee", async function () {
+    it("non-owner cannot set withdrawalFee", async function () {
       expect(
         contracts.pool.connect(depositor).setWithdrawalFee(20)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    xit("owner can set managementFee", async function () {
+    it("owner can set managementFee", async function () {
       await contracts.pool.connect(owner).setManagementFee(500);
       expect(await contracts.pool.managementFee()).to.equal(500);
     });
 
-    xit("non-owner cannot set managementFee", async function () {
+    it("non-owner cannot set managementFee", async function () {
       expect(
         contracts.pool.connect(depositor).setManagementFee(500)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    xit("owner can set performanceFee", async function () {
+    it("owner can set performanceFee", async function () {
       await contracts.pool.connect(owner).setPerformanceFee(5000);
       expect(await contracts.pool.performanceFee()).to.equal(5000);
     });
 
-    xit("non-owner cannot set performanceFee", async function () {
+    it("non-owner cannot set performanceFee", async function () {
       expect(
         contracts.pool.connect(depositor).setPerformanceFee(500)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    xit("owner can pause the contract", async function () {
+    it("owner can pause the contract", async function () {
       await expect(contracts.pool.connect(owner).pauseContract()).to.emit(
         contracts.pool,
         "Paused"
       );
     });
 
-    xit("non-owner cannot pause the contract", async function () {
+    it("non-owner cannot pause the contract", async function () {
       expect(
         contracts.pool.connect(depositor).pauseContract()
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
-    xit("deposits to the pool should not be allowed when paused", async function () {
+    it("deposits to the pool should not be allowed when paused", async function () {
       let deposit1Amount = parseEther("1000");
       await contracts.pool.connect(owner).pauseContract();
       await contracts.mock3Crv
@@ -1439,7 +1439,7 @@ describe("Pool", function () {
       ).to.be.revertedWith("Pausable: paused");
     });
 
-    xit("deposits to the pool can resume when paused and unpaused", async function () {
+    it("deposits to the pool can resume when paused and unpaused", async function () {
       let deposit1Amount = parseEther("1000");
       await contracts.pool.connect(owner).pauseContract();
       await contracts.mock3Crv
@@ -1452,7 +1452,7 @@ describe("Pool", function () {
       expect(await contracts.pool.totalValue()).to.equal(parseEther("1000"));
     });
 
-    xit("withdrawals are allowed when the pool is paused", async function () {
+    it("withdrawals are allowed when the pool is paused", async function () {
       let deposit1Amount = parseEther("1000");
       await contracts.mock3Crv
         .connect(depositor1)
@@ -1489,7 +1489,7 @@ describe("Pool", function () {
   });
 
   describe("block lock modifier", async function () {
-    xit("prevents a deposit and withdrawal in the same block", async function () {
+    it("prevents a deposit and withdrawal in the same block", async function () {
       await contracts.mock3Crv.mint(
         contracts.blockLockHelper.address,
         parseEther("1000")
@@ -1510,7 +1510,7 @@ describe("Pool", function () {
       ).to.be.revertedWith("Locked until next block");
     });
 
-    xit("prevents a deposit and a transfer in the same block", async function () {
+    it("prevents a deposit and a transfer in the same block", async function () {
       await contracts.mock3Crv.mint(
         contracts.blockLockHelper.address,
         parseEther("1000")
@@ -1520,7 +1520,7 @@ describe("Pool", function () {
       ).to.be.revertedWith("Locked until next block");
     });
 
-    xit("prevents a deposit and transferFrom in the same block", async function () {
+    it("prevents a deposit and transferFrom in the same block", async function () {
       await contracts.mock3Crv.mint(
         contracts.blockLockHelper.address,
         parseEther("1000")
