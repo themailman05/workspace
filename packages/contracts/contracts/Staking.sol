@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity >=0.7.0 <0.8.0;
+pragma solidity >=0.6.0 <0.8.0;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
@@ -47,7 +47,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
 
   /* ========== CONSTRUCTOR ========== */
 
-  constructor(IERC20 _pop) Owned(msg.sender) {
+  constructor(IERC20 _pop) public Owned(msg.sender) {
     POP = _pop;
   }
 
