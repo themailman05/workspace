@@ -2,15 +2,28 @@
 
 pragma solidity >=0.6.0 <0.8.0;
 
-import "./MockERC20.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
+import "./MockERC20.sol";
 import "hardhat/console.sol";
 
 contract MockYearnV2Vault is MockERC20 {
+  using SafeMath for uint256;
+  using SafeERC20 for MockERC20;
+
   MockERC20 public token;
 
   constructor(address token_) MockERC20("Mock crvUSDX yVault", "yvUSDX", 18) {
     token = MockERC20(token_);
+  }
+
+  function maxAvailableShares() external view returns (uint256) {
+    return totalSupply();
+  }
+
+  function balance() public view returns (uint256) {
+    return token.balanceOf(address(this));
   }
 
   function totalAssets() external view returns (uint256) {
@@ -18,12 +31,20 @@ contract MockYearnV2Vault is MockERC20 {
   }
 
   function pricePerShare() external view returns (uint256) {
-    return _shareValue(10**this.decimals());
+    if (totalSupply() == 0) {
+      return 1e18;
+    }
+    return balance().mul(1e18).div(totalSupply());
   }
 
   function deposit(uint256 amount) external returns (uint256) {
     token.transferFrom(msg.sender, address(this), amount);
     return _issueSharesForAmount(msg.sender, amount);
+  }
+
+  function deposit(uint256 amount, address recipient) external returns (uint256) {
+    token.transferFrom(msg.sender, address(this), amount);
+    return _issueSharesForAmount(recipient, amount);
   }
 
   function withdraw(uint256 amount) external returns (uint256) {
@@ -57,8 +78,9 @@ contract MockYearnV2Vault is MockERC20 {
 
   // Test helpers
 
-  function setTotalAssets(uint256 totalAssets_) external {
+  function setPricePerFullShare(uint256 pricePerFullShare) external {
     token.burn(address(this), token.balanceOf(address(this)));
-    token.mint(address(this), totalAssets_);
+    uint256 balance = pricePerFullShare.mul(totalSupply()).div(1e18);
+    token.mint(address(this), balance);
   }
 }
