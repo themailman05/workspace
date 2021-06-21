@@ -21,9 +21,6 @@ export interface ElectionProps {
 export interface BeneficiaryCardProps {
   displayData: BaseBeneficiary;
   electionProps?: ElectionProps;
-  isProposal: boolean;
-  isTakedown: boolean;
-  isGrantElection?: boolean;
 }
 
 export interface GrantSliderProps {
@@ -55,31 +52,16 @@ function GrantSlider({
   );
 }
 
-function getUrl(isProposal, isTakedown, isGrantElection, displayData) {
-  if (isTakedown) {
-    return `/beneficiary-proposals/takedowns/${displayData.id}`;
-  } else if (isProposal) {
-    return `/beneficiary-proposals/${displayData.id}`;
-  } else if (isGrantElection) {
-    return `/grant-elections/${displayData.ethereumAddress}`;
-  }
-  return `/beneficiaries/${displayData.ethereumAddress}`;
-}
-
 export default function BeneficiaryCard({
   displayData,
   electionProps,
-  isProposal = false,
-  isTakedown = false,
-  isGrantElection = false,
 }: BeneficiaryCardProps): JSX.Element {
-  const url = getUrl(isProposal, isTakedown, isGrantElection, displayData);
   return (
     <div
       key={displayData?.ethereumAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
-      <Link href={url} passHref>
+      <Link href={`/beneficiaries/${displayData.ethereumAddress}`} passHref>
         <a>
           <div className="flex-shrink-0">
             <img

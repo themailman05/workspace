@@ -1,4 +1,4 @@
-import BeneficiaryGridHeader from 'components/CardGridHeader';
+import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { BaseBeneficiary } from 'interfaces/beneficiaries';
 import React, { useState } from 'react';
@@ -9,23 +9,19 @@ interface BeneficiaryGridProps {
   title: string;
   subtitle: string;
   cardProps: BaseBeneficiary[];
-  isProposal: boolean;
-  isTakedown: boolean;
 }
 
 export default function BeneficiaryGrid({
   title,
   subtitle,
   cardProps,
-  isProposal,
-  isTakedown,
 }: BeneficiaryGridProps) {
   const [searchFilter, setSearchFilter] = useState<string>('');
 
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
-      <BeneficiaryGridHeader title={title} subtitle={subtitle} />
+      <CardGridHeader title={title} subtitle={subtitle} />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
         <div className="relative text-gray-600 focus-within:text-gray-400 ">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">
@@ -54,8 +50,6 @@ export default function BeneficiaryGrid({
             <BeneficiaryCard
               key={cardProp?.ethereumAddress}
               displayData={cardProp}
-              isProposal={isProposal}
-              isTakedown={isTakedown}
             />
           ))}
       </ul>

@@ -1,19 +1,9 @@
-import {
-  BaseBeneficiary,
-  BaseProposal,
-} from 'interfaces/beneficiaries';
-import Link from 'next/link';
+import { BaseProposal } from 'interfaces/proposals';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
 
 interface IVotingRow {
   name: string;
   value: string;
-}
-
-interface IBeneficiaryProposalCard {
-  displayData: BaseBeneficiary | BaseProposal;
-  isProposal: boolean;
-  isTakedown: boolean;
 }
 
 function VotingRow(data: IVotingRow): JSX.Element {

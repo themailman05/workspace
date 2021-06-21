@@ -12,7 +12,7 @@ export interface Beneficiary extends BaseBeneficiary {
   facebookUrl?: string;
   instagramUrl?: string;
   githubUrl?: string;
-  additionalImages?: string[];
   impactReports?: string[];
+  additionalImages?: string[];
   proofOfOwnership: string;
 }

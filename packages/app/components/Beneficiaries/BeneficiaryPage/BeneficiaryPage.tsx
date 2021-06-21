@@ -1,5 +1,5 @@
 import NavBar from 'components/NavBar/NavBar';
-import { Beneficiary, BeneficiaryProposal } from 'interfaces/beneficiaries';
+import { Beneficiary } from 'interfaces/beneficiaries';
 import ImageHeader from './ImageHeader';
 import ImpactReportLinks from './ImpactReportLinks';
 import MissionStatement from './MissionStatement';
@@ -8,6 +8,7 @@ import Voting from '../Proposals/Voting/Voting';
 import SocialMedia from './SocialMedia';
 import Verification from './Verification';
 import TriggerTakedownProposal from './TriggerTakedownProposal';
+import { BeneficiaryProposal } from 'interfaces/proposals';
 
 interface BeneficiaryPageProps {
   displayData: Beneficiary | BeneficiaryProposal;

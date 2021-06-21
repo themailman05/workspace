@@ -9,6 +9,7 @@ export enum Status {
   All,
 }
 
+// Used in proposal card & voting
 export interface BaseProposal {
   name: string;
   missionStatement: string;
