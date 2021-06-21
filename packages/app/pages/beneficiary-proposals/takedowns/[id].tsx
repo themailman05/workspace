@@ -20,8 +20,8 @@ export default function SingleTakedownPage(): JSX.Element {
   return (
     <BeneficiaryPage
       displayData={proposal as BeneficiaryProposal}
-      isProposal
-      isTakedown
+      isProposal={true}
+      isTakedown={true}
     />
   );
 }

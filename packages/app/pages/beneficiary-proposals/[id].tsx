@@ -18,6 +18,10 @@ export default function SingleBeneficiaryProposalPage(): JSX.Element {
   }, [contracts]);
 
   return (
-    <BeneficiaryPage displayData={proposal as BeneficiaryProposal} isProposal />
+    <BeneficiaryPage
+      displayData={proposal as BeneficiaryProposal}
+      isProposal={true}
+      isTakedown={false}
+    />
   );
 }
