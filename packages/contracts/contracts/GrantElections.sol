@@ -50,7 +50,7 @@ contract GrantElections is Governed {
   }
 
   // mapping of election terms and beneficiary total votes
-  Election[3] public elections;
+  Array[Election[],Election[],Election[]] public elections;
   mapping(ElectionTerm => mapping(address => uint256)) beneficiaryVotes;
   mapping(ElectionTerm => ElectionConfiguration) electionConfigurations;
   mapping(ElectionTerm => mapping(uint8 => address)) electionRanking;
@@ -97,33 +97,30 @@ contract GrantElections is Governed {
   // todo: use bonds to incentivize callers instead of minting
   function initialize(ElectionTerm _grantTerm) public {
     uint8 _term = uint8(_grantTerm);
-    Election storage _election = elections[_term];
+    uint256 electionId = elections[_term].length
+    Election storage latestElection = elections[_term][electionId-1];
+    require(
+      latestElection.electionState == ElectionState.Closed,
+      "election not yet closed"
+    );
+    require(
+      latestElection.electionConfiguration.cooldownPeriod >=
+        block.timestamp.sub(_election.startTime),
+      "can't start new election, not enough time elapsed since last election"
+    );
 
-    if (_election.exists == true) {
-      require(
-        _election.electionState == ElectionState.Closed,
-        "election not yet closed"
-      );
-      require(
-        _election.electionConfiguration.cooldownPeriod >=
-          block.timestamp.sub(_election.startTime),
-        "can't start new election, not enough time elapsed since last election"
-      );
-    }
-
-    delete elections[_term];
-
-    Election storage e = elections[_term];
-    e.electionConfiguration = electionDefaults[_term];
-    e.electionState = ElectionState.Registration;
-    e.electionTerm = _grantTerm;
-    e.startTime = block.timestamp;
-    e.exists = true;
+    elections[_term].push();
+    Election storage election = elections[_term][electionId];
+    election.electionConfiguration = electionDefaults[_term];
+    election.electionState = ElectionState.Registration;
+    election.electionTerm = _grantTerm;
+    election.startTime = block.timestamp;
+    election.exists = true;
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
   }
 
-  function getElectionMetadata(ElectionTerm _grantTerm)
+  function getElectionMetadata(ElectionTerm _term)
     public
     view
     returns (
@@ -139,7 +136,7 @@ contract GrantElections is Governed {
       uint256 registrationBond_
     )
   {
-    Election storage e = elections[uint8(_grantTerm)];
+    Election storage e = elections[uint8(_term)][elections[uint8(_term)].length-1];
 
     votes_ = e.votes;
     term_ = e.electionTerm;
@@ -167,7 +164,7 @@ contract GrantElections is Governed {
     view
     returns (address[] memory beneficiaries)
   {
-    return elections[uint8(_term)].registeredBeneficiariesList;
+    return elections[uint8(_term)][elections[uint8(_term)].length-1].registeredBeneficiariesList;
   }
 
   function toggleRegistrationBondRequirement(ElectionTerm _term)
@@ -185,7 +182,7 @@ contract GrantElections is Governed {
     view
     returns (address[] memory)
   {
-    uint8 _rankingSize = elections[uint8(_term)].electionConfiguration.ranking;
+    uint8 _rankingSize = elections[uint8(_term)][elections[uint8(_term)].length-1].electionConfiguration.ranking;
     address[] memory _ranking = new address[](_rankingSize);
     for (uint8 i = 0; i < _rankingSize; i++) {
       _ranking[i] = electionRanking[_term][i];
@@ -199,13 +196,13 @@ contract GrantElections is Governed {
    * todo: check beneficiary is not currently awarded a grant
    * todo: add claimBond function for beneficiary to receive their bond after the election period has closed
    */
-  function registerForElection(address _beneficiary, ElectionTerm _grantTerm)
+  function registerForElection(address _beneficiary, ElectionTerm _term)
     public
   {
-    Election storage _election = elections[uint8(_grantTerm)];
+    Election storage _election = elections[uint8(_term)][elections[uint8(_term)].length-1];
 
     // todo: refresh election state & update tests
-    // refreshElectionState(_grantTerm);
+    // refreshElectionState(_term);
 
     require(
       _election.electionState == ElectionState.Registration,
@@ -221,7 +218,7 @@ contract GrantElections is Governed {
     _election.registeredBeneficiaries[_beneficiary] = true;
     _election.registeredBeneficiariesList.push(_beneficiary);
 
-    emit BeneficiaryRegistered(_beneficiary, _grantTerm);
+    emit BeneficiaryRegistered(_beneficiary, _term);
   }
 
   function _collectRegistrationBond(Election storage _election) internal {
@@ -246,12 +243,12 @@ contract GrantElections is Governed {
     returns (bool)
   {
     return
-      elections[uint8(_term)].registeredBeneficiaries[_beneficiary] &&
+      elections[uint8(_term)][elections[uint8(_term)].length-1].registeredBeneficiaries[_beneficiary] &&
       beneficiaryRegistry.beneficiaryExists(_beneficiary);
   }
 
-  function refreshElectionState(ElectionTerm _electionTerm) public {
-    Election storage election = elections[uint8(_electionTerm)];
+  function refreshElectionState(ElectionTerm _term) public {
+    Election storage election = elections[uint8(_term)][elections[uint8(_term)].length-1];
     if (
       block.timestamp >=
       election
@@ -271,14 +268,14 @@ contract GrantElections is Governed {
   }
 
   function vote(
-    address[] memory _beneficiaries,
-    uint256[] memory _voiceCredits,
-    ElectionTerm _electionTerm
+    address[5] memory _beneficiaries,
+    uint256[5] memory _voiceCredits,
+    ElectionTerm _term
   ) public {
-    Election storage election = elections[uint8(_electionTerm)];
+    Election storage election = elections[uint8(_term)][elections[uint8(_term)].length-1];
     require(_voiceCredits.length > 0, "Voice credits are required");
     require(_beneficiaries.length > 0, "Beneficiaries are required");
-    refreshElectionState(_electionTerm);
+    refreshElectionState(_term);
     require(
       election.electionState == ElectionState.Voting,
       "Election not open for voting"
@@ -325,32 +322,32 @@ contract GrantElections is Governed {
   }
 
   function _recalculateRanking(
-    ElectionTerm _electionTerm,
+    ElectionTerm _term,
     address _beneficiary,
     uint256 weight
   ) internal {
-    Election storage _election = elections[uint8(_electionTerm)];
+    Election storage _election = elections[uint8(_term)][elections[uint8(_term)].length-1];
     // If beneficiary already in ranking skip inserting it and go to sorting
-    if (!electionRankingAddresses[_electionTerm][_beneficiary]) {
+    if (!electionRankingAddresses[_term][_beneficiary]) {
       if (
         weight >
-        beneficiaryVotes[_electionTerm][
-          electionRanking[_electionTerm][
+        beneficiaryVotes[_term][
+          electionRanking[_term][
             _election.electionConfiguration.ranking - 1
           ]
         ]
       ) {
         // If weight is bigger than the last in the ranking for the election term, take its position
         // Remove the current last one from the ranking
-        electionRankingAddresses[_electionTerm][
-          electionRanking[_electionTerm][
+        electionRankingAddresses[_term][
+          electionRanking[_term][
             _election.electionConfiguration.ranking - 1
           ]
         ] = false;
-        electionRanking[_electionTerm][
+        electionRanking[_term][
           _election.electionConfiguration.ranking - 1
         ] = _beneficiary;
-        electionRankingAddresses[_electionTerm][_beneficiary] = true;
+        electionRankingAddresses[_term][_beneficiary] = true;
       } else {
         // Otherwise, no need to recalculate ranking
         return;
@@ -361,22 +358,22 @@ contract GrantElections is Governed {
     for (uint8 i = _election.electionConfiguration.ranking - 1; i > 0; i--) {
       // if the votes are higher than the next one in the ranking, swap them
       if (
-        beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i]] >
-        beneficiaryVotes[_electionTerm][electionRanking[_electionTerm][i - 1]]
+        beneficiaryVotes[_term][electionRanking[_term][i]] >
+        beneficiaryVotes[_term][electionRanking[_term][i - 1]]
       ) {
         (
-          electionRanking[_electionTerm][i],
-          electionRanking[_electionTerm][i - 1]
+          electionRanking[_term][i],
+          electionRanking[_term][i - 1]
         ) = (
-          electionRanking[_electionTerm][i - 1],
-          electionRanking[_electionTerm][i]
+          electionRanking[_term][i - 1],
+          electionRanking[_term][i]
         );
       }
     }
   }
 
-  function finalize(ElectionTerm _electionTerm) public {
-    Election storage _election = elections[uint8(_electionTerm)];
+  function finalize(ElectionTerm _term) public {
+    Election storage _election = elections[uint8(_term)][elections[uint8(_term)].length-1];
     require(
       _election.electionState != ElectionState.Finalized,
       "election already finalized"
@@ -386,7 +383,7 @@ contract GrantElections is Governed {
       "election not yet closed"
     );
 
-    address[] memory _ranking = getCurrentRanking(_electionTerm);
+    address[] memory _ranking = getCurrentRanking(_term);
     require(_ranking.length > 1, "no elegible awardees");
 
     address[] memory _awardees =
@@ -408,8 +405,8 @@ contract GrantElections is Governed {
       _awardees[i] = _ranking[i];
     }
 
-    grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
-    emit GrantCreated(_electionTerm, _awardees, _shares);
+    grantRegistry.createGrant(uint8(_term), _awardees, _shares);
+    emit GrantCreated(_term, _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
   }
 
