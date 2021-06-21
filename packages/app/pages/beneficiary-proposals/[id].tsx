@@ -20,7 +20,6 @@ export default function SingleBeneficiaryProposalPage(): JSX.Element {
   return (
     <ProposalPage
       displayData={proposal as BeneficiaryProposal}
-      isProposal={true}
       isTakedown={false}
     />
   );

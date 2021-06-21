@@ -4,7 +4,6 @@ import ImageHeader from '../CommonComponents/ImageHeader';
 import ImpactReportLinks from '../CommonComponents/ImpactReportLinks';
 import MissionStatement from '../CommonComponents/MissionStatement';
 import PhotoSideBar from '../CommonComponents/PhotoSideBar';
-import Voting from '../Proposals/Voting/Voting';
 import SocialMedia from '../CommonComponents/SocialMedia';
 import Verification from '../CommonComponents/Verification';
 import TriggerTakedownProposal from '../CommonComponents/TriggerTakedownProposal';
@@ -12,27 +11,17 @@ import { BeneficiaryProposal } from 'interfaces/proposals';
 
 interface BeneficiaryPageProps {
   displayData: Beneficiary | BeneficiaryProposal;
-  isProposal?: boolean;
   isProposalPreview?: boolean;
-  isTakedown?: boolean;
 }
 
 export default function BeneficiaryPage({
   displayData,
-  isProposal = false,
   isProposalPreview = false,
-  isTakedown = false,
 }: BeneficiaryPageProps): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview && <NavBar />}
       <ImageHeader {...displayData} />
-      {isProposal && (
-        <Voting
-          displayData={displayData as BeneficiaryProposal}
-          isTakedown={isTakedown}
-        />
-      )}
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...(displayData as BeneficiaryProposal)} />
         <MissionStatement missionStatement={displayData?.missionStatement} />
@@ -47,7 +36,7 @@ export default function BeneficiaryPage({
         <ImpactReportLinks {...displayData} />
         <SocialMedia {...displayData} />
       </div>
-      {!isProposal && !isProposalPreview && <TriggerTakedownProposal />}
+      {!isProposalPreview && <TriggerTakedownProposal />}
     </div>
   );
 }

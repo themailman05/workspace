@@ -12,27 +12,21 @@ import Voting from './Voting/Voting';
 
 interface BeneficiaryPageProps {
   displayData: Beneficiary | BeneficiaryProposal;
-  isProposal?: boolean;
-  isProposalPreview?: boolean;
   isTakedown?: boolean;
 }
 
-export default function BeneficiaryPage({
+export default function ProposalPage({
   displayData,
-  isProposal = false,
-  isProposalPreview = false,
   isTakedown = false,
 }: BeneficiaryPageProps): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
-      {!isProposalPreview && <NavBar />}
+      <NavBar />
       <ImageHeader {...displayData} />
-      {isProposal && (
-        <Voting
-          displayData={displayData as BeneficiaryProposal}
-          isTakedown={isTakedown}
-        />
-      )}
+      <Voting
+        displayData={displayData as BeneficiaryProposal}
+        isTakedown={isTakedown}
+      />
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...(displayData as BeneficiaryProposal)} />
         <MissionStatement missionStatement={displayData?.missionStatement} />
@@ -47,7 +41,6 @@ export default function BeneficiaryPage({
         <ImpactReportLinks {...displayData} />
         <SocialMedia {...displayData} />
       </div>
-      {!isProposal && !isProposalPreview && <TriggerTakedownProposal />}
     </div>
   );
 }
