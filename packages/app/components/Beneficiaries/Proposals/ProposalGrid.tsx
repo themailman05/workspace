@@ -16,36 +16,19 @@ import {
   TakedownStageExplanations,
 } from './Proposals/StageExplanations';
 
-function Header({ title, subtitle }) {
-  return (
-    <div className="pt-12 px-4 bg-indigo-200 sm:px-6 lg:px-8 lg:pt-20 py-20">
-      <div className="text-center">
-        <p className="mt-2 text-3xl text-indigo-900 sm:text-4xl lg:text-5xl">
-          {title}
-        </p>
-        <p className="mt-3 max-w-4xl mx-auto text-xl text-indigo-900 sm:mt-5 sm:text-2xl">
-          {subtitle}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-interface BeneficiaryGridProps {
+interface ProposalGridProps {
   title: string;
   subtitle: string;
-  cardProps: BaseProposal[] | BaseBeneficiary[];
-  isProposal?: boolean;
+  cardProps: BaseProposal[];
   isTakedown?: boolean;
 }
 
-export default function BeneficiaryGrid({
+export default function ProposalGrid({
   title,
   subtitle,
   cardProps,
-  isProposal = false,
   isTakedown = false,
-}: BeneficiaryGridProps) {
+}: ProposalGridProps) {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
@@ -53,7 +36,7 @@ export default function BeneficiaryGrid({
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
-      <Header title={title} subtitle={subtitle} />
+      <BeneficiaryGridHeader title={title} subtitle={subtitle} />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
         <div className="relative text-gray-600 focus-within:text-gray-400 ">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">

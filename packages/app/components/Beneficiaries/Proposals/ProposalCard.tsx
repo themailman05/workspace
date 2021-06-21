@@ -1,6 +1,6 @@
 import { BaseProposal } from 'interfaces/beneficiaries';
 import Link from 'next/link';
-import VotingInformation from './Proposals/Voting/VotingInformation';
+import VotingInformation from './Voting/VotingInformation';
 
 
 export interface ProposalCardProps {
