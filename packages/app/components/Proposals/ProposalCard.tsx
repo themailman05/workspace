@@ -1,3 +1,4 @@
+import CardBody from 'components/CommonComponents/CardBody';
 import { BaseProposal } from 'interfaces/proposals';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
@@ -26,23 +27,11 @@ export default function ProposalCard({
         passHref
       >
         <a>
-          <div className="flex-shrink-0">
-            <img
-              className="h-48 w-full object-cover"
-              src={`${process.env.IPFS_URL}${displayData?.profileImage}`}
-              alt=""
-            />
-          </div>
-          <div className="flex-1 bg-white p-6 flex flex-col justify-between">
-            <div className="flex-1">
-              <p className="text-xl font-semibold text-gray-900">
-                {displayData?.name}
-              </p>
-              <p className="mt-3 text-base text-gray-500">
-                {displayData?.missionStatement}
-              </p>
-            </div>
-          </div>
+          <CardBody
+            imgUrl={`${process.env.IPFS_URL}${displayData?.profileImage}`}
+            name={displayData?.name}
+            missionStatement={displayData?.missionStatement}
+          />
           <div className="flex-shrink-0 ">
             <VotingInformation {...(displayData as BaseProposal)} />
           </div>
