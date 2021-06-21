@@ -1,9 +1,10 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Contracts } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
-import { BeneficiaryProposal } from 'interfaces/beneficiaries';
+import { BeneficiaryProposal } from 'interfaces/proposals';
 import { bigNumberToNumber } from './formatBigNumber';
 
+// From typechain output
 interface Proposal {
   status: number;
   beneficiary: string;
@@ -18,7 +19,7 @@ interface Proposal {
     votingPeriod: BigNumber;
     vetoPeriod: BigNumber;
     proposalBond: BigNumber;
-  }
+  };
 }
 
 export async function getProposal(contracts: Contracts, address: string) {
@@ -28,7 +29,10 @@ export async function getProposal(contracts: Contracts, address: string) {
   const proposal = (await contracts.beneficiaryGovernance.proposals(
     proposalIndex,
   )) as Proposal;
-  return await addIpfsDataToProposal(proposal, bigNumberToNumber(proposalIndex));
+  return await addIpfsDataToProposal(
+    proposal,
+    bigNumberToNumber(proposalIndex),
+  );
 }
 
 async function addIpfsDataToProposal(
@@ -74,10 +78,10 @@ export async function getProposals(contracts: Contracts, isTakedown = false) {
   const proposalIds = new Array(numProposals.toNumber()).fill(undefined);
 
   const allProposals = await Promise.all(
-    proposalIds.map(
-      async (x, i) => {const proposal = await contracts.beneficiaryGovernance.proposals(i);
-      return {...proposal, id:i}},
-    ),
+    proposalIds.map(async (x, i) => {
+      const proposal = await contracts.beneficiaryGovernance.proposals(i);
+      return { ...proposal, id: i };
+    }),
   );
   const selectedProposals = allProposals.filter(
     (proposal) => proposal.proposalType === (isTakedown ? 1 : 0),

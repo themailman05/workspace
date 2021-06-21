@@ -21,21 +21,65 @@ export interface ElectionProps {
 export interface BeneficiaryCardProps {
   displayData: BaseBeneficiary;
   electionProps?: ElectionProps;
+  isProposal: boolean;
+  isTakedown: boolean;
+  isGrantElection?: boolean;
+}
+
+export interface GrantSliderProps {
+  displayData: BaseBeneficiary;
+  electionProps: ElectionProps;
+}
+
+function GrantSlider({
+  displayData,
+  electionProps,
+}: GrantSliderProps): JSX.Element {
+  return (
+    <div className="mt-6 flex items-center">
+      <div className="flex-shrink-0">
+        {GrantElectionAdapter().isActive(electionProps.election) ? (
+          <VoteSlider
+            beneficiary={displayData as BaseBeneficiary}
+            electionProps={electionProps}
+          />
+        ) : (
+          <GrantFunded
+            beneficiary={displayData}
+            election={electionProps.election}
+            totalVotes={electionProps.totalVotes}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function getUrl(isProposal, isTakedown, isGrantElection, displayData) {
+  if (isTakedown) {
+    return `/beneficiaries-proposals/takedowns/${displayData.id}`;
+  } else if (isProposal) {
+    return `/beneficiaries-proposals/${displayData.id}`;
+  } else if (isGrantElection) {
+    return `/grant-elections/${displayData.ethereumAddress}`;
+  }
+  return `/beneficiaries/${displayData.ethereumAddress}`;
 }
 
 export default function BeneficiaryCard({
   displayData,
   electionProps,
+  isProposal = false,
+  isTakedown = false,
+  isGrantElection = false,
 }: BeneficiaryCardProps): JSX.Element {
+  const url = getUrl(isProposal, isTakedown, isGrantElection, displayData);
   return (
     <div
       key={displayData?.ethereumAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
-      <Link
-        href={`/beneficiaries/${displayData.ethereumAddress}`}
-        passHref
-      >
+      <Link href={url} passHref>
         <a>
           <div className="flex-shrink-0">
             <img
@@ -56,22 +100,11 @@ export default function BeneficiaryCard({
           </div>
         </a>
       </Link>
-      <div className="mt-6 flex items-center">
-        <div className="flex-shrink-0">
-          {GrantElectionAdapter().isActive(electionProps.election) ? (
-            <VoteSlider
-              beneficiary={displayData as BaseBeneficiary}
-              electionProps={electionProps}
-            />
-          ) : (
-            <GrantFunded
-              beneficiary={displayData}
-              election={electionProps.election}
-              totalVotes={electionProps.totalVotes}
-            />
-          )}
-        </div>
-      </div>
+      {electionProps ? (
+        <GrantSlider displayData={displayData} electionProps={electionProps} />
+      ) : (
+        <></>
+      )}
     </div>
   );
 }

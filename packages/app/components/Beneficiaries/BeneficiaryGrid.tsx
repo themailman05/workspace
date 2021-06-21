@@ -18,7 +18,7 @@ export default function BeneficiaryGrid({
   subtitle,
   cardProps,
   isProposal,
-  isTakedown
+  isTakedown,
 }: BeneficiaryGridProps) {
   const [searchFilter, setSearchFilter] = useState<string>('');
 
@@ -54,6 +54,8 @@ export default function BeneficiaryGrid({
             <BeneficiaryCard
               key={cardProp?.ethereumAddress}
               displayData={cardProp}
+              isProposal={isProposal}
+              isTakedown={isTakedown}
             />
           ))}
       </ul>
