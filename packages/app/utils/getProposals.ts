@@ -2,7 +2,6 @@ import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Contracts } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
 import { BeneficiaryProposal } from 'interfaces/proposals';
-import { bigNumberToNumber } from './formatBigNumber';
 
 // From typechain output
 interface Proposal {
@@ -22,17 +21,11 @@ interface Proposal {
   };
 }
 
-export async function getProposal(contracts: Contracts, address: string) {
-  const proposalIndex = await contracts.beneficiaryGovernance.getProposalId(
-    address,
-  );
+export async function getProposal(contracts: Contracts, proposalIndex: string) {
   const proposal = (await contracts.beneficiaryGovernance.proposals(
-    proposalIndex,
+    Number(proposalIndex),
   )) as Proposal;
-  return await addIpfsDataToProposal(
-    proposal,
-    bigNumberToNumber(proposalIndex),
-  );
+  return await addIpfsDataToProposal(proposal, Number(proposalIndex));
 }
 
 async function addIpfsDataToProposal(
