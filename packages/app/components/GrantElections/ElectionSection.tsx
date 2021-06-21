@@ -1,5 +1,5 @@
 import GrantRound from '../Grants/GrantRound';
-import Sidebar from '../Sidebar/Sidebar';
+import Sidebar from './Sidebar/Sidebar';
 import {
   IGrantRoundFilter,
   PendingVotes,
@@ -46,7 +46,7 @@ export default function ElectionSection({
         <div className="ml-12 w-11/12 border-b border-gray-100 border-opacity-10 mb-8 mt-8">
           <span className="flex flex-row flex-wrap items-center mb-8 ">
             <div className="h-8 w-8 mr-2 flex items-center justify-center flex-shrink-0">
-              { electionOpenForVoting ? '🟢' : '🟡'}
+              {electionOpenForVoting ? '🟢' : '🟡'}
             </div>
             <h2 className="text-5xl font-extralight text-white">
               🏆 {createElectionName(election)}

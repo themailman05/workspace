@@ -1,5 +1,27 @@
-import BeneficiaryPage from 'components/BeneficiaryPage';
+import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage/BeneficiaryPage';
+import { ContractsContext } from 'context/Web3/contracts';
+import { BeneficiaryProposal } from 'interfaces/beneficiaries';
+import router from 'next/router';
+import { useContext, useEffect, useState } from 'react';
+import { getProposal } from 'utils/getProposals';
 
-export default function BeneficiaryPageWrapper(): JSX.Element {
-  return <BeneficiaryPage isProposal={true} isTakedown={true} />;
+export default function SingleTakedownPage(): JSX.Element {
+  const { contracts } = useContext(ContractsContext);
+  const [proposal, setProposal] = useState<BeneficiaryProposal>();
+
+  useEffect(() => {
+    if (contracts) {
+      getProposal(contracts, router.query.id as string).then((res) =>
+        setProposal(res),
+      );
+    }
+  }, [contracts]);
+
+  return (
+    <BeneficiaryPage
+      displayData={proposal as BeneficiaryProposal}
+      isProposal
+      isTakedown
+    />
+  );
 }

@@ -4,7 +4,10 @@ import { createContext, useState } from 'react';
 
 import { ContractsContext } from './contracts';
 import { GrantElections } from '@popcorn/contracts/typechain';
-import { ElectionMetadata, GrantElectionAdapter } from '@popcorn/utils/Contracts';
+import {
+  ElectionMetadata,
+  GrantElectionAdapter,
+} from '@popcorn/utils/Contracts';
 
 interface ElectionsContext {
   elections: ElectionMetadata[];
@@ -29,7 +32,9 @@ export function ElectionsProvider({
       await Promise.all(
         [0, 1, 2].map(
           async (term) =>
-            await GrantElectionAdapter(electionsContract).getElectionMetadata(term),
+            await GrantElectionAdapter(electionsContract).getElectionMetadata(
+              term,
+            ),
         ),
       ),
     );

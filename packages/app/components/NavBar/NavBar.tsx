@@ -39,9 +39,7 @@ export default function Navbar(): JSX.Element {
           </Link>
         </div>
         <ul className="flex flex-row items-center mx-auto space-x-16">
-          <li>
-         
-          </li>
+          <li></li>
           <li>
             <NavbarLink
               label="Staking"
@@ -55,7 +53,7 @@ export default function Navbar(): JSX.Element {
               url="/docs/Popcorn_whitepaper_v1.pdf"
               isActive={false}
               target="_window"
-              />
+            />
           </li>
           <li>
             <NavbarLink
@@ -75,7 +73,6 @@ export default function Navbar(): JSX.Element {
               toggleSubMenu={() => setShowProposals(!showProposals)}
             />
           </li>
-        
         </ul>
         <button
           className="w-28 p-1 flex flex-row items-center justify-center border border-gray-400 rounded hover:bg-indigo-400 hover:text-white"

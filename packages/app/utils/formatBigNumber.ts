@@ -5,3 +5,7 @@ export function formatAndRoundBigNumber(value: BigNumber): string {
     maximumFractionDigits: 0,
   });
 }
+
+export function bigNumberToNumber(value:BigNumber):number{
+  return Number(value.toString)
+}

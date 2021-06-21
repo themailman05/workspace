@@ -1,14 +1,12 @@
+import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
+import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
+import { BaseBeneficiary } from 'interfaces/beneficiaries';
 import { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
-import BeneficiaryGrid from 'components/BeneficiaryGrid';
-import { BeneficiaryCardProps } from 'interfaces/beneficiaries';
-import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 
-export default function BeneficiaryPageWrapper(): JSX.Element {
+export default function BeneficiaryPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [benefeciaries, setBeneficiaries] = useState<BeneficiaryCardProps[]>(
-    [],
-  );
+  const [benefeciaries, setBeneficiaries] = useState<BaseBeneficiary[]>([]);
 
   async function getBeneficiaries() {
     const beneficiaryAddresses =
@@ -28,18 +26,12 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
         }),
       )
     ).map((beneficiaryJson) => {
-      const benefificaryCardData: BeneficiaryCardProps = {
+      return {
         name: beneficiaryJson.name,
         missionStatement: beneficiaryJson.missionStatement,
-        twitterUrl: beneficiaryJson.twitterUrl,
-        linkedinUrl: beneficiaryJson.linkedinUrl,
-        facebookUrl: beneficiaryJson.facebookUrl,
-        instagramUrl: beneficiaryJson.instagramUrl,
-        githubUrl: beneficiaryJson.githubUrl,
         ethereumAddress: beneficiaryJson.ethereumAddress,
         profileImage: beneficiaryJson.profileImage,
       };
-      return benefificaryCardData;
     });
     setBeneficiaries(beneficiaryData);
   }
@@ -56,7 +48,6 @@ export default function BeneficiaryPageWrapper(): JSX.Element {
       subtitle={
         'Beneficiary organizations that have passed the voting process and are eligible to receive grants'
       }
-      isProposal={false}
       cardProps={benefeciaries}
     />
   );

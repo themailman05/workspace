@@ -31,7 +31,7 @@ export interface Contracts {
   election: GrantElections;
   pop: ERC20;
   grant: GrantRegistry;
-  beneficiaryGovernance:BeneficiaryGovernance;
+  beneficiaryGovernance: BeneficiaryGovernance;
 }
 
 interface ContractsContext {
