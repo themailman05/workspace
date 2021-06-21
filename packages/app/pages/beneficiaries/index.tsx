@@ -11,7 +11,6 @@ export default function BeneficiaryPage(): JSX.Element {
   async function getBeneficiaries() {
     const beneficiaryAddresses =
       await contracts.beneficiary.getBeneficiaryList();
-
     const ipfsHashes = await Promise.all(
       beneficiaryAddresses.map(async (address) => {
         return contracts.beneficiary.getBeneficiary(address);
@@ -29,7 +28,7 @@ export default function BeneficiaryPage(): JSX.Element {
       return {
         name: beneficiaryJson.name,
         missionStatement: beneficiaryJson.missionStatement,
-        ethereumAddress: beneficiaryJson.ethereumAddress,
+        ethereumAddress: beneficiaryAddresses[0], // TODO: revert to beneficiaryJson.missionStatement 
         profileImage: beneficiaryJson.profileImage,
       };
     });
