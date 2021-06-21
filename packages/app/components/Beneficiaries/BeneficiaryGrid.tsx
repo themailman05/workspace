@@ -10,7 +10,7 @@ import {
 } from 'interfaces/beneficiaries';
 import React, { Fragment, useContext, useState } from 'react';
 import * as Icon from 'react-feather';
-import BeneficiaryProposalCard from './BeneficiaryProposalCard';
+import BeneficiaryCard, { ElectionProps } from './BeneficiaryCard';
 import {
   ProposalStageExplanations,
   TakedownStageExplanations,
@@ -172,7 +172,7 @@ export default function BeneficiaryGrid({
             return true;
           })
           .map((cardProp) => (
-            <BeneficiaryProposalCard
+            <BeneficiaryCard
               key={cardProp?.ethereumAddress}
               displayData={cardProp}
               isProposal={isProposal}
