@@ -15,7 +15,7 @@ export default function ProposalCard({
   return (
     <div
       key={displayData?.id}
-      className="flex flex-col rounded-lg shadow-lg overflow-hidden"
+      className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white"
     >
       <Link
         href={`${
@@ -43,13 +43,11 @@ export default function ProposalCard({
               </p>
             </div>
           </div>
+          <div className="flex-shrink-0 ">
+            <VotingInformation {...(displayData as BaseProposal)} />
+          </div>
         </a>
       </Link>
-      <div className="mt-6 flex items-center">
-        <div className="flex-shrink-0">
-          <VotingInformation {...(displayData as BaseProposal)} />
-        </div>
-      </div>
     </div>
   );
 }
