@@ -1,6 +1,6 @@
 import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
 import { ContractsContext } from 'context/Web3/contracts';
-import { BaseProposal } from 'interfaces/beneficiaries';
+import { BaseProposal } from 'interfaces/proposals';
 import { useContext, useEffect, useState } from 'react';
 import { getProposals } from 'utils/getProposals';
 
@@ -22,6 +22,7 @@ export default function BeneficiaryProposalPage(): JSX.Element {
       }
       cardProps={proposals}
       isProposal
+      isTakedown
     />
   );
 }

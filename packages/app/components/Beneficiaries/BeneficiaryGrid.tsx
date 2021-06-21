@@ -1,3 +1,4 @@
+import BeneficiaryGridHeader from 'components/BeneficiaryGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { BaseBeneficiary } from 'interfaces/beneficiaries';
 import React, { useState } from 'react';
@@ -8,12 +9,16 @@ interface BeneficiaryGridProps {
   title: string;
   subtitle: string;
   cardProps: BaseBeneficiary[];
+  isProposal: boolean;
+  isTakedown: boolean;
 }
 
 export default function BeneficiaryGrid({
   title,
   subtitle,
   cardProps,
+  isProposal,
+  isTakedown
 }: BeneficiaryGridProps) {
   const [searchFilter, setSearchFilter] = useState<string>('');
 
