@@ -1,7 +1,5 @@
-import {
-  Beneficiary,
-  BeneficiaryProposal,
-} from 'interfaces/beneficiaries';
+import { Beneficiary } from 'interfaces/beneficiaries';
+import { BeneficiaryProposal } from 'interfaces/proposals';
 
 export default function PhotoSideBar(
   displayData: Beneficiary | BeneficiaryProposal,

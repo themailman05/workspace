@@ -1,4 +1,4 @@
-import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage/BeneficiaryPage';
+import ProposalPage from 'components/Proposals/ProposalPage';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BeneficiaryProposal } from 'interfaces/proposals';
 import router from 'next/router';
@@ -18,7 +18,7 @@ export default function SingleTakedownPage(): JSX.Element {
   }, [contracts]);
 
   return (
-    <BeneficiaryPage
+    <ProposalPage
       displayData={proposal as BeneficiaryProposal}
       isProposal={true}
       isTakedown={true}

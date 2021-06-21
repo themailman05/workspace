@@ -1,14 +1,14 @@
+import ImageHeader from 'components/CommonComponents/ImageHeader';
+import ImpactReportLinks from 'components/CommonComponents/ImpactReportLinks';
+import MissionStatement from 'components/CommonComponents/MissionStatement';
+import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
+import SocialMedia from 'components/CommonComponents/SocialMedia';
+import TriggerTakedownProposal from 'components/CommonComponents/TriggerTakedownProposal';
+import Verification from 'components/CommonComponents/Verification';
 import NavBar from 'components/NavBar/NavBar';
 import { Beneficiary } from 'interfaces/beneficiaries';
-import ImageHeader from './ImageHeader';
-import ImpactReportLinks from './ImpactReportLinks';
-import MissionStatement from './MissionStatement';
-import PhotoSideBar from './PhotoSideBar';
-import Voting from '../Proposals/Voting/Voting';
-import SocialMedia from './SocialMedia';
-import Verification from './Verification';
-import TriggerTakedownProposal from './TriggerTakedownProposal';
 import { BeneficiaryProposal } from 'interfaces/proposals';
+import Voting from './Voting/Voting';
 
 interface BeneficiaryPageProps {
   displayData: Beneficiary | BeneficiaryProposal;

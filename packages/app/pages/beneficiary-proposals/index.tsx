@@ -1,4 +1,4 @@
-import ProposalGrid from 'components/Beneficiaries/Proposals/ProposalGrid';
+import ProposalGrid from 'components/Proposals/ProposalGrid';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BaseProposal } from 'interfaces/proposals';
 import { useContext, useEffect, useState } from 'react';
