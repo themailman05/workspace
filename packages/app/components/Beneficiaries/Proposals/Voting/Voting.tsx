@@ -1,4 +1,4 @@
-import { BeneficiaryProposal, Status } from 'interfaces/beneficiaries';
+import { BeneficiaryProposal, Status } from 'interfaces/proposals';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';

@@ -57,9 +57,9 @@ function GrantSlider({
 
 function getUrl(isProposal, isTakedown, isGrantElection, displayData) {
   if (isTakedown) {
-    return `/beneficiaries-proposals/takedowns/${displayData.id}`;
+    return `/beneficiary-proposals/takedowns/${displayData.id}`;
   } else if (isProposal) {
-    return `/beneficiaries-proposals/${displayData.id}`;
+    return `/beneficiary-proposals/${displayData.id}`;
   } else if (isGrantElection) {
     return `/grant-elections/${displayData.ethereumAddress}`;
   }
