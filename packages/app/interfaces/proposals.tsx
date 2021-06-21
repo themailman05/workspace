@@ -18,6 +18,7 @@ export interface BaseProposal {
   votesAgainst: BigNumber;
   status: Status;
   stageDeadline: Date;
+  id: string;
 }
 
 export interface BeneficiaryProposal extends BaseProposal {
@@ -30,5 +31,4 @@ export interface BeneficiaryProposal extends BaseProposal {
   impactReports?: string[];
   additionalImages?: string[];
   proofOfOwnership: string;
-  id: number;
 }

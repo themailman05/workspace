@@ -3,7 +3,6 @@ export interface BaseBeneficiary {
   missionStatement: string;
   ethereumAddress: string;
   profileImage: string;
-  id;
 }
 
 export interface Beneficiary extends BaseBeneficiary {

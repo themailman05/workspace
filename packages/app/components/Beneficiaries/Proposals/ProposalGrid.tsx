@@ -1,20 +1,17 @@
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
+import BeneficiaryGridHeader from 'components/BeneficiaryGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
-import {
-  BaseBeneficiary,
-  BaseProposal,
-  Status,
-} from 'interfaces/beneficiaries';
+import { BaseProposal, Status } from 'interfaces/proposals';
 import React, { Fragment, useContext, useState } from 'react';
 import * as Icon from 'react-feather';
-import BeneficiaryCard from './BeneficiaryCard';
+import BeneficiaryCard from '../BeneficiaryCard';
 import {
   ProposalStageExplanations,
   TakedownStageExplanations,
-} from './Proposals/StageExplanations';
+} from './StageExplanations';
 
 interface ProposalGridProps {
   title: string;
@@ -149,9 +146,9 @@ export default function ProposalGrid({
           })
           .map((cardProp) => (
             <BeneficiaryCard
-              key={cardProp?.ethereumAddress}
               displayData={cardProp}
               isTakedown={isTakedown}
+              isProposal={true}
             />
           ))}
       </ul>
