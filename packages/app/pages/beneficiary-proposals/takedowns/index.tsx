@@ -1,14 +1,15 @@
-import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
+import ProposalGrid from 'components/Beneficiaries/Proposals/ProposalGrid';
 import { ContractsContext } from 'context/Web3/contracts';
-import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { BaseProposal } from 'interfaces/proposals';
+
 import { useContext, useEffect, useState } from 'react';
 import { getProposals } from 'utils/getProposals';
 
 export default function TakedownPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [takedownProposals, setTakedownProposals] = useState<
-    BaseBeneficiary[]
-  >([]);
+  const [takedownProposals, setTakedownProposals] = useState<BaseProposal[]>(
+    [],
+  );
 
   useEffect(() => {
     if (contracts) {
@@ -17,13 +18,12 @@ export default function TakedownPage(): JSX.Element {
   }, [contracts]);
 
   return (
-    <BeneficiaryGrid
+    <ProposalGrid
       title={'Takedown Proposals'}
       subtitle={
         'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
       }
       cardProps={takedownProposals}
-      isProposal={true}
       isTakedown={true}
     />
   );

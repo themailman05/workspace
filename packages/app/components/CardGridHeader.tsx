@@ -1,4 +1,4 @@
-export default function BeneficiaryGridHeader({ title, subtitle }) {
+export default function CardGridHeader({ title, subtitle }) {
   return (
     <div className="pt-12 px-4 bg-indigo-200 sm:px-6 lg:px-8 lg:pt-20 py-20">
       <div className="text-center">

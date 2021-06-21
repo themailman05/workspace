@@ -1,13 +1,13 @@
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
-import BeneficiaryGridHeader from 'components/BeneficiaryGridHeader';
+import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { BaseProposal, Status } from 'interfaces/proposals';
 import React, { Fragment, useContext, useState } from 'react';
 import * as Icon from 'react-feather';
-import BeneficiaryCard from '../BeneficiaryCard';
+import ProposalCard from './ProposalCard';
 import {
   ProposalStageExplanations,
   TakedownStageExplanations,
@@ -33,7 +33,7 @@ export default function ProposalGrid({
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
-      <BeneficiaryGridHeader title={title} subtitle={subtitle} />
+      <CardGridHeader title={title} subtitle={subtitle} />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
         <div className="relative text-gray-600 focus-within:text-gray-400 ">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">
@@ -145,7 +145,7 @@ export default function ProposalGrid({
             );
           })
           .map((cardProp) => (
-            <BeneficiaryCard
+            <ProposalCard
               displayData={cardProp}
               isTakedown={isTakedown}
               isProposal={true}

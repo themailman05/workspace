@@ -1,7 +1,6 @@
-import { BaseProposal } from 'interfaces/beneficiaries';
+import { BaseProposal } from 'interfaces/proposals';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
-
 
 export interface ProposalCardProps {
   displayData: BaseProposal;
@@ -15,7 +14,7 @@ export default function ProposalCard({
 }: ProposalCardProps): JSX.Element {
   return (
     <div
-      key={displayData?.ethereumAddress}
+      key={displayData?.id}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
       <Link
@@ -23,7 +22,7 @@ export default function ProposalCard({
           isTakedown
             ? '/beneficiary-proposals/takedowns/'
             : '/beneficiary-proposals/'
-        }${displayData.ethereumAddress}`}
+        }${displayData.id}`}
         passHref
       >
         <a>

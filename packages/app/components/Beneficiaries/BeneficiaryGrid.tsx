@@ -1,4 +1,4 @@
-import BeneficiaryGridHeader from 'components/BeneficiaryGridHeader';
+import BeneficiaryGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { BaseBeneficiary } from 'interfaces/beneficiaries';
 import React, { useState } from 'react';

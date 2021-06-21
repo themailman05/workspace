@@ -1,5 +1,5 @@
 import ProgressBar from 'components/ProgressBar';
-import { BeneficiaryProposal } from 'interfaces/beneficiaries';
+import { BeneficiaryProposal } from 'interfaces/proposals';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
 import {
