@@ -1,10 +1,10 @@
 import CardBody from 'components/CommonComponents/CardBody';
-import { BaseProposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/proposals';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
 
 export interface ProposalCardProps {
-  displayData: BaseProposal;
+  displayData: Proposal;
   isProposal?: boolean;
   isTakedown?: boolean;
 }
@@ -33,7 +33,7 @@ export default function ProposalCard({
             missionStatement={displayData?.missionStatement}
           />
           <div className="flex-shrink-0 ">
-            <VotingInformation {...(displayData as BaseProposal)} />
+            <VotingInformation {...(displayData as Proposal)} />
           </div>
         </a>
       </Link>

@@ -4,7 +4,7 @@ import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
-import { BaseProposal, Status } from 'interfaces/proposals';
+import { Proposal, Status } from 'interfaces/proposals';
 import React, { Fragment, useContext, useState } from 'react';
 import * as Icon from 'react-feather';
 import ProposalCard from './ProposalCard';
@@ -16,7 +16,7 @@ import {
 interface ProposalGridProps {
   title: string;
   subtitle: string;
-  cardProps: BaseProposal[];
+  cardProps: Proposal[];
   isTakedown?: boolean;
 }
 
@@ -140,7 +140,7 @@ export default function ProposalGrid({
           })
           .filter((cardProp) => {
             return (
-              (cardProp as BaseProposal)?.status === statusFilter ||
+              (cardProp as Proposal)?.status === statusFilter ||
               statusFilter === Status.All
             );
           })

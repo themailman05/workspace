@@ -5,7 +5,7 @@ import {
 import CardBody from 'components/CommonComponents/CardBody';
 import GrantFunded from 'components/Grants/GrantFunded';
 import VoteSlider from 'components/Grants/VoteSlider';
-import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { Beneficiary } from 'interfaces/beneficiaries';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
 
@@ -20,12 +20,12 @@ export interface ElectionProps {
 }
 
 export interface BeneficiaryCardProps {
-  displayData: BaseBeneficiary;
+  displayData: Beneficiary;
   electionProps?: ElectionProps;
 }
 
 export interface GrantSliderProps {
-  displayData: BaseBeneficiary;
+  displayData: Beneficiary;
   electionProps: ElectionProps;
 }
 
@@ -38,7 +38,7 @@ function GrantSlider({
       <div className="flex-shrink-0">
         {GrantElectionAdapter().isActive(electionProps.election) ? (
           <VoteSlider
-            beneficiary={displayData as BaseBeneficiary}
+            beneficiary={displayData as Beneficiary}
             electionProps={electionProps}
           />
         ) : (

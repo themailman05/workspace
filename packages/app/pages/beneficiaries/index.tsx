@@ -1,12 +1,12 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
-import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { Beneficiary } from 'interfaces/beneficiaries';
 import { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
 
 export default function BeneficiaryPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [benefeciaries, setBeneficiaries] = useState<BaseBeneficiary[]>([]);
+  const [benefeciaries, setBeneficiaries] = useState<Beneficiary[]>([]);
 
   async function getBeneficiaries() {
     const beneficiaryAddresses =

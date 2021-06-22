@@ -1,4 +1,4 @@
-import { BaseProposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/proposals';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
 
 interface IVotingRow {
@@ -18,7 +18,7 @@ function VotingRow(data: IVotingRow): JSX.Element {
 }
 
 export default function VotingInformation(
-  beneficiaryProposal: BaseProposal,
+  beneficiaryProposal: Proposal,
 ): JSX.Element {
   return (
     <div>

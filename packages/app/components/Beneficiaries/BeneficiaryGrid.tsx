@@ -1,6 +1,6 @@
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
-import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { Beneficiary } from 'interfaces/beneficiaries';
 import React, { useState } from 'react';
 import * as Icon from 'react-feather';
 import BeneficiaryCard from './BeneficiaryCard';
@@ -8,7 +8,7 @@ import BeneficiaryCard from './BeneficiaryCard';
 interface BeneficiaryGridProps {
   title: string;
   subtitle: string;
-  cardProps: BaseBeneficiary[];
+  cardProps: Beneficiary[];
 }
 
 export default function BeneficiaryGrid({

@@ -1,11 +1,11 @@
 import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
-import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { Beneficiary } from 'interfaces/beneficiaries';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';
 
 interface VoteSlider {
-  beneficiary: BaseBeneficiary;
+  beneficiary: Beneficiary;
   electionProps: ElectionProps;
 }
 

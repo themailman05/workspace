@@ -1,12 +1,9 @@
-export interface BaseBeneficiary {
+export interface Beneficiary {
   name: string;
   missionStatement: string;
   ethereumAddress: string;
   profileImage: string;
-}
-
-export interface Beneficiary extends BaseBeneficiary {
-  headerImage: string;
+  headerImage?: string;
   twitterUrl?: string;
   linkedinUrl?: string;
   facebookUrl?: string;
@@ -14,5 +11,5 @@ export interface Beneficiary extends BaseBeneficiary {
   githubUrl?: string;
   impactReports?: string[];
   additionalImages?: string[];
-  proofOfOwnership: string;
+  proofOfOwnership?: string;
 }

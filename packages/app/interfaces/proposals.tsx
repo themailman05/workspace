@@ -8,9 +8,7 @@ export enum Status {
   Failed,
   All,
 }
-
-// Used in proposal card & voting
-export interface BaseProposal {
+export interface Proposal {
   name: string;
   missionStatement: string;
   ethereumAddress: string;
@@ -20,10 +18,7 @@ export interface BaseProposal {
   status: Status;
   stageDeadline: Date;
   id: string;
-}
-
-export interface BeneficiaryProposal extends BaseProposal {
-  headerImage: string;
+  headerImage?: string;
   twitterUrl?: string;
   linkedinUrl?: string;
   facebookUrl?: string;
@@ -31,5 +26,5 @@ export interface BeneficiaryProposal extends BaseProposal {
   githubUrl?: string;
   impactReports?: string[];
   additionalImages?: string[];
-  proofOfOwnership: string;
+  proofOfOwnership?: string;
 }
