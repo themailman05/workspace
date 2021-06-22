@@ -27,6 +27,7 @@ contract GrantElections is Governed {
     ElectionState electionState;
     ElectionConfiguration electionConfiguration;
     uint256 startTime;
+    bytes32 merkleRoot;
   }
 
   struct ElectionConfiguration {
@@ -42,7 +43,13 @@ contract GrantElections is Governed {
   }
 
   enum ElectionTerm {Monthly, Quarterly, Yearly}
-  enum ElectionState {Registration, Voting, Closed, Finalized}
+  enum ElectionState {
+    Registration,
+    Voting,
+    Closed,
+    FinalizationProposed,
+    Finalized
+  }
 
   /* ========== STATE VARIABLES ========== */
 
@@ -61,6 +68,8 @@ contract GrantElections is Governed {
   event BeneficiaryRegistered(address _beneficiary, uint256 _electionId);
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
+  event FinalizationProposed(uint256 _electionId, bytes _merkleRoot);
+  event ElectionFinalized(uint256 _electionId, bytes _merkleRoot);
 
   /* ========== CONSTRUCTOR ========== */
 
@@ -271,7 +280,18 @@ contract GrantElections is Governed {
     emit UserVoted(msg.sender, election.electionTerm);
   }
 
-  function finalize(uint256 _electionId, bytes32 _merkleRoot) public {
+  function fundIncentive(uint256 _amount) public {
+    require(POP.balanceOf(msg.sender) >= _amount, "not enough pop");
+    POP.safeTransferFrom(msg.sender, address(this), _amount);
+    incentiveBudget = incentiveBudget.add(_amount);
+  }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
+
+  //TODO needs some kind of whitelisting
+  function proposeFinalization(uint256 _electionId, bytes32 _merkleRoot)
+    external
+  {
     Election storage _election = elections[_electionId];
     require(
       _election.electionState != ElectionState.Finalized,
@@ -284,13 +304,8 @@ contract GrantElections is Governed {
     //TODO how to check for elegible awardees?
     require(_election.votes.length > 1, "no elegible awardees");
 
-    //TODO how to calculate vault endtime?
-    beneficiaryVaults.initializeVault(
-      uint8(_election.electionTerm),
-      0,
-      _merkleRoot
-    );
-    _election.electionState = ElectionState.Finalized;
+    _election.merkleRoot = _merkleRoot;
+    _election.electionState = ElectionState.FinalizationProposed;
 
     uint256 finalizationIncentive =
       electionDefaults[uint8(_election.electionTerm)].finalizationIncentive;
@@ -300,15 +315,34 @@ contract GrantElections is Governed {
       POP.safeTransferFrom(address(this), msg.sender, finalizationIncentive);
       incentiveBudget.sub(finalizationIncentive);
     }
+    emit FinalizationProposed(_electionId, _merkleRoot);
   }
 
-  function fundIncentive(uint256 _amount) public {
-    require(POP.balanceOf(msg.sender) >= _amount, "not enough pop");
-    POP.safeTransferFrom(msg.sender, address(this), _amount);
-    incentiveBudget = incentiveBudget.add(_amount);
-  }
+  //TODO needs some kind of whitelisting
+  function approveFinalization(uint256 _electionId, bytes32 _merkleRoot)
+    external
+  {
+    Election storage _election = elections[_electionId];
+    require(
+      _election.electionState != ElectionState.Finalized,
+      "election already finalized"
+    );
+    require(
+      _election.electionState == ElectionState.FinalizationProposed,
+      "finalization not yet proposed"
+    );
+    require(_election.merkleRoot == _merkleRoot, "Incorrect root");
 
-  /* ========== RESTRICTED FUNCTIONS ========== */
+    //TODO how to calculate vault endtime?
+    beneficiaryVaults.initializeVault(
+      uint8(_election.electionTerm),
+      0,
+      _merkleRoot
+    );
+    _election.electionState = ElectionState.Finalized;
+
+    emit ElectionFinalized(_electionId, _merkleRoot);
+  }
 
   function toggleRegistrationBondRequirement(ElectionTerm _term)
     external
