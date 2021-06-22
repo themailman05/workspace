@@ -156,13 +156,13 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
   function claimLatestRewards() external nonReentrant {
     uint256 numEntries = _userVaultLength(msg.sender);
-    uint256 index;
+    uint256 stop;
     uint256 total;
 
     if (numEntries >= 20) {
-      index = numEntries.sub(21);
+      stop = numEntries.sub(21);
     }
-    for (index; index < numEntries; index++) {
+    for (uint256 index = numEntries.sub(1); index < stop; index--) {
       bytes32 vaultId = userVaults[msg.sender][index];
       if (vaults[vaultId].status == VaultStatus.open) {
         total = total.add(_claimVaultReward(vaultId));
