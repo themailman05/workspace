@@ -53,6 +53,7 @@ async function rankAwardees(electionMetaData:ElectionMetadata, provider:JsonRpcP
     awardees = await shuffleAwardees(awardees, provider)
   }
   const cutOff = electionMetaData.configuration.awardees;
+  //TODO how much of the vault does each winner get?
   return awardees.slice(0,cutOff)
 }
 
