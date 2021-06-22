@@ -1,10 +1,10 @@
 import {
   Beneficiary,
-  BeneficiaryProposal,
 } from 'interfaces/beneficiaries';
+import { Proposal } from 'interfaces/proposals';
 
 export default function ImpactReportLinks(
-  displayData: Beneficiary | BeneficiaryProposal,
+  displayData: Beneficiary | Proposal,
 ): JSX.Element {
   return (
     <div>

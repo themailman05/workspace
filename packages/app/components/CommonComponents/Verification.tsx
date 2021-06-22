@@ -1,7 +1,8 @@
-import { Beneficiary, BeneficiaryProposal } from "interfaces/beneficiaries";
+import { Beneficiary } from "interfaces/beneficiaries";
+import { Proposal } from "interfaces/proposals";
 
 export default function Verfication(
-  displayData: Beneficiary | BeneficiaryProposal,
+  displayData: Beneficiary | Proposal,
 ): JSX.Element {
   return (
     <div>

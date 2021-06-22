@@ -20,17 +20,17 @@ export interface ElectionProps {
 }
 
 export interface BeneficiaryCardProps {
-  displayData: Beneficiary;
+  beneficiary: Beneficiary;
   electionProps?: ElectionProps;
 }
 
 export interface GrantSliderProps {
-  displayData: Beneficiary;
+  beneficiary: Beneficiary;
   electionProps: ElectionProps;
 }
 
 function GrantSlider({
-  displayData,
+  beneficiary,
   electionProps,
 }: GrantSliderProps): JSX.Element {
   return (
@@ -38,12 +38,12 @@ function GrantSlider({
       <div className="flex-shrink-0">
         {GrantElectionAdapter().isActive(electionProps.election) ? (
           <VoteSlider
-            beneficiary={displayData as Beneficiary}
+            beneficiary={beneficiary as Beneficiary}
             electionProps={electionProps}
           />
         ) : (
           <GrantFunded
-            beneficiary={displayData}
+            beneficiary={beneficiary}
             election={electionProps.election}
             totalVotes={electionProps.totalVotes}
           />
@@ -54,25 +54,25 @@ function GrantSlider({
 }
 
 export default function BeneficiaryCard({
-  displayData,
+  beneficiary,
   electionProps,
 }: BeneficiaryCardProps): JSX.Element {
   return (
     <div
-      key={displayData?.ethereumAddress}
+      key={beneficiary?.ethereumAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
-      <Link href={`/beneficiaries/${displayData.ethereumAddress}`} passHref>
+      <Link href={`/beneficiaries/${beneficiary.ethereumAddress}`} passHref>
         <a>
           <CardBody
-            imgUrl={`${process.env.IPFS_URL}${displayData?.profileImage}`}
-            name={displayData?.name}
-            missionStatement={displayData?.missionStatement}
+            imgUrl={`${process.env.IPFS_URL}${beneficiary?.profileImage}`}
+            name={beneficiary?.name}
+            missionStatement={beneficiary?.missionStatement}
           />
         </a>
       </Link>
       {electionProps ? (
-        <GrantSlider displayData={displayData} electionProps={electionProps} />
+        <GrantSlider beneficiary={beneficiary} electionProps={electionProps} />
       ) : (
         <></>
       )}

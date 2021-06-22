@@ -1,11 +1,11 @@
 import {
   Beneficiary,
-  BeneficiaryProposal,
 } from 'interfaces/beneficiaries';
+import { Proposal } from 'interfaces/proposals';
 import SocialMediaLinks from './SocialMediaLinks';
 
 export default function SocialMedia(
-  displayData: Beneficiary | BeneficiaryProposal,
+  displayData: Beneficiary | Proposal,
 ): JSX.Element {
   return (
     <>

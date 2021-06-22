@@ -1,3 +1,5 @@
+// Displays a beneficiary or a preview of a proposal
+
 import NavBar from 'components/NavBar/NavBar';
 import { Beneficiary } from 'interfaces/beneficiaries';
 import ImageHeader from '../CommonComponents/ImageHeader';
@@ -7,24 +9,23 @@ import PhotoSideBar from '../CommonComponents/PhotoSideBar';
 import SocialMedia from '../CommonComponents/SocialMedia';
 import Verification from '../CommonComponents/Verification';
 import TriggerTakedownProposal from '../CommonComponents/TriggerTakedownProposal';
-import { BeneficiaryProposal } from 'interfaces/proposals';
 
 interface BeneficiaryPageProps {
-  displayData: Beneficiary | BeneficiaryProposal;
+  beneficiary: Beneficiary;
   isProposalPreview?: boolean;
 }
 
 export default function BeneficiaryPage({
-  displayData,
+  beneficiary,
   isProposalPreview = false,
 }: BeneficiaryPageProps): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview && <NavBar />}
-      <ImageHeader {...displayData} />
+      <ImageHeader {...beneficiary} />
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-        <PhotoSideBar {...(displayData as BeneficiaryProposal)} />
-        <MissionStatement missionStatement={displayData?.missionStatement} />
+        <PhotoSideBar {...(beneficiary as Beneficiary)} />
+        <MissionStatement missionStatement={beneficiary?.missionStatement} />
       </div>
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -32,9 +33,9 @@ export default function BeneficiaryPage({
         </div>
       </div>
       <div className="mx-48 my-8">
-        <Verification {...(displayData as BeneficiaryProposal)} />
-        <ImpactReportLinks {...displayData} />
-        <SocialMedia {...displayData} />
+        <Verification {...(beneficiary as Beneficiary)} />
+        <ImpactReportLinks {...beneficiary} />
+        <SocialMedia {...beneficiary} />
       </div>
       {!isProposalPreview && <TriggerTakedownProposal />}
     </div>

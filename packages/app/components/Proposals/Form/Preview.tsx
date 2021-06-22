@@ -171,7 +171,7 @@ export default function Preview({
         </div>
 
         <BeneficiaryPage
-          displayData={formData}
+          beneficiary={formData}
           isProposalPreview
         />
       </div>

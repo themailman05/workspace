@@ -49,7 +49,7 @@ export default function BeneficiaryGrid({
           .map((cardProp) => (
             <BeneficiaryCard
               key={cardProp?.ethereumAddress}
-              displayData={cardProp}
+              beneficiary={cardProp}
             />
           ))}
       </ul>

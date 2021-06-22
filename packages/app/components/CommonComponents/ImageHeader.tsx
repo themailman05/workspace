@@ -1,7 +1,8 @@
-import { Beneficiary, BeneficiaryProposal } from "interfaces/beneficiaries";
+import { Beneficiary } from "interfaces/beneficiaries";
+import { Proposal } from "interfaces/proposals";
 
 export default function ImageHeader(
-  displayData: Beneficiary | BeneficiaryProposal,
+  displayData: Beneficiary | Proposal,
 ): JSX.Element {
   return (
     <div className="py-48 px-4 bg-gray-900 sm:px-6 lg:px-8 lg:pt-20 mb-8">

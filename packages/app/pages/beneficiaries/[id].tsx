@@ -28,7 +28,7 @@ export default function SingleBeneficiaryPage(): JSX.Element {
 
   return (
     <BeneficiaryPage
-      displayData={benefeciary}
+      beneficiary={benefeciary}
     />
   );
 }

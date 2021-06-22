@@ -1,8 +1,8 @@
 import { Beneficiary } from 'interfaces/beneficiaries';
-import { BeneficiaryProposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/proposals';
 
 export default function PhotoSideBar(
-  displayData: Beneficiary | BeneficiaryProposal,
+  displayData: Beneficiary | Proposal,
 ): JSX.Element {
   return (
     <div className="col-span-2 space-y-4">
