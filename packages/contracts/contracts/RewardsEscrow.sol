@@ -28,6 +28,8 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   IStaking public Staking;
   mapping(address => Escrow) public escrowedBalances;
   mapping(address => uint256) public vested;
+  uint256 escrowDuration = 90 days;
+  uint256 vestingCliff = 90 days;
 
   /* ========== EVENTS ========== */
 
@@ -35,6 +37,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   event Locked(address _address, uint256 claimable);
   event StakingChanged(IStaking _staking);
   event EscrowDurationChanged(uint256 _escrowDuration);
+  event VestingCliffChanged(uint256 _vestingCliff);
 
   /* ========== CONSTRUCTOR ========== */
 
@@ -87,8 +90,8 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   function _lock(address _address, uint256 _amount) internal {
     uint256 _now = block.timestamp;
-    uint256 _start = _now.add(90 days);
-    uint256 _end = _start.add(90 days);
+    uint256 _start = _now.add(vestingCliff);
+    uint256 _end = _start.add(escrowDuration);
 
     if (escrowedBalances[_address].end > _start) {
       _start = escrowedBalances[_address].start;
@@ -129,10 +132,20 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     emit EscrowDurationChanged(_escrowDuration);
   }
 
+  function updateCliff(uint256 _vestingCliff) external onlyOwner {
+    vestingCliff = _vestingCliff;
+    emit VestingCliffChanged(_vestingCliff);
+  }
+
   /* ========== MODIFIERS ========== */
 
   modifier updateVested(address _address) {
     vested[_address] = vested[_address].add(getVested(_address));
+    _;
+  }
+
+  modifier initialised() {
+    require(initialised == true, "must initialise contract");
     _;
   }
 }
