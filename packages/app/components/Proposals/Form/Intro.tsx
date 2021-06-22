@@ -94,7 +94,7 @@ export default function Intro({
               <li>- Proof that the address belongs to the nominee</li>
               <li>- Impact reports and/or audited documents</li>
               <li>
-                - Supplmentary information such as photos and links to social
+                - Supplmentary information including photos and links to social
                 media accounts
               </li>
             </ul>
