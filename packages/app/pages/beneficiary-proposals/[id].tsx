@@ -1,13 +1,13 @@
 import ProposalPage from 'components/Proposals/ProposalPage';
 import { ContractsContext } from 'context/Web3/contracts';
-import { BeneficiaryProposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/proposals';
 import router from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { getProposal } from 'utils/getProposals';
 
-export default function SingleBeneficiaryProposalPage(): JSX.Element {
+export default function SingleProposalPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [proposal, setProposal] = useState<BeneficiaryProposal>();
+  const [proposal, setProposal] = useState<Proposal>();
 
   useEffect(() => {
     if (contracts) {
@@ -19,7 +19,7 @@ export default function SingleBeneficiaryProposalPage(): JSX.Element {
 
   return (
     <ProposalPage
-      proposal={proposal as BeneficiaryProposal}
+      proposal={proposal as Proposal}
       isTakedown={false}
     />
   );

@@ -20,7 +20,7 @@ export default function BeneficiaryProposalPage(): JSX.Element {
       subtitle={
         'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations'
       }
-      cardProps={proposals}
+      proposals={proposals}
       isTakedown={false}
     />
   );

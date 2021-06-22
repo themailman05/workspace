@@ -7,9 +7,7 @@ import { getProposals } from 'utils/getProposals';
 
 export default function TakedownPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
-  const [takedownProposals, setTakedownProposals] = useState<Proposal[]>(
-    [],
-  );
+  const [takedownProposals, setTakedownProposals] = useState<Proposal[]>([]);
 
   useEffect(() => {
     if (contracts) {
@@ -23,7 +21,7 @@ export default function TakedownPage(): JSX.Element {
       subtitle={
         'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
       }
-      cardProps={takedownProposals}
+      proposals={takedownProposals}
       isTakedown={true}
     />
   );

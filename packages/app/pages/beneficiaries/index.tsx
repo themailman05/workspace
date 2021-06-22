@@ -47,7 +47,7 @@ export default function BeneficiaryPage(): JSX.Element {
       subtitle={
         'Beneficiary organizations that have passed the voting process and are eligible to receive grants'
       }
-      cardProps={benefeciaries}
+      beneficiaries={benefeciaries}
     />
   );
 }

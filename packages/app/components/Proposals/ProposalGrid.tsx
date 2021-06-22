@@ -16,14 +16,14 @@ import {
 interface ProposalGridProps {
   title: string;
   subtitle: string;
-  cardProps: Proposal[];
+  proposals: Proposal[];
   isTakedown?: boolean;
 }
 
 export default function ProposalGrid({
   title,
   subtitle,
-  cardProps,
+  proposals,
   isTakedown = false,
 }: ProposalGridProps) {
   const { dispatch } = useContext(store);
@@ -132,21 +132,21 @@ export default function ProposalGrid({
         </span>
       </div>
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
-        {cardProps
-          ?.filter((cardProp) => {
-            return cardProp?.name
+        {proposals
+          ?.filter((proposal) => {
+            return proposal?.name
               .toLowerCase()
               .includes(searchFilter.toLowerCase());
           })
-          .filter((cardProp) => {
+          .filter((proposal) => {
             return (
-              (cardProp as Proposal)?.status === statusFilter ||
+              (proposal as Proposal)?.status === statusFilter ||
               statusFilter === Status.All
             );
           })
-          .map((cardProp) => (
+          .map((proposal) => (
             <ProposalCard
-              displayData={cardProp}
+              proposal={proposal}
               isTakedown={isTakedown}
               isProposal={true}
             />

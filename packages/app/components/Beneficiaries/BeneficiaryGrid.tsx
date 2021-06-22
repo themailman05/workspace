@@ -6,15 +6,15 @@ import * as Icon from 'react-feather';
 import BeneficiaryCard from './BeneficiaryCard';
 
 interface BeneficiaryGridProps {
-  title: string;
+  beneficiaries: Beneficiary[];
   subtitle: string;
-  cardProps: Beneficiary[];
+  title: string;
 }
 
 export default function BeneficiaryGrid({
-  title,
+  beneficiaries,
   subtitle,
-  cardProps,
+  title,
 }: BeneficiaryGridProps) {
   const [searchFilter, setSearchFilter] = useState<string>('');
 
@@ -40,16 +40,16 @@ export default function BeneficiaryGrid({
         </div>
       </div>
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
-        {cardProps
-          ?.filter((cardProp) => {
-            return cardProp?.name
+        {beneficiaries
+          ?.filter((beneficiary) => {
+            return beneficiary?.name
               .toLowerCase()
               .includes(searchFilter.toLowerCase());
           })
-          .map((cardProp) => (
+          .map((beneficiary) => (
             <BeneficiaryCard
-              key={cardProp?.ethereumAddress}
-              beneficiary={cardProp}
+              key={beneficiary?.ethereumAddress}
+              beneficiary={beneficiary}
             />
           ))}
       </ul>
