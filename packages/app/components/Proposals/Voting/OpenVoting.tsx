@@ -2,7 +2,7 @@ import { RadioGroup } from '@headlessui/react';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { BeneficiaryProposal } from 'interfaces/beneficiaries';
+import { Proposal } from 'interfaces/proposals';
 import { useContext, useState } from 'react';
 import CurrentStandings from '../CurrentStandings';
 
@@ -12,12 +12,12 @@ enum VoteOptions {
 }
 
 interface OpenVotingProps {
-  displayData: BeneficiaryProposal;
+  proposal: Proposal;
   isTakedown?: boolean;
 }
 
 export default function OpenVoting({
-  displayData,
+  proposal,
   isTakedown = false,
 }: OpenVotingProps): JSX.Element {
   const { dispatch } = useContext(store);
@@ -27,7 +27,7 @@ export default function OpenVoting({
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {displayData?.status} vote on {displayData?.name}
+        {proposal?.status} vote on {proposal?.name}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
@@ -157,7 +157,7 @@ export default function OpenVoting({
                 onConfirm: {
                   label: 'Confirm Vote',
                   onClick: () => {
-                    contracts.beneficiaryGovernance.vote(displayData.id, selected)
+                    contracts.beneficiaryGovernance.vote(proposal.id, selected)
                     dispatch(setDualActionModal(false))
                   },
                 },
@@ -172,7 +172,7 @@ export default function OpenVoting({
           Cast Vote
         </button>
 
-        {displayData && <CurrentStandings {...displayData} />}
+        {proposal && <CurrentStandings {...proposal} />}
       </div>
     </div>
   );

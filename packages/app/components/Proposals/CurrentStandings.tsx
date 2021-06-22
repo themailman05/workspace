@@ -1,5 +1,5 @@
 import ProgressBar from 'components/ProgressBar';
-import { BeneficiaryProposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/proposals';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
 import {
@@ -17,15 +17,13 @@ const getTimeLeft = (stageDeadline: Date): string => {
   return diff.hours + ':' + diff.minutes + ':' + parseInt(diff.seconds);
 };
 
-export default function CurrentStandings(
-  displayData: BeneficiaryProposal,
-): JSX.Element {
+export default function CurrentStandings(proposal: Proposal): JSX.Element {
   const [timeLeft, setTimeLeft] = useState<string>(
-    getTimeLeft(displayData?.stageDeadline),
+    getTimeLeft(proposal?.stageDeadline),
   );
   useEffect(() => {
     const interval = setInterval(() => {
-      setTimeLeft(getTimeLeft(displayData?.stageDeadline));
+      setTimeLeft(getTimeLeft(proposal?.stageDeadline));
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -36,7 +34,7 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="text-lg font-medium text-gray-700">Votes For</p>
           <span className="text-base text-gray-700 flex flex-row">
-            <p>{formatAndRoundBigNumber(displayData?.votesFor)}</p>
+            <p>{formatAndRoundBigNumber(proposal?.votesFor)}</p>
           </span>
         </span>
       </div>
@@ -45,9 +43,9 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
           <ProgressBar
             progress={
-              (100 * bigNumberToNumber(displayData?.votesFor)) /
+              (100 * bigNumberToNumber(proposal?.votesFor)) /
               bigNumberToNumber(
-                displayData?.votesFor.add(displayData?.votesAgainst),
+                proposal?.votesFor.add(proposal?.votesAgainst),
               )
             }
             progressColor={'bg-green-300'}
@@ -58,7 +56,7 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="text-lg font-medium text-gray-700">Votes Against</p>
           <span className="text-base text-gray-700 flex flex-row">
-            <p>{formatAndRoundBigNumber(displayData?.votesAgainst)}</p>
+            <p>{formatAndRoundBigNumber(proposal?.votesAgainst)}</p>
           </span>
         </span>
       </div>
@@ -67,9 +65,9 @@ export default function CurrentStandings(
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between border-b-2 pb-2">
           <ProgressBar
             progress={
-              (100 * bigNumberToNumber(displayData?.votesAgainst)) /
+              (100 * bigNumberToNumber(proposal?.votesAgainst)) /
               bigNumberToNumber(
-                displayData?.votesFor.add(displayData?.votesAgainst),
+                proposal?.votesFor.add(proposal?.votesAgainst),
               )
             }
             progressColor={'bg-red-400'}
@@ -83,7 +81,7 @@ export default function CurrentStandings(
           <span className="text-base text-gray-700 flex flex-row">
             <p>
               {formatAndRoundBigNumber(
-                displayData?.votesFor.add(displayData?.votesAgainst),
+                proposal?.votesFor.add(proposal?.votesAgainst),
               )}
             </p>
           </span>
@@ -93,8 +91,8 @@ export default function CurrentStandings(
       <div className="grid my-2 justify-items-stretch">
         <p className="my-4  w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           Current voting period ends at{' '}
-          {displayData?.stageDeadline &&
-            displayData?.stageDeadline.toLocaleString()}
+          {proposal?.stageDeadline &&
+            proposal?.stageDeadline.toLocaleString()}
         </p>
         <p className="my-4 w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           {timeLeft !== '00:00:00'

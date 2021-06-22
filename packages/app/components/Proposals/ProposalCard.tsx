@@ -4,18 +4,18 @@ import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
 
 export interface ProposalCardProps {
-  displayData: Proposal;
+  proposal: Proposal;
   isProposal?: boolean;
   isTakedown?: boolean;
 }
 
 export default function ProposalCard({
-  displayData,
+  proposal,
   isTakedown = false,
 }: ProposalCardProps): JSX.Element {
   return (
     <div
-      key={displayData?.id}
+      key={proposal?.id}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white"
     >
       <Link
@@ -23,17 +23,17 @@ export default function ProposalCard({
           isTakedown
             ? '/beneficiary-proposals/takedowns/'
             : '/beneficiary-proposals/'
-        }${displayData.id}`}
+        }${proposal.id}`}
         passHref
       >
         <a>
           <CardBody
-            imgUrl={`${process.env.IPFS_URL}${displayData?.profileImage}`}
-            name={displayData?.name}
-            missionStatement={displayData?.missionStatement}
+            imgUrl={`${process.env.IPFS_URL}${proposal?.profileImage}`}
+            name={proposal?.name}
+            missionStatement={proposal?.missionStatement}
           />
           <div className="flex-shrink-0 ">
-            <VotingInformation {...(displayData as Proposal)} />
+            <VotingInformation {...(proposal as Proposal)} />
           </div>
         </a>
       </Link>

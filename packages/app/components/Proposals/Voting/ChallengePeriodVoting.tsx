@@ -1,17 +1,17 @@
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { BeneficiaryProposal } from 'interfaces/beneficiaries';
+import { Proposal } from 'interfaces/proposals';
 import { useContext } from 'react';
 import CurrentStandings from '../CurrentStandings';
 
 interface ChallengePeriodVotingProps {
-  displayData: BeneficiaryProposal;
+  proposal: Proposal;
   isTakedown: boolean;
 }
 
 export default function ChallengePeriodVoting({
-  displayData,
+  proposal,
   isTakedown,
 }: ChallengePeriodVotingProps): JSX.Element {
   const { dispatch } = useContext(store);
@@ -20,12 +20,12 @@ export default function ChallengePeriodVoting({
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {displayData?.status} vote on {displayData?.name}
+        {proposal?.status} vote on {proposal?.name}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            {displayData?.name}{' '}
+            {proposal?.name}{' '}
             {isTakedown
               ? `is in the second phase of takedown voting, known
             as the challenge period. Here, users are able to vote to veto the
@@ -62,7 +62,7 @@ export default function ChallengePeriodVoting({
                 content: `Confirm your veto vote for ${
                   isTakedown ? 'the takedown of' : ''
                 } ${
-                  displayData?.name
+                  proposal?.name
                 }. Your vote will lock x tokens for the duration of the nomination process. You will not be able to cancel your vote once you confirm \
                   Confirm to continue.`,
                 title: 'Confirm Veto',
@@ -70,7 +70,7 @@ export default function ChallengePeriodVoting({
                   label: 'Confirm Veto',
                   onClick: () => {
                     //TODO is veto a vote.yes or vote.no?
-                    contracts.beneficiaryGovernance.vote(displayData.id, 0);
+                    contracts.beneficiaryGovernance.vote(proposal.id, 0);
                   },
                 },
                 onDismiss: {
@@ -84,7 +84,7 @@ export default function ChallengePeriodVoting({
           {isTakedown ? 'Veto Takedown Proposal Vote' : 'Veto Proposal Vote'}
         </button>
       </div>
-      {displayData && <CurrentStandings {...displayData} />}
+      {proposal && <CurrentStandings {...proposal} />}
     </div>
   );
 }

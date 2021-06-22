@@ -1,20 +1,20 @@
-import { BeneficiaryProposal } from 'interfaces/beneficiaries';
+import { Proposal } from 'interfaces/proposals';
 import CurrentStandings from '../CurrentStandings';
 
 interface CompletedVotingProps {
-  displayData: BeneficiaryProposal;
+  proposal: Proposal;
   isTakedown?: boolean;
 }
 
 export default function CompletedVoting({
-  displayData,
+  proposal,
   isTakedown = false,
 }: CompletedVotingProps): JSX.Element {
   return (
     <div className="content-center mx-48">
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-2/3 justify-self-center flex flex-row justify-between">
-          {displayData?.votesFor > displayData?.votesAgainst ? (
+          {proposal?.votesFor > proposal?.votesAgainst ? (
             <div>
               <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
                 {isTakedown
@@ -43,7 +43,7 @@ export default function CompletedVoting({
           )}
         </span>
       </div>
-      {displayData && <CurrentStandings {...displayData} />}
+      {proposal && <CurrentStandings {...proposal} />}
     </div>
   );
 }
