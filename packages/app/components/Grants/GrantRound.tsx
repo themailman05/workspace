@@ -91,7 +91,7 @@ export default function GrantRound({
             assignVotes: assignVotes,
             totalVotes: votes[beneficiary.ethereumAddress],
           }}
-          displayData={beneficiary}
+          beneficiary={beneficiary}
         />
       ))}
     </div>
