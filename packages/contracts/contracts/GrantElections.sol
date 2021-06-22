@@ -5,26 +5,18 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
-import "./IGrantRegistry.sol";
-import "./IRandomNumberConsumer.sol";
+import "./IBeneficiaryVaults.sol";
 import "./Governed.sol";
 
 contract GrantElections is Governed {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
-  IERC20 public immutable POP;
-
   struct Vote {
     address voter;
     address beneficiary;
     uint256 weight;
   }
-
-  enum ElectionTerm {Monthly, Quarterly, Yearly}
-  enum ElectionState {Registration, Voting, Closed, Finalized}
-
-  uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
   struct Election {
     Vote[] votes;
@@ -35,7 +27,6 @@ contract GrantElections is Governed {
     ElectionState electionState;
     ElectionConfiguration electionConfiguration;
     uint256 startTime;
-    bool exists;
   }
 
   struct ElectionConfiguration {
@@ -47,80 +38,49 @@ contract GrantElections is Governed {
     uint256 cooldownPeriod;
     uint256 registrationBond;
     bool registrationBondRequired;
+    uint256 finalizationIncentive;
   }
 
-  // mapping of election terms and beneficiary total votes
-  Array[Election[],Election[],Election[]] public elections;
-  mapping(ElectionTerm => mapping(address => uint256)) beneficiaryVotes;
-  mapping(ElectionTerm => ElectionConfiguration) electionConfigurations;
-  mapping(ElectionTerm => mapping(uint8 => address)) electionRanking;
-  mapping(ElectionTerm => mapping(address => bool)) electionRankingAddresses;
+  enum ElectionTerm {Monthly, Quarterly, Yearly}
+  enum ElectionState {Registration, Voting, Closed, Finalized}
 
-  ElectionConfiguration[3] public electionDefaults;
+  /* ========== STATE VARIABLES ========== */
 
+  IERC20 public immutable POP;
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
-  IGrantRegistry grantRegistry;
-  IRandomNumberConsumer randomNumberConsumer;
+  IBeneficiaryVaults beneficiaryVaults;
 
-  modifier validAddress(address _address) {
-    require(_address == address(_address), "invalid address");
-    _;
-  }
+  Election[] public elections;
+  uint256[3] public activeElections;
+  ElectionConfiguration[3] public electionDefaults;
+  uint256 incentiveBudget;
 
-  event BeneficiaryRegistered(address _beneficiary, ElectionTerm _term);
+  /* ========== EVENTS ========== */
+
+  event BeneficiaryRegistered(address _beneficiary, uint256 _electionId);
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
-  event GrantCreated(
-    ElectionTerm _term,
-    address[] _beneficiaries,
-    uint256[] _shares
-  );
+
+  /* ========== CONSTRUCTOR ========== */
 
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
-    IGrantRegistry _grantRegistry,
-    IRandomNumberConsumer _randomNumberConsumer,
+    IBeneficiaryVaults _beneficiaryVaults,
     IERC20 _pop,
     address _governance
   ) Governed(_governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
-    grantRegistry = _grantRegistry;
-    randomNumberConsumer = _randomNumberConsumer;
+    beneficiaryVaults = _beneficiaryVaults;
     POP = _pop;
     _setDefaults();
   }
 
-  // todo: mint POP for caller to incentivize calling function
-  // todo: use bonds to incentivize callers instead of minting
-  function initialize(ElectionTerm _grantTerm) public {
-    uint8 _term = uint8(_grantTerm);
-    uint256 electionId = elections[_term].length
-    Election storage latestElection = elections[_term][electionId-1];
-    require(
-      latestElection.electionState == ElectionState.Closed,
-      "election not yet closed"
-    );
-    require(
-      latestElection.electionConfiguration.cooldownPeriod >=
-        block.timestamp.sub(_election.startTime),
-      "can't start new election, not enough time elapsed since last election"
-    );
+  /* ========== VIEWS ========== */
 
-    elections[_term].push();
-    Election storage election = elections[_term][electionId];
-    election.electionConfiguration = electionDefaults[_term];
-    election.electionState = ElectionState.Registration;
-    election.electionTerm = _grantTerm;
-    election.startTime = block.timestamp;
-    election.exists = true;
-
-    emit ElectionInitialized(e.electionTerm, e.startTime);
-  }
-
-  function getElectionMetadata(ElectionTerm _term)
+  function getElectionMetadata(uint256 _electionId)
     public
     view
     returns (
@@ -136,7 +96,7 @@ contract GrantElections is Governed {
       uint256 registrationBond_
     )
   {
-    Election storage e = elections[uint8(_term)][elections[uint8(_term)].length-1];
+    Election storage e = elections[_electionId];
 
     votes_ = e.votes;
     term_ = e.electionTerm;
@@ -159,35 +119,53 @@ contract GrantElections is Governed {
     registrationBond_ = e.electionConfiguration.registrationBond;
   }
 
-  function getRegisteredBeneficiaries(ElectionTerm _term)
+  function getRegisteredBeneficiaries(uint256 _electionId)
     public
     view
     returns (address[] memory beneficiaries)
   {
-    return elections[uint8(_term)][elections[uint8(_term)].length-1].registeredBeneficiariesList;
+    return elections[_electionId].registeredBeneficiariesList;
   }
 
-  function toggleRegistrationBondRequirement(ElectionTerm _term)
-    external
-    onlyGovernance
-  {
-    electionDefaults[uint8(_term)].registrationBondRequired = !electionDefaults[
-      uint8(_term)
-    ]
-      .registrationBondRequired;
-  }
-
-  function getCurrentRanking(ElectionTerm _term)
+  function _isEligibleBeneficiary(address _beneficiary, uint256 _electionId)
     public
     view
-    returns (address[] memory)
+    returns (bool)
   {
-    uint8 _rankingSize = elections[uint8(_term)][elections[uint8(_term)].length-1].electionConfiguration.ranking;
-    address[] memory _ranking = new address[](_rankingSize);
-    for (uint8 i = 0; i < _rankingSize; i++) {
-      _ranking[i] = electionRanking[_term][i];
-    }
-    return _ranking;
+    return
+      elections[_electionId].registeredBeneficiaries[_beneficiary] &&
+      beneficiaryRegistry.beneficiaryExists(_beneficiary);
+  }
+
+  /* ========== MUTATIVE FUNCTIONS ========== */
+
+  // todo: mint POP for caller to incentivize calling function
+  // todo: use bonds to incentivize callers instead of minting
+  function initialize(ElectionTerm _grantTerm) public {
+    uint8 _term = uint8(_grantTerm);
+    Election storage latestElection = elections[activeElections[_term]];
+
+    require(
+      latestElection.electionState == ElectionState.Closed,
+      "election not yet closed"
+    );
+    require(
+      latestElection.electionConfiguration.cooldownPeriod >=
+        block.timestamp.sub(latestElection.startTime),
+      "can't start new election, not enough time elapsed since last election"
+    );
+
+    uint256 electionId = elections.length;
+    activeElections[_term] = electionId;
+
+    elections.push();
+    Election storage election = elections[electionId];
+    election.electionConfiguration = electionDefaults[_term];
+    election.electionState = ElectionState.Registration;
+    election.electionTerm = _grantTerm;
+    election.startTime = block.timestamp;
+
+    emit ElectionInitialized(election.electionTerm, election.startTime);
   }
 
   /**
@@ -196,10 +174,10 @@ contract GrantElections is Governed {
    * todo: check beneficiary is not currently awarded a grant
    * todo: add claimBond function for beneficiary to receive their bond after the election period has closed
    */
-  function registerForElection(address _beneficiary, ElectionTerm _term)
+  function registerForElection(address _beneficiary, uint256 _electionId)
     public
   {
-    Election storage _election = elections[uint8(_term)][elections[uint8(_term)].length-1];
+    Election storage _election = elections[_electionId];
 
     // todo: refresh election state & update tests
     // refreshElectionState(_term);
@@ -218,37 +196,11 @@ contract GrantElections is Governed {
     _election.registeredBeneficiaries[_beneficiary] = true;
     _election.registeredBeneficiariesList.push(_beneficiary);
 
-    emit BeneficiaryRegistered(_beneficiary, _term);
+    emit BeneficiaryRegistered(_beneficiary, _electionId);
   }
 
-  function _collectRegistrationBond(Election storage _election) internal {
-    if (_election.electionConfiguration.registrationBondRequired == true) {
-      require(
-        POP.balanceOf(msg.sender) >=
-          _election.electionConfiguration.registrationBond,
-        "insufficient registration bond balance"
-      );
-
-      POP.safeTransferFrom(
-        msg.sender,
-        address(this),
-        _election.electionConfiguration.registrationBond
-      );
-    }
-  }
-
-  function _isEligibleBeneficiary(address _beneficiary, ElectionTerm _term)
-    public
-    view
-    returns (bool)
-  {
-    return
-      elections[uint8(_term)][elections[uint8(_term)].length-1].registeredBeneficiaries[_beneficiary] &&
-      beneficiaryRegistry.beneficiaryExists(_beneficiary);
-  }
-
-  function refreshElectionState(ElectionTerm _term) public {
-    Election storage election = elections[uint8(_term)][elections[uint8(_term)].length-1];
+  function refreshElectionState(uint256 _electionId) public {
+    Election storage election = elections[_electionId];
     if (
       block.timestamp >=
       election
@@ -268,14 +220,16 @@ contract GrantElections is Governed {
   }
 
   function vote(
-    address[5] memory _beneficiaries,
-    uint256[5] memory _voiceCredits,
-    ElectionTerm _term
+    address[] memory _beneficiaries,
+    uint256[] memory _voiceCredits,
+    uint256 _electionId
   ) public {
-    Election storage election = elections[uint8(_term)][elections[uint8(_term)].length-1];
+    Election storage election = elections[_electionId];
+    require(_beneficiaries.length <= 5, "too many beneficiaries");
+    require(_voiceCredits.length <= 5, "too many votes");
     require(_voiceCredits.length > 0, "Voice credits are required");
     require(_beneficiaries.length > 0, "Beneficiaries are required");
-    refreshElectionState(_term);
+    refreshElectionState(_electionId);
     require(
       election.electionState == ElectionState.Voting,
       "Election not open for voting"
@@ -293,7 +247,7 @@ contract GrantElections is Governed {
     for (uint256 i = 0; i < _beneficiaries.length; i++) {
       // todo: consider skipping iteration instead of throwing since if a beneficiary is removed from the registry during an election, it can prevent votes from being counted
       require(
-        _isEligibleBeneficiary(_beneficiaries[i], _electionTerm),
+        _isEligibleBeneficiary(_beneficiaries[i], _electionId),
         "ineligible beneficiary"
       );
 
@@ -309,71 +263,16 @@ contract GrantElections is Governed {
 
       election.votes.push(_vote);
       election.voters[msg.sender] = true;
-      beneficiaryVotes[_electionTerm][_beneficiaries[i]] = beneficiaryVotes[
-        _electionTerm
-      ][_beneficiaries[i]]
-        .add(_sqredVoiceCredits);
-      _recalculateRanking(_electionTerm, _beneficiaries[i], _sqredVoiceCredits);
     }
     require(
       _usedVoiceCredits <= _stakedVoiceCredits,
       "Insufficient voice credits"
     );
+    emit UserVoted(msg.sender, election.electionTerm);
   }
 
-  function _recalculateRanking(
-    ElectionTerm _term,
-    address _beneficiary,
-    uint256 weight
-  ) internal {
-    Election storage _election = elections[uint8(_term)][elections[uint8(_term)].length-1];
-    // If beneficiary already in ranking skip inserting it and go to sorting
-    if (!electionRankingAddresses[_term][_beneficiary]) {
-      if (
-        weight >
-        beneficiaryVotes[_term][
-          electionRanking[_term][
-            _election.electionConfiguration.ranking - 1
-          ]
-        ]
-      ) {
-        // If weight is bigger than the last in the ranking for the election term, take its position
-        // Remove the current last one from the ranking
-        electionRankingAddresses[_term][
-          electionRanking[_term][
-            _election.electionConfiguration.ranking - 1
-          ]
-        ] = false;
-        electionRanking[_term][
-          _election.electionConfiguration.ranking - 1
-        ] = _beneficiary;
-        electionRankingAddresses[_term][_beneficiary] = true;
-      } else {
-        // Otherwise, no need to recalculate ranking
-        return;
-      }
-    }
-
-    // traverse inverted ranking
-    for (uint8 i = _election.electionConfiguration.ranking - 1; i > 0; i--) {
-      // if the votes are higher than the next one in the ranking, swap them
-      if (
-        beneficiaryVotes[_term][electionRanking[_term][i]] >
-        beneficiaryVotes[_term][electionRanking[_term][i - 1]]
-      ) {
-        (
-          electionRanking[_term][i],
-          electionRanking[_term][i - 1]
-        ) = (
-          electionRanking[_term][i - 1],
-          electionRanking[_term][i]
-        );
-      }
-    }
-  }
-
-  function finalize(ElectionTerm _term) public {
-    Election storage _election = elections[uint8(_term)][elections[uint8(_term)].length-1];
+  function finalize(uint256 _electionId, bytes32 _merkleRoot) public {
+    Election storage _election = elections[_electionId];
     require(
       _election.electionState != ElectionState.Finalized,
       "election already finalized"
@@ -382,32 +281,59 @@ contract GrantElections is Governed {
       _election.electionState == ElectionState.Closed,
       "election not yet closed"
     );
+    //TODO how to check for elegible awardees?
+    require(_election.votes.length > 1, "no elegible awardees");
 
-    address[] memory _ranking = getCurrentRanking(_term);
-    require(_ranking.length > 1, "no elegible awardees");
-
-    address[] memory _awardees =
-      new address[](_election.electionConfiguration.awardees);
-    uint256[] memory _shares =
-      new uint256[](_election.electionConfiguration.awardees);
-
-    if (_election.electionConfiguration.useChainLinkVRF) {
-      randomNumberConsumer.getRandomNumber(
-        uint256(keccak256(abi.encode(block.timestamp, blockhash(block.number))))
-      );
-      uint256 _randomNumber = randomNumberConsumer.randomResult();
-
-      _ranking = shuffle(_ranking, _randomNumber);
-    }
-
-    for (uint8 i = 0; i < _election.electionConfiguration.awardees; i++) {
-      _shares[i] = 100e18 / _election.electionConfiguration.awardees;
-      _awardees[i] = _ranking[i];
-    }
-
-    grantRegistry.createGrant(uint8(_term), _awardees, _shares);
-    emit GrantCreated(_term, _awardees, _shares);
+    //TODO how to calculate vault endtime?
+    beneficiaryVaults.initializeVault(
+      uint8(_election.electionTerm),
+      0,
+      _merkleRoot
+    );
     _election.electionState = ElectionState.Finalized;
+
+    uint256 finalizationIncentive =
+      electionDefaults[uint8(_election.electionTerm)].finalizationIncentive;
+
+    if (incentiveBudget >= finalizationIncentive) {
+      POP.approve(address(this), finalizationIncentive);
+      POP.safeTransferFrom(address(this), msg.sender, finalizationIncentive);
+      incentiveBudget.sub(finalizationIncentive);
+    }
+  }
+
+  function fundIncentive(uint256 _amount) public {
+    require(POP.balanceOf(msg.sender) >= _amount, "not enough pop");
+    POP.safeTransferFrom(msg.sender, address(this), _amount);
+    incentiveBudget = incentiveBudget.add(_amount);
+  }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
+
+  function toggleRegistrationBondRequirement(ElectionTerm _term)
+    external
+    onlyGovernance
+  {
+    electionDefaults[uint8(_term)].registrationBondRequired = !electionDefaults[
+      uint8(_term)
+    ]
+      .registrationBondRequired;
+  }
+
+  function _collectRegistrationBond(Election storage _election) internal {
+    if (_election.electionConfiguration.registrationBondRequired == true) {
+      require(
+        POP.balanceOf(msg.sender) >=
+          _election.electionConfiguration.registrationBond,
+        "insufficient registration bond balance"
+      );
+
+      POP.safeTransferFrom(
+        msg.sender,
+        address(this),
+        _election.electionConfiguration.registrationBond
+      );
+    }
   }
 
   function _setDefaults() internal {
@@ -418,9 +344,10 @@ contract GrantElections is Governed {
     monthlyDefaults.useChainLinkVRF = true;
     monthlyDefaults.registrationBondRequired = true;
     monthlyDefaults.registrationBond = 50e18;
-    monthlyDefaults.votingPeriod = 7 * ONE_DAY;
-    monthlyDefaults.registrationPeriod = 7 * ONE_DAY;
-    monthlyDefaults.cooldownPeriod = 21 * ONE_DAY;
+    monthlyDefaults.votingPeriod = 7 days;
+    monthlyDefaults.registrationPeriod = 7 days;
+    monthlyDefaults.cooldownPeriod = 21 days;
+    monthlyDefaults.finalizationIncentive = 2000e18;
 
     ElectionConfiguration storage quarterlyDefaults =
       electionDefaults[uint8(ElectionTerm.Quarterly)];
@@ -429,9 +356,10 @@ contract GrantElections is Governed {
     quarterlyDefaults.useChainLinkVRF = true;
     quarterlyDefaults.registrationBondRequired = true;
     quarterlyDefaults.registrationBond = 100e18;
-    quarterlyDefaults.votingPeriod = 14 * ONE_DAY;
-    quarterlyDefaults.registrationPeriod = 14 * ONE_DAY;
-    quarterlyDefaults.cooldownPeriod = 83 * ONE_DAY;
+    quarterlyDefaults.votingPeriod = 14 days;
+    quarterlyDefaults.registrationPeriod = 14 days;
+    quarterlyDefaults.cooldownPeriod = 83 days;
+    quarterlyDefaults.finalizationIncentive = 2000e18;
 
     ElectionConfiguration storage yearlyDefaults =
       electionDefaults[uint8(ElectionTerm.Yearly)];
@@ -440,10 +368,26 @@ contract GrantElections is Governed {
     yearlyDefaults.useChainLinkVRF = true;
     yearlyDefaults.registrationBondRequired = true;
     yearlyDefaults.registrationBond = 1000e18;
-    yearlyDefaults.votingPeriod = 30 * ONE_DAY;
-    yearlyDefaults.registrationPeriod = 30 * ONE_DAY;
-    yearlyDefaults.cooldownPeriod = 358 * ONE_DAY;
+    yearlyDefaults.votingPeriod = 30 days;
+    yearlyDefaults.registrationPeriod = 30 days;
+    yearlyDefaults.cooldownPeriod = 358 days;
+    yearlyDefaults.finalizationIncentive = 2000e18;
   }
+
+  function sqrt(uint256 y) internal pure returns (uint256 z) {
+    if (y > 3) {
+      z = y;
+      uint256 x = y / 2 + 1;
+      while (x < z) {
+        z = x;
+        x = (y / x + x) / 2;
+      }
+    } else if (y != 0) {
+      z = 1;
+    }
+  }
+
+  /* ========== SETTER ========== */
 
   function setConfiguration(
     ElectionTerm _term,
@@ -467,29 +411,10 @@ contract GrantElections is Governed {
     _defaults.cooldownPeriod = _cooldownPeriod;
   }
 
-  // Shuffle a list of address based on a randonNumber Fisher-Yates algorithm
-  // https://en.wikipedia.org/wiki/Fisher-Yates_shuffle
-  function shuffle(address[] memory _addresses, uint256 _randomNumber)
-    public
-    returns (address[] memory)
-  {
-    for (uint256 i = 0; i < _addresses.length; i++) {
-      uint256 n = i + (_randomNumber % (_addresses.length - i));
-      (_addresses[n], _addresses[i]) = (_addresses[i], _addresses[n]);
-    }
-    return _addresses;
-  }
+  /* ========== MODIFIERS ========== */
 
-  function sqrt(uint256 y) internal pure returns (uint256 z) {
-    if (y > 3) {
-      z = y;
-      uint256 x = y / 2 + 1;
-      while (x < z) {
-        z = x;
-        x = (y / x + x) / 2;
-      }
-    } else if (y != 0) {
-      z = 1;
-    }
+  modifier validAddress(address _address) {
+    require(_address == address(_address), "invalid address");
+    _;
   }
 }

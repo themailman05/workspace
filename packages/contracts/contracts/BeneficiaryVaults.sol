@@ -86,7 +86,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Owned, ReentrancyGuard {
     uint8 vaultId_,
     uint256 endTime_,
     bytes32 merkleRoot_
-  ) public onlyOwner {
+  ) public override onlyOwner {
     require(vaultId_ < 3, "Invalid vault id");
     require(endTime_ > block.timestamp, "Invalid end block");
     require(

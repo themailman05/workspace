@@ -1,4 +1,4 @@
-import { utils } from 'ethers';
+import { BigNumber } from "@ethersproject/bignumber";
 
 export enum ElectionTerm {
   Monthly,
@@ -14,7 +14,7 @@ export enum ElectionState {
 interface Vote {
   voter: string;
   beneficiary: string;
-  weight: number;
+  weight: BigNumber;
 }
 
 export const ElectionTermIntToName = {
