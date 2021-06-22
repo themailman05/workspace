@@ -4,7 +4,7 @@ import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
-import { Proposal, Status } from 'interfaces/proposals';
+import { Proposal, ProposalType, Status } from 'interfaces/proposals';
 import React, { Fragment, useContext, useState } from 'react';
 import * as Icon from 'react-feather';
 import ProposalCard from './ProposalCard';
@@ -17,14 +17,14 @@ interface ProposalGridProps {
   title: string;
   subtitle: string;
   proposals: Proposal[];
-  isTakedown?: boolean;
+  proposalType: ProposalType;
 }
 
 export default function ProposalGrid({
   title,
   subtitle,
   proposals,
-  isTakedown = false,
+  proposalType = "Nomination",
 }: ProposalGridProps) {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
@@ -147,8 +147,7 @@ export default function ProposalGrid({
           .map((proposal) => (
             <ProposalCard
               proposal={proposal}
-              isTakedown={isTakedown}
-              isProposal={true}
+              proposalType={proposalType}
             />
           ))}
       </ul>

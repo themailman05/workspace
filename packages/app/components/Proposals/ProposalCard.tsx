@@ -1,17 +1,16 @@
 import CardBody from 'components/CommonComponents/CardBody';
-import { Proposal } from 'interfaces/proposals';
+import { Proposal, ProposalType } from 'interfaces/proposals';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
 
 export interface ProposalCardProps {
   proposal: Proposal;
-  isProposal?: boolean;
-  isTakedown?: boolean;
+  proposalType: ProposalType;
 }
 
 export default function ProposalCard({
   proposal,
-  isTakedown = false,
+  proposalType = "Nomination",
 }: ProposalCardProps): JSX.Element {
   return (
     <div
@@ -20,7 +19,7 @@ export default function ProposalCard({
     >
       <Link
         href={`${
-          isTakedown
+          proposalType === "Takedown"
             ? '/beneficiary-proposals/takedowns/'
             : '/beneficiary-proposals/'
         }${proposal.id}`}

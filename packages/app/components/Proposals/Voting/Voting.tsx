@@ -1,28 +1,28 @@
-import { Proposal, Status } from 'interfaces/proposals';
+import { Proposal, ProposalType, Status } from 'interfaces/proposals';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
 
 interface VotingProps {
   proposal: Proposal;
-  isTakedown: boolean;
+  proposalType: ProposalType;
 }
 
 export default function Voting({
   proposal,
-  isTakedown,
+  proposalType = 'Nomination',
 }: VotingProps): JSX.Element {
   return (
     <div>
       {proposal?.status === Status.Open ? (
-        <OpenVoting proposal={proposal} isTakedown={isTakedown} />
+        <OpenVoting proposal={proposal} proposalType={proposalType} />
       ) : proposal?.status === Status.Challenge ? (
         <ChallengePeriodVoting
           proposal={proposal}
-          isTakedown={isTakedown}
+          proposalType={proposalType}
         />
       ) : (
-        <CompletedVoting proposal={proposal} isTakedown={isTakedown} />
+        <CompletedVoting proposal={proposal} proposalType={proposalType} />
       )}
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">

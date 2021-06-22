@@ -5,25 +5,25 @@ import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
 import SocialMedia from 'components/CommonComponents/SocialMedia';
 import Verification from 'components/CommonComponents/Verification';
 import NavBar from 'components/NavBar/NavBar';
-import { Proposal } from 'interfaces/proposals';
+import { Proposal, ProposalType } from 'interfaces/proposals';
 import Voting from './Voting/Voting';
 
-interface BeneficiaryPageProps {
+interface ProposalPageProps {
   proposal: Proposal;
-  isTakedown?: boolean;
+  proposalType: ProposalType;
 }
 
 export default function ProposalPage({
   proposal,
-  isTakedown = false,
-}: BeneficiaryPageProps): JSX.Element {
+  proposalType = "Nomination",
+}: ProposalPageProps): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       <NavBar />
       <ImageHeader {...proposal} />
       <Voting
         proposal={proposal as Proposal}
-        isTakedown={isTakedown}
+        proposalType={proposalType}
       />
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...(proposal as Proposal)} />

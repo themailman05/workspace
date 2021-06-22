@@ -1,10 +1,9 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Contracts } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
-import { BeneficiaryProposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/proposals';
 
-// From typechain output
-interface Proposal {
+interface TypechainProposal {
   status: number;
   beneficiary: string;
   applicationCid: string;
@@ -21,17 +20,20 @@ interface Proposal {
   };
 }
 
-export async function getProposal(contracts: Contracts, proposalIndex: string) {
+export async function getProposal(
+  contracts: Contracts,
+  proposalIndex: string,
+): Promise<Proposal> {
   const proposal = (await contracts.beneficiaryGovernance.proposals(
     Number(proposalIndex),
-  )) as Proposal;
+  )) as TypechainProposal;
   return await addIpfsDataToProposal(proposal, Number(proposalIndex));
 }
 
 async function addIpfsDataToProposal(
-  proposal: Proposal,
+  proposal: TypechainProposal,
   proposalIndex: number,
-): Promise<BeneficiaryProposal> {
+): Promise<Proposal> {
   const ipfsData = await fetch(
     `${process.env.IPFS_URL}${getIpfsHashFromBytes32(proposal.applicationCid)}`,
   ).then((response) => response.json());
@@ -60,11 +62,14 @@ async function addIpfsDataToProposal(
     additionalImages: ipfsData.additionalImages,
     headerImage: ipfsData.headerImage,
     proofOfOwnership: ipfsData.proofOfOwnership,
-    id: proposalIndex,
+    id: proposalIndex.toString(),
   };
 }
 
-export async function getProposals(contracts: Contracts, isTakedown = false) {
+export async function getProposals(
+  contracts: Contracts,
+  isTakedown = false,
+): Promise<Proposal[]> {
   const numProposals =
     await contracts.beneficiaryGovernance.getNumberOfProposals();
 

@@ -22,7 +22,7 @@ export default function TakedownPage(): JSX.Element {
         'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
       }
       proposals={takedownProposals}
-      isTakedown={true}
+      proposalType={'Takedown'}
     />
   );
 }

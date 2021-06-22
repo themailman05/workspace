@@ -2,7 +2,7 @@ import { RadioGroup } from '@headlessui/react';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal } from 'interfaces/proposals';
+import { Proposal, ProposalType } from 'interfaces/proposals';
 import { useContext, useState } from 'react';
 import CurrentStandings from '../CurrentStandings';
 
@@ -13,12 +13,12 @@ enum VoteOptions {
 
 interface OpenVotingProps {
   proposal: Proposal;
-  isTakedown?: boolean;
+  proposalType: ProposalType;
 }
 
 export default function OpenVoting({
   proposal,
-  isTakedown = false,
+  proposalType = 'Nomination',
 }: OpenVotingProps): JSX.Element {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
@@ -33,10 +33,10 @@ export default function OpenVoting({
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
             The organization is currently in the first phase of{' '}
-            {isTakedown ? 'takedown' : ''} voting, users have 48 hours to cast
-            their vote. If the beneficiary {isTakedown ? 'takedown' : ''}{' '}
-            proposal passes with a majority, the process moves onto the
-            challenge period.
+            {proposalType === 'Takedown' ? 'takedown' : ''} voting, users have
+            48 hours to cast their vote. If the beneficiary{' '}
+            {proposalType === 'Takedown' ? 'takedown' : ''} proposal passes with
+            a majority, the process moves onto the challenge period.
           </p>
         </span>
       </div>
@@ -53,9 +53,7 @@ export default function OpenVoting({
               value={VoteOptions.Yay}
               className={({ checked }) =>
                 `rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer focus:outline-none ${
-                  checked
-                    ? 'bg-indigo-50 border-indigo-200'
-                    : 'border-gray-200'
+                  checked ? 'bg-indigo-50 border-indigo-200' : 'border-gray-200'
                 }`
               }
             >
@@ -86,7 +84,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {isTakedown
+                      {proposalType === 'Takedown'
                         ? 'Beneficiary would become ineligible for grants'
                         : 'Beneficiary would become eligible for grants'}
                     </RadioGroup.Description>
@@ -99,9 +97,7 @@ export default function OpenVoting({
               value={VoteOptions.Nay}
               className={({ checked }) =>
                 `rounded-bl-md rounded-br-md relative border p-4 flex cursor-pointer focus:outline-none ${
-                  checked
-                    ? 'bg-indigo-50 border-indigo-200'
-                    : 'border-gray-200'
+                  checked ? 'bg-indigo-50 border-indigo-200' : 'border-gray-200'
                 }`
               }
             >
@@ -131,7 +127,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {isTakedown
+                      {proposalType === 'Takedown'
                         ? 'Beneficiary would remain eligible for grants'
                         : 'Beneficiary would be not become eligible for grants'}
                     </RadioGroup.Description>
@@ -157,8 +153,8 @@ export default function OpenVoting({
                 onConfirm: {
                   label: 'Confirm Vote',
                   onClick: () => {
-                    contracts.beneficiaryGovernance.vote(proposal.id, selected)
-                    dispatch(setDualActionModal(false))
+                    contracts.beneficiaryGovernance.vote(proposal.id, selected);
+                    dispatch(setDualActionModal(false));
                   },
                 },
                 onDismiss: {
