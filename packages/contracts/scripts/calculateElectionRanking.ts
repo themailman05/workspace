@@ -9,10 +9,8 @@ import { GrantElections } from "../typechain";
 import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 import { merklize } from "./merkle";
 
-interface awardee {
-  beneficiary: string;
-  votes: BigNumber;
-}
+type awardee = [string, BigNumber]
+
 
 async function shuffleAwardees(awardees:awardee[], provider:JsonRpcProvider):Promise<awardee[]>{
   const randomNumberConsumer = new ethers.Contract(
@@ -35,27 +33,27 @@ function countVotes(electionMetaData:ElectionMetadata): awardee[] {
   const awardees: awardee[] = [];
   electionMetaData.votes.forEach((vote) => {
     const awardee = awardees.find(
-      (awardee) => awardee.beneficiary == vote.beneficiary
+      (awardee) => awardee[0] == vote.beneficiary
     );
     if (awardee == undefined) {
-      awardees.push({ beneficiary: vote.beneficiary, votes: vote.weight });
+      awardees.push([vote.beneficiary, vote.weight ]);
     } else {
-      awardee.votes.add(vote.weight);
+      awardee[1].add(vote.weight);
     }
   });
   return awardees;
 }
 
-async function rankAwardees(electionMetaData:ElectionMetadata, provider:JsonRpcProvider): Promise<string[]> {
+async function rankAwardees(electionMetaData:ElectionMetadata, provider:JsonRpcProvider): Promise<awardee[]> {
   let awardees = countVotes(electionMetaData);
   awardees.sort(
-    (a, b) => Number(a.votes.toString()) - Number(b.votes.toString())
+    (a, b) => Number(a[1].toString()) - Number(b[1].toString())
   );
   if(electionMetaData.useChainlinkVRF){
     awardees = await shuffleAwardees(awardees, provider)
   }
   const cutOff = electionMetaData.configuration.awardees;
-  return awardees.slice(0,cutOff).map(awardee => awardee.beneficiary);
+  return awardees.slice(0,cutOff)
 }
 
 async function finalizeElection(term: number, provider:JsonRpcProvider,wallet:Wallet ):Promise<void> {
