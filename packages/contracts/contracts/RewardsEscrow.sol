@@ -26,7 +26,6 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   IERC20 public immutable POP;
   IStaking public Staking;
-  uint256 public escrowDuration = 30 * 3 days;
   mapping(address => Escrow) public escrowedBalances;
   mapping(address => uint256) public vested;
 
@@ -75,8 +74,6 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     require(_amount > 0, "amount must be greater than 0");
     require(POP.balanceOf(msg.sender) >= _amount, "insufficient balance");
 
-    uint256 _now = block.timestamp;
-
     POP.safeTransferFrom(msg.sender, address(this), _amount);
 
     _lock(_address, _amount);
@@ -90,8 +87,8 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   function _lock(address _address, uint256 _amount) internal {
     uint256 _now = block.timestamp;
-    uint256 _start = _now.add(30 * 3 days);
-    uint256 _end = _start.add(escrowDuration);
+    uint256 _start = _now.add(90 days);
+    uint256 _end = _start.add(90 days);
 
     if (escrowedBalances[_address].end > _start) {
       _start = escrowedBalances[_address].start;

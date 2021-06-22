@@ -219,7 +219,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
       uint256 escrowed = payout.mul(uint256(2));
 
       POP.safeTransfer(msg.sender, payout);
-      POP.approve(address(RewardsEscrow), escrowed);
+      POP.safeIncreaseAllowance(address(RewardsEscrow), escrowed);
       RewardsEscrow.lock(msg.sender, escrowed);
 
       emit RewardPaid(msg.sender, payout);
