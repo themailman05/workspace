@@ -38,10 +38,11 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   event ManagementFeeChanged(uint256 previousBps, uint256 newBps);
   event PerformanceFeeChanged(uint256 previousBps, uint256 newBps);
 
-  constructor(address token_, address yearnRegistry_, address rewardsManager_)
-    public
-    AffiliateToken(token_, yearnRegistry_, "Popcorn Pool", "popPool")
-  {
+  constructor(
+    address token_,
+    address yearnRegistry_,
+    address rewardsManager_
+  ) public AffiliateToken(token_, yearnRegistry_, "Popcorn Pool", "popPool") {
     require(address(token_) != address(0));
     require(rewardsManager_ != address(0));
 
@@ -67,11 +68,14 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     _lockForBlock(msg.sender);
     _takeFees();
 
+    uint256 sharesBefore = balanceOf(msg.sender);
     uint256 deposited = super.deposit(amount);
+    uint256 sharesAfter = balanceOf(msg.sender);
+    uint256 shares = sharesAfter.sub(sharesBefore);
 
-    emit Deposit(msg.sender, amount, deposited);
+    emit Deposit(msg.sender, amount, shares);
     _reportPoolTokenHWM();
-    return deposited;
+    return shares;
   }
 
   function withdraw(uint256 amount)
@@ -146,6 +150,15 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   }
 
   function _totalValue() internal view returns (uint256) {
+    //console.log("totalSupply: ", totalSupply());
+    //console.log("pricePerPooltoken: ", pricePerPoolToken());
+    //if (totalSupply() > 0) {
+    //  console.log("pricePerShare: ", pricePerShare());
+    //  console.log("vault pricePerShare: ", bestVault().pricePerShare());
+    //  console.log("vault totalAssets: ", totalAssets());
+    //  console.log("vault balance: ", bestVault().balanceOf(address(this)));
+    //}
+    //console.log("totalValue: ", totalVaultBalance(address(this)));
     return totalVaultBalance(address(this));
   }
 
@@ -159,12 +172,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     internal
     returns (uint256)
   {
-    uint256 tokens = 0;
-    if (totalSupply() > 0) {
-      tokens = amount.mul(1e18).div(pricePerPoolToken());
-    } else {
-      tokens = amount;
-    }
+    uint256 tokens = _sharesForValue(amount);
     return _issuePoolTokens(to, tokens);
   }
 
