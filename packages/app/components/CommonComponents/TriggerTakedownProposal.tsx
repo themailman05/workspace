@@ -1,7 +1,7 @@
 import { setDualActionModal, setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { useContext } from 'react';
-
+import * as Icon from 'react-feather';
 
 export default function TriggerTakedownProposal(): JSX.Element {
   const { dispatch } = useContext(store);
@@ -43,8 +43,7 @@ export default function TriggerTakedownProposal(): JSX.Element {
         >
           Trigger Takedown Proposal
         </button>
-        <button
-          type="button"
+        <Icon.Info
           onClick={() => {
             dispatch(
               setSingleActionModal({
@@ -61,10 +60,8 @@ export default function TriggerTakedownProposal(): JSX.Element {
               }),
             );
           }}
-          className="h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          <p className="h-5 w-5">i</p>
-        </button>
+          className="ml-2 h-7 w-7 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 "
+        />
       </div>
     </footer>
   );

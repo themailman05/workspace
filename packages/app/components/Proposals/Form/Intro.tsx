@@ -2,6 +2,7 @@ import { store } from 'context/store';
 import { useContext } from 'react';
 import { defaultFormData, FormStepProps } from './ProposalForm';
 import { setSingleActionModal } from 'context/actions';
+import * as Icon from 'react-feather';
 
 export default function Intro({
   form,
@@ -34,8 +35,7 @@ export default function Intro({
             <ul>
               <li>
                 - A connected wallet
-                <button
-                  type="button"
+                <Icon.Info
                   onClick={() => {
                     dispatch(
                       setSingleActionModal({
@@ -55,15 +55,12 @@ export default function Intro({
                       }),
                     );
                   }}
-                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <p className="h-5 w-5">i</p>
-                </button>
+                  className="ml-2 h-7 w-7 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 "
+                />
               </li>
               <li>
                 - 2000 POP governance tokens
-                <button
-                  type="button"
+                <Icon.Info
                   onClick={() => {
                     dispatch(
                       setSingleActionModal({
@@ -84,10 +81,8 @@ export default function Intro({
                       }),
                     );
                   }}
-                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <p className="h-5 w-5">i</p>
-                </button>
+                  className="ml-2 h-7 w-7 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-indigo-700 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 "
+                />
               </li>
               <li>- Your nominee's name and mission statement</li>
               <li>- Ethereum address to which rewards will be transferred</li>
