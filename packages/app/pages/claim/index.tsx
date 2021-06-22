@@ -49,14 +49,27 @@ const people = [
 
 export default function Claim(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
+  const [beneficiaryGovernanceRewards, setBeneficiaryGovernanceRewards] = useState<number>(0);
   const [escrowRewards, setEscrowRewards] = useState<number>(0);
-  const [stakingRewards, setStakingRewards] = useState<number>(0);
   const [grantRewards, setGrantRewards] = useState<number>(0);
-  const [beneficiaryGovernanceRewards, setBeneficiaryGovernanceRewards] =
+  const [stakingRewards, setStakingRewards] = useState<number>(0);
     useState<number>(0);
 
+  async function getRewards() {
+    const beneficiaryGovernanceRewards = await contracts.beneficiaryGovernance.claimRewards();
+    const grantRewards = await contracts.grant.claimRewards();
+    const stakingRewards = await contracts.staking.getReward();
+    const escrowRewards = await contracts._claimFor(); // TODO: Get correct fn call
+    setBeneficiaryGovernanceRewards(beneficiaryGovernanceRewards)
+    setStakingRewards(stakingRewards)
+    setGrantRewards(grantRewards)
+    setEscrowRewards(escrowRewards)
+  }
+
   useEffect(() => {
-    // TODO: Get reward amounts from various contracts
+    if (contracts) {
+      getRewards();
+    }
   }, [contracts]);
 
   return (
