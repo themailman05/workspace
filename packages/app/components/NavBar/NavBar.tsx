@@ -42,9 +42,27 @@ export default function Navbar(): JSX.Element {
           <li></li>
           <li>
             <NavbarLink
+              label="Grant Elections"
+              onClick={() => setShowGrants(!showGrants)}
+              isActive={router.pathname === '/grant-elections'}
+            />
+            <GrantsMenu
+              visible={showGrants}
+              toggleSubMenu={() => setShowGrants(!showGrants)}
+            />
+          </li>
+          <li>
+            <NavbarLink
               label="Staking"
               url="/staking"
               isActive={router.pathname === '/staking'}
+            />
+          </li>
+          <li>
+            <NavbarLink
+              label="Claim"
+              url="/claim"
+              isActive={router.pathname === '/claim'}
             />
           </li>
           <li>
