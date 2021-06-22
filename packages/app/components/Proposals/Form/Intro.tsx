@@ -19,23 +19,16 @@ export default function Intro({
           <h3 className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
             Beneficiary Nomination Proposal Form
           </h3>
-          <p className="mt-8 text-lg text-gray-500">
+          <p className="mt-2 text-lg text-gray-500">
             Thank you for making the effort to nominate an organization for
             grant election eligibility.
           </p>
-          <p className="mt-8 text-lg text-gray-500">
+          <p className="mt-2 text-lg text-gray-500">
             Anyone may nominate an organization by completing this form. It is
             also possible for an organization to nominate itself.
           </p>
-
-          <p className="mt-8 text-lg text-gray-500">
-            An organization wishing to apply for eligible beneficiary status may
-            acquire the requisite number of POP tokens to raise a BNP (2000), or
-            they may reach out to the Popcorn Foundation to seek a nomination at
-            no cost.
-          </p>
           <div className="mt-5 prose prose-indigo text-gray-500">
-            <p className="mt-8 text-lg text-gray-500">
+            <p className="mt-2 text-lg text-gray-500">
               You'll need the following things to submit a proposal:
             </p>
             <ul>
@@ -62,7 +55,7 @@ export default function Intro({
                       }),
                     );
                   }}
-                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   <p className="h-5 w-5">i</p>
                 </button>
@@ -91,7 +84,7 @@ export default function Intro({
                       }),
                     );
                   }}
-                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   <p className="h-5 w-5">i</p>
                 </button>
@@ -106,7 +99,13 @@ export default function Intro({
               </li>
             </ul>
           </div>
-          <p className="mt-8 text-lg text-gray-500">
+          <p className="mt-2 text-lg text-gray-500">
+            An organization wishing to apply for eligible beneficiary status may
+            acquire the requisite number of POP tokens to raise a BNP (2000), or
+            they may reach out to the Popcorn Foundation to seek a nomination at
+            no cost.
+          </p>
+          <p className="mt-2 text-lg text-gray-500">
             After the form has been submitted, the organization will be subject
             to a round of voting. If the organisation receives a majority of
             votes cast towards “Yes” (with at least 10% of the available supply
