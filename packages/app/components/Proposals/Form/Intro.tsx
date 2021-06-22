@@ -1,10 +1,14 @@
+import { store } from 'context/store';
+import { useContext } from 'react';
 import { defaultFormData, FormStepProps } from './ProposalForm';
+import { setSingleActionModal } from 'context/actions';
 
 export default function Intro({
   form,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
+  const { dispatch } = useContext(store);
   const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
 
@@ -23,13 +27,7 @@ export default function Intro({
             Anyone may nominate an organization by completing this form. It is
             also possible for an organization to nominate itself.
           </p>
-          <p className="mt-8 text-lg text-gray-500">
-            After the form has been submitted, the organization will be subject
-            to a round of voting. If the organisation receives a majority of
-            votes cast towards “Yes” (with at least 10% of the available supply
-            of governance tokens voting “Yes”), it will become eligible for
-            grants via grant elections.
-          </p>
+
           <p className="mt-8 text-lg text-gray-500">
             An organization wishing to apply for eligible beneficiary status may
             acquire the requisite number of POP tokens to raise a BNP (2000), or
@@ -41,17 +39,80 @@ export default function Intro({
               You'll need the following things to submit a proposal:
             </p>
             <ul>
-              <li>A connected wallet with 2000 Popcorn governance tokens</li>
-              <li>Your nominee's name and mission statement</li>
-              <li>Ethereum address to which rewards will be transferred</li>
-              <li>Proof that the address belongs to the nominee</li>
-              <li>Impact reports and/or audited documents</li>
               <li>
-                Supplmentary information such as photos and links to social
+                - A connected wallet
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(
+                      setSingleActionModal({
+                        title: 'A connected wallet',
+                        content: `A crypto wallet is a piece of software that 
+                        is able to transact with blockchains. Wallets let holders store
+                        and trade various cryptocurrencies and tokens. In order
+                        to submit a BNP, you'll need to connect a wallet with atleast
+                        2000 POP tokens.`,
+                        visible: true,
+                        onConfirm: {
+                          label: 'OK',
+                          onClick: () => {
+                            dispatch(setSingleActionModal(false));
+                          },
+                        },
+                      }),
+                    );
+                  }}
+                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <p className="h-5 w-5">i</p>
+                </button>
+              </li>
+              <li>
+                - 2000 POP governance tokens
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(
+                      setSingleActionModal({
+                        title: 'What are POP governance tokens?',
+                        content: `PopcornDAO is a decentralized autonomous organization 
+                        of members holding Popcorn governance tokens (POP). POP token holders
+                        are able to submit proposals, vote on proposals and takedowns and vote
+                        in grant elections which influence the parameters of the Popcorn smart
+                        contracts.  In order to submit a BNP, you'll need to connect a wallet
+                        with atleast 2000 POP tokens.`,
+                        visible: true,
+                        onConfirm: {
+                          label: 'OK',
+                          onClick: () => {
+                            dispatch(setSingleActionModal(false));
+                          },
+                        },
+                      }),
+                    );
+                  }}
+                  className="ml-2 h-5 w-5 inline-flex items-center p-1 border border-transparent rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                  <p className="h-5 w-5">i</p>
+                </button>
+              </li>
+              <li>- Your nominee's name and mission statement</li>
+              <li>- Ethereum address to which rewards will be transferred</li>
+              <li>- Proof that the address belongs to the nominee</li>
+              <li>- Impact reports and/or audited documents</li>
+              <li>
+                - Supplmentary information such as photos and links to social
                 media accounts
               </li>
             </ul>
           </div>
+          <p className="mt-8 text-lg text-gray-500">
+            After the form has been submitted, the organization will be subject
+            to a round of voting. If the organisation receives a majority of
+            votes cast towards “Yes” (with at least 10% of the available supply
+            of governance tokens voting “Yes”), it will become eligible for
+            grants via grant elections.
+          </p>
           <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
             {/* Check for partially completed form */}
             {formData.name !== '' ? (
