@@ -143,9 +143,4 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     vested[_address] = vested[_address].add(getVested(_address));
     _;
   }
-
-  modifier initialised() {
-    require(initialised == true, "must initialise contract");
-    _;
-  }
 }

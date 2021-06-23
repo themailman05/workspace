@@ -27,6 +27,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
   IERC20 public immutable POP;
   IRewardsManager public RewardsManager;
   IRewardsEscrow public RewardsEscrow;
+  bool public initialised = false;
   uint256 public periodFinish = 0;
   uint256 public rewardRate = 0;
   uint256 public rewardsDuration = 7 days;
@@ -52,7 +53,6 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
   constructor(IERC20 _pop, IRewardsEscrow _rewardsEscrow) Owned(msg.sender) {
     POP = _pop;
     RewardsEscrow = _rewardsEscrow;
-    //How do i construct with a contract that itself needs this contract to construct?
   }
 
   /* ========== VIEWS ========== */
@@ -70,12 +70,13 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     ) {
       return 0;
     }
-    uint256 timeTillEnd =
-      ((lockedBalances[_address]._end.sub(_currentTime)).div(1 hours)).mul(
-        1 hours
-      );
-    uint256 slope =
-      voiceCredits[_address].div(lockedBalances[_address]._duration);
+    uint256 timeTillEnd = (
+      (lockedBalances[_address]._end.sub(_currentTime)).div(1 hours)
+    )
+    .mul(1 hours);
+    uint256 slope = voiceCredits[_address].div(
+      lockedBalances[_address]._duration
+    );
     return timeTillEnd.mul(slope);
   }
 
@@ -135,6 +136,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     override
     nonReentrant
     defend
+    initialised
     updateReward(msg.sender)
   {
     uint256 _currentTime = block.timestamp;
@@ -155,7 +157,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     emit StakingDeposited(msg.sender, amount);
   }
 
-  function increaseLock(uint256 lengthOfTime) external {
+  function increaseLock(uint256 lengthOfTime) external initialised {
     uint256 _currentTime = block.timestamp;
     require(lengthOfTime >= 7 days, "must lock tokens for at least 1 week");
     require(
@@ -168,14 +170,14 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
       "withdraw balance first"
     );
     lockedBalances[msg.sender]._duration = lockedBalances[msg.sender]
-      ._duration
-      .add(lengthOfTime);
+    ._duration
+    .add(lengthOfTime);
     lockedBalances[msg.sender]._end = lockedBalances[msg.sender]._end.add(
       lengthOfTime
     );
   }
 
-  function increaseStake(uint256 amount) external {
+  function increaseStake(uint256 amount) external initialised{
     uint256 _currentTime = block.timestamp;
     require(amount > 0, "amount must be greater than 0");
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
@@ -187,8 +189,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     POP.safeTransferFrom(msg.sender, address(this), amount);
     totalLocked = totalLocked.add(amount);
     lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
-      ._balance
-      .add(amount);
+    ._balance
+    .add(amount);
     _recalculateVoiceCredits();
   }
 
@@ -196,6 +198,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     public
     override
     nonReentrant
+    initialised
     updateReward(msg.sender)
   {
     require(amount > 0, "amount must be greater than 0");
@@ -210,7 +213,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     emit StakingWithdrawn(msg.sender, amount);
   }
 
-  function getReward() public nonReentrant updateReward(msg.sender) {
+  function getReward() public nonReentrant initialised updateReward(msg.sender) {
     uint256 reward = rewards[msg.sender];
     if (reward > 0) {
       rewards[msg.sender] = 0;
@@ -226,19 +229,24 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     }
   }
 
-  function exit() external {
+  function exit() external initialised {
     withdraw(getWithdrawableBalance(msg.sender));
     getReward();
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
+  function init(IRewardsManager = _rewardsManager;) external onlyOwner {
+    RewardsManager = _rewardsManager;
+    initialised = true;
+  }
+
   // todo: multiply voice credits by 10000 to deal with exponent math
   function _recalculateVoiceCredits() internal {
     voiceCredits[msg.sender] = lockedBalances[msg.sender]
-      ._balance
-      .mul(lockedBalances[msg.sender]._duration)
-      .div(365 days * 4);
+    ._balance
+    .mul(lockedBalances[msg.sender]._duration)
+    .div(365 days * 4);
   }
 
   function _lockTokens(uint256 amount, uint256 lengthOfTime) internal {
@@ -265,8 +273,8 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
         delete lockedBalances[msg.sender];
       } else {
         lockedBalances[msg.sender]._balance = lockedBalances[msg.sender]
-          ._balance
-          .sub(_amount);
+        ._balance
+        .sub(_amount);
       }
     }
   }
@@ -290,6 +298,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     external
     override
     updateReward(address(0))
+    initialised
   {
     require(
       IRewardsManager(msg.sender) == RewardsManager || msg.sender == owner,
@@ -337,6 +346,11 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
       rewards[account] = earned(account);
       userRewardPerTokenPaid[account] = rewardPerTokenStored;
     }
+    _;
+  }
+
+  modifier initialised() {
+    require(initialised == true, "must initialise contract");
     _;
   }
 }
