@@ -177,7 +177,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     );
   }
 
-  function increaseStake(uint256 amount) external initialised{
+  function increaseStake(uint256 amount) external initialised {
     uint256 _currentTime = block.timestamp;
     require(amount > 0, "amount must be greater than 0");
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
@@ -213,7 +213,12 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     emit StakingWithdrawn(msg.sender, amount);
   }
 
-  function getReward() public nonReentrant initialised updateReward(msg.sender) {
+  function getReward()
+    public
+    nonReentrant
+    initialised
+    updateReward(msg.sender)
+  {
     uint256 reward = rewards[msg.sender];
     if (reward > 0) {
       rewards[msg.sender] = 0;
@@ -236,7 +241,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
-  function init(IRewardsManager = _rewardsManager;) external onlyOwner {
+  function init(IRewardsManager _rewardsManager) external onlyOwner {
     RewardsManager = _rewardsManager;
     initialised = true;
   }
