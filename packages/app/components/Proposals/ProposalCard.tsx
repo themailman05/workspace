@@ -10,7 +10,7 @@ export interface ProposalCardProps {
 
 export default function ProposalCard({
   proposal,
-  proposalType = "Nomination",
+  proposalType = 0,
 }: ProposalCardProps): JSX.Element {
   return (
     <div
@@ -19,7 +19,7 @@ export default function ProposalCard({
     >
       <Link
         href={`${
-          proposalType === "Takedown"
+          proposalType === 1
             ? '/beneficiary-proposals/takedowns/'
             : '/beneficiary-proposals/'
         }${proposal.id}`}

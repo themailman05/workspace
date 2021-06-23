@@ -12,7 +12,7 @@ interface ChallengePeriodVotingProps {
 
 export default function ChallengePeriodVoting({
   proposal,
-  proposalType = 'Nomination',
+  proposalType = 0,
 }: ChallengePeriodVotingProps): JSX.Element {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
@@ -26,7 +26,7 @@ export default function ChallengePeriodVoting({
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
             {proposal?.name}{' '}
-            {proposalType === 'Takedown'
+            {proposalType === 1
               ? `is in the second phase of takedown voting, known
             as the challenge period. Here, users are able to vote to veto the
             takedown proposal. This additional phase prevents exploits where a
@@ -41,7 +41,7 @@ export default function ChallengePeriodVoting({
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            {proposalType === 'Takedown'
+            {proposalType === 1
               ? `At the end of the challenge period, if the takedown proposal
             receives more yes votes than no votes, the elected organization will
             become ineligible to receive grants.`
@@ -60,7 +60,7 @@ export default function ChallengePeriodVoting({
               setDualActionModal({
                 //TODO add real text
                 content: `Confirm your veto vote for ${
-                  proposalType === 'Takedown' ? 'the takedown of' : ''
+                  proposalType === 1 ? 'the takedown of' : ''
                 } ${
                   proposal?.name
                 }. Your vote will lock x tokens for the duration of the nomination process. You will not be able to cancel your vote once you confirm \
@@ -81,7 +81,7 @@ export default function ChallengePeriodVoting({
             );
           }}
         >
-          {proposalType === 'Takedown'
+          {proposalType === 1
             ? 'Veto Takedown Proposal Vote'
             : 'Veto Proposal Vote'}
         </button>

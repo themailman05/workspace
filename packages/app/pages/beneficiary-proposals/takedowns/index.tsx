@@ -1,8 +1,7 @@
+import { useContext, useEffect, useState } from 'react';
 import ProposalGrid from 'components/Proposals/ProposalGrid';
 import { ContractsContext } from 'context/Web3/contracts';
 import { Proposal } from 'interfaces/proposals';
-
-import { useContext, useEffect, useState } from 'react';
 import { getProposals } from 'utils/getProposals';
 
 export default function TakedownPage(): JSX.Element {
@@ -22,7 +21,7 @@ export default function TakedownPage(): JSX.Element {
         'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
       }
       proposals={takedownProposals}
-      proposalType={'Takedown'}
+      proposalType={1}
     />
   );
 }

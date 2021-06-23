@@ -10,7 +10,7 @@ interface VotingProps {
 
 export default function Voting({
   proposal,
-  proposalType = 'Nomination',
+  proposalType = 0,
 }: VotingProps): JSX.Element {
   return (
     <div>

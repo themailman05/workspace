@@ -21,7 +21,7 @@ export default function BeneficiaryProposalPage(): JSX.Element {
         'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations'
       }
       proposals={proposals}
-      proposalType={'Nomination'}
+      proposalType={0}
     />
   );
 }

@@ -9,8 +9,10 @@ export enum Status {
   All,
 }
 
-export type ProposalType = 'Nomination' | 'Takedown';
-
+export enum ProposalType {
+  Nomination,
+  Takedown,
+}
 export interface Proposal {
   name: string;
   missionStatement: string;

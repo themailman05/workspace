@@ -15,7 +15,7 @@ interface ProposalPageProps {
 
 export default function ProposalPage({
   proposal,
-  proposalType = "Nomination",
+  proposalType = 0,
 }: ProposalPageProps): JSX.Element {
   return (
     <div className="flex flex-col h-full w-full pb-16 ">

@@ -18,6 +18,6 @@ export default function SingleTakedownPage(): JSX.Element {
   }, [contracts]);
 
   return (
-    <ProposalPage proposal={proposal as Proposal} proposalType={'Takedown'} />
+    <ProposalPage proposal={proposal as Proposal} proposalType={1} />
   );
 }

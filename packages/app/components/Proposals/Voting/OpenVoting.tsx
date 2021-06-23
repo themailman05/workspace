@@ -18,7 +18,7 @@ interface OpenVotingProps {
 
 export default function OpenVoting({
   proposal,
-  proposalType = 'Nomination',
+  proposalType = 0,
 }: OpenVotingProps): JSX.Element {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
@@ -33,10 +33,10 @@ export default function OpenVoting({
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
             The organization is currently in the first phase of{' '}
-            {proposalType === 'Takedown' ? 'takedown' : ''} voting, users have
-            48 hours to cast their vote. If the beneficiary{' '}
-            {proposalType === 'Takedown' ? 'takedown' : ''} proposal passes with
-            a majority, the process moves onto the challenge period.
+            {proposalType === 1 ? 'takedown' : ''} voting, users have 48 hours
+            to cast their vote. If the beneficiary{' '}
+            {proposalType === 1 ? 'takedown' : ''} proposal passes with a
+            majority, the process moves onto the challenge period.
           </p>
         </span>
       </div>
@@ -84,7 +84,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposalType === 'Takedown'
+                      {proposalType === 1
                         ? 'Beneficiary would become ineligible for grants'
                         : 'Beneficiary would become eligible for grants'}
                     </RadioGroup.Description>
@@ -127,7 +127,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposalType === 'Takedown'
+                      {proposalType === 1
                         ? 'Beneficiary would remain eligible for grants'
                         : 'Beneficiary would be not become eligible for grants'}
                     </RadioGroup.Description>

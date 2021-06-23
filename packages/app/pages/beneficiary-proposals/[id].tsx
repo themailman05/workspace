@@ -20,7 +20,7 @@ export default function SingleProposalPage(): JSX.Element {
   return (
     <ProposalPage
       proposal={proposal as Proposal}
-      proposalType={"Nomination"}
+      proposalType={0}
     />
   );
 }

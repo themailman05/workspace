@@ -24,7 +24,7 @@ export default function ProposalGrid({
   title,
   subtitle,
   proposals,
-  proposalType = "Nomination",
+  proposalType = 0,
 }: ProposalGridProps) {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
