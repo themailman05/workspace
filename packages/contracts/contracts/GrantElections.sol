@@ -39,11 +39,15 @@ contract GrantElections is Governed {
     uint256 registrationPeriod;
     uint256 votingPeriod;
     uint256 cooldownPeriod;
-    uint256 registrationBond;
-    bool registrationBondRequired;
+    BondRequirements bondRequirements;
     uint256 finalizationIncentive;
     bool enabled;
     ShareType shareType;
+  }
+
+  struct BondRequirements {
+    bool required;
+    uint256 amount;
   }
 
   enum ShareType {
@@ -117,13 +121,9 @@ contract GrantElections is Governed {
       bool useChainLinkVRF_,
       uint256[3] memory periods_,
       uint256 startTime_,
-      bool registrationBondRequired_,
-      uint256 registrationBond_,
-      uint256 finalizationIncentive_,
-      bool enabled_,
+      BondRequirements memory bondRequirements_,
       ShareType shareType_,
-      uint256 randomNumber_,
-      bytes32 merkleRoot_
+      uint256 randomNumber_
     )
   {
     Election storage e = elections[_electionId];
@@ -143,15 +143,21 @@ contract GrantElections is Governed {
       e.electionConfiguration.votingPeriod
     ];
     startTime_ = e.startTime;
-    registrationBondRequired_ = e
-    .electionConfiguration
-    .registrationBondRequired;
-    registrationBond_ = e.electionConfiguration.registrationBond;
-    finalizationIncentive_ = e.finalizationIncentive;
-    enabled_ = e.enabled;
-    shareType_ = e.shareType;
+    bondRequirements_ = e.electionConfiguration.bondRequirements;
+    shareType_ = e.electionConfiguration.shareType;
     randomNumber_ = e.randomNumber;
-    merkleRoot_ = e.merkleRoot;
+  }
+
+  function electionEnabled(uint256 _electionId) public view returns (bool) {
+    return elections[_electionId].electionConfiguration.enabled;
+  }
+
+  function getElectionMerkleRoot(uint256 _electionId)
+    public
+    view
+    returns (bytes32 merkleRoot)
+  {
+    return elections[_electionId].merkleRoot;
   }
 
   function getRegisteredBeneficiaries(uint256 _electionId)
@@ -382,24 +388,23 @@ contract GrantElections is Governed {
     external
     onlyGovernance
   {
-    electionDefaults[uint8(_term)].registrationBondRequired = !electionDefaults[
-      uint8(_term)
-    ]
-    .registrationBondRequired;
+    electionDefaults[uint8(_term)]
+    .bondRequirements
+    .required = !electionDefaults[uint8(_term)].bondRequirements.required;
   }
 
   function _collectRegistrationBond(Election storage _election) internal {
-    if (_election.electionConfiguration.registrationBondRequired == true) {
+    if (_election.electionConfiguration.bondRequirements.required == true) {
       require(
         POP.balanceOf(msg.sender) >=
-          _election.electionConfiguration.registrationBond,
+          _election.electionConfiguration.bondRequirements.amount,
         "insufficient registration bond balance"
       );
 
       POP.safeTransferFrom(
         msg.sender,
         address(this),
-        _election.electionConfiguration.registrationBond
+        _election.electionConfiguration.bondRequirements.amount
       );
     }
   }
@@ -411,8 +416,8 @@ contract GrantElections is Governed {
     monthlyDefaults.awardees = 1;
     monthlyDefaults.ranking = 3;
     monthlyDefaults.useChainLinkVRF = true;
-    monthlyDefaults.registrationBondRequired = true;
-    monthlyDefaults.registrationBond = 50e18;
+    monthlyDefaults.bondRequirements.required = true;
+    monthlyDefaults.bondRequirements.amount = 50e18;
     monthlyDefaults.votingPeriod = 7 days;
     monthlyDefaults.registrationPeriod = 7 days;
     monthlyDefaults.cooldownPeriod = 21 days;
@@ -426,8 +431,8 @@ contract GrantElections is Governed {
     quarterlyDefaults.awardees = 2;
     quarterlyDefaults.ranking = 5;
     quarterlyDefaults.useChainLinkVRF = true;
-    quarterlyDefaults.registrationBondRequired = true;
-    quarterlyDefaults.registrationBond = 100e18;
+    quarterlyDefaults.bondRequirements.required = true;
+    quarterlyDefaults.bondRequirements.amount = 100e18;
     quarterlyDefaults.votingPeriod = 14 days;
     quarterlyDefaults.registrationPeriod = 14 days;
     quarterlyDefaults.cooldownPeriod = 83 days;
@@ -441,8 +446,8 @@ contract GrantElections is Governed {
     yearlyDefaults.awardees = 3;
     yearlyDefaults.ranking = 7;
     yearlyDefaults.useChainLinkVRF = true;
-    yearlyDefaults.registrationBondRequired = true;
-    yearlyDefaults.registrationBond = 1000e18;
+    yearlyDefaults.bondRequirements.required = true;
+    yearlyDefaults.bondRequirements.amount = 1000e18;
     yearlyDefaults.votingPeriod = 30 days;
     yearlyDefaults.registrationPeriod = 30 days;
     yearlyDefaults.cooldownPeriod = 358 days;
@@ -474,8 +479,8 @@ contract GrantElections is Governed {
     uint256 _registrationPeriod,
     uint256 _votingPeriod,
     uint256 _cooldownPeriod,
-    uint256 _registrationBond,
-    bool _registrationBondRequired,
+    uint256 _amount,
+    bool _required,
     uint256 _finalizationIncentive,
     bool _enabled,
     ShareType _shareType
@@ -487,8 +492,8 @@ contract GrantElections is Governed {
     _defaults.registrationPeriod = _registrationPeriod;
     _defaults.votingPeriod = _votingPeriod;
     _defaults.cooldownPeriod = _cooldownPeriod;
-    _defaults.registrationBond = _registrationBond;
-    _defaults.registrationBondRequired = _registrationBondRequired;
+    _defaults.bondRequirements.amount = _amount;
+    _defaults.bondRequirements.required = _required;
     _defaults.finalizationIncentive = _finalizationIncentive;
     _defaults.enabled = _enabled;
     _defaults.shareType = _shareType;

@@ -41,6 +41,11 @@ const ElectionStateIntToName: ElectionStateMap = {
   3: 'finalized',
 };
 
+export interface BondRequirements{
+  required: boolean;
+  amount: BigNumber;
+}
+
 export interface ElectionMetadata {
   votes: Vote[];
   electionTerm: ElectionTerm;
@@ -59,13 +64,9 @@ export interface ElectionMetadata {
     votingPeriod: number;
   };
   startTime: number;
-  registrationBondRequired: boolean;
-  registrationBond: object;
-  finalizationIncentive: number;
-  enabled: boolean;
+  bondRequirements:BondRequirements;
   shareType: ShareType;
   randomNumber: number;
-  merkleRoot: string;
 }
 
 export type ElectionPeriod = 'voting' | 'registration' | 'closed' | 'finalized';
@@ -81,8 +82,8 @@ export const GrantElectionAdapter = function (contract?) {
         registrationPeriod: response.registrationPeriod.toNumber(),
         votingPeriod: response.votingPeriod.toNumber(),
         cooldownPeriod: response.cooldownPeriod.toNumber(),
-        registrationBondRequired: response.registrationBondRequired,
-        registrationBond: response.registrationBond,
+        registrationBondRequired: response.bondRequirements.registrationBondRequired,
+        registrationBond: response.bondRequirements.registrationBond,
       };
     },
 
@@ -134,13 +135,12 @@ export const GrantElectionAdapter = function (contract?) {
           }),
         ],
         ['startTime', (value) => value.toNumber()],
-        ['registrationBondRequired', (value) => value],
-        ['registrationBond', (value) => value],
-        ['finalizationIncentive', (value) => value.toNumber()],
-        ['enabled', (value) => value],
+        [
+          'bondRequirements',
+          (value) => ({ required: value[0], amount: value[1] }),
+        ],
         ['shareType', (value) => value],
         ['randomNumber', (value) => value.toNumber()],
-        ['merkleRoot', (value) => value],
       ];
       const metadata = (await contract.getElectionMetadata(grantTerm)).reduce(
         (metadata, value, i) => {

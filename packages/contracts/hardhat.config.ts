@@ -9,7 +9,6 @@ import { utils } from "ethers";
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
 import finalizeElection from "./scripts/finalizeElection";
-
 import {
   GrantElectionAdapter,
 } from "./scripts/helpers/GrantElectionAdapter";

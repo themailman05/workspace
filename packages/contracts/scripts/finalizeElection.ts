@@ -1,12 +1,10 @@
 import { BigNumber } from "@ethersproject/bignumber";
 import { ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { ElectionMetadata } from "packages/utils/src/Contracts";
-import { ShareType } from "packages/utils/src/Contracts/GrantElection/GrantElectionAdapter";
+import { ElectionMetadata, GrantElectionAdapter, ShareType } from "../../utils/src/Contracts";
 import GrantElectionsJSON from "../artifacts/contracts/GrantElections.sol/GrantElections.json";
 
 import { GrantElections } from "../typechain";
-import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 import { merklize } from "./merkle";
 
 type awardee = [string, BigNumber];

@@ -10,8 +10,8 @@ module.exports = {
           registrationPeriod: response.registrationPeriod.toNumber(),
           votingPeriod: response.votingPeriod.toNumber(),
           cooldownPeriod: response.cooldownPeriod.toNumber(),
-          registrationBondRequired: response.registrationBondRequired,
-          registrationBond: response.registrationBond,
+          registrationBondRequired: response.bondRequirements.registrationBondRequired,
+          registrationBond: response.bondRequirements.registrationBond,
         }
       },
 
@@ -62,8 +62,12 @@ module.exports = {
             }),
           ],
           ["startTime", (value) => value.toNumber()],
-          ["registrationBondRequired", (value) => value],
-          ["registrationBond", (value) => value],
+          [
+            'bondRequirements',
+            (value) => ({ required: value[0], amount: value[1] }),
+          ],
+          ['shareType', (value) => value],
+          ['randomNumber', (value) => value.toNumber()],
         ];
         return (await contract.getElectionMetadata(grantTerm)).reduce(
           (metadata, value, i) => {
