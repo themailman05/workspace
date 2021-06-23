@@ -27,6 +27,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   uint256 public performanceFee = 2000;
   uint256 public poolTokenHWM = 1e18;
   uint256 public feesUpdatedAt;
+
   mapping(address => uint256) public blockLocks;
 
   event Deposit(address indexed from, uint256 deposit, uint256 poolTokens);
@@ -43,6 +44,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     address yearnRegistry_,
     address rewardsManager_
   ) public AffiliateToken(token_, yearnRegistry_, "Popcorn Pool", "popPool") {
+    require(address(yearnRegistry_) != address(0));
     require(address(token_) != address(0));
     require(rewardsManager_ != address(0));
 
@@ -134,7 +136,9 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   }
 
   function withdrawAccruedFees() external onlyOwner {
-    _withdraw(address(this), rewardsManager, balanceOf(address(this)), true);
+    uint256 balance = balanceOf(address(this));
+    _burn(address(this), balance);
+    _withdraw(address(this), rewardsManager, _shareValue(balance), true);
   }
 
   function pricePerPoolToken() public view returns (uint256) {
@@ -150,15 +154,6 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   }
 
   function _totalValue() internal view returns (uint256) {
-    //console.log("totalSupply: ", totalSupply());
-    //console.log("pricePerPooltoken: ", pricePerPoolToken());
-    //if (totalSupply() > 0) {
-    //  console.log("pricePerShare: ", pricePerShare());
-    //  console.log("vault pricePerShare: ", bestVault().pricePerShare());
-    //  console.log("vault totalAssets: ", totalAssets());
-    //  console.log("vault balance: ", bestVault().balanceOf(address(this)));
-    //}
-    //console.log("totalValue: ", totalVaultBalance(address(this)));
     return totalVaultBalance(address(this));
   }
 
@@ -219,14 +214,6 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     returns (uint256)
   {
     _mint(to, amount);
-    return amount;
-  }
-
-  function _burnPoolTokens(address from, uint256 amount)
-    internal
-    returns (uint256)
-  {
-    _burn(from, amount);
     return amount;
   }
 

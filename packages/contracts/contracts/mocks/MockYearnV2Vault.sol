@@ -30,7 +30,7 @@ contract MockYearnV2Vault is MockERC20 {
     return token.balanceOf(address(this));
   }
 
-  function pricePerShare() external view returns (uint256) {
+  function pricePerShare() public view returns (uint256) {
     if (totalSupply() == 0) {
       return 1e18;
     }
@@ -42,7 +42,10 @@ contract MockYearnV2Vault is MockERC20 {
     return _issueSharesForAmount(msg.sender, amount);
   }
 
-  function deposit(uint256 amount, address recipient) external returns (uint256) {
+  function deposit(uint256 amount, address recipient)
+    external
+    returns (uint256)
+  {
     token.transferFrom(msg.sender, address(this), amount);
     return _issueSharesForAmount(recipient, amount);
   }
@@ -77,6 +80,13 @@ contract MockYearnV2Vault is MockERC20 {
   }
 
   // Test helpers
+
+  function increasePricePerFullShare(uint256 multiplier) external {
+    uint256 newPrice = pricePerShare().mul(multiplier).div(1e18);
+    token.burn(address(this), token.balanceOf(address(this)));
+    uint256 balance = newPrice.mul(totalSupply()).div(1e18);
+    token.mint(address(this), balance);
+  }
 
   function setPricePerFullShare(uint256 pricePerFullShare) external {
     token.burn(address(this), token.balanceOf(address(this)));
