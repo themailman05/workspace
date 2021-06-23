@@ -1,8 +1,8 @@
 module.exports = {
   GrantElectionAdapter: (contract) => {
     return {
-      electionDefaults: async (grantTerm) => {
-        const response = await contract.electionDefaults(grantTerm);
+      electionDefaults: async (electionId) => {
+        const response = await contract.electionDefaults(electionId);
         return {
           useChainLinkVRF: response.useChainLinkVRF,
           ranking: response.ranking,
@@ -12,10 +12,13 @@ module.exports = {
           cooldownPeriod: response.cooldownPeriod.toNumber(),
           registrationBondRequired: response.bondRequirements.registrationBondRequired,
           registrationBond: response.bondRequirements.registrationBond,
+          finalizationIncentive:response.finalizationIncentive.toNumber(),
+          enabled:response.enabled,
+          shareType:response.shareType
         }
       },
 
-      getElectionMetadata: async (grantTerm) => {
+      getElectionMetadata: async (electionId) => {
         /**
         * returns a nice object like:
         * {
@@ -69,7 +72,7 @@ module.exports = {
           ['shareType', (value) => value],
           ['randomNumber', (value) => value.toNumber()],
         ];
-        return (await contract.getElectionMetadata(grantTerm)).reduce(
+        return (await contract.getElectionMetadata(electionId)).reduce(
           (metadata, value, i) => {
             metadata[mapping[i][0]] = mapping[i][1](value);
             return metadata;

@@ -479,8 +479,8 @@ contract GrantElections is Governed {
     uint256 _registrationPeriod,
     uint256 _votingPeriod,
     uint256 _cooldownPeriod,
-    uint256 _amount,
-    bool _required,
+    uint256 _bondAmount,
+    bool _bondRequired,
     uint256 _finalizationIncentive,
     bool _enabled,
     ShareType _shareType
@@ -492,8 +492,8 @@ contract GrantElections is Governed {
     _defaults.registrationPeriod = _registrationPeriod;
     _defaults.votingPeriod = _votingPeriod;
     _defaults.cooldownPeriod = _cooldownPeriod;
-    _defaults.bondRequirements.amount = _amount;
-    _defaults.bondRequirements.required = _required;
+    _defaults.bondRequirements.amount = _bondAmount;
+    _defaults.bondRequirements.required = _bondRequired;
     _defaults.finalizationIncentive = _finalizationIncentive;
     _defaults.enabled = _enabled;
     _defaults.shareType = _shareType;

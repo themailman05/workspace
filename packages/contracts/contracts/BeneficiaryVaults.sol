@@ -99,7 +99,8 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
   {
     require(vaultId_ < 3, "Invalid vault id");
     require(
-      vaults[vaultId_].status != VaultStatus.Open,
+      vaults[vaultId_].merkleRoot == "" ||
+        vaults[vaultId_].status == VaultStatus.Closed,
       "Vault must not be open"
     );
 
