@@ -6,6 +6,6 @@ export function formatAndRoundBigNumber(value: BigNumber): string {
   });
 }
 
-export function bigNumberToNumber(value:BigNumber):number{
-  return Number(value.toString)
+export function bigNumberToNumber(value: BigNumber): number {
+  return Number(utils.formatEther(value.toString()));
 }

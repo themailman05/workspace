@@ -27,7 +27,6 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
-
   return (
     <div>
       <div className="grid my-2 justify-items-stretch">
@@ -44,9 +43,7 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
           <ProgressBar
             progress={
               (100 * bigNumberToNumber(proposal?.votesFor)) /
-              bigNumberToNumber(
-                proposal?.votesFor.add(proposal?.votesAgainst),
-              )
+              bigNumberToNumber(proposal?.votesFor.add(proposal?.votesAgainst))
             }
             progressColor={'bg-green-300'}
           />
@@ -66,9 +63,7 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
           <ProgressBar
             progress={
               (100 * bigNumberToNumber(proposal?.votesAgainst)) /
-              bigNumberToNumber(
-                proposal?.votesFor.add(proposal?.votesAgainst),
-              )
+              bigNumberToNumber(proposal?.votesFor.add(proposal?.votesAgainst))
             }
             progressColor={'bg-red-400'}
           />
@@ -91,8 +86,7 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
       <div className="grid my-2 justify-items-stretch">
         <p className="my-4  w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           Current voting period ends at{' '}
-          {proposal?.stageDeadline &&
-            proposal?.stageDeadline.toLocaleString()}
+          {proposal?.stageDeadline && proposal?.stageDeadline.toLocaleString()}
         </p>
         <p className="my-4 w-1/2 justify-self-center mt-1 text-sm text-gray-500">
           {timeLeft !== '00:00:00'
