@@ -136,7 +136,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     override
     nonReentrant
     defend
-    initialised
+    isInitialised
     updateReward(msg.sender)
   {
     uint256 _currentTime = block.timestamp;
@@ -157,7 +157,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     emit StakingDeposited(msg.sender, amount);
   }
 
-  function increaseLock(uint256 lengthOfTime) external initialised {
+  function increaseLock(uint256 lengthOfTime) external {
     uint256 _currentTime = block.timestamp;
     require(lengthOfTime >= 7 days, "must lock tokens for at least 1 week");
     require(
@@ -177,7 +177,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     );
   }
 
-  function increaseStake(uint256 amount) external initialised {
+  function increaseStake(uint256 amount) external {
     uint256 _currentTime = block.timestamp;
     require(amount > 0, "amount must be greater than 0");
     require(POP.balanceOf(msg.sender) >= amount, "insufficient balance");
@@ -198,7 +198,6 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     public
     override
     nonReentrant
-    initialised
     updateReward(msg.sender)
   {
     require(amount > 0, "amount must be greater than 0");
@@ -213,12 +212,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     emit StakingWithdrawn(msg.sender, amount);
   }
 
-  function getReward()
-    public
-    nonReentrant
-    initialised
-    updateReward(msg.sender)
-  {
+  function getReward() public nonReentrant updateReward(msg.sender) {
     uint256 reward = rewards[msg.sender];
     if (reward > 0) {
       rewards[msg.sender] = 0;
@@ -234,7 +228,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     }
   }
 
-  function exit() external initialised {
+  function exit() external {
     withdraw(getWithdrawableBalance(msg.sender));
     getReward();
   }
@@ -303,7 +297,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     external
     override
     updateReward(address(0))
-    initialised
+    isInitialised
   {
     require(
       IRewardsManager(msg.sender) == RewardsManager || msg.sender == owner,
@@ -354,7 +348,7 @@ contract Staking is IStaking, Owned, ReentrancyGuard, Defended {
     _;
   }
 
-  modifier initialised() {
+  modifier isInitialised() {
     require(initialised == true, "must initialise contract");
     _;
   }
