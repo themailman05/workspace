@@ -133,29 +133,6 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
   function claimRewards() external nonReentrant {
     uint256 numEntries = _userVaultLength(msg.sender);
-    uint256 total;
-    for (uint256 i = 0; i < numEntries; i++) {
-      bytes32 vaultId = userVaults[msg.sender][i];
-      if (vaults[vaultId].status == VaultStatus.open) {
-        total = total.add(_claimVaultReward(vaultId));
-      }
-    }
-
-    require(total > 0, "No rewards");
-    require(total <= rewardBalance, "not enough funds for payout");
-
-    totalVaultsBudget = totalVaultsBudget.sub(total);
-    rewardBalance = rewardBalance.sub(total);
-
-    delete userVaults[msg.sender];
-
-    POP.safeTransfer(msg.sender, total);
-
-    emit RewardsClaimed(msg.sender, total);
-  }
-
-  function claimLatestRewards() external nonReentrant {
-    uint256 numEntries = _userVaultLength(msg.sender);
     uint256 stop;
     uint256 total;
 
