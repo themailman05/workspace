@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./IRandomNumberConsumer.sol";
 import "./IBeneficiaryVaults.sol";
 import "./Governed.sol";
 
@@ -27,6 +28,7 @@ contract GrantElections is Governed {
     ElectionState electionState;
     ElectionConfiguration electionConfiguration;
     uint256 startTime;
+    uint256 randomNumber;
     bytes32 merkleRoot;
   }
 
@@ -40,9 +42,20 @@ contract GrantElections is Governed {
     uint256 registrationBond;
     bool registrationBondRequired;
     uint256 finalizationIncentive;
+    bool enabled;
+    ShareType shareType;
   }
 
-  enum ElectionTerm {Monthly, Quarterly, Yearly}
+  enum ShareType {
+    EqualWeight,
+    DynamicWeight
+  }
+
+  enum ElectionTerm {
+    Monthly,
+    Quarterly,
+    Yearly
+  }
   enum ElectionState {
     Registration,
     Voting,
@@ -57,6 +70,7 @@ contract GrantElections is Governed {
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
   IBeneficiaryVaults beneficiaryVaults;
+  IRandomNumberConsumer randomNumberConsumer;
 
   Election[] public elections;
   uint256[3] public activeElections;
@@ -68,8 +82,8 @@ contract GrantElections is Governed {
   event BeneficiaryRegistered(address _beneficiary, uint256 _electionId);
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
-  event FinalizationProposed(uint256 _electionId, bytes _merkleRoot);
-  event ElectionFinalized(uint256 _electionId, bytes _merkleRoot);
+  event FinalizationProposed(uint256 _electionId, bytes32 _merkleRoot);
+  event ElectionFinalized(uint256 _electionId, bytes32 _merkleRoot);
 
   /* ========== CONSTRUCTOR ========== */
 
@@ -77,12 +91,14 @@ contract GrantElections is Governed {
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
     IBeneficiaryVaults _beneficiaryVaults,
+    IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
   ) Governed(_governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     beneficiaryVaults = _beneficiaryVaults;
+    randomNumberConsumer = _randomNumberConsumer;
     POP = _pop;
     _setDefaults();
   }
@@ -102,7 +118,12 @@ contract GrantElections is Governed {
       uint256[3] memory periods_,
       uint256 startTime_,
       bool registrationBondRequired_,
-      uint256 registrationBond_
+      uint256 registrationBond_,
+      uint256 finalizationIncentive_,
+      bool enabled_,
+      ShareType shareType_,
+      uint256 randomNumber_,
+      bytes32 merkleRoot_
     )
   {
     Election storage e = elections[_electionId];
@@ -123,9 +144,14 @@ contract GrantElections is Governed {
     ];
     startTime_ = e.startTime;
     registrationBondRequired_ = e
-      .electionConfiguration
-      .registrationBondRequired;
+    .electionConfiguration
+    .registrationBondRequired;
     registrationBond_ = e.electionConfiguration.registrationBond;
+    finalizationIncentive_ = e.finalizationIncentive;
+    enabled_ = e.enabled;
+    shareType_ = e.shareType;
+    randomNumber_ = e.randomNumber;
+    merkleRoot_ = e.merkleRoot;
   }
 
   function getRegisteredBeneficiaries(uint256 _electionId)
@@ -213,11 +239,19 @@ contract GrantElections is Governed {
     if (
       block.timestamp >=
       election
-        .startTime
-        .add(election.electionConfiguration.registrationPeriod)
-        .add(election.electionConfiguration.votingPeriod)
+      .startTime
+      .add(election.electionConfiguration.registrationPeriod)
+      .add(election.electionConfiguration.votingPeriod)
     ) {
       election.electionState = ElectionState.Closed;
+      if (election.electionConfiguration.useChainLinkVRF) {
+        randomNumberConsumer.getRandomNumber(
+          uint256(
+            keccak256(abi.encode(block.timestamp, blockhash(block.number)))
+          )
+        );
+        election.randomNumber = randomNumberConsumer.randomResult();
+      }
     } else if (
       block.timestamp >=
       election.startTime.add(election.electionConfiguration.registrationPeriod)
@@ -263,12 +297,11 @@ contract GrantElections is Governed {
       _usedVoiceCredits = _usedVoiceCredits.add(_voiceCredits[i]);
       uint256 _sqredVoiceCredits = sqrt(_voiceCredits[i]);
 
-      Vote memory _vote =
-        Vote({
-          voter: msg.sender,
-          beneficiary: _beneficiaries[i],
-          weight: _sqredVoiceCredits
-        });
+      Vote memory _vote = Vote({
+        voter: msg.sender,
+        beneficiary: _beneficiaries[i],
+        weight: _sqredVoiceCredits
+      });
 
       election.votes.push(_vote);
       election.voters[msg.sender] = true;
@@ -307,10 +340,15 @@ contract GrantElections is Governed {
     _election.merkleRoot = _merkleRoot;
     _election.electionState = ElectionState.FinalizationProposed;
 
-    uint256 finalizationIncentive =
-      electionDefaults[uint8(_election.electionTerm)].finalizationIncentive;
+    uint256 finalizationIncentive = electionDefaults[
+      uint8(_election.electionTerm)
+    ]
+    .finalizationIncentive;
 
-    if (incentiveBudget >= finalizationIncentive) {
+    if (
+      incentiveBudget >= finalizationIncentive &&
+      _election.electionState != ElectionState.FinalizationProposed
+    ) {
       POP.approve(address(this), finalizationIncentive);
       POP.safeTransferFrom(address(this), msg.sender, finalizationIncentive);
       incentiveBudget.sub(finalizationIncentive);
@@ -334,11 +372,7 @@ contract GrantElections is Governed {
     require(_election.merkleRoot == _merkleRoot, "Incorrect root");
 
     //TODO how to calculate vault endtime?
-    beneficiaryVaults.initializeVault(
-      uint8(_election.electionTerm),
-      0,
-      _merkleRoot
-    );
+    beneficiaryVaults.openVault(uint8(_election.electionTerm), _merkleRoot);
     _election.electionState = ElectionState.Finalized;
 
     emit ElectionFinalized(_electionId, _merkleRoot);
@@ -351,7 +385,7 @@ contract GrantElections is Governed {
     electionDefaults[uint8(_term)].registrationBondRequired = !electionDefaults[
       uint8(_term)
     ]
-      .registrationBondRequired;
+    .registrationBondRequired;
   }
 
   function _collectRegistrationBond(Election storage _election) internal {
@@ -371,8 +405,9 @@ contract GrantElections is Governed {
   }
 
   function _setDefaults() internal {
-    ElectionConfiguration storage monthlyDefaults =
-      electionDefaults[uint8(ElectionTerm.Monthly)];
+    ElectionConfiguration storage monthlyDefaults = electionDefaults[
+      uint8(ElectionTerm.Monthly)
+    ];
     monthlyDefaults.awardees = 1;
     monthlyDefaults.ranking = 3;
     monthlyDefaults.useChainLinkVRF = true;
@@ -382,9 +417,12 @@ contract GrantElections is Governed {
     monthlyDefaults.registrationPeriod = 7 days;
     monthlyDefaults.cooldownPeriod = 21 days;
     monthlyDefaults.finalizationIncentive = 2000e18;
+    monthlyDefaults.enabled = true;
+    monthlyDefaults.shareType = ShareType.EqualWeight;
 
-    ElectionConfiguration storage quarterlyDefaults =
-      electionDefaults[uint8(ElectionTerm.Quarterly)];
+    ElectionConfiguration storage quarterlyDefaults = electionDefaults[
+      uint8(ElectionTerm.Quarterly)
+    ];
     quarterlyDefaults.awardees = 2;
     quarterlyDefaults.ranking = 5;
     quarterlyDefaults.useChainLinkVRF = true;
@@ -394,9 +432,12 @@ contract GrantElections is Governed {
     quarterlyDefaults.registrationPeriod = 14 days;
     quarterlyDefaults.cooldownPeriod = 83 days;
     quarterlyDefaults.finalizationIncentive = 2000e18;
+    quarterlyDefaults.enabled = true;
+    quarterlyDefaults.shareType = ShareType.EqualWeight;
 
-    ElectionConfiguration storage yearlyDefaults =
-      electionDefaults[uint8(ElectionTerm.Yearly)];
+    ElectionConfiguration storage yearlyDefaults = electionDefaults[
+      uint8(ElectionTerm.Yearly)
+    ];
     yearlyDefaults.awardees = 3;
     yearlyDefaults.ranking = 7;
     yearlyDefaults.useChainLinkVRF = true;
@@ -406,6 +447,8 @@ contract GrantElections is Governed {
     yearlyDefaults.registrationPeriod = 30 days;
     yearlyDefaults.cooldownPeriod = 358 days;
     yearlyDefaults.finalizationIncentive = 2000e18;
+    yearlyDefaults.enabled = true;
+    yearlyDefaults.shareType = ShareType.EqualWeight;
   }
 
   function sqrt(uint256 y) internal pure returns (uint256 z) {
@@ -425,24 +468,30 @@ contract GrantElections is Governed {
 
   function setConfiguration(
     ElectionTerm _term,
-    uint8 _awardees,
     uint8 _ranking,
+    uint8 _awardees,
     bool _useChainLinkVRF,
-    bool _registrationBondRequired,
-    uint256 _registrationBond,
-    uint256 _votingPeriod,
     uint256 _registrationPeriod,
-    uint256 _cooldownPeriod
+    uint256 _votingPeriod,
+    uint256 _cooldownPeriod,
+    uint256 _registrationBond,
+    bool _registrationBondRequired,
+    uint256 _finalizationIncentive,
+    bool _enabled,
+    ShareType _shareType
   ) public onlyGovernance {
     ElectionConfiguration storage _defaults = electionDefaults[uint8(_term)];
-    _defaults.awardees = _awardees;
     _defaults.ranking = _ranking;
+    _defaults.awardees = _awardees;
     _defaults.useChainLinkVRF = _useChainLinkVRF;
-    _defaults.registrationBondRequired = _registrationBondRequired;
-    _defaults.registrationBond = _registrationBond;
-    _defaults.votingPeriod = _votingPeriod;
     _defaults.registrationPeriod = _registrationPeriod;
+    _defaults.votingPeriod = _votingPeriod;
     _defaults.cooldownPeriod = _cooldownPeriod;
+    _defaults.registrationBond = _registrationBond;
+    _defaults.registrationBondRequired = _registrationBondRequired;
+    _defaults.finalizationIncentive = _finalizationIncentive;
+    _defaults.enabled = _enabled;
+    _defaults.shareType = _shareType;
   }
 
   /* ========== MODIFIERS ========== */

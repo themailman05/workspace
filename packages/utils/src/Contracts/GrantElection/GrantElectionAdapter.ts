@@ -1,4 +1,4 @@
-import { BigNumber } from "@ethersproject/bignumber";
+import { BigNumber } from '@ethersproject/bignumber';
 
 export enum ElectionTerm {
   Monthly,
@@ -9,8 +9,15 @@ export enum ElectionState {
   Registration,
   Voting,
   Closed,
+  FinalizationProposed,
   Finalized,
 }
+
+export enum ShareType {
+  EqualWeight,
+  DynamicWeight,
+}
+
 interface Vote {
   voter: string;
   beneficiary: string;
@@ -54,6 +61,11 @@ export interface ElectionMetadata {
   startTime: number;
   registrationBondRequired: boolean;
   registrationBond: object;
+  finalizationIncentive: number;
+  enabled: boolean;
+  shareType: ShareType;
+  randomNumber: number;
+  merkleRoot: string;
 }
 
 export type ElectionPeriod = 'voting' | 'registration' | 'closed' | 'finalized';
@@ -124,6 +136,11 @@ export const GrantElectionAdapter = function (contract?) {
         ['startTime', (value) => value.toNumber()],
         ['registrationBondRequired', (value) => value],
         ['registrationBond', (value) => value],
+        ['finalizationIncentive', (value) => value.toNumber()],
+        ['enabled', (value) => value],
+        ['shareType', (value) => value],
+        ['randomNumber', (value) => value.toNumber()],
+        ['merkleRoot', (value) => value],
       ];
       const metadata = (await contract.getElectionMetadata(grantTerm)).reduce(
         (metadata, value, i) => {
