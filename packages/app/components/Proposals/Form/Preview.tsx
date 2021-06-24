@@ -7,6 +7,7 @@ import { store } from 'context/store';
 import { connectors } from 'context/Web3/connectors';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
+import { BeneficiaryApplication } from 'interfaces/interfaces';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -54,7 +55,7 @@ export default function Preview({
       return false;
     }
     const balance = await contracts.pop.balanceOf(account);
-    if (proposalBond > balance) {
+    if (proposalBond.gt(balance)) {
       dispatch(
         setSingleActionModal({
           content: `In order to create a proposal you need to post a Bond of ${formatAndRoundBigNumber(
@@ -78,6 +79,7 @@ export default function Preview({
 
   async function uploadJsonToIpfs(submissionData: Form): Promise<void> {
     if (await checkPreConditions()) {
+      console.log({ proposalBond });
       console.log('precondition success');
       var myHeaders = new Headers();
       myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -127,7 +129,7 @@ export default function Preview({
     setFormData(defaultFormData);
   }
 
-  function getBeneficiaryApplication(formData) {
+  function getBeneficiaryApplication(formData): BeneficiaryApplication {
     return {
       organizationName: formData.name,
       missionStatement: formData.missionStatement,
@@ -146,7 +148,7 @@ export default function Preview({
         githubUrl: formData?.linkedinUrl,
         proofOfOwnership: formData?.linkedinUrl,
       },
-    }
+    };
   }
 
   async function getProposalBond(): Promise<BigNumber> {
@@ -159,7 +161,7 @@ export default function Preview({
     if (contracts) {
       getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
     }
-  }, []);
+  }, [contracts]);
 
   return (
     visible && (
