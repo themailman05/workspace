@@ -1,3 +1,4 @@
+
 import { Proposal } from 'interfaces/interfaces';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
 
