@@ -1,6 +1,6 @@
 import ProposalGrid from 'components/Proposals/ProposalGrid';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/interfaces';
 import { useContext, useEffect, useState } from 'react';
 import { getProposals } from 'utils/getProposals';
 

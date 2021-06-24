@@ -1,13 +1,12 @@
-import { Beneficiary } from 'interfaces/beneficiaries';
-import { Proposal } from 'interfaces/proposals';
+import { BeneficiaryApplication } from 'interfaces/interfaces';
 
 export default function PhotoSideBar(
-  displayData: Beneficiary | Proposal,
+  beneficiary: BeneficiaryApplication,
 ): JSX.Element {
   return (
     <div className="col-span-2 space-y-4">
       <p className="text-2xl text-black sm:text-4xl lg:text-5xl">Photos</p>
-      {displayData?.additionalImages?.map((photoURL) => {
+      {beneficiary?.files?.additionalImages?.map((photoURL) => {
         return (
           <img
             className="w-full"

@@ -1,4 +1,4 @@
-import { Proposal, ProposalType, Status } from 'interfaces/proposals';
+import { Proposal, ProposalType, Status } from 'interfaces/interfaces';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';

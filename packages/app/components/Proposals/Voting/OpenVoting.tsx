@@ -2,7 +2,7 @@ import { RadioGroup } from '@headlessui/react';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, ProposalType } from 'interfaces/proposals';
+import { Proposal, ProposalType } from 'interfaces/interfaces';
 import { useContext, useState } from 'react';
 import CurrentStandings from '../CurrentStandings';
 
@@ -27,7 +27,7 @@ export default function OpenVoting({
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {proposal?.status} vote on {proposal?.name}
+        {proposal?.status} vote on {proposal?.application?.organizationName}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">

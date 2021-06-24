@@ -1,12 +1,13 @@
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
-import { Beneficiary } from 'interfaces/beneficiaries';
+import { BeneficiaryApplication } from 'interfaces/interfaces';
+
 import React, { useState } from 'react';
 import * as Icon from 'react-feather';
 import BeneficiaryCard from './BeneficiaryCard';
 
 interface BeneficiaryGridProps {
-  beneficiaries: Beneficiary[];
+  beneficiaries: BeneficiaryApplication[];
   subtitle: string;
   title: string;
 }
@@ -17,7 +18,6 @@ export default function BeneficiaryGrid({
   title,
 }: BeneficiaryGridProps) {
   const [searchFilter, setSearchFilter] = useState<string>('');
-
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
@@ -42,13 +42,13 @@ export default function BeneficiaryGrid({
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
         {beneficiaries
           ?.filter((beneficiary) => {
-            return beneficiary?.name
+            return beneficiary.organizationName
               .toLowerCase()
               .includes(searchFilter.toLowerCase());
           })
           .map((beneficiary) => (
             <BeneficiaryCard
-              key={beneficiary?.ethereumAddress}
+              key={beneficiary.beneficiaryAddress}
               beneficiary={beneficiary}
             />
           ))}

@@ -127,6 +127,28 @@ export default function Preview({
     setFormData(defaultFormData);
   }
 
+  function getBeneficiaryApplication(formData) {
+    return {
+      organizationName: formData.name,
+      missionStatement: formData.missionStatement,
+      beneficiaryAddress: formData.beneficiaryAddress,
+      files: {
+        profileImage: formData.profileImage,
+        headerImage: formData?.headerImage,
+        impactReports: formData?.impactReports,
+        additionalImages: formData?.additionalImages,
+      },
+      links: {
+        twitterUrl: formData?.twitterUrl,
+        linkedinUrl: formData?.linkedinUrl,
+        facebookUrl: formData?.linkedinUrl,
+        instagramUrl: formData?.linkedinUrl,
+        githubUrl: formData?.linkedinUrl,
+        proofOfOwnership: formData?.linkedinUrl,
+      },
+    }
+  }
+
   async function getProposalBond(): Promise<BigNumber> {
     const proposalDefaultConfigurations =
       await contracts.beneficiaryGovernance.DefaultConfigurations();
@@ -171,7 +193,7 @@ export default function Preview({
         </div>
 
         <BeneficiaryPage
-          beneficiary={formData}
+          beneficiary={getBeneficiaryApplication(formData)}
           isProposalPreview
         />
       </div>

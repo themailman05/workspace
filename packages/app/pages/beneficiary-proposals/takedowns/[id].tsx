@@ -1,6 +1,6 @@
 import ProposalPage from 'components/Proposals/ProposalPage';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/interfaces';
 import router from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import { getProposal } from 'utils/getProposals';
@@ -17,7 +17,5 @@ export default function SingleTakedownPage(): JSX.Element {
     }
   }, [contracts]);
 
-  return (
-    <ProposalPage proposal={proposal as Proposal} proposalType={1} />
-  );
+  return <ProposalPage proposal={proposal} proposalType={1} />;
 }

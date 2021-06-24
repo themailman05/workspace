@@ -4,7 +4,7 @@ import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
-import { Proposal, ProposalType, Status } from 'interfaces/proposals';
+import { Proposal, ProposalType, Status } from 'interfaces/interfaces';
 import React, { Fragment, useContext, useState } from 'react';
 import * as Icon from 'react-feather';
 import ProposalCard from './ProposalCard';
@@ -134,7 +134,7 @@ export default function ProposalGrid({
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
         {proposals
           ?.filter((proposal) => {
-            return proposal?.name
+            return proposal.application.organizationName
               .toLowerCase()
               .includes(searchFilter.toLowerCase());
           })

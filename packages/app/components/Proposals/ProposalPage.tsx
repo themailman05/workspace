@@ -5,7 +5,7 @@ import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
 import SocialMedia from 'components/CommonComponents/SocialMedia';
 import Verification from 'components/CommonComponents/Verification';
 import NavBar from 'components/NavBar/NavBar';
-import { Proposal, ProposalType } from 'interfaces/proposals';
+import { Proposal, ProposalType } from 'interfaces/interfaces';
 import Voting from './Voting/Voting';
 
 interface ProposalPageProps {
@@ -20,14 +20,13 @@ export default function ProposalPage({
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       <NavBar />
-      <ImageHeader {...proposal} />
-      <Voting
-        proposal={proposal as Proposal}
-        proposalType={proposalType}
-      />
+      <ImageHeader {...proposal?.application} />
+      <Voting proposal={proposal} proposalType={proposalType} />
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-        <PhotoSideBar {...(proposal as Proposal)} />
-        <MissionStatement missionStatement={proposal?.missionStatement} />
+        <PhotoSideBar {...proposal?.application} />
+        <MissionStatement
+          missionStatement={proposal?.application?.missionStatement}
+        />
       </div>
       <div className="relative">
         <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -35,9 +34,9 @@ export default function ProposalPage({
         </div>
       </div>
       <div className="mx-48 my-8">
-        <Verification {...(proposal as Proposal)} />
-        <ImpactReportLinks {...proposal} />
-        <SocialMedia {...proposal} />
+        <Verification {...proposal?.application} />
+        <ImpactReportLinks {...proposal?.application} />
+        <SocialMedia {...proposal?.application} />
       </div>
     </div>
   );

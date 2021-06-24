@@ -1,7 +1,7 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Contracts } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
-import { Proposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/interfaces';
 
 interface TypechainProposal {
   status: number;
@@ -46,23 +46,32 @@ async function addIpfsDataToProposal(
   );
 
   return {
-    name: ipfsData.name,
-    missionStatement: ipfsData.missionStatement,
-    twitterUrl: ipfsData.twitterUrl,
-    linkedinUrl: ipfsData.linkedinUrl,
-    facebookUrl: ipfsData.facebookUrl,
-    instagramUrl: ipfsData.instagramUrl,
-    githubUrl: ipfsData.githubUrl,
-    ethereumAddress: ipfsData.ethereumAddress,
-    profileImage: ipfsData.profileImage,
-    votesFor: proposal.yesCount,
-    votesAgainst: proposal.noCount,
+    id: proposalIndex.toString(),
     status: Number(proposal.status.toString()),
     stageDeadline: deadline,
-    additionalImages: ipfsData.additionalImages,
-    headerImage: ipfsData.headerImage,
-    proofOfOwnership: ipfsData.proofOfOwnership,
-    id: proposalIndex.toString(),
+    application: {
+      organizationName: ipfsData.name,
+      missionStatement: ipfsData.missionStatement,
+      beneficiaryAddress: ipfsData.ethereumAddress,
+      files: {
+        profileImage: ipfsData.profileImage,
+        headerImage: ipfsData?.headerImage,
+        impactReports: ipfsData?.impactReports,
+        additionalImages: ipfsData?.additionalImages,
+      },
+      links: {
+        twitterUrl: ipfsData?.twitterUrl,
+        linkedinUrl: ipfsData?.linkedinUrl,
+        facebookUrl: ipfsData?.linkedinUrl,
+        instagramUrl: ipfsData?.linkedinUrl,
+        githubUrl: ipfsData?.linkedinUrl,
+        proofOfOwnership: ipfsData?.linkedinUrl,
+      },
+    },
+    votes: {
+      for: proposal.yesCount,
+      against: proposal.noCount,
+    },
   };
 }
 

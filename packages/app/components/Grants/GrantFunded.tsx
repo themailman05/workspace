@@ -2,10 +2,10 @@ import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { ContractsContext } from '../../context/Web3/contracts';
 import { useContext, useEffect, useState } from 'react';
 import { Check } from 'react-feather';
-import { Beneficiary } from 'interfaces/beneficiaries';
+import { BeneficiaryApplication } from 'interfaces/interfaces';
 
 interface GrantFundedProps {
-  beneficiary: Beneficiary;
+  beneficiary: BeneficiaryApplication;
   election: ElectionMetadata;
   totalVotes: number;
 }
@@ -22,7 +22,7 @@ export default function GrantFunded({
     const awarded = (
       await contracts.grant.getActiveAwardees(election.electionTerm)
     ).map((a) => a.toLowerCase());
-    if (awarded.includes(beneficiary.ethereumAddress)) {
+    if (awarded.includes(beneficiary.beneficiaryAddress)) {
       setAwarded(true);
     }
   };

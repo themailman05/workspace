@@ -1,44 +1,43 @@
-import { Beneficiary } from 'interfaces/beneficiaries';
-import { Proposal } from 'interfaces/proposals';
+import { BeneficiaryApplication } from 'interfaces/interfaces';
 import * as Icon from 'react-feather';
 
 // TODO: Limit social media links to contents of beneficiaryProposal once we link to contracts
 
 export default function SocialMediaLinks(
-  displayData: Beneficiary | Proposal,
+  beneficiary: BeneficiaryApplication,
 ): JSX.Element {
   return (
     <>
       <a
-        href={`https://${displayData?.twitterUrl}`}
+        href={`https://${beneficiary?.links?.twitterUrl}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >
         <Icon.Twitter aria-hidden="true" />
       </a>
       <a
-        href={`https://${displayData?.facebookUrl}`}
+        href={`https://${beneficiary?.links?.facebookUrl}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >
         <Icon.Facebook aria-hidden="true" />
       </a>
       <a
-        href={`https://${displayData?.instagramUrl}`}
+        href={`https://${beneficiary?.links?.instagramUrl}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >
         <Icon.Instagram aria-hidden="true" />
       </a>
       <a
-        href={`https://${displayData?.githubUrl}`}
+        href={`https://${beneficiary?.links?.githubUrl}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >
         <Icon.GitHub aria-hidden="true" />
       </a>
       <a
-        href={`https://${displayData?.linkedinUrl}`}
+        href={`https://${beneficiary?.links?.linkedinUrl}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >

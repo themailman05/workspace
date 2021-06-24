@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react';
 import ProposalGrid from 'components/Proposals/ProposalGrid';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal } from 'interfaces/proposals';
+import { Proposal } from 'interfaces/interfaces';
 import { getProposals } from 'utils/getProposals';
 
 export default function TakedownPage(): JSX.Element {
