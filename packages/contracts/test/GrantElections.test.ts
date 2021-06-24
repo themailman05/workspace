@@ -585,7 +585,7 @@ describe("GrantElections", function () {
         )
       ).to.be.revertedWith("election already finalized");
     });
-
+    //TODO how to test randomization and merkleRoot script?
     /*it("finalizes an election with randomization", async function () {
       await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       // voting
