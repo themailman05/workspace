@@ -8,7 +8,6 @@ import { getProposal } from 'utils/getProposals';
 export default function SingleTakedownPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [proposal, setProposal] = useState<Proposal>();
-
   useEffect(() => {
     if (contracts) {
       getProposal(contracts, router.query.id as string).then((res) =>
@@ -16,5 +15,5 @@ export default function SingleTakedownPage(): JSX.Element {
       );
     }
   }, [contracts]);
-  return <ProposalPage proposal={proposal} proposalType={1} />;
+  return <ProposalPage {...proposal} />;
 }

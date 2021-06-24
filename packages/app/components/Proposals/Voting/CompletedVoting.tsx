@@ -35,7 +35,6 @@ export default function CompletedVoting(proposal: Proposal): JSX.Element {
           )}
         </span>
       </div>
-      {proposal && <CurrentStandings {...proposal} />}
     </div>
   );
 }

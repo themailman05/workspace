@@ -1,14 +1,10 @@
-import VotingDivider from 'components/CommonComponents/VotingDivider';
 import { Proposal, Status } from 'interfaces/interfaces';
+import CurrentStandings from '../CurrentStandings';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
 
-interface VotingProps {
-  proposal: Proposal;
-}
-
-export default function Voting({ proposal }: VotingProps): JSX.Element {
+export default function Voting(proposal: Proposal): JSX.Element {
   return (
     <div>
       {proposal?.status === Status.Open ? (
@@ -18,7 +14,7 @@ export default function Voting({ proposal }: VotingProps): JSX.Element {
       ) : (
         <CompletedVoting {...proposal} />
       )}
-      <VotingDivider />
+      {Object.keys(proposal).length > 0 && <CurrentStandings {...proposal} />}
     </div>
   );
 }

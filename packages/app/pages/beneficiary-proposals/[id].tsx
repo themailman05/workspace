@@ -15,5 +15,5 @@ export default function SingleProposalPage(): JSX.Element {
       );
     }
   }, [contracts]);
-  return <ProposalPage proposal={proposal} proposalType={0} />;
+  return <ProposalPage {...proposal} />;
 }

@@ -159,8 +159,6 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
         >
           Cast Vote
         </button>
-
-        {proposal && <CurrentStandings {...proposal} />}
       </div>
     </div>
   );

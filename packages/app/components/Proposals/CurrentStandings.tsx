@@ -1,4 +1,6 @@
+import Divider from 'components/CommonComponents/Divider';
 import ProgressBar from 'components/ProgressBar';
+import { BigNumber } from 'ethers';
 import { Proposal } from 'interfaces/interfaces';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
@@ -43,7 +45,9 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
           <ProgressBar
             progress={
               (100 * bigNumberToNumber(proposal?.votes?.for)) /
-              bigNumberToNumber(proposal?.votes?.for.add(proposal?.votes?.against))
+              bigNumberToNumber(
+                proposal?.votes?.for.add(proposal?.votes?.against),
+              )
             }
             progressColor={'bg-green-300'}
           />
@@ -63,7 +67,9 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
           <ProgressBar
             progress={
               (100 * bigNumberToNumber(proposal?.votes?.against)) /
-              bigNumberToNumber(proposal?.votes?.for.add(proposal?.votes?.against))
+              bigNumberToNumber(
+                proposal?.votes?.for.add(proposal?.votes?.against),
+              )
             }
             progressColor={'bg-red-400'}
           />
@@ -94,6 +100,7 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
             : 'Voting period has ended'}
         </p>
       </div>
+      <Divider />
     </div>
   );
 }

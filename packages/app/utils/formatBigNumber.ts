@@ -1,11 +1,15 @@
 import { BigNumber, utils } from 'ethers';
 
 export function formatAndRoundBigNumber(value: BigNumber): string {
-  return Number(utils.formatEther(value)).toLocaleString(undefined, {
-    maximumFractionDigits: 0,
-  });
+  if (BigNumber.isBigNumber(value)) {
+    return Number(utils.formatEther(value)).toLocaleString(undefined, {
+      maximumFractionDigits: 0,
+    });
+  } else return `Invalid val: ${value}`;
 }
 
 export function bigNumberToNumber(value: BigNumber): number {
-  return Number(utils.formatEther(value));
+  if (BigNumber.isBigNumber(value)) {
+    return Number(utils.formatEther(value));
+  } else return 0;
 }

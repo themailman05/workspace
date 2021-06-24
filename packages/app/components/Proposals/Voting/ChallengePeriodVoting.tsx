@@ -78,7 +78,6 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
             : 'Veto Proposal Vote'}
         </button>
       </div>
-      {proposal && <CurrentStandings {...proposal} />}
     </div>
   );
 }
