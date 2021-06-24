@@ -10,7 +10,7 @@ export default function TakedownPage(): JSX.Element {
 
   useEffect(() => {
     if (contracts) {
-      getProposals(contracts, true).then((res) => setTakedownProposals(res));
+      getProposals(contracts, 1).then((res) => setTakedownProposals(res));
     }
   }, [contracts]);
 

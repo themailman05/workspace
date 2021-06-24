@@ -145,10 +145,7 @@ export default function ProposalGrid({
             );
           })
           .map((proposal) => (
-            <ProposalCard
-              proposal={proposal}
-              proposalType={proposalType}
-            />
+            <ProposalCard proposal={proposal} proposalType={proposalType} />
           ))}
       </ul>
     </div>

@@ -1,7 +1,7 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Contracts } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
-import { Proposal } from 'interfaces/interfaces';
+import { Proposal, ProposalType } from 'interfaces/interfaces';
 
 interface TypechainProposal {
   status: number;
@@ -72,12 +72,13 @@ async function addIpfsDataToProposal(
       for: proposal.yesCount,
       against: proposal.noCount,
     },
+    proposalType: proposal.proposalType,
   };
 }
 
 export async function getProposals(
   contracts: Contracts,
-  isTakedown = false,
+  proposalType: ProposalType,
 ): Promise<Proposal[]> {
   const numProposals =
     await contracts.beneficiaryGovernance.getNumberOfProposals();
@@ -91,7 +92,7 @@ export async function getProposals(
     }),
   );
   const selectedProposals = allProposals.filter(
-    (proposal) => proposal.proposalType === (isTakedown ? 1 : 0),
+    (proposal) => proposal.proposalType === proposalType,
   );
 
   return await Promise.all(

@@ -17,11 +17,12 @@ export default function ProposalPage({
   proposal,
   proposalType = 0,
 }: ProposalPageProps): JSX.Element {
+  const isValidType = proposal?.proposalType === proposalType;
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       <NavBar />
       <ImageHeader {...proposal?.application} />
-      <Voting proposal={proposal} proposalType={proposalType} />
+      <Voting proposal={proposal} />
       <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
         <PhotoSideBar {...proposal?.application} />
         <MissionStatement

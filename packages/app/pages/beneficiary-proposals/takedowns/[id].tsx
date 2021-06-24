@@ -16,6 +16,5 @@ export default function SingleTakedownPage(): JSX.Element {
       );
     }
   }, [contracts]);
-
   return <ProposalPage proposal={proposal} proposalType={1} />;
 }

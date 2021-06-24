@@ -35,10 +35,11 @@ export interface BeneficiaryApplication {
 }
 
 export interface Proposal {
+  application: BeneficiaryApplication;
   id: string;
   status: Status;
   stageDeadline: Date;
-  application: BeneficiaryApplication;
+  proposalType: ProposalType;
   votes: {
     for: BigNumber;
     against: BigNumber;

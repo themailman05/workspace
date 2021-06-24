@@ -10,7 +10,7 @@ export default function BeneficiaryProposalPage(): JSX.Element {
 
   useEffect(() => {
     if (contracts) {
-      getProposals(contracts).then((res) => setProposals(res));
+      getProposals(contracts, 0).then((res) => setProposals(res));
     }
   }, [contracts]);
 
