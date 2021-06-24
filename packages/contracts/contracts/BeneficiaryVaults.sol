@@ -249,7 +249,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
   function _getOpenVaultCount() internal view returns (uint8) {
     uint8 _openVaultCount = 0;
     for (uint8 i = 0; i < vaults.length; i++) {
-      if (vaults[i].status == VaultStatus.Open) {
+      if (vaults[i].merkleRoot != "" && vaults[i].status == VaultStatus.Open) {
         _openVaultCount++;
       }
     }

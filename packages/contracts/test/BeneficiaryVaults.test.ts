@@ -15,7 +15,7 @@ interface Contracts {
   beneficiaryVaults: BeneficiaryVaults;
 }
 
-const VaultStatus = { Initialized: 0, Open: 1, Closed: 2 };
+const VaultStatus = { Open: 0, Closed: 1 };
 const OwnerInitial = parseEther("10");
 const RewarderInitial = parseEther("5");
 const firstReward = parseEther("1");
@@ -149,7 +149,7 @@ describe("BeneficiaryVaults", function () {
       expect(vaultData.currentBalance).to.equal(0);
       expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
-      expect(vaultData.status).to.equal(VaultStatus.Initialized);
+      expect(vaultData.status).to.equal(VaultStatus.Open);
       expect(
         await contracts.beneficiaryVaults.hasClaimed(0, beneficiary1.address)
       ).to.be.false;
@@ -170,7 +170,7 @@ describe("BeneficiaryVaults", function () {
       expect(vaultData.currentBalance).to.equal(0);
       expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
-      expect(vaultData.status).to.equal(VaultStatus.Initialized);
+      expect(vaultData.status).to.equal(VaultStatus.Open);
       expect(
         await contracts.beneficiaryVaults.hasClaimed(0, beneficiary1.address)
       ).to.be.false;
@@ -514,12 +514,8 @@ describe("BeneficiaryVaults", function () {
               expect(vaultData.currentBalance).to.equal(0);
             });
           });
-          describe("initialize and open vault 1", function () {
+          describe("open vault 1", function () {
             beforeEach(async function () {
-              await contracts.beneficiaryVaults.openVault(
-                1,
-                merkleRoot
-              );
               await contracts.beneficiaryVaults.openVault(1, merkleRoot);
             });
 
@@ -582,39 +578,6 @@ describe("BeneficiaryVaults", function () {
             });
           });
         });
-      });
-    });
-
-    describe("vault 0 is reinitialized", function () {
-      beforeEach(async function () {
-        result = await contracts.beneficiaryVaults.openVault(0, merkleRoot);
-      });
-
-      it("reverts when closing initialized vault", async function () {
-        await expect(
-          contracts.beneficiaryVaults.closeVault(0)
-        ).to.be.revertedWith("Vault must be open");
-      });
-
-      it("emits a VaultOpened event", async function () {
-        expect(result)
-          .to.emit(contracts.beneficiaryVaults, "VaultOpened")
-          .withArgs(0, merkleRoot);
-      });
-
-      it("vault has expected values", async function () {
-        const vaultData = await contracts.beneficiaryVaults.getVault(0);
-        expect(vaultData.totalAllocated).to.equal(0);
-        expect(vaultData.currentBalance).to.equal(0);
-        expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
-        expect(vaultData.merkleRoot).to.equal(merkleRoot);
-        expect(vaultData.status).to.equal(VaultStatus.Initialized);
-        expect(
-          await contracts.beneficiaryVaults.hasClaimed(0, beneficiary1.address)
-        ).to.be.false;
-        expect(
-          await contracts.beneficiaryVaults.hasClaimed(0, beneficiary2.address)
-        ).to.be.false;
       });
     });
   });

@@ -3,8 +3,6 @@ import { ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { ElectionMetadata, GrantElectionAdapter, ShareType } from "../../utils/src/Contracts";
 import { GrantElections, GrantElections__factory } from "../typechain";
-
-//import { GrantElections, GrantElections__factory } from "../typechain";
 import { merklize } from "./merkle";
 
 type awardee = [string, BigNumber];
