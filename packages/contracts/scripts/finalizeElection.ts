@@ -2,9 +2,9 @@ import { BigNumber } from "@ethersproject/bignumber";
 import { ethers } from "ethers";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { ElectionMetadata, GrantElectionAdapter, ShareType } from "../../utils/src/Contracts";
-import GrantElectionsJSON from "../artifacts/contracts/GrantElections.sol/GrantElections.json";
+import { GrantElections, GrantElections__factory } from "../typechain";
 
-import { GrantElections } from "../typechain";
+//import { GrantElections, GrantElections__factory } from "../typechain";
 import { merklize } from "./merkle";
 
 type awardee = [string, BigNumber];
@@ -79,7 +79,7 @@ export default async function finalizeElection(
   const [signer] = await hre.ethers.getSigners();
   const grantElection = new ethers.Contract(
     process.env.ADDR_GRANT_ELECTION,
-    GrantElectionsJSON.abi
+    GrantElections__factory.abi
   ) as GrantElections;
 
   console.log("getting election meta data...");

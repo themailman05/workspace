@@ -184,23 +184,25 @@ contract GrantElections is Governed {
   // todo: use bonds to incentivize callers instead of minting
   function initialize(ElectionTerm _grantTerm) public {
     uint8 _term = uint8(_grantTerm);
-    Election storage latestElection = elections[activeElections[_term]];
+    if (elections.length != 0) {
+      Election storage latestElection = elections[activeElections[_term]];
 
-    require(
-      latestElection.electionState == ElectionState.Closed,
-      "election not yet closed"
-    );
-    require(
-      latestElection.electionConfiguration.cooldownPeriod >=
-        block.timestamp.sub(latestElection.startTime),
-      "can't start new election, not enough time elapsed since last election"
-    );
-
+      require(
+        latestElection.electionState == ElectionState.Closed,
+        "election not yet closed"
+      );
+      require(
+        latestElection.electionConfiguration.cooldownPeriod >=
+          block.timestamp.sub(latestElection.startTime),
+        "can't start new election, not enough time elapsed since last election"
+      );
+    }
     uint256 electionId = elections.length;
     activeElections[_term] = electionId;
 
     elections.push();
     Election storage election = elections[electionId];
+
     election.electionConfiguration = electionDefaults[_term];
     election.electionState = ElectionState.Registration;
     election.electionTerm = _grantTerm;
@@ -333,15 +335,11 @@ contract GrantElections is Governed {
   {
     Election storage _election = elections[_electionId];
     require(
-      _election.electionState != ElectionState.Finalized,
-      "election already finalized"
+      _election.electionState == ElectionState.Closed ||
+        _election.electionState == ElectionState.FinalizationProposed,
+      "wrong election state"
     );
-    require(
-      _election.electionState == ElectionState.Closed,
-      "election not yet closed"
-    );
-    //TODO how to check for elegible awardees?
-    require(_election.votes.length > 1, "no elegible awardees");
+    require(_election.votes.length >= 1, "no elegible awardees");
 
     _election.merkleRoot = _merkleRoot;
     _election.electionState = ElectionState.FinalizationProposed;

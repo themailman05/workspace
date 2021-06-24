@@ -7,12 +7,12 @@ module.exports = {
           useChainLinkVRF: response.useChainLinkVRF,
           ranking: response.ranking,
           awardees: response.awardees,
-          registrationPeriod: response.registrationPeriod.toNumber(),
-          votingPeriod: response.votingPeriod.toNumber(),
-          cooldownPeriod: response.cooldownPeriod.toNumber(),
-          registrationBondRequired: response.bondRequirements.registrationBondRequired,
-          registrationBond: response.bondRequirements.registrationBond,
-          finalizationIncentive:response.finalizationIncentive.toNumber(),
+          registrationPeriod: Number(response.registrationPeriod.toString()),
+          votingPeriod: Number(response.votingPeriod.toString()),
+          cooldownPeriod: Number(response.cooldownPeriod.toString()),
+          registrationBondRequired: response.bondRequirements.required,
+          registrationBond: response.bondRequirements.amount,
+          finalizationIncentive:response.finalizationIncentive,
           enabled:response.enabled,
           shareType:response.shareType
         }
@@ -43,7 +43,7 @@ module.exports = {
               (votes, v, i) => [...votes, {
                   voter: v[0],
                   beneficiary: v[1],
-                  weight: v[2].toNumber(),
+                  weight: v[2],
                 }],
               [],
             )
@@ -59,18 +59,18 @@ module.exports = {
           [
             "periods",
             (value) => ({
-              cooldownPeriod: value[0].toNumber(),
-              registrationPeriod: value[1].toNumber(),
-              votingPeriod: value[2].toNumber(),
+              cooldownPeriod: Number(value[0].toString()),
+              registrationPeriod: Number(value[1].toString()),
+              votingPeriod: Number(value[2].toString()),
             }),
           ],
-          ["startTime", (value) => value.toNumber()],
+          ["startTime", (value) => Number(value.toString())],
           [
             'bondRequirements',
             (value) => ({ required: value[0], amount: value[1] }),
           ],
           ['shareType', (value) => value],
-          ['randomNumber', (value) => value.toNumber()],
+          ['randomNumber', (value) => Number(value.toString())],
         ];
         return (await contract.getElectionMetadata(electionId)).reduce(
           (metadata, value, i) => {

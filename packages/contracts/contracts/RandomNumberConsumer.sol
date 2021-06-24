@@ -48,4 +48,6 @@ contract RandomNumberConsumer is VRFConsumerBase {
   {
     randomResult = randomness;
   }
+
+  function deposit() public payable {}
 }
