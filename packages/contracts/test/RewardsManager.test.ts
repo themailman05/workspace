@@ -98,7 +98,7 @@ async function deployContracts(): Promise<Contracts> {
     mockUniswapV2Router.address
   );
   await RewardsManager.deployed();
-  await Staking.setRewardsManager(RewardsManager.address);
+  await Staking.init(RewardsManager.address);
   return {
     POP,
     MockAlt,

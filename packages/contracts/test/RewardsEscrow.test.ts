@@ -40,10 +40,12 @@ async function deployContracts(): Promise<Contracts> {
     ).deploy(mockPop.address, rewardsEscrow.address)
   ).deployed()) as Staking;
 
+  
+
   await mockPop.transfer(staking.address, stakingFund);
   await mockPop.connect(owner).approve(staking.address, parseEther("100000"));
 
-  await staking.setRewardsManager(rewarder.address);
+  await staking.init(rewarder.address);
   await staking.notifyRewardAmount(stakingFund);
   await staking.connect(owner).stake(parseEther("1"), 604800);
 

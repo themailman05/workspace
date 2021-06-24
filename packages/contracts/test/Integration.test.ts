@@ -114,7 +114,7 @@ async function deployContracts(): Promise<Contracts> {
     )
   ).deployed()) as RewardsManager;
 
-  await Staking.setRewardsManager(RewardsManager.address);
+  await Staking.init(RewardsManager.address);
 
   await factoryV2.createPair(WETH.address, POP.address);
   await factoryV2.createPair(TestERC20.address, POP.address);

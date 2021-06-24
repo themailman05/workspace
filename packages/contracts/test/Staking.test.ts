@@ -39,7 +39,7 @@ describe("Staking", function () {
     const stakingFactory = await ethers.getContractFactory("Staking");
     staking = await stakingFactory.deploy(mockPop.address, rewardsEscrow.address) as Staking;
     await staking.deployed();
-    await staking.setRewardsManager(rewarder.address);
+    await staking.init(rewarder.address);
     await rewardsEscrow.setStaking(staking.address)
     stakingFund = parseEther("10");
     await mockPop.transfer(staking.address, stakingFund);

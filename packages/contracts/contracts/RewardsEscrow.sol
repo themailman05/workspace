@@ -28,8 +28,8 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   IStaking public Staking;
   mapping(address => Escrow) public escrowedBalances;
   mapping(address => uint256) public vested;
-  uint256 escrowDuration = 90 days;
-  uint256 vestingCliff = 90 days;
+  uint256 public escrowDuration = 90 days;
+  uint256 public vestingCliff = 90 days;
 
   /* ========== EVENTS ========== */
 
