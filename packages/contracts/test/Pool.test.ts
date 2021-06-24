@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   BlockLockHelper,
-  DefendedHelper,
+  PoolDefendedHelper,
   MockERC20,
   MockYearnV2Vault,
   MockYearnRegistry,
@@ -20,7 +20,7 @@ interface Contracts {
   mockYearnRegistry: MockYearnRegistry;
   pool: Pool;
   blockLockHelper: BlockLockHelper;
-  defendedHelper: DefendedHelper;
+  defendedHelper: PoolDefendedHelper;
 }
 
 const DepositorInitial = parseEther("100000");
@@ -73,11 +73,10 @@ async function deployContracts(): Promise<Contracts> {
     Staking.interface.format() as any
   );
 
-  const DefendedHelper = await ethers.getContractFactory("DefendedHelper");
+  const PoolDefendedHelper = await ethers.getContractFactory("PoolDefendedHelper");
   const defendedHelper = await (
-    await DefendedHelper.deploy(
+    await PoolDefendedHelper.deploy(
       mockToken.address,
-      mockStaking.address,
       pool.address
     )
   ).deployed();
