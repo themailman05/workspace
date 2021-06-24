@@ -1,5 +1,4 @@
-import { Proposal, ProposalType } from 'interfaces/interfaces';
-import CurrentStandings from '../CurrentStandings';
+import { Proposal } from 'interfaces/interfaces';
 
 export default function CompletedVoting(proposal: Proposal): JSX.Element {
   return (
