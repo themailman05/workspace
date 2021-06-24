@@ -10,7 +10,6 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./lib/AffiliateToken.sol";
 import "./Defended.sol";
-
 import "hardhat/console.sol";
 
 contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
@@ -71,7 +70,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     _takeFees();
 
     uint256 sharesBefore = balanceOf(msg.sender);
-    uint256 deposited = super.deposit(amount);
+    super.deposit(amount);
     uint256 sharesAfter = balanceOf(msg.sender);
     uint256 shares = sharesAfter.sub(sharesBefore);
 
@@ -94,8 +93,8 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
 
     uint256 feeShares = _calculateWithdrawalFee(amount);
     uint256 withdrawalShares = amount.sub(feeShares);
-    uint256 fee = _shareValue(feeShares);
-    uint256 withdrawal = _shareValue(withdrawalShares);
+    uint256 fee = valueFor(feeShares);
+    uint256 withdrawal = valueFor(withdrawalShares);
 
     _burn(msg.sender, amount);
     _withdraw(address(this), msg.sender, withdrawal, true);
@@ -106,7 +105,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
 
     _reportPoolTokenHWM();
 
-    return (withdrawal);
+    return withdrawal;
   }
 
   function takeFees() external nonReentrant {
@@ -138,7 +137,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   function withdrawAccruedFees() external onlyOwner {
     uint256 balance = balanceOf(address(this));
     _burn(address(this), balance);
-    _withdraw(address(this), rewardsManager, _shareValue(balance), true);
+    _withdraw(address(this), rewardsManager, balance, true);
   }
 
   function pricePerPoolToken() public view returns (uint256) {
@@ -146,15 +145,11 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   }
 
   function totalValue() public view returns (uint256) {
-    return _totalValue();
+    return totalVaultBalance(address(this));
   }
 
   function valueFor(uint256 poolTokens) public view returns (uint256) {
     return _shareValue(poolTokens);
-  }
-
-  function _totalValue() internal view returns (uint256) {
-    return totalVaultBalance(address(this));
   }
 
   function _reportPoolTokenHWM() internal {
