@@ -48,25 +48,7 @@ async function addIpfsDataToProposal(
     id: proposalIndex.toString(),
     status: Number(proposal.status.toString()),
     stageDeadline: deadline,
-    application: {
-      organizationName: ipfsData.name,
-      missionStatement: ipfsData.missionStatement,
-      beneficiaryAddress: ipfsData.ethereumAddress,
-      files: {
-        profileImage: ipfsData.profileImage,
-        headerImage: ipfsData?.headerImage,
-        impactReports: ipfsData?.impactReports,
-        additionalImages: ipfsData?.additionalImages,
-      },
-      links: {
-        twitterUrl: ipfsData?.twitterUrl,
-        linkedinUrl: ipfsData?.linkedinUrl,
-        facebookUrl: ipfsData?.linkedinUrl,
-        instagramUrl: ipfsData?.linkedinUrl,
-        githubUrl: ipfsData?.linkedinUrl,
-        proofOfOwnership: ipfsData?.linkedinUrl,
-      },
-    },
+    application: ipfsData,
     votes: {
       for: proposal.yesCount,
       against: proposal.noCount,
