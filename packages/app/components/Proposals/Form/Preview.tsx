@@ -24,6 +24,9 @@ export default function Preview({
   visible,
 }: FormStepProps): JSX.Element {
   const context = useWeb3React<Web3Provider>();
+  const [beneficiaryApplication, setBeneficiaryApplication] =
+    useState<BeneficiaryApplication>();
+
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
   const { library, account, activate, active } = context;
@@ -31,6 +34,16 @@ export default function Preview({
   const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [proposalBond, setProposalBond] = useState<BigNumber>();
+
+  useEffect(() => {
+    if (contracts) {
+      getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
+    }
+  }, [contracts]);
+
+  useEffect(() => {
+    setBeneficiaryApplication(getBeneficiaryApplication(formData));
+  }, [form]);
 
   async function checkPreConditions(): Promise<boolean> {
     if (!contracts) {
@@ -77,9 +90,10 @@ export default function Preview({
     return true;
   }
 
-  async function uploadJsonToIpfs(submissionData: Form): Promise<void> {
+  async function uploadJsonToIpfs(
+    submissionData: BeneficiaryApplication,
+  ): Promise<void> {
     if (await checkPreConditions()) {
-      console.log({ proposalBond });
       console.log('precondition success');
       var myHeaders = new Headers();
       myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -98,6 +112,7 @@ export default function Preview({
       )
         .then((response) => response.text())
         .then((result) => {
+          console.log(JSON.parse(result).IpfsHash);
           return JSON.parse(result).IpfsHash;
         })
         .catch((error) => {
@@ -112,7 +127,7 @@ export default function Preview({
       await contracts.beneficiaryGovernance
         .connect(library.getSigner())
         .createProposal(
-          submissionData.ethereumAddress,
+          submissionData.beneficiaryAddress,
           getBytes32FromIpfsHash(ipfsHash),
           0,
         );
@@ -133,7 +148,7 @@ export default function Preview({
     return {
       organizationName: formData.name,
       missionStatement: formData.missionStatement,
-      beneficiaryAddress: formData.beneficiaryAddress,
+      beneficiaryAddress: formData.ethereumAddress,
       files: {
         profileImage: formData.profileImage,
         headerImage: formData?.headerImage,
@@ -143,10 +158,10 @@ export default function Preview({
       links: {
         twitterUrl: formData?.twitterUrl,
         linkedinUrl: formData?.linkedinUrl,
-        facebookUrl: formData?.linkedinUrl,
-        instagramUrl: formData?.linkedinUrl,
-        githubUrl: formData?.linkedinUrl,
-        proofOfOwnership: formData?.linkedinUrl,
+        facebookUrl: formData?.facebookUrl,
+        instagramUrl: formData?.instagramUrl,
+        githubUrl: formData?.githubUrl,
+        proofOfOwnership: formData.proofOfOwnership,
       },
     };
   }
@@ -156,12 +171,6 @@ export default function Preview({
       await contracts.beneficiaryGovernance.DefaultConfigurations();
     return proposalDefaultConfigurations.proposalBond;
   }
-
-  useEffect(() => {
-    if (contracts) {
-      getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
-    }
-  }, [contracts]);
 
   return (
     visible && (
@@ -186,7 +195,7 @@ export default function Preview({
               type="button"
               className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={() => {
-                uploadJsonToIpfs(formData);
+                uploadJsonToIpfs(beneficiaryApplication);
               }}
             >
               Submit
@@ -195,7 +204,7 @@ export default function Preview({
         </div>
 
         <BeneficiaryPage
-          beneficiary={getBeneficiaryApplication(formData)}
+          beneficiary={beneficiaryApplication}
           isProposalPreview
         />
       </div>

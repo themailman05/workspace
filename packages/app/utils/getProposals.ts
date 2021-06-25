@@ -37,7 +37,6 @@ async function addIpfsDataToProposal(
   const ipfsData = await fetch(
     `${process.env.IPFS_URL}${getIpfsHashFromBytes32(proposal.applicationCid)}`,
   ).then((response) => response.json());
-
   const deadline = new Date(
     (Number(proposal.startTime.toString()) +
       Number(proposal.configurationOptions.votingPeriod.toString()) +
