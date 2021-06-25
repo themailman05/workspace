@@ -1,3 +1,8 @@
+import { ContractsContext } from 'context/Web3/contracts';
+import { useContext, useEffect, useState } from 'react';
+import { IpfsClient } from 'utils/IpfsClient';
+import { ProposalAdapter } from 'utils/ProposalAdapter';
+
 import Divider from 'components/CommonComponents/Divider';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import ImpactReportLinks from 'components/CommonComponents/ImpactReportLinks';
@@ -7,15 +12,28 @@ import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
 import SocialMedia from 'components/CommonComponents/SocialMedia';
 import Verification from 'components/CommonComponents/Verification';
 import NavBar from 'components/NavBar/NavBar';
-import { Proposal } from 'interfaces/interfaces';
+import { Proposal, ProposalType } from 'interfaces/interfaces';
 import React from 'react';
 import Voting from './Voting/Voting';
 
-export default function ProposalPage(proposal: Proposal): JSX.Element {
+export default function ProposalPage({
+  proposalType: ProposalType,
+}): JSX.Element {
+  const { contracts } = useContext(ContractsContext);
+  const [proposal, setProposal] = useState<Proposal>();
+  const [proposalId, setProposalId] = useState<string>('');
+  useEffect(() => {
+    setProposalId(window.location.pathname.split('/').pop());
+  }, []);
+  useEffect(() => {
+    if (contracts) {
+      ProposalAdapter(contracts.beneficiaryGovernance, IpfsClient)
+        .getProposal(proposalId)
+        .then((res) => setProposal(res));
+    }
+  }, [contracts]);
   function getContent() {
-    return Object.keys(proposal).length === 0 ? (
-      <Loading />
-    ) : (
+    return proposal !== undefined && Object.keys(proposal).length > 0 ? (
       <React.Fragment>
         <ImageHeader {...proposal?.application} />
         <Voting {...proposal} />
@@ -32,6 +50,8 @@ export default function ProposalPage(proposal: Proposal): JSX.Element {
           <SocialMedia {...proposal?.application} />
         </div>
       </React.Fragment>
+    ) : (
+      <Loading />
     );
   }
   return (
