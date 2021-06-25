@@ -12,7 +12,7 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
-import { defaultFormData, Form, FormStepProps } from './ProposalForm';
+import { defaultFormData, FormStepProps } from './ProposalForm';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -24,8 +24,6 @@ export default function Preview({
   visible,
 }: FormStepProps): JSX.Element {
   const context = useWeb3React<Web3Provider>();
-  const [beneficiaryApplication, setBeneficiaryApplication] =
-    useState<BeneficiaryApplication>();
 
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
@@ -40,10 +38,6 @@ export default function Preview({
       getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
     }
   }, [contracts]);
-
-  useEffect(() => {
-    setBeneficiaryApplication(getBeneficiaryApplication(formData));
-  }, [form]);
 
   async function checkPreConditions(): Promise<boolean> {
     if (!contracts) {
@@ -112,7 +106,6 @@ export default function Preview({
       )
         .then((response) => response.text())
         .then((result) => {
-          console.log(JSON.parse(result).IpfsHash);
           return JSON.parse(result).IpfsHash;
         })
         .catch((error) => {
@@ -144,28 +137,6 @@ export default function Preview({
     setFormData(defaultFormData);
   }
 
-  function getBeneficiaryApplication(formData): BeneficiaryApplication {
-    return {
-      organizationName: formData.name,
-      missionStatement: formData.missionStatement,
-      beneficiaryAddress: formData.ethereumAddress,
-      files: {
-        profileImage: formData.profileImage,
-        headerImage: formData?.headerImage,
-        impactReports: formData?.impactReports,
-        additionalImages: formData?.additionalImages,
-      },
-      links: {
-        twitterUrl: formData?.twitterUrl,
-        linkedinUrl: formData?.linkedinUrl,
-        facebookUrl: formData?.facebookUrl,
-        instagramUrl: formData?.instagramUrl,
-        githubUrl: formData?.githubUrl,
-        proofOfOwnership: formData.proofOfOwnership,
-      },
-    };
-  }
-
   async function getProposalBond(): Promise<BigNumber> {
     const proposalDefaultConfigurations =
       await contracts.beneficiaryGovernance.DefaultConfigurations();
@@ -195,7 +166,7 @@ export default function Preview({
               type="button"
               className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               onClick={() => {
-                uploadJsonToIpfs(beneficiaryApplication);
+                uploadJsonToIpfs(formData);
               }}
             >
               Submit
@@ -203,10 +174,7 @@ export default function Preview({
           </div>
         </div>
 
-        <BeneficiaryPage
-          beneficiary={beneficiaryApplication}
-          isProposalPreview
-        />
+        <BeneficiaryPage beneficiary={formData} isProposalPreview />
       </div>
     )
   );

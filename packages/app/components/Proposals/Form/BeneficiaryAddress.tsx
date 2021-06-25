@@ -2,14 +2,14 @@ import web3 from 'web3';
 import { FormStepProps } from './ProposalForm';
 import ControlledTextInput from './ControlledTextInput';
 
-export default function EtherumAddress({
+export default function BeneficiaryAddress({
   form,
   navigation,
   visible,
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
-  function updateEthereumAddress(value: string): void {
-    setFormData({ ...formData, ethereumAddress: value });
+  function updateEthereumAddress(beneficiaryAddress: string): void {
+    setFormData({ ...formData, beneficiaryAddress });
   }
 
   return (
@@ -19,7 +19,7 @@ export default function EtherumAddress({
           2 - What's the Ethereum address grants will be sent to?
         </h2>
         <ControlledTextInput
-          inputValue={formData.ethereumAddress}
+          inputValue={formData.beneficiaryAddress}
           id="ethereumAddress"
           placeholder="Ethererum Address"
           errorMessage="Please enter a valid ethereum address"

@@ -37,7 +37,7 @@ export default function Intro({
           </p>
           <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
             {/* Check for partially completed form */}
-            {formData.name !== '' ? (
+            {formData.organizationName !== '' ? (
               <div className="rounded-md shadow">
                 <a
                   onClick={() => {

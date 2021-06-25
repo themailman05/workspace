@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import NavBar from '../../NavBar/NavBar';
 import Intro from './Intro';
 import Name from './Name';
+import BeneficiaryAddress from './BeneficiaryAddress';
 import AdditionalImages from './AdditionalImages';
-import EthereumAddress from './EthereumAddress';
 import HeaderImage from './HeaderImage';
 import ImpactReportsAudits from './ImpactReportsAudits';
 import MissionStatement from './MissionStatement';
@@ -13,6 +13,7 @@ import Preview from './Preview';
 import NavigationButtons from './NavigationButtons';
 import SocialMedia from './SocialMedia';
 import { Toaster } from 'react-hot-toast';
+import { BeneficiaryApplication } from 'interfaces/interfaces';
 
 export interface Navigation {
   currentStep: number;
@@ -22,47 +23,35 @@ export interface Navigation {
 }
 
 export interface FormStepProps {
-  form: [Form, React.Dispatch<React.SetStateAction<Form>>];
+  form: [BeneficiaryApplication, React.Dispatch<React.SetStateAction<BeneficiaryApplication>>];
   navigation: Navigation;
   visible: boolean;
 }
 
-export interface Form {
-  additionalImages: string[];
-  ethereumAddress: string;
-  headerImage: string;
-  impactReports: string[];
-  missionStatement: string;
-  name: string;
-  profileImage: string;
-  proofOfOwnership: string;
-  twitterUrl: string;
-  linkedinUrl: string;
-  facebookUrl: string;
-  instagramUrl: string;
-  githubUrl: string;
+export const defaultFormData: BeneficiaryApplication = {
+  organizationName: "",
+  missionStatement: "",
+  beneficiaryAddress: "",
+  files: {
+    profileImage: "",
+    headerImage: "",
+    impactReports: [],
+    additionalImages: []
+  },
+  links: {
+    twitterUrl: "",
+    linkedinUrl: "",
+    facebookUrl: "",
+    instagramUrl: "",
+    githubUrl: "",
+    proofOfOwnership: "",
+  },
 }
-
-export const defaultFormData: Form = {
-  additionalImages: [],
-  ethereumAddress: '',
-  headerImage: '',
-  impactReports: [],
-  missionStatement: '',
-  name: '',
-  profileImage: '',
-  proofOfOwnership: '',
-  twitterUrl: '',
-  linkedinUrl: '',
-  facebookUrl: '',
-  instagramUrl: '',
-  githubUrl: '',
-};
 
 export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
-  const [formData, setFormData] = useState<Form>(defaultFormData);
+  const [formData, setFormData] = useState<BeneficiaryApplication>(defaultFormData);
 
   useEffect(() => {
     const formData = localStorage.getItem('beneficiaryNominationProposal');
@@ -85,7 +74,7 @@ export default function PropsalForm(): JSX.Element {
       JSON.stringify(formData),
     );
   }, [formData]);
-
+  console.log({formData});
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
@@ -99,7 +88,7 @@ export default function PropsalForm(): JSX.Element {
         navigation={navigation}
         visible={currentStep === 1}
       />
-      <EthereumAddress
+      <BeneficiaryAddress
         form={[formData, setFormData]}
         navigation={navigation}
         visible={currentStep === 2}
