@@ -1,7 +1,12 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { Contracts } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
-import { Proposal, ProposalType } from 'interfaces/interfaces';
+import {
+  BeneficiaryApplication,
+  Proposal,
+  ProposalType,
+} from 'interfaces/interfaces';
+import { IpfsClient } from './IpfsClient';
 
 interface TypechainProposal {
   status: number;
@@ -34,9 +39,9 @@ async function addIpfsDataToProposal(
   proposal: TypechainProposal,
   proposalIndex: number,
 ): Promise<Proposal> {
-  const ipfsData = await fetch(
-    `${process.env.IPFS_URL}${getIpfsHashFromBytes32(proposal.applicationCid)}`,
-  ).then((response) => response.json());
+  const beneficiaryApplication: BeneficiaryApplication = await IpfsClient().get(
+    proposal.applicationCid,
+  );
   const deadline = new Date(
     (Number(proposal.startTime.toString()) +
       Number(proposal.configurationOptions.votingPeriod.toString()) +
@@ -48,7 +53,7 @@ async function addIpfsDataToProposal(
     id: proposalIndex.toString(),
     status: Number(proposal.status.toString()),
     stageDeadline: deadline,
-    application: ipfsData,
+    application: beneficiaryApplication,
     votes: {
       for: proposal.yesCount,
       against: proposal.noCount,
@@ -63,21 +68,19 @@ export async function getProposals(
 ): Promise<Proposal[]> {
   const numProposals =
     await contracts.beneficiaryGovernance.getNumberOfProposals();
-
   const proposalIds = new Array(numProposals.toNumber()).fill(undefined);
-
   const allProposals = await Promise.all(
     proposalIds.map(async (x, i) => {
       const proposal = await contracts.beneficiaryGovernance.proposals(i);
       return { ...proposal, id: i };
     }),
   );
-  const selectedProposals = allProposals.filter(
+  const filteredProposals = allProposals.filter(
     (proposal) => proposal.proposalType === proposalType,
   );
 
   return await Promise.all(
-    selectedProposals.map(
+    filteredProposals.map(
       async (proposal) => await addIpfsDataToProposal(proposal, proposal.id),
     ),
   );

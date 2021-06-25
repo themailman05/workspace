@@ -12,6 +12,7 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
+import { IpfsClient } from 'utils/IpfsClient';
 import { defaultFormData, FormStepProps } from './ProposalForm';
 
 const success = () => toast.success('Successful upload to IPFS');
@@ -89,29 +90,9 @@ export default function Preview({
   ): Promise<void> {
     if (await checkPreConditions()) {
       console.log('precondition success');
-      var myHeaders = new Headers();
-      myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-      myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-      myHeaders.append('Content-Type', 'application/json');
-      var raw = JSON.stringify(submissionData);
       loading();
-      const ipfsHash = await fetch(
-        'https://api.pinata.cloud/pinning/pinJSONToIPFS',
-        {
-          method: 'POST',
-          headers: myHeaders,
-          body: raw,
-          redirect: 'follow',
-        },
-      )
-        .then((response) => response.text())
-        .then((result) => {
-          return JSON.parse(result).IpfsHash;
-        })
-        .catch((error) => {
-          uploadError('Error uploading submission data to IPFS');
-        });
-
+      const cid = await IpfsClient().add(submissionData);
+      toast.dismiss();
       await (
         await contracts.pop
           .connect(library.getSigner())
@@ -121,10 +102,10 @@ export default function Preview({
         .connect(library.getSigner())
         .createProposal(
           submissionData.beneficiaryAddress,
-          getBytes32FromIpfsHash(ipfsHash),
+          getBytes32FromIpfsHash(cid),
           0,
         );
-      toast.dismiss();
+
       success();
       setTimeout(() => router.push(`/beneficiary-proposals/${account}`), 1000);
       clearLocalStorage();

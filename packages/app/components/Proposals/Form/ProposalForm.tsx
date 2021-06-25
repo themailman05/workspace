@@ -23,35 +23,39 @@ export interface Navigation {
 }
 
 export interface FormStepProps {
-  form: [BeneficiaryApplication, React.Dispatch<React.SetStateAction<BeneficiaryApplication>>];
+  form: [
+    BeneficiaryApplication,
+    React.Dispatch<React.SetStateAction<BeneficiaryApplication>>,
+  ];
   navigation: Navigation;
   visible: boolean;
 }
 
 export const defaultFormData: BeneficiaryApplication = {
-  organizationName: "",
-  missionStatement: "",
-  beneficiaryAddress: "",
+  organizationName: '',
+  missionStatement: '',
+  beneficiaryAddress: '',
   files: {
-    profileImage: "",
-    headerImage: "",
+    profileImage: '',
+    headerImage: '',
     impactReports: [],
-    additionalImages: []
+    additionalImages: [],
   },
   links: {
-    twitterUrl: "",
-    linkedinUrl: "",
-    facebookUrl: "",
-    instagramUrl: "",
-    githubUrl: "",
-    proofOfOwnership: "",
+    twitterUrl: '',
+    linkedinUrl: '',
+    facebookUrl: '',
+    instagramUrl: '',
+    githubUrl: '',
+    proofOfOwnership: '',
   },
-}
+};
 
 export default function PropsalForm(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
-  const [formData, setFormData] = useState<BeneficiaryApplication>(defaultFormData);
+  const [formData, setFormData] =
+    useState<BeneficiaryApplication>(defaultFormData);
 
   useEffect(() => {
     const formData = localStorage.getItem('beneficiaryNominationProposal');
@@ -74,7 +78,6 @@ export default function PropsalForm(): JSX.Element {
       JSON.stringify(formData),
     );
   }, [formData]);
-  console.log({formData});
   return (
     <div className="flex flex-col h-screen justify-between">
       <NavBar />
