@@ -22,15 +22,12 @@ export const IpfsClient = (): IIpfsClient => {
       myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
       myHeaders.append('Content-Type', 'application/json');
       var raw = JSON.stringify(beneficiaryApplication);
-      const cid = await fetch(
-        'https://api.pinata.cloud/pinning/pinJSONToIPFS',
-        {
-          method: 'POST',
-          headers: myHeaders,
-          body: raw,
-          redirect: 'follow',
-        },
-      )
+      const cid = await fetch(process.env.IPFS_GATEWAY_PIN, {
+        method: 'POST',
+        headers: myHeaders,
+        body: raw,
+        redirect: 'follow',
+      })
         .then((response) => response.text())
         .then((result) => {
           return JSON.parse(result).IpfsHash;
