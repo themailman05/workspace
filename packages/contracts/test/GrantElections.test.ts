@@ -4,13 +4,19 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber } from "ethers";
 import { waffle, ethers } from "hardhat";
-import { ShareType } from "../../utils/src/Contracts";
+import { ElectionMetadata, ShareType } from "../../utils/src/Contracts";
+import {
+  calculateVaultShare,
+  countVotes,
+  rankAwardees,
+} from "../scripts/finalizeElection";
 import { GrantElectionAdapter } from "../scripts/helpers/GrantElectionAdapter";
 import {
   BeneficiaryVaults,
   GrantElections,
   MockERC20,
   RandomNumberConsumer,
+  RandomNumberHelper,
 } from "../typechain";
 
 interface Contracts {
@@ -18,7 +24,7 @@ interface Contracts {
   mockStaking: MockContract;
   mockBeneficiaryRegistry: MockContract;
   beneficiaryVaults: BeneficiaryVaults;
-  randomNumberConsumer: RandomNumberConsumer;
+  randomNumberHelper: RandomNumberHelper;
   grantElections: GrantElections;
 }
 
@@ -52,7 +58,7 @@ async function deployContracts(): Promise<Contracts> {
       await ethers.getContractFactory("MockERC20")
     ).deploy("TestPOP", "TPOP", 18)
   ).deployed();
-  await mockPop.mint(owner.address, parseEther("1000"));
+  await mockPop.mint(owner.address, parseEther("4500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
   await mockPop.mint(beneficiary2.address, parseEther("500"));
   await mockPop.mint(beneficiary3.address, parseEther("500"));
@@ -79,9 +85,9 @@ async function deployContracts(): Promise<Contracts> {
     ).deploy(mockPop.address, mockBeneficiaryRegistry.address)
   ).deployed();
 
-  const randomNumberConsumer = await (
+  const randomNumberHelper = await (
     await (
-      await ethers.getContractFactory("RandomNumberConsumer")
+      await ethers.getContractFactory("RandomNumberHelper")
     ).deploy(
       owner.address,
       mockPop.address,
@@ -91,7 +97,7 @@ async function deployContracts(): Promise<Contracts> {
 
   await mockPop
     .connect(owner)
-    .transfer(randomNumberConsumer.address, parseEther("500"));
+    .transfer(randomNumberHelper.address, parseEther("500"));
 
   const grantElections = (await (
     await (
@@ -100,12 +106,13 @@ async function deployContracts(): Promise<Contracts> {
       mockStaking.address,
       mockBeneficiaryRegistry.address,
       beneficiaryVaults.address,
-      randomNumberConsumer.address,
+      randomNumberHelper.address,
       mockPop.address,
       governance.address
     )
   ).deployed()) as GrantElections;
 
+  await mockPop.approve(grantElections.address, parseEther("1000000"));
   await beneficiaryVaults.transferOwnership(grantElections.address);
 
   return {
@@ -113,9 +120,46 @@ async function deployContracts(): Promise<Contracts> {
     mockStaking,
     mockBeneficiaryRegistry,
     beneficiaryVaults,
-    randomNumberConsumer,
+    randomNumberHelper,
     grantElections,
   };
+}
+
+async function prepareElection(
+  grantTerm: number,
+  electionId: number
+): Promise<void> {
+  await contracts.grantElections.initialize(grantTerm);
+  await contracts.mockStaking.mock.getVoiceCredits.returns(100);
+  await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+  await contracts.grantElections
+    .connect(beneficiary)
+    .registerForElection(beneficiary.address, electionId);
+  await contracts.grantElections
+    .connect(beneficiary)
+    .registerForElection(beneficiary2.address, electionId);
+  await contracts.grantElections
+    .connect(beneficiary)
+    .registerForElection(beneficiary3.address, electionId);
+  await contracts.grantElections
+    .connect(beneficiary)
+    .registerForElection(beneficiary4.address, electionId);
+  await contracts.grantElections
+    .connect(beneficiary)
+    .registerForElection(beneficiary5.address, electionId);
+  ethers.provider.send("evm_increaseTime", [1000]);
+  ethers.provider.send("evm_mine", []);
+  await contracts.grantElections.vote(
+    [
+      beneficiary.address,
+      beneficiary2.address,
+      beneficiary3.address,
+      beneficiary4.address,
+      beneficiary5.address,
+    ],
+    [40, 15, 20, 15, 10],
+    electionId
+  );
 }
 
 describe("GrantElections", function () {
@@ -252,6 +296,16 @@ describe("GrantElections", function () {
         .to.emit(contracts.grantElections, "GovernanceNominated")
         .withArgs(nonOwner.address);
     });
+
+    it("should allow to fund incentives", async function () {
+      await contracts.grantElections
+        .connect(owner)
+        .fundIncentive(parseEther("4000"));
+      const incentiveBudget = await contracts.grantElections.incentiveBudget();
+      const balance = await contracts.mockPop.balanceOf(owner.address);
+      expect(incentiveBudget).to.equal(parseEther("4000"));
+      expect(balance).to.equal(parseEther("500"));
+    });
   });
 
   describe("registration", function () {
@@ -281,10 +335,9 @@ describe("GrantElections", function () {
       );
       await contracts.grantElections.initialize(GRANT_TERM.YEAR);
       await expect(
-        contracts.grantElections.registerForElection(
-          beneficiary.address,
-          electionId
-        )
+        contracts.grantElections
+          .connect(beneficiary)
+          .registerForElection(beneficiary.address, electionId)
       ).to.be.revertedWith("insufficient registration bond balance");
     });
 
@@ -377,11 +430,49 @@ describe("GrantElections", function () {
       });
     });
 
-    it("should prevent an election from initializing if it isn't closed", async function () {
+    it("should prevent an election from initializing if it isn't finalized", async function () {
       await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       await expect(
         contracts.grantElections.initialize(GRANT_TERM.QUARTER)
-      ).to.be.revertedWith("election not yet closed");
+      ).to.be.revertedWith("election not yet finalized");
+    });
+    it.only("should allow to create a new election for a term when the old one is finalized", async function () {
+      const merkleRoot = ethers.utils.formatBytes32String("merkleRoot");
+      await contracts.grantElections
+      .connect(governance)
+      .setConfiguration(
+        GRANT_TERM.QUARTER,
+        4,
+        2,
+        false,
+        1000,
+        20 * 86400,
+        100,
+        0,
+        false,
+        parseEther("2000"),
+        true,
+        0
+      );
+      await prepareElection(GRANT_TERM.QUARTER, electionId);
+      ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+      ethers.provider.send("evm_mine", []);
+      await contracts.grantElections.refreshElectionState(electionId);
+      await contracts.grantElections.proposeFinalization(
+        electionId,
+        merkleRoot
+      );
+      await contracts.grantElections.approveFinalization(
+        electionId,
+        merkleRoot
+      );
+      const currentBlockNumber = await ethers.provider.getBlockNumber();
+      const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
+      await expect(contracts.grantElections.initialize(GRANT_TERM.QUARTER))
+        .to.emit(contracts.grantElections, "ElectionInitialized")
+        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+      const activeElectionId = await contracts.grantElections.activeElections(GRANT_TERM.QUARTER);
+      expect(activeElectionId).to.equal(electionId+1)
     });
   });
 
@@ -426,9 +517,6 @@ describe("GrantElections", function () {
     });
 
     it("should vote successfully", async function () {
-      ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-
       await contracts.mockPop
         .connect(beneficiary)
         .approve(contracts.grantElections.address, registrationBondMonth);
@@ -440,6 +528,10 @@ describe("GrantElections", function () {
       await contracts.grantElections
         .connect(beneficiary)
         .registerForElection(beneficiary.address, electionId);
+
+      ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
+      ethers.provider.send("evm_mine", []);
+
       await contracts.grantElections.vote(
         [beneficiary.address],
         [5],
@@ -458,8 +550,6 @@ describe("GrantElections", function () {
     });
 
     it("should not allow to vote twice for same address and grant term", async function () {
-      ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
       await contracts.mockPop
         .connect(beneficiary)
         .approve(contracts.grantElections.address, registrationBondMonth);
@@ -470,6 +560,9 @@ describe("GrantElections", function () {
       await contracts.grantElections
         .connect(beneficiary)
         .registerForElection(beneficiary.address, electionId);
+      ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
+      ethers.provider.send("evm_mine", []);
+
       await contracts.grantElections.vote(
         [beneficiary.address],
         [5],
@@ -483,273 +576,372 @@ describe("GrantElections", function () {
 
   describe("finalization", function () {
     const merkleRoot = ethers.utils.formatBytes32String("merkleRoot");
-    beforeEach(async function () {
-      await contracts.grantElections
-        .connect(governance)
-        .setConfiguration(
-          GRANT_TERM.MONTH,
-          15,
-          10,
-          false,
-          1,
-          20 * 86400,
-          100,
-          0,
-          false,
-          parseEther("100"),
-          true,
-          0
-        );
-      await contracts.grantElections.initialize(GRANT_TERM.MONTH);
-      await contracts.mockStaking.mock.getVoiceCredits.returns(10);
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
-        true
-      );
-      await contracts.grantElections
-        .connect(beneficiary)
-        .registerForElection(beneficiary.address, electionId);
-      await contracts.grantElections.vote(
-        [beneficiary.address],
-        [10],
-        electionId
-      );
-    });
-    it("require election closed", async function () {
-      ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await expect(
-        contracts.grantElections.proposeFinalization(electionId, merkleRoot)
-      ).to.be.revertedWith("wrong election state");
-    });
+    describe("without randomization", function () {
+      beforeEach(async function () {
+        await contracts.grantElections
+          .connect(governance)
+          .setConfiguration(
+            GRANT_TERM.MONTH,
+            4,
+            2,
+            false,
+            1000,
+            20 * 86400,
+            100,
+            0,
+            false,
+            parseEther("2000"),
+            true,
+            0
+          );
+        await prepareElection(GRANT_TERM.MONTH, electionId);
+      });
+      describe("propose finalization", function () {
+        it("require election closed", async function () {
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await expect(
+            contracts.grantElections.proposeFinalization(electionId, merkleRoot)
+          ).to.be.revertedWith("wrong election state");
+        });
 
-    it("require not finalized", async function () {
-      ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.grantElections.refreshElectionState(electionId);
-      await contracts.grantElections.proposeFinalization(
-        electionId,
-        merkleRoot
-      );
-      await contracts.grantElections.approveFinalization(
-        electionId,
-        merkleRoot
-      );
-      await expect(
-        contracts.grantElections.proposeFinalization(electionId, merkleRoot)
-      ).to.be.revertedWith("wrong election state");
-    });
+        it("require not finalized", async function () {
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await contracts.grantElections.refreshElectionState(electionId);
+          await contracts.grantElections.proposeFinalization(
+            electionId,
+            merkleRoot
+          );
+          await contracts.grantElections.approveFinalization(
+            electionId,
+            merkleRoot
+          );
+          await expect(
+            contracts.grantElections.proposeFinalization(electionId, merkleRoot)
+          ).to.be.revertedWith("wrong election state");
+        });
 
-    it("overwrites merkleRoot when calling proposeFinalization twice", async function () {
-      const newMerkleRoot = ethers.utils.formatBytes32String("newMerkleRoot");
-      ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.grantElections.refreshElectionState(electionId);
-      await contracts.grantElections.proposeFinalization(
-        electionId,
-        merkleRoot
-      );
-      expect(
-        await contracts.grantElections.getElectionMerkleRoot(electionId)
-      ).to.equal(merkleRoot);
-      await contracts.grantElections.proposeFinalization(
-        electionId,
-        newMerkleRoot
-      );
-      expect(
-        await contracts.grantElections.getElectionMerkleRoot(electionId)
-      ).to.equal(newMerkleRoot);
-    });
+        it("overwrites merkleRoot when calling proposeFinalization twice", async function () {
+          const newMerkleRoot =
+            ethers.utils.formatBytes32String("newMerkleRoot");
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await contracts.grantElections.refreshElectionState(electionId);
+          await contracts.grantElections.proposeFinalization(
+            electionId,
+            merkleRoot
+          );
+          expect(
+            await contracts.grantElections.getElectionMerkleRoot(electionId)
+          ).to.equal(merkleRoot);
+          await contracts.grantElections.proposeFinalization(
+            electionId,
+            newMerkleRoot
+          );
+          expect(
+            await contracts.grantElections.getElectionMerkleRoot(electionId)
+          ).to.equal(newMerkleRoot);
+        });
 
-    it("approveFinalization needs an election in proposedFinalization state", async function () {
-      await expect(
-        contracts.grantElections.approveFinalization(
-          electionId,
-          merkleRoot
-        )
-      ).to.be.revertedWith("finalization not yet proposed");
-      ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.grantElections.refreshElectionState(electionId);
-      await contracts.grantElections.proposeFinalization(
-        electionId,
-        merkleRoot
-      );
-      await contracts.grantElections.approveFinalization(
-        electionId,
-        merkleRoot
-      );
-      await expect(
-        contracts.grantElections.approveFinalization(
-          electionId,
-          merkleRoot
-        )
-      ).to.be.revertedWith("election already finalized");
-    });
-    //TODO how to test randomization and merkleRoot script?
-    /*it("finalizes an election with randomization", async function () {
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
-      // voting
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
-        true
-      );
-      await contracts.mockPop
-        .connect(beneficiary)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary)
-        .registerForElection(beneficiary.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary2)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary2)
-        .registerForElection(beneficiary2.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary3)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary3)
-        .registerForElection(beneficiary3.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary4)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary4)
-        .registerForElection(beneficiary4.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary5)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary5)
-        .registerForElection(beneficiary5.address, GRANT_TERM.QUARTER);
-      await contracts.mockStaking.mock.getVoiceCredits.returns(1000);
-      ethers.provider.send("evm_increaseTime", [14 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.grantElections
-        .connect(voter1)
-        .vote([beneficiary.address], [10], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter2)
-        .vote([beneficiary2.address], [20], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter3)
-        .vote([beneficiary3.address], [30], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter4)
-        .vote([beneficiary4.address], [40], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter5)
-        .vote([beneficiary5.address], [50], GRANT_TERM.QUARTER);
-      // finalization
-      ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.grantElections.refreshElectionState(GRANT_TERM.QUARTER);
-      await contracts.mockGrantRegistry.mock.createGrant.returns();
-      await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
-      await contracts.mockRandomNumberConsumer.mock.randomResult.returns(2893);
-      expect(
-        await contracts.grantElections.proposeFinalization(GRANT_TERM.QUARTER)
-      )
-        .to.emit(contracts.grantElections, "GrantCreated")
-        .withArgs(
-          GRANT_TERM.QUARTER,
-          [beneficiary2.address, beneficiary3.address],
-          [parseEther("50"), parseEther("50")]
-        );
-    });
+        it("propose finalization successfully", async function () {
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await contracts.grantElections.refreshElectionState(electionId);
+          const result = await contracts.grantElections.proposeFinalization(
+            electionId,
+            merkleRoot
+          );
+          expect(result)
+            .to.emit(contracts.grantElections, "FinalizationProposed")
+            .withArgs(electionId, merkleRoot);
+          const election = await contracts.grantElections.elections(electionId);
+          expect(election.electionState).to.equal(3);
+        });
+        describe("incentive payout", function () {
+          it("doesnt pays out incentive if the incentiveBudget is too low", async function () {
+            await contracts.grantElections
+              .connect(owner)
+              .fundIncentive(parseEther("1000"));
+            ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+            ethers.provider.send("evm_mine", []);
+            await contracts.grantElections.refreshElectionState(electionId);
+            await contracts.grantElections
+              .connect(beneficiary)
+              .proposeFinalization(electionId, merkleRoot);
+            const balance1 = await contracts.mockPop.balanceOf(
+              beneficiary.address
+            );
+            expect(balance1).to.equal(parseEther("500"));
+            const incentiveBudget1 =
+              await contracts.grantElections.incentiveBudget();
+            expect(incentiveBudget1).to.equal(parseEther("1000"));
+          });
 
-    it("finalizes an election without randomization", async function () {
-      await contracts.grantElections
-        .connect(governance)
-        .setConfiguration(
-          GRANT_TERM.QUARTER,
-          5,
-          4,
-          false,
-          14 * ONE_DAY,
-          14 * ONE_DAY,
-          83 * ONE_DAY,
-          0,
-          false,
-          0,
-          true,
-          0
-        );
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
-      // voting
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
-        true
-      );
-      await contracts.mockPop
-        .connect(beneficiary)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary)
-        .registerForElection(beneficiary.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary2)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary2)
-        .registerForElection(beneficiary2.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary3)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary3)
-        .registerForElection(beneficiary3.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary4)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary4)
-        .registerForElection(beneficiary4.address, GRANT_TERM.QUARTER);
-      await contracts.mockPop
-        .connect(beneficiary5)
-        .approve(contracts.grantElections.address, registrationBondQuarter);
-      await contracts.grantElections
-        .connect(beneficiary5)
-        .registerForElection(beneficiary5.address, GRANT_TERM.QUARTER);
-      await contracts.mockStaking.mock.getVoiceCredits.returns(1000);
-      ethers.provider.send("evm_increaseTime", [14 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.grantElections
-        .connect(voter1)
-        .vote([beneficiary.address], [5], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter2)
-        .vote([beneficiary2.address], [40], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter3)
-        .vote([beneficiary3.address], [30], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter4)
-        .vote([beneficiary4.address], [50], GRANT_TERM.QUARTER);
-      await contracts.grantElections
-        .connect(voter5)
-        .vote([beneficiary5.address], [10], GRANT_TERM.QUARTER);
-      // finalization
-      ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.grantElections.refreshElectionState(GRANT_TERM.QUARTER);
-      await contracts.mockGrantRegistry.mock.createGrant.returns();
-      expect(await contracts.grantElections.finalize(GRANT_TERM.QUARTER))
-        .to.emit(contracts.grantElections, "GrantCreated")
-        .withArgs(
-          GRANT_TERM.QUARTER,
-          [
-            beneficiary4.address,
-            beneficiary2.address,
-            beneficiary3.address,
-            beneficiary5.address,
-          ],
-          [
-            parseEther("25"),
-            parseEther("25"),
-            parseEther("25"),
-            parseEther("25"),
-          ]
-        );
-    });*/
+          it("pays out incentive", async function () {
+            await contracts.grantElections
+              .connect(owner)
+              .fundIncentive(parseEther("2000"));
+            ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+            ethers.provider.send("evm_mine", []);
+            await contracts.grantElections.refreshElectionState(electionId);
+            await contracts.grantElections
+              .connect(beneficiary)
+              .proposeFinalization(electionId, merkleRoot);
+            const balance1 = await contracts.mockPop.balanceOf(
+              beneficiary.address
+            );
+            expect(balance1).to.equal(parseEther("2500"));
+            const incentiveBudget1 =
+              await contracts.grantElections.incentiveBudget();
+            expect(incentiveBudget1).to.equal(0);
+          });
+
+          it("doesnt pay out incentive when calling proposeFinalization again", async function () {
+            //Enough pop to fund 2 incentives
+            await contracts.grantElections
+              .connect(owner)
+              .fundIncentive(parseEther("4000"));
+            ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+            ethers.provider.send("evm_mine", []);
+            await contracts.grantElections.refreshElectionState(electionId);
+            await contracts.grantElections
+              .connect(beneficiary)
+              .proposeFinalization(electionId, merkleRoot);
+            const balance1 = await contracts.mockPop.balanceOf(
+              beneficiary.address
+            );
+            expect(balance1).to.equal(parseEther("2500"));
+            const incentiveBudget1 =
+              await contracts.grantElections.incentiveBudget();
+            expect(incentiveBudget1).to.equal(parseEther("2000"));
+
+            await contracts.grantElections
+              .connect(beneficiary)
+              .proposeFinalization(electionId, merkleRoot);
+            const balance2 = await contracts.mockPop.balanceOf(
+              beneficiary.address
+            );
+            expect(balance2).to.equal(parseEther("2500"));
+            const incentiveBudget2 =
+              await contracts.grantElections.incentiveBudget();
+            expect(incentiveBudget2).to.equal(parseEther("2000"));
+          });
+        });
+      });
+      describe("approve finalization", function () {
+        it("approveFinalization needs an election in proposedFinalization state", async function () {
+          await expect(
+            contracts.grantElections.approveFinalization(electionId, merkleRoot)
+          ).to.be.revertedWith("finalization not yet proposed");
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await contracts.grantElections.refreshElectionState(electionId);
+          await contracts.grantElections.proposeFinalization(
+            electionId,
+            merkleRoot
+          );
+          await contracts.grantElections.approveFinalization(
+            electionId,
+            merkleRoot
+          );
+          await expect(
+            contracts.grantElections.approveFinalization(electionId, merkleRoot)
+          ).to.be.revertedWith("election already finalized");
+        });
+
+        it("approves finalization successfully", async function () {
+          await expect(
+            contracts.grantElections.approveFinalization(electionId, merkleRoot)
+          ).to.be.revertedWith("finalization not yet proposed");
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await contracts.grantElections.refreshElectionState(electionId);
+          await contracts.grantElections.proposeFinalization(
+            electionId,
+            merkleRoot
+          );
+          const result = await contracts.grantElections.approveFinalization(
+            electionId,
+            merkleRoot
+          );
+          expect(result)
+            .to.emit(contracts.grantElections, "ElectionFinalized")
+            .withArgs(electionId, merkleRoot);
+          expect(result)
+            .to.emit(contracts.beneficiaryVaults, "VaultOpened")
+            .withArgs(0, merkleRoot);
+          const election = await contracts.grantElections.elections(electionId);
+          expect(election.electionState).to.equal(4);
+        });
+        it("merkle root contains correct winners with their equal weight share allocations", async function () {
+          await contracts.grantElections
+            .connect(governance)
+            .setConfiguration(
+              GRANT_TERM.QUARTER,
+              4,
+              2,
+              false,
+              1000,
+              20 * 86400,
+              100,
+              0,
+              false,
+              parseEther("2000"),
+              true,
+              0
+            );
+          await prepareElection(GRANT_TERM.QUARTER, electionId + 1);
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await contracts.grantElections.refreshElectionState(electionId + 1);
+
+          const electionMetaData: ElectionMetadata = await GrantElectionAdapter(
+            contracts.grantElections
+          ).getElectionMetadata(electionId + 1);
+          let winner = rankAwardees(electionMetaData);
+          winner = calculateVaultShare(winner, electionMetaData.shareType);
+          expect(winner[0][0]).to.equal(beneficiary.address);
+          expect(winner[1][0]).to.equal(beneficiary3.address);
+          expect(winner[0][1]).to.equal(parseEther("50"));
+          expect(winner[1][1]).to.equal(parseEther("50"));
+        });
+        it("merkle root contains correct winners with their dynamic weight share allocations", async function () {
+          await contracts.grantElections
+            .connect(governance)
+            .setConfiguration(
+              GRANT_TERM.QUARTER,
+              4,
+              2,
+              false,
+              1000,
+              20 * 86400,
+              100,
+              0,
+              false,
+              parseEther("2000"),
+              true,
+              1
+            );
+          await prepareElection(GRANT_TERM.QUARTER, electionId + 1);
+          ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+          ethers.provider.send("evm_mine", []);
+          await contracts.grantElections.refreshElectionState(electionId + 1);
+
+          const electionMetaData: ElectionMetadata = await GrantElectionAdapter(
+            contracts.grantElections
+          ).getElectionMetadata(electionId + 1);
+          let winner = rankAwardees(electionMetaData);
+          winner = calculateVaultShare(winner, electionMetaData.shareType);
+          expect(winner[0][0]).to.equal(beneficiary.address);
+          expect(winner[1][0]).to.equal(beneficiary3.address);
+          expect(winner[0][1]).to.equal(parseEther("60"));
+          expect(winner[1][1]).to.equal(parseEther("40"));
+        });
+      });
+    });
+    describe("with randomization", function () {
+      beforeEach(async function () {
+        await contracts.grantElections
+          .connect(governance)
+          .setConfiguration(
+            GRANT_TERM.MONTH,
+            4,
+            2,
+            true,
+            1000,
+            20 * 86400,
+            100,
+            0,
+            false,
+            parseEther("2000"),
+            true,
+            0
+          );
+        await prepareElection(GRANT_TERM.MONTH, electionId);
+        ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+        ethers.provider.send("evm_mine", []);
+        await contracts.grantElections.refreshElectionState(electionId);
+      });
+      it("creates a random number", async function () {
+        await contracts.randomNumberHelper.mockFulfillRandomness(7);
+        await contracts.grantElections.getRandomNumber(electionId);
+        const election = await contracts.grantElections.elections(electionId);
+        expect(election.randomNumber).to.equal(8);
+      });
+      it("requires a random number to propose finalization", async function () {
+        await expect(
+          contracts.grantElections.proposeFinalization(electionId, merkleRoot)
+        ).to.revertedWith("randomNumber required");
+      });
+      it("merkle root contains correct winners with their equal weight share allocations", async function () {
+        await contracts.grantElections
+          .connect(governance)
+          .setConfiguration(
+            GRANT_TERM.QUARTER,
+            4,
+            2,
+            true,
+            1000,
+            20 * 86400,
+            100,
+            0,
+            false,
+            parseEther("2000"),
+            true,
+            0
+          );
+        await prepareElection(GRANT_TERM.QUARTER, electionId + 1);
+        ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+        ethers.provider.send("evm_mine", []);
+        await contracts.grantElections.refreshElectionState(electionId + 1);
+        await contracts.randomNumberHelper.mockFulfillRandomness(96);
+        await contracts.grantElections.getRandomNumber(electionId + 1);
+
+        const electionMetaData: ElectionMetadata = await GrantElectionAdapter(
+          contracts.grantElections
+        ).getElectionMetadata(electionId + 1);
+        let winner = rankAwardees(electionMetaData);
+        winner = calculateVaultShare(winner, electionMetaData.shareType);
+        expect(winner[0][0]).to.equal(beneficiary3.address);
+        expect(winner[1][0]).to.equal(beneficiary2.address);
+        expect(winner[0][1]).to.equal(parseEther("50"));
+        expect(winner[1][1]).to.equal(parseEther("50"));
+      });
+      it("merkle root contains correct winners with their dynamic weight share allocations", async function () {
+        await contracts.grantElections
+          .connect(governance)
+          .setConfiguration(
+            GRANT_TERM.QUARTER,
+            4,
+            2,
+            true,
+            1000,
+            20 * 86400,
+            100,
+            0,
+            false,
+            parseEther("2000"),
+            true,
+            1
+          );
+        await prepareElection(GRANT_TERM.QUARTER, electionId + 1);
+        ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
+        ethers.provider.send("evm_mine", []);
+        await contracts.grantElections.refreshElectionState(electionId + 1);
+        await contracts.randomNumberHelper.mockFulfillRandomness(96);
+        await contracts.grantElections.getRandomNumber(electionId + 1);
+
+        const electionMetaData: ElectionMetadata = await GrantElectionAdapter(
+          contracts.grantElections
+        ).getElectionMetadata(electionId + 1);
+        let winner = rankAwardees(electionMetaData);
+        winner = calculateVaultShare(winner, electionMetaData.shareType);
+        expect(winner[0][0]).to.equal(beneficiary3.address);
+        expect(winner[1][0]).to.equal(beneficiary2.address);
+        expect(winner[0][1]).to.equal(parseEther("57.142857142857142857"));
+        expect(winner[1][1]).to.equal(parseEther("42.857142857142857142"));
+      });
+    });
   });
 });

@@ -79,7 +79,7 @@ contract GrantElections is Governed {
   Election[] public elections;
   uint256[3] public activeElections;
   ElectionConfiguration[3] public electionDefaults;
-  uint256 incentiveBudget;
+  uint256 public incentiveBudget;
 
   /* ========== EVENTS ========== */
 
@@ -187,15 +187,20 @@ contract GrantElections is Governed {
     if (elections.length != 0) {
       Election storage latestElection = elections[activeElections[_term]];
 
-      require(
-        latestElection.electionState == ElectionState.Closed,
-        "election not yet closed"
-      );
-      require(
-        latestElection.electionConfiguration.cooldownPeriod >=
-          block.timestamp.sub(latestElection.startTime),
-        "can't start new election, not enough time elapsed since last election"
-      );
+      if (
+        latestElection.electionTerm == _grantTerm &&
+        latestElection.startTime != 0
+      ) {
+        require(
+          latestElection.electionState == ElectionState.Finalized,
+          "election not yet finalized"
+        );
+        require(
+          block.timestamp.sub(latestElection.startTime) >=
+            latestElection.electionConfiguration.cooldownPeriod,
+          "can't start new election, not enough time elapsed since last election"
+        );
+      }
     }
     uint256 electionId = elections.length;
     activeElections[_term] = electionId;
@@ -222,8 +227,7 @@ contract GrantElections is Governed {
   {
     Election storage _election = elections[_electionId];
 
-    // todo: refresh election state & update tests
-    // refreshElectionState(_term);
+    refreshElectionState(_electionId);
 
     require(
       _election.electionState == ElectionState.Registration,
@@ -233,7 +237,11 @@ contract GrantElections is Governed {
       beneficiaryRegistry.beneficiaryExists(_beneficiary),
       "address is not eligible for registration"
     );
-    // todo: check beneficiary not already registered for election
+    require(
+      _election.registeredBeneficiaries[_beneficiary] == false,
+      "only register once"
+    );
+
     _collectRegistrationBond(_election);
 
     _election.registeredBeneficiaries[_beneficiary] = true;
@@ -258,7 +266,6 @@ contract GrantElections is Governed {
             keccak256(abi.encode(block.timestamp, blockhash(block.number)))
           )
         );
-        election.randomNumber = randomNumberConsumer.randomResult();
       }
     } else if (
       block.timestamp >=
@@ -327,6 +334,20 @@ contract GrantElections is Governed {
     incentiveBudget = incentiveBudget.add(_amount);
   }
 
+  function getRandomNumber(uint256 _electionId) public {
+    Election storage _election = elections[_electionId];
+    require(
+      _election.electionConfiguration.useChainLinkVRF == true,
+      "election doesnt need random number"
+    );
+    require(
+      _election.electionState == ElectionState.Closed,
+      "election must be closed"
+    );
+    require(_election.randomNumber == 0, "randomNumber already set");
+    _election.randomNumber = randomNumberConsumer.getRandomResult();
+  }
+
   /* ========== RESTRICTED FUNCTIONS ========== */
 
   //TODO needs some kind of whitelisting
@@ -341,8 +362,9 @@ contract GrantElections is Governed {
     );
     require(_election.votes.length >= 1, "no elegible awardees");
 
-    _election.merkleRoot = _merkleRoot;
-    _election.electionState = ElectionState.FinalizationProposed;
+    if (_election.electionConfiguration.useChainLinkVRF) {
+      require(_election.randomNumber != 0, "randomNumber required");
+    }
 
     uint256 finalizationIncentive = electionDefaults[
       uint8(_election.electionTerm)
@@ -355,8 +377,12 @@ contract GrantElections is Governed {
     ) {
       POP.approve(address(this), finalizationIncentive);
       POP.safeTransferFrom(address(this), msg.sender, finalizationIncentive);
-      incentiveBudget.sub(finalizationIncentive);
+      incentiveBudget = incentiveBudget.sub(finalizationIncentive);
     }
+
+    _election.merkleRoot = _merkleRoot;
+    _election.electionState = ElectionState.FinalizationProposed;
+
     emit FinalizationProposed(_electionId, _merkleRoot);
   }
 

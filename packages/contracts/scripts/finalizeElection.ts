@@ -1,32 +1,42 @@
 import { BigNumber } from "@ethersproject/bignumber";
 import { ethers } from "ethers";
+import { parseEther } from "ethers/lib/utils";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { ElectionMetadata, GrantElectionAdapter, ShareType } from "../../utils/src/Contracts";
+import {
+  ElectionMetadata,
+  GrantElectionAdapter,
+  ShareType,
+} from "../../utils/src/Contracts";
 import { GrantElections, GrantElections__factory } from "../typechain";
 import { merklize } from "./merkle";
 
-type awardee = [string, BigNumber];
+export type awardee = [string, BigNumber];
 
-function calculateVaultShare(
+export function calculateVaultShare(
   awardees: awardee[],
   shareType: ShareType
 ): awardee[] {
   if (shareType === ShareType.DynamicWeight) {
-    const totalVotes = BigNumber.from(0);
-    awardees.forEach((awardee) => totalVotes.add(awardee[1]));
-    awardees = awardees.map((awardee) => [
-      awardee[0],
-      awardee[1].div(totalVotes).mul(100e18),
-    ]);
+    let totalVotes = BigNumber.from(0);
+    awardees.forEach((awardee) => (totalVotes = totalVotes.add(awardee[1])));
+    console.log(totalVotes.toString())
+    const a = awardees[0][1].mul(parseEther("100")).div(totalVotes)
+    const b = awardees[1][1].mul(parseEther("100")).div(totalVotes)
+    console.log(a.toString())
+    console.log(b.toString())
+    awardees.forEach(
+      (awardee) =>
+        (awardee[1] = awardee[1].mul(parseEther("100")).div(totalVotes))
+    );
   } else {
-    const equalShare = BigNumber.from(100e18).div(awardees.length);
+    const equalShare = parseEther("100").div(awardees.length);
     awardees = awardees.map((awardee) => [awardee[0], equalShare]);
   }
 
   return awardees;
 }
 
-function shuffleAwardees(
+export function shuffleAwardees(
   awardees: awardee[],
   randomNumber: number,
   ranking: number
@@ -34,12 +44,14 @@ function shuffleAwardees(
   awardees = awardees.slice(0, ranking);
   for (let i = 0; i < awardees.length; i++) {
     let n = i + (randomNumber % (awardees.length - i));
-    awardees[n], (awardees[i] = awardees[i]), awardees[n];
+    const temp = awardees[i]
+    awardees[i] = awardees[n]
+    awardees[n] = temp;
   }
   return awardees;
 }
 
-function countVotes(electionMetaData: ElectionMetadata): awardee[] {
+export function countVotes(electionMetaData: ElectionMetadata): awardee[] {
   const awardees: awardee[] = [];
   electionMetaData.votes.forEach((vote) => {
     const awardee = awardees.find((awardee) => awardee[0] == vote.beneficiary);
@@ -52,11 +64,9 @@ function countVotes(electionMetaData: ElectionMetadata): awardee[] {
   return awardees;
 }
 
-function rankAwardees(
-  electionMetaData: ElectionMetadata
-): awardee[] {
+export function rankAwardees(electionMetaData: ElectionMetadata): awardee[] {
   let awardees = countVotes(electionMetaData);
-  awardees.sort((a, b) => Number(a[1].toString()) - Number(b[1].toString()));
+  awardees.sort((a, b) => Number(b[1].toString()) - Number(a[1].toString()));
   if (electionMetaData.useChainlinkVRF) {
     awardees = shuffleAwardees(
       awardees,
@@ -89,8 +99,8 @@ export default async function finalizeElection(
   let winner = rankAwardees(electionMetaData);
   console.log("and the winner are: " + winner);
 
-  console.log("calculating vault share...")
-  winner = calculateVaultShare(winner, electionMetaData.shareType)
+  console.log("calculating vault share...");
+  winner = calculateVaultShare(winner, electionMetaData.shareType);
 
   console.log("creating merkle root...");
   const merkleTree = merklize(winner);
@@ -98,8 +108,8 @@ export default async function finalizeElection(
   console.log("and the merkle root is: " + merkleRoot);
 
   console.log("finalizing grant election...");
-  await grantElection
+  /*await grantElection
     .connect(signer)
-    .proposeFinalization(args.term, merkleRoot);
+    .proposeFinalization(args.term, merkleRoot);*/
   console.log("grant election finalized");
 }

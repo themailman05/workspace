@@ -1,12 +1,11 @@
-// SPDX-License-Identifier: MIT
-
 pragma solidity ^0.7.0;
 
 import "@chainlink/contracts/src/v0.7/dev/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./IRandomNumberConsumer.sol";
 
-contract RandomNumberConsumer is VRFConsumerBase {
+import "../IRandomNumberConsumer.sol";
+
+contract RandomNumberHelper is IRandomNumberConsumer, VRFConsumerBase {
   using SafeMath for uint256;
 
   address public VRFCoordinator;
@@ -38,10 +37,7 @@ contract RandomNumberConsumer is VRFConsumerBase {
   /**
    * Requests randomness from a user-provided seed
    */
-  function getRandomNumber(uint256 userProvidedSeed) public {
-    require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-    requestRandomness(keyHash, fee, userProvidedSeed);
-  }
+  function getRandomNumber(uint256 userProvidedSeed) public override {}
 
   /**
    * Callback function used by VRF Coordinator
@@ -54,5 +50,11 @@ contract RandomNumberConsumer is VRFConsumerBase {
     randomResult = randomness.add(1);
   }
 
-  function deposit() public payable {}
+  function mockFulfillRandomness(uint256 randomness) external {
+    fulfillRandomness("", randomness);
+  }
+
+  function getRandomResult() public view override returns (uint256) {
+    return randomResult;
+  }
 }
