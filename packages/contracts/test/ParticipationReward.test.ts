@@ -1,5 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
+import { BigNumber } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, waffle } from "hardhat";
 import { MockERC20, ParticipationRewardHelper } from "../typechain";
@@ -24,7 +25,7 @@ async function deployContracts(): Promise<Contracts> {
       await ethers.getContractFactory("MockERC20")
     ).deploy("TestPOP", "TPOP", 18)
   ).deployed();
-  await mockPop.mint(owner.address, parseEther("500"));
+  await mockPop.mint(owner.address, parseEther("5000"));
 
   const rewardParticipationHelper = await (
     await (
@@ -35,6 +36,9 @@ async function deployContracts(): Promise<Contracts> {
   await mockPop
     .connect(owner)
     .approve(rewardParticipationHelper.address, parseEther("1000000"));
+  await rewardParticipationHelper
+    .connect(owner)
+    .contributeReward(parseEther("1000"));
 
   return {
     mockPop,
@@ -152,32 +156,53 @@ describe("RewardParticipation", function () {
         .withArgs(vaultId, owner.address, 1000);
     });
   });
-  describe("claim rewards", function () {
-    it("reverts if there are no rewards to claim", async function () {
-      await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
-      ethers.provider.send("evm_increaseTime", [604800]);
-      ethers.provider.send("evm_mine", []);
-      await contracts.rewardParticipationHelper.openVault(vaultId);
-      await expect(
-        contracts.rewardParticipationHelper.claimRewards()
-      ).to.be.revertedWith("No rewards");
-    });
-    it("claims rewards successfully", async function () {
+  describe.only("claim rewards", function () {
+    beforeEach(async function () {
       await contracts.rewardParticipationHelper
         .connect(governance)
         .setRewardsBudget(parseEther("10"));
-        await contracts.rewardParticipationHelper
-        .connect(owner)
-        .contributeReward(parseEther("10"));
+    });
+    it("reverts if there are no rewards Vaults to claim", async function () {
+      await expect(
+        contracts.rewardParticipationHelper.connect(owner).claimRewards()
+      ).to.be.revertedWith("no reward Vaults");
+    });
+    it.only("reverts if there are no rewards to claim", async function () {
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
         owner.address,
         1000
       );
-      await contracts.rewardParticipationHelper
-        .connect(voter)
-        .addShares(vaultId, voter.address, 1000);
+      ethers.provider.send("evm_increaseTime", [604800]);
+      ethers.provider.send("evm_mine", []);
+      await contracts.rewardParticipationHelper.openVault(vaultId);
+      console.log(await contracts.rewardParticipationHelper.userVaultLength(owner.address))
+      const userVault0 = await contracts.rewardParticipationHelper.userVaults(owner.address,0);
+      console.log(userVault0)
+      const vault0 = await contracts.rewardParticipationHelper.vaults(userVault0)
+      console.log(vault0)
+      const available0 = await contracts.rewardParticipationHelper.rewardAvailable()
+      console.log(available0.toString())
+      await contracts.rewardParticipationHelper.connect(owner).claimRewards()
+      console.log(await contracts.rewardParticipationHelper.userVaultLength(owner.address))
+      const userVault = await contracts.rewardParticipationHelper.userVaults(owner.address,0);
+      console.log(userVault)
+      const vault = await contracts.rewardParticipationHelper.vaults(userVault)
+      console.log(vault)
+      const available = await contracts.rewardParticipationHelper.rewardAvailable()
+      console.log(available.toString())
+      /*await expect(
+        contracts.rewardParticipationHelper.connect(owner).claimRewards()
+      ).to.be.revertedWith("no reward Vaults");*/
+    });
+    it("claims rewards successfully", async function () {
+      await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
+      await contracts.rewardParticipationHelper.addShares(
+        vaultId,
+        owner.address,
+        1000
+      );
       ethers.provider.send("evm_increaseTime", [604800]);
       ethers.provider.send("evm_mine", []);
       await contracts.rewardParticipationHelper.openVault(vaultId);
@@ -193,12 +218,6 @@ describe("RewardParticipation", function () {
       expect(newBalance).to.equal(oldBalance.add(parseEther("5")));
     });
     it("adds rewardedVaults to user address when voting and deletes them after claiming rewards", async function () {
-      await contracts.rewardParticipationHelper
-        .connect(governance)
-        .setRewardsBudget(parseEther("10"));
-      await contracts.rewardParticipationHelper
-        .connect(owner)
-        .contributeReward(parseEther("30"));
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
@@ -206,9 +225,7 @@ describe("RewardParticipation", function () {
         1000
       );
       expect(
-        await contracts.rewardParticipationHelper.userVaultLength(
-          owner.address
-        )
+        await contracts.rewardParticipationHelper.userVaultLength(owner.address)
       ).to.equal(1);
 
       ethers.provider.send("evm_increaseTime", [604800]);
@@ -217,9 +234,7 @@ describe("RewardParticipation", function () {
       await contracts.rewardParticipationHelper.openVault(vaultId);
       await contracts.rewardParticipationHelper.connect(owner).claimRewards();
       expect(
-        await contracts.rewardParticipationHelper.userVaultLength(
-          owner.address
-        )
+        await contracts.rewardParticipationHelper.userVaultLength(owner.address)
       ).to.equal(0);
 
       now = await (await ethers.provider.getBlock("latest")).timestamp;
@@ -248,9 +263,7 @@ describe("RewardParticipation", function () {
       );
 
       expect(
-        await contracts.rewardParticipationHelper.userVaultLength(
-          owner.address
-        )
+        await contracts.rewardParticipationHelper.userVaultLength(owner.address)
       ).to.equal(2);
 
       ethers.provider.send("evm_increaseTime", [604800]);
@@ -264,9 +277,7 @@ describe("RewardParticipation", function () {
         .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
         .withArgs(owner.address, parseEther("20"));
       expect(
-        await contracts.rewardParticipationHelper.userVaultLength(
-          owner.address
-        )
+        await contracts.rewardParticipationHelper.userVaultLength(owner.address)
       ).to.equal(0);
     });
   });

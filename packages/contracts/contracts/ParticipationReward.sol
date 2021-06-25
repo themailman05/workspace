@@ -11,12 +11,15 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   using SafeERC20 for IERC20;
 
   /* ========== STATE VARIABLES ========== */
-  enum VaultStatus {init, open}
+  enum VaultStatus {
+    Init,
+    Open
+  }
 
   struct Vault {
     VaultStatus status;
     uint256 endTime;
-    uint256 unclaimedShares;
+    uint256 shares;
     uint256 tokenBalance;
     mapping(address => uint256) shareBalances;
   }
@@ -84,9 +87,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     }
 
     totalVaultsBudget = expectedVaultBudget;
-    vaults[vaultId_].status = VaultStatus.init;
-    vaults[vaultId_].endTime = endTime_;
-    vaults[vaultId_].tokenBalance = rewardBudget;
+
+    Vault storage vault = vaults[vaultId_];
+    vault.endTime = endTime_;
+    vault.tokenBalance = rewardBudget;
 
     emit VaultInitialized(vaultId_);
     return vaultId_;
@@ -99,7 +103,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
    */
   function _openVault(bytes32 vaultId_) internal vaultExists(vaultId_) {
     require(
-      vaults[vaultId_].status == VaultStatus.init,
+      vaults[vaultId_].status == VaultStatus.Init,
       "Vault must be initialized"
     );
     require(
@@ -107,7 +111,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
       "wait till endTime is over"
     );
 
-    vaults[vaultId_].status = VaultStatus.open;
+    vaults[vaultId_].status = VaultStatus.Open;
 
     emit VaultOpened(vaultId_);
   }
@@ -118,12 +122,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     uint256 shares_
   ) internal vaultExists(vaultId_) {
     require(
-      vaults[vaultId_].status == VaultStatus.init,
+      vaults[vaultId_].status == VaultStatus.Init,
       "Vault must be initialized"
     );
-    vaults[vaultId_].unclaimedShares = vaults[vaultId_].unclaimedShares.add(
-      shares_
-    );
+    vaults[vaultId_].shares = vaults[vaultId_].shares.add(shares_);
     vaults[vaultId_].shareBalances[account_] = shares_;
 
     userVaults[account_].push(vaultId_);
@@ -133,21 +135,22 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
   function claimRewards() external nonReentrant {
     uint256 numEntries = _userVaultLength(msg.sender);
+    require(numEntries > 0, "no reward Vaults");
     uint256 stop;
     uint256 total;
 
     if (numEntries >= 20) {
       stop = numEntries.sub(21);
     }
-    for (uint256 index = numEntries.sub(1); index < stop; index--) {
-      bytes32 vaultId = userVaults[msg.sender][index];
-      if (vaults[vaultId].status == VaultStatus.open) {
+    for (uint256 index = numEntries; index > stop; index--) {
+      bytes32 vaultId = userVaults[msg.sender][index - 1];
+      if (vaults[vaultId].status == VaultStatus.Open) {
         total = total.add(_claimVaultReward(vaultId));
-        delete userVaults[msg.sender][index];
+        delete userVaults[msg.sender][index - 1];
       }
     }
 
-    require(total > 0, "No rewards");
+    require(total > 0, "no rewards");
     require(total <= rewardBalance, "not enough funds for payout");
 
     totalVaultsBudget = totalVaultsBudget.sub(total);
@@ -159,19 +162,18 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   }
 
   function _userVaultLength(address account_) internal view returns (uint256) {
+    if (userVaults[account_][0] == "") {
+      return 0;
+    }
     return userVaults[account_].length;
   }
 
   function _claimVaultReward(bytes32 vaultId) internal returns (uint256) {
-    uint256 shares = vaults[vaultId].shareBalances[msg.sender];
-    uint256 reward =
-      vaults[vaultId].tokenBalance.mul(shares).div(
-        vaults[vaultId].unclaimedShares
-      );
-    vaults[vaultId].tokenBalance = vaults[vaultId].tokenBalance.sub(reward);
-    vaults[vaultId].unclaimedShares = vaults[vaultId].unclaimedShares.sub(
-      shares
+    uint256 userShares = vaults[vaultId].shareBalances[msg.sender];
+    uint256 reward = vaults[vaultId].tokenBalance.mul(userShares).div(
+      vaults[vaultId].shares
     );
+    vaults[vaultId].tokenBalance = vaults[vaultId].tokenBalance.sub(reward);
     return reward;
   }
 
