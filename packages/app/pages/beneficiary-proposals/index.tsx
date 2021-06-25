@@ -1,16 +1,18 @@
+import { useContext, useEffect, useState } from 'react';
 import ProposalGrid from 'components/Proposals/ProposalGrid';
 import { ContractsContext } from 'context/Web3/contracts';
 import { Proposal } from 'interfaces/interfaces';
-import { useContext, useEffect, useState } from 'react';
-import { getProposals } from 'utils/getProposals';
+import { IpfsClient } from 'utils/IpfsClient';
+import { ProposalAdapter } from 'utils/ProposalAdapter';
 
 export default function BeneficiaryProposalPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [proposals, setProposals] = useState<Proposal[]>([]);
-
   useEffect(() => {
     if (contracts) {
-      getProposals(contracts, 0).then((res) => setProposals(res));
+      ProposalAdapter(contracts.beneficiaryGovernance, IpfsClient)
+        .getProposals(0)
+        .then((res) => setProposals(res));
     }
   }, [contracts]);
 

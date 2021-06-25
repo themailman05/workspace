@@ -1,7 +1,11 @@
 import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
 import { BeneficiaryApplication } from 'interfaces/interfaces';
+export interface IIpfsClient {
+  get: (cid: string) => Promise<BeneficiaryApplication>;
+  add: (beneficiaryApplication: BeneficiaryApplication) => Promise<string>;
+}
 
-export const IpfsClient = () => {
+export const IpfsClient = (): IIpfsClient => {
   return {
     get: async (cid: string): Promise<BeneficiaryApplication> => {
       const beneficiaryApplication: BeneficiaryApplication = await fetch(
