@@ -37,7 +37,18 @@ export default function ProposalGrid({
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
-      <CardGridHeader {...proposalType} />
+      <CardGridHeader
+        title={
+          proposalType === ProposalType.Nomination
+            ? 'Eligible Beneficiaries'
+            : 'Takedown Proposals'
+        }
+        subtitle={
+          proposalType === ProposalType.Nomination
+            ? 'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations.'
+            : 'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
+        }
+      />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
         <div className="relative text-gray-600 focus-within:text-gray-400 ">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">

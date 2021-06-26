@@ -11,7 +11,7 @@ import { BeneficiaryApplication } from 'interfaces/interfaces';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { formatAndRoundBigNumber } from '@popcorn/utils/src/formatBigNumber'
+import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
 import { IpfsClient } from 'utils/IpfsClient';
 import { defaultFormData, FormStepProps } from './ProposalForm';
 

@@ -32,7 +32,7 @@ export default function ProposalCard({
             missionStatement={proposal?.application.missionStatement}
           />
           <div className="flex-shrink-0 ">
-            <VotingInformation {...(proposal as Proposal)} />
+            <VotingInformation {...proposal} />
           </div>
         </a>
       </Link>

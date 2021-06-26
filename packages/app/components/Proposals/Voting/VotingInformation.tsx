@@ -1,6 +1,8 @@
-import { Proposal } from 'interfaces/interfaces';
-import { formatAndRoundBigNumber } from '@popcorn/utils/src/formatBigNumber';
+import { Proposal, Status } from 'interfaces/interfaces';
+import {
 
+  formatAndRoundBigNumber,
+} from 'utils/formatBigNumber';
 interface IVotingRow {
   name: string;
   value: string;
@@ -18,9 +20,10 @@ function VotingRow(data: IVotingRow): JSX.Element {
 }
 
 export default function VotingInformation(proposal: Proposal): JSX.Element {
+  console.log(proposal);
   return (
     <div>
-      <VotingRow name={'Status'} value={String(proposal.status)} />
+      <VotingRow name={'Status'} value={Status[proposal.status]} />
       <VotingRow
         name={'Voting Deadline'}
         value={proposal.stageDeadline.toLocaleString()}

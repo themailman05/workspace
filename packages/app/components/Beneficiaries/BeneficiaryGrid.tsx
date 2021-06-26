@@ -18,6 +18,7 @@ export default function BeneficiaryGrid({
   title,
 }: BeneficiaryGridProps) {
   const [searchFilter, setSearchFilter] = useState<string>('');
+
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
