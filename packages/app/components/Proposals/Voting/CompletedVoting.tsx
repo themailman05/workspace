@@ -1,4 +1,4 @@
-import { Proposal } from 'interfaces/interfaces';
+import { Proposal, ProposalType } from 'interfaces/interfaces';
 
 export default function CompletedVoting(proposal: Proposal): JSX.Element {
   return (
@@ -8,12 +8,12 @@ export default function CompletedVoting(proposal: Proposal): JSX.Element {
           {proposal?.votes?.for > proposal?.votes?.against ? (
             <div>
               <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-                {proposal.proposalType === 1
+                {proposal.proposalType === ProposalType.Takedown
                   ? 'The beneficiary takedown proposal passed.'
                   : 'Beneficiary passed nomination proposal process.'}
               </p>
               <p className="mb-4 text-base font-medium text-gray-900 text-center">
-                {proposal.proposalType === 1
+                {proposal.proposalType === ProposalType.Takedown
                   ? 'It is now ineligible to receive grants.'
                   : 'It is now eligible to receive grants.'}
               </p>
@@ -21,12 +21,12 @@ export default function CompletedVoting(proposal: Proposal): JSX.Element {
           ) : (
             <div>
               <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-                {proposal.proposalType === 1
+                {proposal.proposalType === ProposalType.Takedown
                   ? 'Beneficiary did not pass the takedown proposal process.'
                   : 'Beneficiary did not pass nomination proposal process.'}
               </p>
               <p className="mb-4 text-base font-medium text-gray-900 text-center">
-                {proposal.proposalType === 1
+                {proposal.proposalType === ProposalType.Takedown
                   ? 'It remains eligible to receive grants.'
                   : 'It is ineligible to receive grants.'}
               </p>

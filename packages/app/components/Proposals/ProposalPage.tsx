@@ -16,9 +16,7 @@ import { Proposal, ProposalType } from 'interfaces/interfaces';
 import React from 'react';
 import Voting from './Voting/Voting';
 
-export default function ProposalPage({
-  proposalType: ProposalType,
-}): JSX.Element {
+export default function ProposalPage(proposalType): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [proposal, setProposal] = useState<Proposal>();
   const [proposalId, setProposalId] = useState<string>('');

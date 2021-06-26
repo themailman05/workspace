@@ -16,7 +16,11 @@ import {
   TakedownStageExplanations,
 } from './StageExplanations';
 
-export default function ProposalGrid(proposalType: ProposalType): JSX.Element {
+export default function ProposalGrid({
+  proposalType,
+}: {
+  proposalType: ProposalType;
+}): JSX.Element {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
@@ -47,7 +51,7 @@ export default function ProposalGrid(proposalType: ProposalType): JSX.Element {
               placeholder={
                 'Search ' +
                 `${
-                  proposalType === 0
+                  proposalType === ProposalType.Nomination
                     ? 'Eligible Beneficiaries'
                     : 'Takedown Proposals'
                 }`
@@ -65,7 +69,7 @@ export default function ProposalGrid(proposalType: ProposalType): JSX.Element {
                 setSingleActionModal({
                   title: 'Beneficiary Nomination Proposal Timeline',
                   content:
-                    proposalType === 0 ? (
+                    proposalType === ProposalType.Nomination ? (
                       <ProposalStageExplanations />
                     ) : (
                       <TakedownStageExplanations />

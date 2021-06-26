@@ -2,7 +2,7 @@ import { RadioGroup } from '@headlessui/react';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, Status } from 'interfaces/interfaces';
+import { Proposal, ProposalType, Status } from 'interfaces/interfaces';
 import { useContext, useState } from 'react';
 
 enum VoteOptions {
@@ -25,9 +25,9 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
             The organization is currently in the first phase of{' '}
-            {proposal.proposalType === 1 ? 'takedown' : ''} voting, users have
+            {proposal.proposalType === ProposalType.Takedown ? 'takedown' : ''} voting, users have
             48 hours to cast their vote. If the beneficiary{' '}
-            {proposal.proposalType === 1 ? 'takedown' : ''} proposal passes with
+            {proposal.proposalType === ProposalType.Takedown ? 'takedown' : ''} proposal passes with
             a majority, the process moves onto the challenge period.
           </p>
         </span>
@@ -76,7 +76,7 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposal.proposalType === 1
+                      {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would become ineligible for grants'
                         : 'Beneficiary would become eligible for grants'}
                     </RadioGroup.Description>
@@ -119,7 +119,7 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposal.proposalType === 1
+                      {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would remain eligible for grants'
                         : 'Beneficiary would be not become eligible for grants'}
                     </RadioGroup.Description>

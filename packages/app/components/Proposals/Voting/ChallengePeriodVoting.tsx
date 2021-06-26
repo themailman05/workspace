@@ -1,7 +1,7 @@
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, Status } from 'interfaces/interfaces';
+import { Proposal, ProposalType, Status } from 'interfaces/interfaces';
 import { useContext } from 'react';
 
 export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
@@ -18,7 +18,7 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
             {proposal.application?.organizationName}{' '}
-            {proposal.proposalType === 1
+            {proposal.proposalType === ProposalType.Takedown
               ? `is in the second phase of takedown voting, known
             as the challenge period. Here, users are able to vote to veto the
             takedown proposal. This additional phase prevents exploits where a
@@ -33,7 +33,7 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            {proposal.proposalType === 1
+            {proposal.proposalType === ProposalType.Takedown
               ? `At the end of the challenge period, if the takedown proposal
             receives more yes votes than no votes, the elected organization will
             become ineligible to receive grants.`
@@ -52,7 +52,9 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
               setDualActionModal({
                 //TODO add real text
                 content: `Confirm your veto vote for ${
-                  proposal.proposalType === 1 ? 'the takedown of' : ''
+                  proposal.proposalType === ProposalType.Takedown
+                    ? 'the takedown of'
+                    : ''
                 } ${
                   proposal.application.organizationName
                 }. Your vote will lock x tokens for the duration of the nomination process. You will not be able to cancel your vote once you confirm \
@@ -73,7 +75,7 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
             );
           }}
         >
-          {proposal.proposalType === 1
+          {proposal.proposalType === ProposalType.Takedown
             ? 'Veto Takedown Proposal Vote'
             : 'Veto Proposal Vote'}
         </button>
