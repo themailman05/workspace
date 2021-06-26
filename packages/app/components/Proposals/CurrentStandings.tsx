@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import {
   bigNumberToNumber,
   formatAndRoundBigNumber,
-} from 'utils/formatBigNumber';
+} from '@popcorn/utils/src/formatBigNumber'
 
 const getTimeLeft = (stageDeadline: Date): string => {
   const date1 = DateTime.fromISO(new Date().toISOString());

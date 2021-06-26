@@ -3,16 +3,16 @@ import { Proposal, ProposalType } from 'interfaces/interfaces';
 import { IIpfsClient } from './IpfsClient';
 import addIpfsDataToProposal from './addIpfsDataToProposal';
 
-export const ProposalAdapter = (
+export const BeneficiaryGovernanceAdapter = (
   contract: BeneficiaryGovernance,
   IpfsClient: () => IIpfsClient,
 ) => {
   return {
-    getProposal: async (id): Promise<Proposal> => {
+    getProposal: async (id: string): Promise<Proposal> => {
       const proposal = await contract.proposals(Number(id));
       return await addIpfsDataToProposal(IpfsClient, proposal, Number(id));
     },
-    getProposals: async (proposalType: ProposalType): Promise<Proposal[]> => {
+    getAllProposals: async (proposalType: ProposalType): Promise<Proposal[]> => {
       const numProposals = await contract.getNumberOfProposals();
       const proposalIds = new Array(numProposals.toNumber()).fill(undefined);
       const allProposals = await Promise.all(

@@ -1,8 +1,7 @@
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext, useEffect, useState } from 'react';
 import { IpfsClient } from 'utils/IpfsClient';
-import { ProposalAdapter } from 'utils/ProposalAdapter';
-
+import { BeneficiaryGovernanceAdapter } from 'utils/BeneficiaryGovernanceAdapter';
 import Divider from 'components/CommonComponents/Divider';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import ImpactReportLinks from 'components/CommonComponents/ImpactReportLinks';
@@ -25,7 +24,7 @@ export default function ProposalPage(proposalType): JSX.Element {
   }, []);
   useEffect(() => {
     if (contracts) {
-      ProposalAdapter(contracts.beneficiaryGovernance, IpfsClient)
+      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
         .getProposal(proposalId)
         .then((res) => setProposal(res));
     }

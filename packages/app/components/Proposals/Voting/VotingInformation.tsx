@@ -1,6 +1,5 @@
-
 import { Proposal } from 'interfaces/interfaces';
-import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
+import { formatAndRoundBigNumber } from '@popcorn/utils/src/formatBigNumber';
 
 interface IVotingRow {
   name: string;

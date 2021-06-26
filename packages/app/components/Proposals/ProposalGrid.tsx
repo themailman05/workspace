@@ -10,7 +10,7 @@ import * as Icon from 'react-feather';
 import ProposalCard from './ProposalCard';
 import { ContractsContext } from 'context/Web3/contracts';
 import { IpfsClient } from 'utils/IpfsClient';
-import { ProposalAdapter } from 'utils/ProposalAdapter';
+import { BeneficiaryGovernanceAdapter } from 'utils/BeneficiaryGovernanceAdapter';
 import {
   ProposalStageExplanations,
   TakedownStageExplanations,
@@ -28,8 +28,8 @@ export default function ProposalGrid({
   const [proposals, setProposals] = useState<Proposal[]>([]);
   useEffect(() => {
     if (contracts) {
-      ProposalAdapter(contracts.beneficiaryGovernance, IpfsClient)
-        .getProposals(proposalType)
+      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+        .getAllProposals(proposalType)
         .then((res) => setProposals(res));
     }
   }, [contracts]);
