@@ -1,6 +1,7 @@
 import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
 import { BeneficiaryApplication } from 'interfaces/interfaces';
 import { useContext, useEffect, useState } from 'react';
+import { BeneficiaryAdapter } from 'utils/BeneficiaryAdapter';
 import { IpfsClient } from 'utils/IpfsClient';
 import { ContractsContext } from '../../context/Web3/contracts';
 
@@ -10,29 +11,11 @@ export default function BeneficiaryPage(): JSX.Element {
     [],
   );
 
-  async function getBeneficiaries() {
-    const beneficiaryAddresses =
-      await contracts.beneficiary.getBeneficiaryList();
-    const ipfsHashes = await Promise.all(
-      beneficiaryAddresses.map(async (address) => {
-        return contracts.beneficiary.getBeneficiary(address);
-      }),
-    );
-    const beneficiaryData = await (
-      await Promise.all(
-        ipfsHashes.map(async (cid) => await IpfsClient().get(cid)),
-      )
-    ).map((beneficiaryApplication) => {
-      // TODO: Remove temporary address assignment
-      beneficiaryApplication.beneficiaryAddress = beneficiaryAddresses[0];
-      return beneficiaryApplication;
-    });
-    setBeneficiaries(beneficiaryData);
-  }
-
   useEffect(() => {
     if (contracts) {
-      getBeneficiaries();
+      BeneficiaryAdapter(contracts.beneficiary, IpfsClient)
+        .getAllBeneficiaryApplications()
+        .then((beneficiaries) => setBeneficiaries(beneficiaries));
     }
   }, [contracts]);
 

@@ -33,7 +33,6 @@ export default function ProposalGrid({
         .then((res) => setProposals(res));
     }
   }, [contracts]);
-
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
