@@ -169,19 +169,25 @@ module.exports = {
           },
         },
       },
-      {
-        version: "0.6.12",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 1000,
-          },
-        },
-      },
     ],
   },
   networks: {
+    mainnet: {
+      chainId: 1,
+      url: process.env.RPC_URL,
+      accounts: [process.env.PRIVATE_KEY]
+    },
     hardhat: {
+    },
+    rinkeby: {
+      url: process.env.RPC_URL,
+      accounts: [process.env.PRIVATE_KEY].concat(
+        (process.env.BENEFICIARY_PRIVATE_KEYS &&
+          process.env.BENEFICIARY_PRIVATE_KEYS.split(",")) ||
+          []
+      ),
+      gas: 10000000,
+      gasPrice: 10000000000,
     },
   },
   gasReporter: {
