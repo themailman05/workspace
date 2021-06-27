@@ -137,7 +137,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   function withdrawAccruedFees() external onlyOwner {
     uint256 balance = balanceOf(address(this));
     _burn(address(this), balance);
-    _withdraw(address(this), rewardsManager, balance, true);
+    _withdraw(address(this), rewardsManager, valueFor(balance), true);
   }
 
   function pricePerPoolToken() public view returns (uint256) {
