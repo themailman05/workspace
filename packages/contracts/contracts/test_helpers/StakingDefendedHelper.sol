@@ -10,10 +10,7 @@ contract StakingDefendedHelper {
   IERC20 public token;
   Staking public staking;
 
-  constructor(
-    IERC20 _token,
-    Staking _staking
-  ) public {
+  constructor(IERC20 _token, Staking _staking) public {
     token = _token;
     staking = _staking;
   }

@@ -10,10 +10,7 @@ contract PoolDefendedHelper {
   IERC20 public token;
   Pool public pool;
 
-  constructor(
-    IERC20 _token,
-    Pool _pool
-  ) public {
+  constructor(IERC20 _token, Pool _pool) public {
     token = _token;
     pool = _pool;
   }
@@ -22,5 +19,4 @@ contract PoolDefendedHelper {
     token.approve(address(pool), amount);
     pool.deposit(amount);
   }
-
 }

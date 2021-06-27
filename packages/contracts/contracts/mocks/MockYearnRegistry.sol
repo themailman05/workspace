@@ -2,9 +2,7 @@
 
 pragma solidity >=0.6.0 <0.8.0;
 
-
 contract MockYearnRegistry {
-
   address mockYearnVault;
 
   constructor(address mockYearnVault_) {
@@ -19,8 +17,11 @@ contract MockYearnRegistry {
     return 1;
   }
 
-  function vaults(address token, uint256 deploymentId) external view returns (address) {
+  function vaults(address token, uint256 deploymentId)
+    external
+    view
+    returns (address)
+  {
     return mockYearnVault;
   }
-
 }

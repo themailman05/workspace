@@ -73,12 +73,11 @@ async function deployContracts(): Promise<Contracts> {
     Staking.interface.format() as any
   );
 
-  const PoolDefendedHelper = await ethers.getContractFactory("PoolDefendedHelper");
+  const PoolDefendedHelper = await ethers.getContractFactory(
+    "PoolDefendedHelper"
+  );
   const defendedHelper = await (
-    await PoolDefendedHelper.deploy(
-      mockToken.address,
-      pool.address
-    )
+    await PoolDefendedHelper.deploy(mockToken.address, pool.address)
   ).deployed();
 
   await mockToken.mint(defendedHelper.address, DepositorInitial);
@@ -128,11 +127,11 @@ describe("Pool", function () {
 
   describe("pool token", async function () {
     it("has a token name", async function () {
-      expect(await contracts.pool.name()).to.equal("Popcorn Pool");
+      expect(await contracts.pool.name()).to.equal("Popcorn Token Pool");
     });
 
     it("has a token symbol", async function () {
-      expect(await contracts.pool.symbol()).to.equal("popPool");
+      expect(await contracts.pool.symbol()).to.equal("popToken");
     });
 
     it("uses 18 decimals", async function () {

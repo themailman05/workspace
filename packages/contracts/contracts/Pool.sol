@@ -11,6 +11,13 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./lib/AffiliateToken.sol";
 import "./Defended.sol";
 
+interface IERC20Metadata is IERC20 {
+  function name() external view returns (string memory);
+
+  function symbol() external view returns (string memory);
+
+  function decimals() external view returns (uint8);
+}
 
 contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   using SafeMath for uint256;
@@ -42,7 +49,17 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     address token_,
     address yearnRegistry_,
     address rewardsManager_
-  ) public AffiliateToken(token_, yearnRegistry_, "Popcorn Pool", "popPool") {
+  )
+    public
+    AffiliateToken(
+      token_,
+      yearnRegistry_,
+      string(
+        abi.encodePacked("Popcorn ", IERC20Metadata(token_).name(), " Pool")
+      ),
+      string(abi.encodePacked("pop", IERC20Metadata(token_).symbol()))
+    )
+  {
     require(address(yearnRegistry_) != address(0));
     require(address(token_) != address(0));
     require(rewardsManager_ != address(0));
