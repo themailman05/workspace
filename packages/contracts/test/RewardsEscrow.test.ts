@@ -18,6 +18,7 @@ let owner: SignerWithAddress,
 let contracts: Contracts;
 let popBalance: BigNumber;
 const stakingFund = parseEther("10");
+const dayInSec = 86400
 
 async function deployContracts(): Promise<Contracts> {
   const mockPop = (await (
@@ -145,10 +146,10 @@ describe("RewardsEscrow", function () {
         ).to.equal(lockedAmount);
         expect(
           escrowedBalance.start >
-            BigNumber.from(currentBlock.timestamp + 86400 * 30 * 3)
+            BigNumber.from(currentBlock.timestamp + (90 * dayInSec))
         ).to.equal(true);
         expect(escrowedBalance.end).to.equal(
-          escrowedBalance.start.add(86400 * 30 * 3)
+          escrowedBalance.start.add(90 * dayInSec)
         );
       });
       it("should extend the vesting end time and locked funds when locking again", async function () {
@@ -167,7 +168,7 @@ describe("RewardsEscrow", function () {
         );
         expect(escrowedBalance2.start).to.equal(escrowedBalance1.start);
         expect(
-          escrowedBalance2.end > escrowedBalance2.start.add(86400 * 30 * 3)
+          escrowedBalance2.end > escrowedBalance2.start.add(90)
         ).to.equal(true);
       });
     });
@@ -177,7 +178,7 @@ describe("RewardsEscrow", function () {
         const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
           owner.address
         );
-        ethers.provider.send("evm_increaseTime", [86400 * 30 * 3 + 1]);
+        ethers.provider.send("evm_increaseTime", [91 * dayInSec]);
         ethers.provider.send("evm_mine", []);
         await contracts.staking.connect(owner).getReward();
         const lockedAmount = parseEther("6.666655643738761606");
@@ -189,7 +190,7 @@ describe("RewardsEscrow", function () {
         );
         expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true);
         expect(escrowedBalance2.end).to.equal(
-          escrowedBalance2.start.add(86400 * 30 * 3)
+          escrowedBalance2.start.add(90 * dayInSec)
         );
       });
     });
@@ -202,7 +203,7 @@ describe("RewardsEscrow", function () {
         const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
           owner.address
         );
-        ethers.provider.send("evm_increaseTime", [86400 * 30 * 6 + 1]);
+        ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
         ethers.provider.send("evm_mine", []);
         const vested1 = await contracts.rewardsEscrow.getVested(owner.address);
         expect(vested1).to.equal(lockedAmount);
@@ -216,7 +217,7 @@ describe("RewardsEscrow", function () {
         expect(lockedBalance).to.equal(lockedAmount2.add(lockedAmount));
         expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true);
         expect(escrowedBalance2.end).to.equal(
-          escrowedBalance2.start.add(86400 * 30 * 3)
+          escrowedBalance2.start.add(90 * dayInSec)
         );
       });
     });
@@ -237,7 +238,7 @@ describe("RewardsEscrow", function () {
       await contracts.staking.connect(owner).getReward();
       popBalance = await contracts.mockPop.balanceOf(owner.address);
 
-      ethers.provider.send("evm_increaseTime", [86400 * 30 * 4]);
+      ethers.provider.send("evm_increaseTime", [120 * dayInSec]);
       ethers.provider.send("evm_mine", []);
 
       await contracts.rewardsEscrow.connect(owner).claim();
@@ -245,7 +246,7 @@ describe("RewardsEscrow", function () {
         parseEther("494.555547227119704082")
       );
 
-      ethers.provider.send("evm_increaseTime", [86400 * 30 * 2]);
+      ethers.provider.send("evm_increaseTime", [60 * dayInSec]);
       ethers.provider.send("evm_mine", []);
 
       const locked3 = await contracts.rewardsEscrow.getLocked(owner.address);
