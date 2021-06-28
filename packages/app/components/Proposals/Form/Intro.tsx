@@ -42,9 +42,10 @@ export default function Intro({
                         title: 'A connected wallet',
                         content: `A crypto wallet is a piece of software that 
                         is able to transact with blockchains. Wallets let holders store
-                        and trade various cryptocurrencies and tokens. In order
-                        to submit a BNP, you'll need to connect a wallet with atleast
-                        2000 POP tokens.`,
+                        and trade various cryptocurrencies and tokens. The most
+                        common ways to connect wallets are through browser
+                        extensions such as MetaMask on desktop or by visiting
+                        from a dApp browser on mobile. `,
                         visible: true,
                         onConfirm: {
                           label: 'OK',
