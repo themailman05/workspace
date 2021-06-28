@@ -2,12 +2,12 @@ import {
   ElectionMetadata,
   GrantElectionAdapter,
 } from '@popcorn/utils/Contracts';
+import { BeneficiaryApplication } from '@popcorn/utils/';
+import CardBody from 'components/CommonComponents/CardBody';
 import GrantFunded from 'components/Grants/GrantFunded';
 import VoteSlider from 'components/Grants/VoteSlider';
-import { BaseBeneficiary, BaseProposal } from 'interfaces/beneficiaries';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
-import VotingInformation from './Proposals/Voting/VotingInformation';
 
 export interface ElectionProps {
   election: ElectionMetadata;
@@ -20,75 +20,59 @@ export interface ElectionProps {
 }
 
 export interface BeneficiaryCardProps {
-  displayData: BaseBeneficiary | BaseProposal;
+  beneficiary: BeneficiaryApplication;
   electionProps?: ElectionProps;
-  isProposal?: boolean;
-  isTakedown?: boolean;
+}
+
+export interface GrantSliderProps {
+  beneficiary: BeneficiaryApplication;
+  electionProps: ElectionProps;
+}
+
+function GrantSlider({
+  beneficiary,
+  electionProps,
+}: GrantSliderProps): JSX.Element {
+  return (
+    <div className="mt-6 flex items-center">
+      <div className="flex-shrink-0">
+        {GrantElectionAdapter().isActive(electionProps.election) ? (
+          <VoteSlider beneficiary={beneficiary} electionProps={electionProps} />
+        ) : (
+          <GrantFunded
+            beneficiary={beneficiary}
+            election={electionProps.election}
+            totalVotes={electionProps.totalVotes}
+          />
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function BeneficiaryCard({
-  displayData,
+  beneficiary,
   electionProps,
-  isProposal = false,
-  isTakedown = false,
 }: BeneficiaryCardProps): JSX.Element {
   return (
     <div
-      key={displayData?.ethereumAddress}
+      key={beneficiary.beneficiaryAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
-      <Link
-        href={`${
-          isTakedown
-            ? '/beneficiary-proposals/takedowns/'
-            : isProposal
-            ? '/beneficiary-proposals/'
-            : '/beneficiaries/'
-        }${displayData.ethereumAddress}`}
-        passHref
-      >
+      <Link href={`/beneficiaries/${beneficiary.beneficiaryAddress}`} passHref>
         <a>
-          <div className="flex-shrink-0">
-            <img
-              className="h-48 w-full object-cover"
-              src={`${process.env.IPFS_URL}${displayData?.profileImage}`}
-              alt=""
-            />
-          </div>
-          <div className="flex-1 bg-white p-6 flex flex-col justify-between">
-            <div className="flex-1">
-              <p className="text-xl font-semibold text-gray-900">
-                {displayData?.name}
-              </p>
-              <p className="mt-3 text-base text-gray-500">
-                {displayData?.missionStatement}
-              </p>
-            </div>
-          </div>
+          <CardBody
+            imgUrl={`${process.env.IPFS_URL}${beneficiary?.files.profileImage}`}
+            name={beneficiary.organizationName}
+            missionStatement={beneficiary?.missionStatement}
+          />
         </a>
       </Link>
-      <div className="mt-6 flex items-center">
-        <div className="flex-shrink-0">
-          {isProposal ? (
-            <VotingInformation {...(displayData as BaseProposal)} />
-          ) : (
-            <>
-              {GrantElectionAdapter().isActive(electionProps.election) ? (
-                <VoteSlider
-                  beneficiary={displayData as BaseBeneficiary}
-                  electionProps={electionProps}
-                />
-              ) : (
-                <GrantFunded
-                  beneficiary={displayData}
-                  election={electionProps.election}
-                  totalVotes={electionProps.totalVotes}
-                />
-              )}
-            </>
-          )}
-        </div>
-      </div>
+      {electionProps ? (
+        <GrantSlider beneficiary={beneficiary} electionProps={electionProps} />
+      ) : (
+        <></>
+      )}
     </div>
   );
 }

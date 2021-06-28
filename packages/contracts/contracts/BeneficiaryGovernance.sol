@@ -376,13 +376,4 @@ contract BeneficiaryGovernance is Governed {
   {
     return proposals[proposalId].voters[voter];
   }
-
-  /**
-   * @notice return proposalId given address
-   * @param  beneficiary address of beneficiary
-   * @return uint256
-   */
-  function getProposalId(address beneficiary) public view returns (uint256) {
-    return beneficiaryProposals[beneficiary];
-  }
 }

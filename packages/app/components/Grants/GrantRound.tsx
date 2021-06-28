@@ -1,6 +1,6 @@
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
-import { BaseBeneficiary } from 'interfaces/beneficiaries';
+import { Beneficiary } from 'interfaces/beneficiaries';
 import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
 import { useEffect, useRef, useState } from 'react';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
@@ -39,7 +39,7 @@ export default function GrantRound({
   const ref = useRef(null);
   const [votes, setVotes] = useState<Votes>({ total: 0 });
   const [beneficiariesWithMetadata, setBeneficiaries] = useState<
-    BaseBeneficiary[]
+    Beneficiary[]
   >([]);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function GrantRound({
     }
   }, [election]);
 
-  const getBeneficiary = (address: string): BaseBeneficiary => {
+  const getBeneficiary = (address: string): Beneficiary => {
     const beneficiary =
       beneficiariesHashMap[process.env.CHAIN_ID || '31337'][
         address.toLowerCase()
