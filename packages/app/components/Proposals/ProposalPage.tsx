@@ -13,24 +13,22 @@ import {
   BeneficiaryGovernanceAdapter,
   IpfsClient,
   Proposal,
-  ProposalType,
 } from '@popcorn/utils/';
 import React from 'react';
 import Voting from './Voting/Voting';
 import { useRouter } from 'next/router';
 
-export default function ProposalPage(proposalType): JSX.Element {
+export default function ProposalPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const router = useRouter();
   const [proposal, setProposal] = useState<Proposal>();
-  const [proposalId, setProposalId] = useState<string>('');
+  const [proposalId, setProposalId] = useState<string>();
   useEffect(() => {
     const { id } = router.query;
-    setProposalId(window.location.pathname.split('/').pop());
-    // setProposalId(router.query.id as string);
-  }, []);
+    if (id && id !== proposalId) setProposalId(id as string);
+  }, [router, proposalId]);
   useEffect(() => {
-    if (contracts) {
+    if (contracts?.beneficiaryGovernance && proposalId) {
       BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
         .getProposal(proposalId)
         .then((res) => setProposal(res));
