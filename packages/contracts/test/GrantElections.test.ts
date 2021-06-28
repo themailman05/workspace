@@ -304,7 +304,7 @@ describe("GrantElections", function () {
       const incentiveBudget = await contracts.grantElections.incentiveBudget();
       const balance = await contracts.mockPop.balanceOf(owner.address);
       expect(incentiveBudget).to.equal(parseEther("4000"));
-      expect(balance).to.equal(parseEther("500"));
+      expect(balance).to.equal(parseEther("0"));
     });
   });
 
@@ -436,7 +436,7 @@ describe("GrantElections", function () {
         contracts.grantElections.initialize(GRANT_TERM.QUARTER)
       ).to.be.revertedWith("election not yet finalized");
     });
-    it.only("should allow to create a new election for a term when the old one is finalized", async function () {
+    it("should allow to create a new election for a term when the old one is finalized", async function () {
       const merkleRoot = ethers.utils.formatBytes32String("merkleRoot");
       await contracts.grantElections
       .connect(governance)

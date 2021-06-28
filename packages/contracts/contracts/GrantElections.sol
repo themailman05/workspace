@@ -264,7 +264,8 @@ contract GrantElections is Governed {
         randomNumberConsumer.getRandomNumber(
           uint256(
             keccak256(abi.encode(block.timestamp, blockhash(block.number)))
-          )
+          ),
+          _electionId
         );
       }
     } else if (
@@ -345,7 +346,9 @@ contract GrantElections is Governed {
       "election must be closed"
     );
     require(_election.randomNumber == 0, "randomNumber already set");
-    _election.randomNumber = randomNumberConsumer.getRandomResult();
+    uint256 randomNumber = randomNumberConsumer.getRandomResult(_electionId);
+    require(randomNumber != 0, "random number not yet created");
+    _election.randomNumber = randomNumber;
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */

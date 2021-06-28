@@ -19,11 +19,8 @@ export function calculateVaultShare(
   if (shareType === ShareType.DynamicWeight) {
     let totalVotes = BigNumber.from(0);
     awardees.forEach((awardee) => (totalVotes = totalVotes.add(awardee[1])));
-    console.log(totalVotes.toString())
     const a = awardees[0][1].mul(parseEther("100")).div(totalVotes)
     const b = awardees[1][1].mul(parseEther("100")).div(totalVotes)
-    console.log(a.toString())
-    console.log(b.toString())
     awardees.forEach(
       (awardee) =>
         (awardee[1] = awardee[1].mul(parseEther("100")).div(totalVotes))
@@ -108,8 +105,8 @@ export default async function finalizeElection(
   console.log("and the merkle root is: " + merkleRoot);
 
   console.log("finalizing grant election...");
-  /*await grantElection
+  await grantElection
     .connect(signer)
-    .proposeFinalization(args.term, merkleRoot);*/
+    .proposeFinalization(args.term, merkleRoot);
   console.log("grant election finalized");
 }

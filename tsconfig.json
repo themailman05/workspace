@@ -33,5 +33,9 @@
       "@popcorn/contracts": ["../contracts/src"],
       "@popcorn/contracts/*": ["../contracts/src/*"]
     }
+  },
+  "ts-node": {
+    "transpileOnly": false,
+    "typeCheck": true
   }
 }

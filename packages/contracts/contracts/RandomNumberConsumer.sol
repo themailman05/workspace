@@ -16,7 +16,8 @@ contract RandomNumberConsumer is VRFConsumerBase {
   bytes32 internal keyHash;
   uint256 internal fee;
 
-  uint256 public randomResult;
+  uint256[] public randomResult;
+  mapping(bytes32 => uint256) requestToElection;
 
   /**
    * Constructor inherits VRFConsumerBase
@@ -35,12 +36,20 @@ contract RandomNumberConsumer is VRFConsumerBase {
     fee = 0.1 * 10**18; // 0.1 LINK
   }
 
+  function getRandomResult(uint256 electionId) public view returns (uint256) {
+    return randomResult[electionId];
+  }
+
   /**
    * Requests randomness from a user-provided seed
    */
-  function getRandomNumber(uint256 userProvidedSeed) public {
+  function getRandomNumber(uint256 userProvidedSeed, uint256 electionId)
+    public
+  {
     require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-    requestRandomness(keyHash, fee, userProvidedSeed);
+    requestToElection[
+      requestRandomness(keyHash, fee, userProvidedSeed)
+    ] = electionId;
   }
 
   /**
@@ -51,7 +60,8 @@ contract RandomNumberConsumer is VRFConsumerBase {
     override
   {
     //randomResult should not be 0
-    randomResult = randomness.add(1);
+    randomness = randomness.add(1);
+    randomResult[requestToElection[requestId]] = randomness;
   }
 
   function deposit() public payable {}
