@@ -20,7 +20,7 @@ export default function SingleBeneficiaryPage(): JSX.Element {
     if (id && id !== beneficiaryAddress) setBeneficiaryAddress(id as string);
   }, [router, beneficiaryAddress]);
   useEffect(() => {
-    if (contracts) {
+    if (contracts?.beneficiary && beneficiaryAddress) {
       BeneficiaryRegistryAdapter(contracts.beneficiary, IpfsClient)
         .getBeneficiaryApplication(beneficiaryAddress)
         .then((beneficiaryApplication) =>
@@ -28,9 +28,9 @@ export default function SingleBeneficiaryPage(): JSX.Element {
         );
     }
   }, [contracts, beneficiaryAddress]);
-  return beneficiaryAddress !== undefined && beneficiary !== undefined ? (
-    <BeneficiaryPage beneficiary={beneficiary} />
-  ) : (
-    <Loading />
+  return (
+    (beneficiary && <BeneficiaryPage beneficiary={beneficiary} />) || (
+      <Loading />
+    )
   );
 }
