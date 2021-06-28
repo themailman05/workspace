@@ -22,7 +22,7 @@ export default function SingleBeneficiaryPage(): JSX.Element {
   useEffect(() => {
     if (contracts) {
       BeneficiaryRegistryAdapter(contracts.beneficiary, IpfsClient)
-        .getBeneficiaryApplication(router.query.id as string)
+        .getBeneficiaryApplication(beneficiaryAddress)
         .then((beneficiaryApplication) =>
           setBeneficiary(beneficiaryApplication),
         );
