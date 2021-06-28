@@ -29,7 +29,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   uint256 public rewardBalance;
   uint256 public totalVaultsBudget;
   mapping(bytes32 => Vault) public vaults;
-  mapping(address => bytes32[]) public userVaults;
+  mapping(address => bytes32[]) public userVaults; 
 
   /* ========== EVENTS ========== */
   event RewardBudgetChanged(uint256 amount);
@@ -134,13 +134,14 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   }
 
   //TODO delete all flag?
-  function claimReward(bytes32 vaultId_, uint256 index_)
+  function claimReward(uint256 index_)
     external
     nonReentrant
     vaultExists(vaultId_)
   {
+    //TODO add implementation with only index
     require(vaults[vaultId_].status == VaultStatus.Open, "vault is not open");
-    uint256 reward = _claimVaultReward(vaultId_, index_, msg.sender);
+    uint256 reward = _claimVaultReward(index_, msg.sender);
     require(reward <= rewardBalance, "not enough funds for payout");
 
     totalVaultsBudget = totalVaultsBudget.sub(reward);
@@ -154,7 +155,8 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   //TODO delete all flag?
   function claimRewards(
     bytes32[] calldata vaultIds_,
-    uint256[] calldata indices_
+    uint256[] calldata indices_,
+    uint8 deleteArray,
   ) external nonReentrant {
     require(
       vaultIds_.length < 20 || indices_.length < 20,
