@@ -1,5 +1,4 @@
 import { BigNumber } from "@ethersproject/bignumber";
-import { ethers } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import {
@@ -7,7 +6,6 @@ import {
   GrantElectionAdapter,
   ShareType,
 } from "../../utils/src/Contracts";
-import { GrantElections, GrantElections__factory } from "../typechain";
 import { merklize } from "./merkle";
 
 export type awardee = [string, BigNumber];
@@ -19,8 +17,8 @@ export function calculateVaultShare(
   if (shareType === ShareType.DynamicWeight) {
     let totalVotes = BigNumber.from(0);
     awardees.forEach((awardee) => (totalVotes = totalVotes.add(awardee[1])));
-    const a = awardees[0][1].mul(parseEther("100")).div(totalVotes)
-    const b = awardees[1][1].mul(parseEther("100")).div(totalVotes)
+    const a = awardees[0][1].mul(parseEther("100")).div(totalVotes);
+    const b = awardees[1][1].mul(parseEther("100")).div(totalVotes);
     awardees.forEach(
       (awardee) =>
         (awardee[1] = awardee[1].mul(parseEther("100")).div(totalVotes))
@@ -41,8 +39,8 @@ export function shuffleAwardees(
   awardees = awardees.slice(0, ranking);
   for (let i = 0; i < awardees.length; i++) {
     let n = i + (randomNumber % (awardees.length - i));
-    const temp = awardees[i]
-    awardees[i] = awardees[n]
+    const temp = awardees[i];
+    awardees[i] = awardees[n];
     awardees[n] = temp;
   }
   return awardees;
@@ -82,10 +80,10 @@ export default async function finalizeElection(
   console.log("finalize current grant election of term: " + args.term);
 
   const [signer] = await hre.ethers.getSigners();
-  const grantElection = new ethers.Contract(
-    process.env.ADDR_GRANT_ELECTION,
-    GrantElections__factory.abi
-  ) as GrantElections;
+  const grantElection = await hre.ethers.getContractAt(
+    "GrantElections",
+    process.env.ADDR_GRANT_ELECTION
+  );
 
   console.log("getting election meta data...");
   const electionMetaData: ElectionMetadata = await GrantElectionAdapter(
