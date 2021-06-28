@@ -7,4 +7,3 @@ export type { BeneficiaryApplication, Proposal } from './interfaces/interfaces';
 export { IpfsClient } from './IpfsClient/IpfsClient';
 export { BeneficiaryRegistryAdapter } from './Contracts/BeneficiaryRegistry/BeneficiaryRegistryAdapter';
 export { BeneficiaryGovernanceAdapter } from './Contracts/BeneficiaryGovernance/BeneficiaryGovernanceAdapter';
-  

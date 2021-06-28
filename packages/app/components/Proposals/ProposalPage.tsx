@@ -17,13 +17,17 @@ import {
 } from '@popcorn/utils/';
 import React from 'react';
 import Voting from './Voting/Voting';
+import { useRouter } from 'next/router';
 
 export default function ProposalPage(proposalType): JSX.Element {
   const { contracts } = useContext(ContractsContext);
+  const router = useRouter();
   const [proposal, setProposal] = useState<Proposal>();
   const [proposalId, setProposalId] = useState<string>('');
   useEffect(() => {
+    const { id } = router.query;
     setProposalId(window.location.pathname.split('/').pop());
+    // setProposalId(router.query.id as string);
   }, []);
   useEffect(() => {
     if (contracts) {
@@ -31,9 +35,11 @@ export default function ProposalPage(proposalType): JSX.Element {
         .getProposal(proposalId)
         .then((res) => setProposal(res));
     }
-  }, [contracts]);
+  }, [contracts, proposalId]);
   function getContent() {
-    return proposal !== undefined && Object.keys(proposal).length > 0 ? (
+    return proposalId !== undefined &&
+      proposal !== undefined &&
+      Object.keys(proposal).length > 0 ? (
       <React.Fragment>
         <ImageHeader {...proposal?.application} />
         <Voting {...proposal} />
