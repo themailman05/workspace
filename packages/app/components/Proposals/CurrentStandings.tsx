@@ -1,9 +1,12 @@
 import Divider from 'components/CommonComponents/Divider';
 import ProgressBar from 'components/ProgressBar';
-import { Proposal } from 'interfaces/interfaces';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
-import { bigNumberToNumber, formatAndRoundBigNumber } from 'utils/formatBigNumber';
+import {
+  bigNumberToNumber,
+  formatAndRoundBigNumber,
+} from '@popcorn/utils/formatBigNumber';
+import { Proposal } from '@popcorn/utils/';
 
 const getTimeLeft = (stageDeadline: Date): string => {
   const date1 = DateTime.fromISO(new Date().toISOString());

@@ -1,4 +1,5 @@
-import { BeneficiaryApplication, Proposal } from "interfaces/interfaces";
+
+import { BeneficiaryApplication, Proposal } from "@popcorn/utils";
 import { IIpfsClient } from "./IpfsClient";
 
 export default async function addIpfsDataToProposal(

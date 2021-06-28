@@ -7,13 +7,15 @@ import { store } from 'context/store';
 import { connectors } from 'context/Web3/connectors';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
-import { BeneficiaryApplication } from 'interfaces/interfaces';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
-import { IpfsClient } from 'utils/IpfsClient';
 import { defaultFormData, FormStepProps } from './ProposalForm';
+import {
+  BeneficiaryApplication,
+  IpfsClient,
+  formatAndRoundBigNumber,
+} from '@popcorn/utils/';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');

@@ -1,4 +1,4 @@
-import { Proposal, ProposalType } from 'interfaces/interfaces';
+import { Proposal, ProposalType } from '@popcorn/utils';
 
 export default function CompletedVoting(proposal: Proposal): JSX.Element {
   return (

@@ -1,7 +1,7 @@
 import { BeneficiaryGovernance } from '@popcorn/contracts/typechain';
-import { Proposal, ProposalType } from 'interfaces/interfaces';
-import { IIpfsClient } from './IpfsClient';
-import addIpfsDataToProposal from './addIpfsDataToProposal';
+import { IIpfsClient } from '../../IpfsClient/IpfsClient';
+import addIpfsDataToProposal from '../../IpfsClient/addIpfsDataToProposal';
+import { Proposal, ProposalType } from '@popcorn/utils';
 
 export const BeneficiaryGovernanceAdapter = (
   contract: BeneficiaryGovernance,

@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from 'interfaces/interfaces';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import * as Icon from 'react-feather';
 
 // TODO: Limit social media links to contents of beneficiaryProposal once we link to contracts

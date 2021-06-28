@@ -5,12 +5,16 @@ import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
-import { Proposal, ProposalType, Status } from 'interfaces/interfaces';
 import * as Icon from 'react-feather';
 import ProposalCard from './ProposalCard';
 import { ContractsContext } from 'context/Web3/contracts';
-import { IpfsClient } from 'utils/IpfsClient';
-import { BeneficiaryGovernanceAdapter } from 'utils/BeneficiaryGovernanceAdapter';
+import {
+  Proposal,
+  ProposalType,
+  Status,
+  IpfsClient,
+  BeneficiaryGovernanceAdapter,
+} from '@popcorn/utils';
 import {
   ProposalStageExplanations,
   TakedownStageExplanations,

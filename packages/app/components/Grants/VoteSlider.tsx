@@ -1,5 +1,5 @@
 import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
-import { BeneficiaryApplication } from 'interfaces/interfaces';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';

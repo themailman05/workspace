@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from 'interfaces/interfaces';
+import { BeneficiaryApplication } from '@popcorn/utils';
 
 export default function ImageHeader(
   beneficiary: BeneficiaryApplication,

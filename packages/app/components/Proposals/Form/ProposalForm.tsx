@@ -13,7 +13,7 @@ import Preview from './Preview';
 import NavigationButtons from './NavigationButtons';
 import SocialMedia from './SocialMedia';
 import { Toaster } from 'react-hot-toast';
-import { BeneficiaryApplication } from 'interfaces/interfaces';
+import { BeneficiaryApplication } from '@popcorn/utils';
 
 export interface Navigation {
   currentStep: number;

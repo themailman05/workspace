@@ -1,8 +1,8 @@
+import { useContext } from 'react';
+import { ContractsContext } from 'context/Web3/contracts';
+import { Proposal, ProposalType, Status } from '@popcorn/utils';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
-import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, ProposalType, Status } from 'interfaces/interfaces';
-import { useContext } from 'react';
 
 export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
   const { dispatch } = useContext(store);

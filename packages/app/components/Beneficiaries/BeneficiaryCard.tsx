@@ -2,10 +2,10 @@ import {
   ElectionMetadata,
   GrantElectionAdapter,
 } from '@popcorn/utils/Contracts';
+import { BeneficiaryApplication } from '@popcorn/utils/';
 import CardBody from 'components/CommonComponents/CardBody';
 import GrantFunded from 'components/Grants/GrantFunded';
 import VoteSlider from 'components/Grants/VoteSlider';
-import { BeneficiaryApplication } from 'interfaces/interfaces';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
 

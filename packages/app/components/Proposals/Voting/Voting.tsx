@@ -1,4 +1,4 @@
-import { Proposal, Status } from 'interfaces/interfaces';
+import { Proposal, Status } from '@popcorn/utils/';
 import CurrentStandings from '../CurrentStandings';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';

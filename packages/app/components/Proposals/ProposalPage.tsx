@@ -1,7 +1,5 @@
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext, useEffect, useState } from 'react';
-import { IpfsClient } from 'utils/IpfsClient';
-import { BeneficiaryGovernanceAdapter } from 'utils/BeneficiaryGovernanceAdapter';
 import Divider from 'components/CommonComponents/Divider';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import ImpactReportLinks from 'components/CommonComponents/ImpactReportLinks';
@@ -11,7 +9,12 @@ import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
 import SocialMedia from 'components/CommonComponents/SocialMedia';
 import Verification from 'components/CommonComponents/Verification';
 import NavBar from 'components/NavBar/NavBar';
-import { Proposal, ProposalType } from 'interfaces/interfaces';
+import {
+  BeneficiaryGovernanceAdapter,
+  IpfsClient,
+  Proposal,
+  ProposalType,
+} from '@popcorn/utils/';
 import React from 'react';
 import Voting from './Voting/Voting';
 

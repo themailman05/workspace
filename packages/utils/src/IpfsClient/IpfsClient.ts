@@ -1,5 +1,6 @@
-import { getIpfsHashFromBytes32 } from '@popcorn/utils/ipfsHashManipulation';
-import { BeneficiaryApplication } from 'interfaces/interfaces';
+import { BeneficiaryApplication } from "@popcorn/utils/";
+import { getIpfsHashFromBytes32 } from "../ipfsHashManipulation";
+
 export interface IIpfsClient {
   get: (cid: string) => Promise<BeneficiaryApplication>;
   add: (beneficiaryApplication: BeneficiaryApplication) => Promise<string>;

@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from 'interfaces/interfaces';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import SocialMediaLinks from './SocialMediaLinks';
 
 export default function SocialMedia(

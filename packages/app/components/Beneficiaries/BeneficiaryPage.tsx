@@ -8,7 +8,7 @@ import PhotoSideBar from '../CommonComponents/PhotoSideBar';
 import SocialMedia from '../CommonComponents/SocialMedia';
 import Verification from '../CommonComponents/Verification';
 import TriggerTakedownProposal from '../CommonComponents/TriggerTakedownProposal';
-import { BeneficiaryApplication } from 'interfaces/interfaces';
+import { BeneficiaryApplication } from '@popcorn/utils';
 
 interface BeneficiaryPageProps {
   beneficiary: BeneficiaryApplication;
