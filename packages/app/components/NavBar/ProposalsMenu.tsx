@@ -21,9 +21,9 @@ export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                 <Icon.Info className="mr-4" />
                 <NavbarLink
                   label="View Beneficiary Proposals"
-                  url="/beneficiary-proposals"
+                  url="/proposals/nominations"
                   onClick={toggleSubMenu}
-                  isActive={router.pathname === '/beneficiary-proposals'}
+                  isActive={router.pathname === '/proposals/nominations'}
                 />
               </span>
             </li>
@@ -32,10 +32,10 @@ export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                 <Icon.Info className="mr-4" />
                 <NavbarLink
                   label="View Beneficiary Takedown Proposals"
-                  url="/beneficiary-proposals/takedowns"
+                  url="/proposals/takedowns"
                   onClick={toggleSubMenu}
                   isActive={
-                    router.pathname === '/beneficiary-takedown-proposals'
+                    router.pathname === '/proposals/takedowns'
                   }
                 />
               </span>
@@ -46,7 +46,7 @@ export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
                 <Icon.Plus className="mr-4" />
                 <NavbarLink
                   label="Propose a New Beneficiary"
-                  url="/beneficiary-proposals/propose"
+                  url="/proposals/propose"
                   onClick={toggleSubMenu}
                   isActive={
                     router.pathname === '/beneficiary-proposals/propose'

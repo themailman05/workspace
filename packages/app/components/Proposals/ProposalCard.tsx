@@ -20,8 +20,8 @@ export default function ProposalCard({
       <Link
         href={`${
           proposalType === ProposalType.Takedown
-            ? '/beneficiary-proposals/takedowns/'
-            : '/beneficiary-proposals/'
+            ? '/proposals/takedowns/'
+            : '/proposals/nominations/'
         }${proposal.id}`}
         passHref
       >
