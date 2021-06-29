@@ -6,7 +6,7 @@ import {
   Vote,
 } from 'pages/grant-elections/[type]';
 import { Dispatch } from 'react';
-import { ElectionMetadata } from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
+import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import createElectionName from 'utils/createElectionName';
 
 interface IElectionSection {
