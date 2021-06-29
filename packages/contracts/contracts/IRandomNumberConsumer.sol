@@ -3,8 +3,7 @@
 pragma solidity >=0.7.0 <=0.8.3;
 
 interface IRandomNumberConsumer {
-  function getRandomNumber(uint256 userProvidedSeed, uint256 electionId)
-    external;
+  function getRandomNumber(uint256 electionId) external;
 
   function getRandomResult(uint256 electionId) external view returns (uint256);
 }

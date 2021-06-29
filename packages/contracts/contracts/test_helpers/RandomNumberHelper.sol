@@ -37,10 +37,7 @@ contract RandomNumberHelper is IRandomNumberConsumer, VRFConsumerBase {
   /**
    * Requests randomness from a user-provided seed
    */
-  function getRandomNumber(uint256 userProvidedSeed, uint256 electionId)
-    public
-    override
-  {}
+  function getRandomNumber(uint256 electionId) public override {}
 
   /**
    * Callback function used by VRF Coordinator

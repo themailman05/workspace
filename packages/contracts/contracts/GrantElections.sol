@@ -261,12 +261,7 @@ contract GrantElections is Governed {
     ) {
       election.electionState = ElectionState.Closed;
       if (election.electionConfiguration.useChainLinkVRF) {
-        randomNumberConsumer.getRandomNumber(
-          uint256(
-            keccak256(abi.encode(block.timestamp, blockhash(block.number)))
-          ),
-          _electionId
-        );
+        randomNumberConsumer.getRandomNumber(_electionId);
       }
     } else if (
       block.timestamp >=
