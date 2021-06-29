@@ -10,13 +10,9 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
 
   return (
     <div className="content-center mx-48">
-      <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {Status[proposal.status]} vote on{' '}
-        {proposal.application?.organizationName}
-      </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
-          <p className="mb-4 text-base font-medium text-gray-900">
+        <p className="mt-8 text-xl text-gray-500 leading-8">
             {proposal.application?.organizationName}{' '}
             {proposal.proposalType === ProposalType.Takedown
               ? `is in the second phase of takedown voting, known
@@ -32,7 +28,7 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
       </div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
-          <p className="mb-4 text-base font-medium text-gray-900">
+        <p className="mt-8 text-xl text-gray-500 leading-8">
             {proposal.proposalType === ProposalType.Takedown
               ? `At the end of the challenge period, if the takedown proposal
             receives more yes votes than no votes, the elected organization will

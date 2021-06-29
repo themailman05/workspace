@@ -39,7 +39,7 @@ export default function ProposalPage(): JSX.Element {
       proposal !== undefined &&
       Object.keys(proposal).length > 0 ? (
       <React.Fragment>
-        <ImageHeader {...proposal?.application} />
+        <ImageHeader {...proposal} />
         <Voting {...proposal} />
         <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
           <PhotoSideBar {...proposal?.application} />

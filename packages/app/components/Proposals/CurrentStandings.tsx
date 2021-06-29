@@ -43,10 +43,12 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
           <ProgressBar
             progress={
-              (100 * bigNumberToNumber(proposal?.votes?.for)) /
-              bigNumberToNumber(
-                proposal?.votes?.for.add(proposal?.votes?.against),
-              )
+              bigNumberToNumber(proposal?.votes?.for) === 0
+                ? 0
+                : (100 * bigNumberToNumber(proposal?.votes?.for)) /
+                  bigNumberToNumber(
+                    proposal?.votes?.for.add(proposal?.votes?.against),
+                  )
             }
             progressColor={'bg-green-300'}
           />
@@ -65,7 +67,8 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between border-b-2 pb-2">
           <ProgressBar
             progress={
-              (100 * bigNumberToNumber(proposal?.votes?.against)) /
+              bigNumberToNumber(proposal?.votes?.against) === 0
+                ? 0 : (100 * bigNumberToNumber(proposal?.votes?.against)) /
               bigNumberToNumber(
                 proposal?.votes?.for.add(proposal?.votes?.against),
               )

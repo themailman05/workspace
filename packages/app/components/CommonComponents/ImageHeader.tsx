@@ -1,14 +1,12 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { Proposal, Status } from '@popcorn/utils';
 
-export default function ImageHeader(
-  beneficiary: BeneficiaryApplication,
-): JSX.Element {
+export default function ImageHeader(proposal: Proposal): JSX.Element {
   return (
     <div className="relative bg-indigo-800">
       <div className="absolute inset-0">
         <img
           className="w-full h-full object-cover"
-          src={`${process.env.IPFS_URL}${beneficiary?.files?.headerImage}`}
+          src={`${process.env.IPFS_URL}${proposal?.application?.files?.headerImage}`}
           alt=""
         />
         <div
@@ -18,12 +16,13 @@ export default function ImageHeader(
       </div>
       <div className="relative max-w-7xl mx-auto py-24 px-4 sm:py-32 sm:px-6 lg:px-8">
         <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl">
-          {beneficiary?.organizationName}
+          {Status[proposal.status]} vote on{' '}
+          {proposal?.application?.organizationName}
         </h1>
         <div
           className="absolute -bottom-32 left-10 shadow-lg rounded-full h-60 w-60 border-black "
           style={{
-            backgroundImage: `url(${process.env.IPFS_URL}${beneficiary?.files?.profileImage})`,
+            backgroundImage: `url(${process.env.IPFS_URL}${proposal?.application?.files?.profileImage})`,
             backgroundRepeat: 'no-repeat',
             backgroundSize: 'cover',
             backgroundPosition: 'center',
