@@ -106,11 +106,11 @@ export default function Claim(): JSX.Element {
           </div>
         </div>
       </div>
-      <div className="mt-10 mx-10 shadow overflow-hidden">
-        <dl className="mt-5 max-w-3xl grid grid-cols-1 gap-5 sm:grid-cols-2">
+      <div className="mt-10 mx-10 shadow overflow-hidden flex justify-center ">
+        <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div
             key={'claimable'}
-            className="px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6"
+            className="w-64 px-4 py-5 bg-white shadow rounded-lg overflow-hidden sm:p-6"
           >
             <dt className="text-sm font-medium text-gray-500 truncate">
               Total Claimable
