@@ -1,12 +1,8 @@
-import { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
 import NavBar from '../../components/NavBar/NavBar';
-import {
-  CashIcon,
-  HandIcon,
-  LibraryIcon,
-  UserIcon,
-} from '@heroicons/react/outline';
+import { bigNumberToNumber } from '@popcorn/utils/formatBigNumber';
+import ClaimEarningsRow from 'components/Claims/ClaimEarningsRow';
 
 export default function Claim(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
@@ -16,23 +12,16 @@ export default function Claim(): JSX.Element {
   const [grantRewards, setGrantRewards] = useState<number>(0);
   const [stakingRewards, setStakingRewards] = useState<number>(0);
 
-  type ContractName =
-    | 'Beneficiary Governance'
-    | 'Escrow'
-    | 'Grant Elections'
-    | 'Staking';
   async function getRewards() {
+    // TODO: Update placeholders
+    // const escrowRewards = await contracts.rewardsEscrow.getVested();
     // const beneficiaryGovernanceRewards =
     //   await contracts.beneficiaryGovernance.claimRewards();
     // const grantRewards = await contracts.grant.claimRewards();
-    // const stakingRewards = await contracts.staking.getReward();
-    // const escrowRewards = await contracts._claimFor(); // TODO: Get correct fn call
-    // setBeneficiaryGovernanceRewards(beneficiaryGovernanceRewards);
-    // setStakingRewards(stakingRewards);
-    // setGrantRewards(grantRewards);
-    // setEscrowRewards(escrowRewards);
+    const stakingRewards = await contracts.staking.getReward();
+    const stakingReward = bigNumberToNumber(stakingRewards?.value);
     setBeneficiaryGovernanceRewards(100);
-    setStakingRewards(200);
+    setStakingRewards(stakingReward);
     setGrantRewards(125);
     setEscrowRewards(350);
   }
@@ -43,55 +32,14 @@ export default function Claim(): JSX.Element {
     }
   }, [contracts]);
 
-  function ContractIcon(contractName): JSX.Element {
-    switch (contractName) {
-      case 'Beneficiary Governance':
-        return <LibraryIcon className="h-6 w-6 mr-4 text-gray-400" />;
-      case 'Escrow':
-        return <UserIcon className="h-6 w-6 mr-4 text-gray-400" />;
-      case 'Grant Elections':
-        return <HandIcon className="h-6 w-6 mr-4 text-gray-400" />;
-      case 'Staking':
-        return <CashIcon className="h-6 w-6 mr-4 text-gray-400" />;
-    }
-  }
-
-  function ClaimEarningsRow({
-    contractName,
-    rewardAmount,
-  }: {
-    contractName: ContractName;
-    rewardAmount: number;
-  }): JSX.Element {
+  const getTotalClaimRewards = () => {
     return (
-      <tr className="gap-y-1 p-10" key={contractName}>
-        <td className="w-1/6 px-6 py-4 whitespace-nowrap ">
-          <div className="flex items-center my-5">
-            <div className="min-w-0 flex-1 flex items-center">
-              <div className="flex-shrink-0">{ContractIcon(contractName)}</div>
-              <p className="text-sm font-medium text-indigo-600 truncate">
-                {contractName}
-              </p>
-            </div>
-          </div>
-        </td>
-        <td className="w-2/3 px-6 py-4 whitespace-nowrap ">
-          <div className="text-sm text-gray-900">Earned</div>
-          <div className="mt-2 flex items-center text-sm text-gray-500">
-            {rewardAmount}
-          </div>
-        </td>
-        <td className="w-1/6 px-6 py-4 whitespace-nowrap text-right text-sm font-medium ">
-          <button
-            type="button"
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Claim
-          </button>
-        </td>
-      </tr>
+      stakingRewards +
+      grantRewards +
+      escrowRewards +
+      beneficiaryGovernanceRewards
     );
-  }
+  };
 
   return (
     <div className="w-full bg-gray-900 h-screen">
@@ -115,7 +63,9 @@ export default function Claim(): JSX.Element {
             <dt className="text-sm font-medium text-gray-500 truncate">
               Total Claimable
             </dt>
-            <dd className="mt-1 text-3xl font-semibold text-gray-900">100</dd>
+            <dd className="mt-1 text-3xl font-semibold text-gray-900">
+              {getTotalClaimRewards()}
+            </dd>
           </div>
           <div
             key={'deposit'}
@@ -133,7 +83,7 @@ export default function Claim(): JSX.Element {
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <p className="mx-10 my-4 max-w-4xl  text-xl text-white sm:mt-5 sm:text-2xl">
-              Rewards by contract
+              Claim rewards by contract
             </p>
             <div className="mx-10 shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
               <table className="min-w-full divide-y divide-gray-200 gap-y-1">
