@@ -1,5 +1,5 @@
 import { PendingVotes } from '../../../pages/grant-elections/[type]';
-import { ElectionMetadata } from '../../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
+import { ElectionMetadata } from '@popcorn/utils/Contracts';
 
 interface VoteCounter {
   election: ElectionMetadata;
