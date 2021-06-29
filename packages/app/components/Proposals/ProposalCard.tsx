@@ -1,5 +1,5 @@
 import CardBody from 'components/CommonComponents/CardBody';
-import { Proposal, ProposalType } from 'interfaces/proposals';
+import { Proposal, ProposalType } from '@popcorn/utils/';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
 
@@ -10,7 +10,7 @@ export interface ProposalCardProps {
 
 export default function ProposalCard({
   proposal,
-  proposalType = "Nomination",
+  proposalType = 0,
 }: ProposalCardProps): JSX.Element {
   return (
     <div
@@ -19,20 +19,20 @@ export default function ProposalCard({
     >
       <Link
         href={`${
-          proposalType === "Takedown"
-            ? '/beneficiary-proposals/takedowns/'
-            : '/beneficiary-proposals/'
+          proposalType === ProposalType.Takedown
+            ? '/proposals/takedowns/'
+            : '/proposals/nominations/'
         }${proposal.id}`}
         passHref
       >
         <a>
           <CardBody
-            imgUrl={`${process.env.IPFS_URL}${proposal?.profileImage}`}
-            name={proposal?.name}
-            missionStatement={proposal?.missionStatement}
+            imgUrl={`${process.env.IPFS_URL}${proposal.application.files.profileImage}`}
+            name={proposal?.application.organizationName}
+            missionStatement={proposal?.application.missionStatement}
           />
           <div className="flex-shrink-0 ">
-            <VotingInformation {...(proposal as Proposal)} />
+            <VotingInformation {...proposal} />
           </div>
         </a>
       </Link>

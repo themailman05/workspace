@@ -1,32 +1,24 @@
+import { useContext } from 'react';
+import { ContractsContext } from 'context/Web3/contracts';
+import { Proposal, ProposalType, Status } from '@popcorn/utils';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
-import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, ProposalType } from 'interfaces/proposals';
-import { useContext } from 'react';
-import CurrentStandings from '../CurrentStandings';
 
-interface ChallengePeriodVotingProps {
-  proposal: Proposal;
-  proposalType: ProposalType;
-}
-
-export default function ChallengePeriodVoting({
-  proposal,
-  proposalType = 'Nomination',
-}: ChallengePeriodVotingProps): JSX.Element {
+export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
 
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {proposal?.status} vote on {proposal?.name}
+        {Status[proposal.status]} vote on{' '}
+        {proposal.application?.organizationName}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            {proposal?.name}{' '}
-            {proposalType === 'Takedown'
+            {proposal.application?.organizationName}{' '}
+            {proposal.proposalType === ProposalType.Takedown
               ? `is in the second phase of takedown voting, known
             as the challenge period. Here, users are able to vote to veto the
             takedown proposal. This additional phase prevents exploits where a
@@ -41,7 +33,7 @@ export default function ChallengePeriodVoting({
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
-            {proposalType === 'Takedown'
+            {proposal.proposalType === ProposalType.Takedown
               ? `At the end of the challenge period, if the takedown proposal
             receives more yes votes than no votes, the elected organization will
             become ineligible to receive grants.`
@@ -60,9 +52,11 @@ export default function ChallengePeriodVoting({
               setDualActionModal({
                 //TODO add real text
                 content: `Confirm your veto vote for ${
-                  proposalType === 'Takedown' ? 'the takedown of' : ''
+                  proposal.proposalType === ProposalType.Takedown
+                    ? 'the takedown of'
+                    : ''
                 } ${
-                  proposal?.name
+                  proposal.application.organizationName
                 }. Your vote will lock x tokens for the duration of the nomination process. You will not be able to cancel your vote once you confirm \
                   Confirm to continue.`,
                 title: 'Confirm Veto',
@@ -81,12 +75,11 @@ export default function ChallengePeriodVoting({
             );
           }}
         >
-          {proposalType === 'Takedown'
+          {proposal.proposalType === ProposalType.Takedown
             ? 'Veto Takedown Proposal Vote'
             : 'Veto Proposal Vote'}
         </button>
       </div>
-      {proposal && <CurrentStandings {...proposal} />}
     </div>
   );
 }

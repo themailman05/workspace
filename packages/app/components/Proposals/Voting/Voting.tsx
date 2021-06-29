@@ -1,34 +1,20 @@
-import { Proposal, ProposalType, Status } from 'interfaces/proposals';
+import { Proposal, Status } from '@popcorn/utils/';
+import CurrentStandings from '../CurrentStandings';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
 
-interface VotingProps {
-  proposal: Proposal;
-  proposalType: ProposalType;
-}
-
-export default function Voting({
-  proposal,
-  proposalType = 'Nomination',
-}: VotingProps): JSX.Element {
+export default function Voting(proposal: Proposal): JSX.Element {
   return (
     <div>
       {proposal?.status === Status.Open ? (
-        <OpenVoting proposal={proposal} proposalType={proposalType} />
+        <OpenVoting {...proposal} />
       ) : proposal?.status === Status.Challenge ? (
-        <ChallengePeriodVoting
-          proposal={proposal}
-          proposalType={proposalType}
-        />
+        <ChallengePeriodVoting {...proposal} />
       ) : (
-        <CompletedVoting proposal={proposal} proposalType={proposalType} />
+        <CompletedVoting {...proposal} />
       )}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-gray-300" />
-        </div>
-      </div>
+      {Object.keys(proposal).length > 0 && <CurrentStandings {...proposal} />}
     </div>
   );
 }

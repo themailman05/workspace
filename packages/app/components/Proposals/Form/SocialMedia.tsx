@@ -15,19 +15,19 @@ export default function SocialMedia({
   function getUrl(platform) {
     switch (platform) {
       case 'Twitter': {
-        return formData.twitterUrl;
+        return formData.links.twitterUrl;
       }
       case 'LinkedIn': {
-        return formData.linkedinUrl;
+        return formData.links.linkedinUrl;
       }
       case 'Instagram': {
-        return formData.instagramUrl;
+        return formData.links.instagramUrl;
       }
       case 'GitHub': {
-        return formData.githubUrl;
+        return formData.links.githubUrl;
       }
       case 'Facebook': {
-        return formData.facebookUrl;
+        return formData.links.facebookUrl;
       }
     }
   }
@@ -36,23 +36,38 @@ export default function SocialMedia({
     const url = event.target.value;
     switch (platform) {
       case 'Twitter': {
-        setFormData({ ...formData, twitterUrl: url });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, twitterUrl: url },
+        });
         break;
       }
       case 'LinkedIn': {
-        setFormData({ ...formData, linkedinUrl: url });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, linkedinUrl: url },
+        });
         break;
       }
       case 'Instagram': {
-        setFormData({ ...formData, instagramUrl: url });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, instagramUrl: url },
+        });
         break;
       }
       case 'GitHub': {
-        setFormData({ ...formData, githubUrl: url });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, githubUrl: url },
+        });
         break;
       }
       case 'Facebook': {
-        setFormData({ ...formData, facebookUrl: url });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, facebookUrl: url },
+        });
         break;
       }
     }

@@ -2,24 +2,15 @@ import { RadioGroup } from '@headlessui/react';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, ProposalType } from 'interfaces/proposals';
+import { Proposal, ProposalType, Status } from '@popcorn/utils/';
 import { useContext, useState } from 'react';
-import CurrentStandings from '../CurrentStandings';
 
 enum VoteOptions {
   Yay,
   Nay,
 }
 
-interface OpenVotingProps {
-  proposal: Proposal;
-  proposalType: ProposalType;
-}
-
-export default function OpenVoting({
-  proposal,
-  proposalType = 'Nomination',
-}: OpenVotingProps): JSX.Element {
+export default function OpenVoting(proposal: Proposal): JSX.Element {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
   const { contracts } = useContext(ContractsContext);
@@ -27,15 +18,16 @@ export default function OpenVoting({
   return (
     <div className="content-center mx-48">
       <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {proposal?.status} vote on {proposal?.name}
+        {Status[proposal.status]} vote on{' '}
+        {proposal?.application?.organizationName}
       </p>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mb-4 text-base font-medium text-gray-900">
             The organization is currently in the first phase of{' '}
-            {proposalType === 'Takedown' ? 'takedown' : ''} voting, users have
+            {proposal.proposalType === ProposalType.Takedown ? 'takedown' : ''} voting, users have
             48 hours to cast their vote. If the beneficiary{' '}
-            {proposalType === 'Takedown' ? 'takedown' : ''} proposal passes with
+            {proposal.proposalType === ProposalType.Takedown ? 'takedown' : ''} proposal passes with
             a majority, the process moves onto the challenge period.
           </p>
         </span>
@@ -84,7 +76,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposalType === 'Takedown'
+                      {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would become ineligible for grants'
                         : 'Beneficiary would become eligible for grants'}
                     </RadioGroup.Description>
@@ -127,7 +119,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposalType === 'Takedown'
+                      {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would remain eligible for grants'
                         : 'Beneficiary would be not become eligible for grants'}
                     </RadioGroup.Description>
@@ -167,8 +159,6 @@ export default function OpenVoting({
         >
           Cast Vote
         </button>
-
-        {proposal && <CurrentStandings {...proposal} />}
       </div>
     </div>
   );

@@ -1,39 +1,57 @@
+import { Fragment, useContext, useEffect, useState } from 'react';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
-import { Proposal, ProposalType, Status } from 'interfaces/proposals';
-import React, { Fragment, useContext, useState } from 'react';
 import * as Icon from 'react-feather';
 import ProposalCard from './ProposalCard';
+import { ContractsContext } from 'context/Web3/contracts';
+import {
+  Proposal,
+  ProposalType,
+  Status,
+  IpfsClient,
+  BeneficiaryGovernanceAdapter,
+} from '@popcorn/utils';
 import {
   ProposalStageExplanations,
   TakedownStageExplanations,
 } from './StageExplanations';
 
-interface ProposalGridProps {
-  title: string;
-  subtitle: string;
-  proposals: Proposal[];
-  proposalType: ProposalType;
-}
-
 export default function ProposalGrid({
-  title,
-  subtitle,
-  proposals,
-  proposalType = "Nomination",
-}: ProposalGridProps) {
+  proposalType,
+}: {
+  proposalType: ProposalType;
+}): JSX.Element {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
-
+  const { contracts } = useContext(ContractsContext);
+  const [proposals, setProposals] = useState<Proposal[]>([]);
+  useEffect(() => {
+    if (contracts) {
+      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+        .getAllProposals(proposalType)
+        .then((res) => setProposals(res));
+    }
+  }, [contracts]);
   return (
     <div className="w-full bg-gray-900 pb-16">
       <Navbar />
-      <CardGridHeader title={title} subtitle={subtitle} />
+      <CardGridHeader
+        title={
+          proposalType === ProposalType.Nomination
+            ? 'Eligible Beneficiaries'
+            : 'Takedown Proposals'
+        }
+        subtitle={
+          proposalType === ProposalType.Nomination
+            ? 'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations.'
+            : 'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
+        }
+      />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
         <div className="relative text-gray-600 focus-within:text-gray-400 ">
           <span className="absolute inset-y-0 left-0 flex items-center pl-2">
@@ -44,7 +62,14 @@ export default function ProposalGrid({
               type="search"
               name="searchfilter"
               className="py-2 w-full text-xl text-black bg-white rounded-md pl-10 focus:outline-none focus:bg-white focus:text-gray-900"
-              placeholder={'Search ' + title}
+              placeholder={
+                'Search ' +
+                `${
+                  proposalType === ProposalType.Nomination
+                    ? 'Eligible Beneficiaries'
+                    : 'Takedown Proposals'
+                }`
+              }
               value={searchFilter}
               onChange={(e) => setSearchFilter(e.target.value)}
             ></input>
@@ -58,7 +83,7 @@ export default function ProposalGrid({
                 setSingleActionModal({
                   title: 'Beneficiary Nomination Proposal Timeline',
                   content:
-                    title === 'Eligible Beneficiaries' ? (
+                    proposalType === ProposalType.Nomination ? (
                       <ProposalStageExplanations />
                     ) : (
                       <TakedownStageExplanations />
@@ -134,7 +159,7 @@ export default function ProposalGrid({
       <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
         {proposals
           ?.filter((proposal) => {
-            return proposal?.name
+            return proposal.application.organizationName
               .toLowerCase()
               .includes(searchFilter.toLowerCase());
           })
@@ -145,10 +170,7 @@ export default function ProposalGrid({
             );
           })
           .map((proposal) => (
-            <ProposalCard
-              proposal={proposal}
-              proposalType={proposalType}
-            />
+            <ProposalCard proposal={proposal} proposalType={proposalType} />
           ))}
       </ul>
     </div>

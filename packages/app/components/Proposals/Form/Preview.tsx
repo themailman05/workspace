@@ -10,8 +10,12 @@ import { BigNumber } from 'ethers';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
-import { defaultFormData, Form, FormStepProps } from './ProposalForm';
+import { defaultFormData, FormStepProps } from './ProposalForm';
+import {
+  BeneficiaryApplication,
+  IpfsClient,
+  formatAndRoundBigNumber,
+} from '@popcorn/utils/';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -23,6 +27,7 @@ export default function Preview({
   visible,
 }: FormStepProps): JSX.Element {
   const context = useWeb3React<Web3Provider>();
+
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
   const { library, account, activate, active } = context;
@@ -30,6 +35,12 @@ export default function Preview({
   const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [proposalBond, setProposalBond] = useState<BigNumber>();
+
+  useEffect(() => {
+    if (contracts) {
+      getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
+    }
+  }, [contracts]);
 
   async function checkPreConditions(): Promise<boolean> {
     if (!contracts) {
@@ -54,7 +65,7 @@ export default function Preview({
       return false;
     }
     const balance = await contracts.pop.balanceOf(account);
-    if (proposalBond > balance) {
+    if (proposalBond.gt(balance)) {
       dispatch(
         setSingleActionModal({
           content: `In order to create a proposal you need to post a Bond of ${formatAndRoundBigNumber(
@@ -76,32 +87,14 @@ export default function Preview({
     return true;
   }
 
-  async function uploadJsonToIpfs(submissionData: Form): Promise<void> {
+  async function uploadJsonToIpfs(
+    submissionData: BeneficiaryApplication,
+  ): Promise<void> {
     if (await checkPreConditions()) {
       console.log('precondition success');
-      var myHeaders = new Headers();
-      myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-      myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-      myHeaders.append('Content-Type', 'application/json');
-      var raw = JSON.stringify(submissionData);
       loading();
-      const ipfsHash = await fetch(
-        'https://api.pinata.cloud/pinning/pinJSONToIPFS',
-        {
-          method: 'POST',
-          headers: myHeaders,
-          body: raw,
-          redirect: 'follow',
-        },
-      )
-        .then((response) => response.text())
-        .then((result) => {
-          return JSON.parse(result).IpfsHash;
-        })
-        .catch((error) => {
-          uploadError('Error uploading submission data to IPFS');
-        });
-
+      const cid = await IpfsClient().add(submissionData);
+      toast.dismiss();
       await (
         await contracts.pop
           .connect(library.getSigner())
@@ -110,11 +103,11 @@ export default function Preview({
       await contracts.beneficiaryGovernance
         .connect(library.getSigner())
         .createProposal(
-          submissionData.ethereumAddress,
-          getBytes32FromIpfsHash(ipfsHash),
+          submissionData.beneficiaryAddress,
+          getBytes32FromIpfsHash(cid),
           0,
         );
-      toast.dismiss();
+
       success();
       setTimeout(() => router.push(`/beneficiary-proposals/${account}`), 1000);
       clearLocalStorage();
@@ -132,12 +125,6 @@ export default function Preview({
       await contracts.beneficiaryGovernance.DefaultConfigurations();
     return proposalDefaultConfigurations.proposalBond;
   }
-
-  useEffect(() => {
-    if (contracts) {
-      getProposalBond().then((proprosalBond) => setProposalBond(proprosalBond));
-    }
-  }, []);
 
   return (
     visible && (
@@ -170,10 +157,7 @@ export default function Preview({
           </div>
         </div>
 
-        <BeneficiaryPage
-          beneficiary={formData}
-          isProposalPreview
-        />
+        <BeneficiaryPage beneficiary={formData} isProposalPreview />
       </div>
     )
   );

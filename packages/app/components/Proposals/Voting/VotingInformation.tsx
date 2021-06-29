@@ -1,6 +1,5 @@
-import { Proposal } from 'interfaces/proposals';
-import { formatAndRoundBigNumber } from 'utils/formatBigNumber';
-
+import { Proposal, Status } from '@popcorn/utils/';
+import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 interface IVotingRow {
   name: string;
   value: string;
@@ -17,28 +16,26 @@ function VotingRow(data: IVotingRow): JSX.Element {
   );
 }
 
-export default function VotingInformation(
-  beneficiaryProposal: Proposal,
-): JSX.Element {
+export default function VotingInformation(proposal: Proposal): JSX.Element {
   return (
     <div>
-      <VotingRow name={'Status'} value={String(beneficiaryProposal.status)} />
+      <VotingRow name={'Status'} value={Status[proposal.status]} />
       <VotingRow
         name={'Voting Deadline'}
-        value={beneficiaryProposal.stageDeadline.toLocaleString()}
+        value={proposal.stageDeadline.toLocaleString()}
       />
       <VotingRow
         name={'Votes For'}
-        value={formatAndRoundBigNumber(beneficiaryProposal.votesFor)}
+        value={formatAndRoundBigNumber(proposal.votes.for)}
       />
       <VotingRow
         name={'Votes Against'}
-        value={formatAndRoundBigNumber(beneficiaryProposal.votesAgainst)}
+        value={formatAndRoundBigNumber(proposal.votes.against)}
       />
       <VotingRow
         name={'Total Votes'}
         value={formatAndRoundBigNumber(
-          beneficiaryProposal.votesFor.add(beneficiaryProposal.votesAgainst),
+          proposal.votes.for.add(proposal.votes.against),
         )}
       />
     </div>

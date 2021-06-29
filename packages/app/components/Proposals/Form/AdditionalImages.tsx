@@ -9,13 +9,13 @@ export default function AdditionalImages({
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
   function updateAdditionalImages(additionalImages) {
-    setFormData({ ...formData, additionalImages });
+    setFormData({ ...formData, files: { ...formData.files, additionalImages } });
   }
   return (
     visible && (
       <IpfsUpload
         stepName={'7 - Upload Additional Images'}
-        localState={formData.additionalImages}
+        localState={formData.files.additionalImages}
         setLocalState={updateAdditionalImages}
         imageDescription={'Additional Images'}
         imageInstructions={
