@@ -24,7 +24,10 @@ contract BeneficiaryGovernance is ParticipationReward {
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
    */
-  enum ProposalType {BeneficiaryNominationProposal, BeneficiaryTakedownProposal}
+  enum ProposalType {
+    BeneficiaryNominationProposal,
+    BeneficiaryTakedownProposal
+  }
 
   enum ProposalStatus {
     New,
@@ -34,7 +37,10 @@ contract BeneficiaryGovernance is ParticipationReward {
     Failed
   }
 
-  enum VoteOption {Yes, No}
+  enum VoteOption {
+    Yes,
+    No
+  }
 
   struct ConfigurationOptions {
     uint256 votingPeriod;
@@ -160,11 +166,13 @@ contract BeneficiaryGovernance is ParticipationReward {
     proposal.startTime = block.timestamp;
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
-
-    proposal.vaultId = _initializeVault(
+    (bool vaultCreated, bytes32 vaultId) = _initializeVault(
       keccak256(abi.encodePacked(proposalId, block.timestamp)),
       block.timestamp.add(DefaultConfigurations.votingPeriod)
     );
+    if (vaultCreated) {
+      proposal.vaultId = vaultId;
+    }
 
     pendingBeneficiaries[_beneficiary] = true;
 

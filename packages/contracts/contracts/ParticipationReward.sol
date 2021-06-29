@@ -66,6 +66,14 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     return vaults[vaultId_].status;
   }
 
+  function getUserVaults(address account)
+    external
+    view
+    returns (bytes32[] memory)
+  {
+    return userVaults[account];
+  }
+
   /* ========== MUTATIVE FUNCTIONS ========== */
 
   /**
@@ -76,14 +84,14 @@ contract ParticipationReward is Governed, ReentrancyGuard {
    */
   function _initializeVault(bytes32 vaultId_, uint256 endTime_)
     internal
-    returns (bytes32)
+    returns (bool, bytes32)
   {
     require(vaults[vaultId_].endTime == 0, "Vault must not exist");
     require(endTime_ > block.timestamp, "end must be in the future");
 
     uint256 expectedVaultBudget = totalVaultsBudget.add(rewardBudget);
     if (expectedVaultBudget > rewardBalance || rewardBalance == 0) {
-      return "";
+      return (false, "");
     }
 
     totalVaultsBudget = expectedVaultBudget;
@@ -93,7 +101,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     vault.tokenBalance = rewardBudget;
 
     emit VaultInitialized(vaultId_);
-    return vaultId_;
+    return (true, vaultId_);
   }
 
   /**
@@ -120,7 +128,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     bytes32 vaultId_,
     address account_,
     uint256 shares_
-  ) internal {
+  ) internal vaultExists(vaultId_) {
     require(
       vaults[vaultId_].status == VaultStatus.Init,
       "Vault must be initialized"
@@ -137,6 +145,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     bytes32 vaultId_ = userVaults[msg.sender][index_];
     require(vaults[vaultId_].status == VaultStatus.Open, "vault is not open");
     uint256 reward = _claimVaultReward(vaultId_, index_, msg.sender);
+    require(reward > 0, "no rewards");
     require(reward <= rewardBalance, "not enough funds for payout");
 
     totalVaultsBudget = totalVaultsBudget.sub(reward);
@@ -167,13 +176,6 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     POP.safeTransfer(msg.sender, total);
 
     emit RewardsClaimed(msg.sender, total);
-  }
-
-  function _userVaultLength(address account_) internal view returns (uint256) {
-    if (userVaults[account_][0] == "") {
-      return 0;
-    }
-    return userVaults[account_].length;
   }
 
   function _claimVaultReward(

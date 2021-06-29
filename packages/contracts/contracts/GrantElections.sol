@@ -126,12 +126,15 @@ contract GrantElections is ParticipationReward {
     e.electionTerm = _grantTerm;
     e.startTime = block.timestamp;
     e.exists = true;
-    e.vaultId = _initializeVault(
+    (bool vaultCreated, bytes32 vaultId) = _initializeVault(
       keccak256(abi.encodePacked(_term, block.timestamp)),
       block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
         electionDefaults[_term].votingPeriod
       )
     );
+    if (vaultCreated) {
+      e.vaultId = vaultId;
+    }
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
   }

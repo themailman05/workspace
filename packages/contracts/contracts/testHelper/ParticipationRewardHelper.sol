@@ -29,8 +29,4 @@ contract ParticipationRewardHelper is ParticipationReward {
   ) external {
     _addShares(vaultId_, account_, shares_);
   }
-
-  function userVaultLength(address account_) external view returns (uint256) {
-    return _userVaultLength(account_);
-  }
 }
