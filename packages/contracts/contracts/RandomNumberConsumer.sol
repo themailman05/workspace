@@ -34,9 +34,9 @@ contract RandomNumberConsumer is VRFConsumerBase {
   /**
    * Requests randomness from a user-provided seed
    */
-  function getRandomNumber(uint256 userProvidedSeed) public {
+  function getRandomNumber() public {
     require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
-    requestRandomness(keyHash, fee, userProvidedSeed);
+    requestRandomness(keyHash, fee);
   }
 
   /**

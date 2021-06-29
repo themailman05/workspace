@@ -29,7 +29,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   uint256 public rewardBalance;
   uint256 public totalVaultsBudget;
   mapping(bytes32 => Vault) public vaults;
-  mapping(address => bytes32[]) public userVaults; 
+  mapping(address => bytes32[]) public userVaults;
 
   /* ========== EVENTS ========== */
   event RewardBudgetChanged(uint256 amount);
@@ -120,7 +120,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     bytes32 vaultId_,
     address account_,
     uint256 shares_
-  ) internal vaultExists(vaultId_) {
+  ) internal {
     require(
       vaults[vaultId_].status == VaultStatus.Init,
       "Vault must be initialized"
@@ -133,15 +133,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit SharesAdded(vaultId_, account_, shares_);
   }
 
-  //TODO delete all flag?
-  function claimReward(uint256 index_)
-    external
-    nonReentrant
-    vaultExists(vaultId_)
-  {
-    //TODO add implementation with only index
+  function claimReward(uint256 index_) external nonReentrant {
+    bytes32 vaultId_ = userVaults[msg.sender][index_];
     require(vaults[vaultId_].status == VaultStatus.Open, "vault is not open");
-    uint256 reward = _claimVaultReward(index_, msg.sender);
+    uint256 reward = _claimVaultReward(vaultId_, index_, msg.sender);
     require(reward <= rewardBalance, "not enough funds for payout");
 
     totalVaultsBudget = totalVaultsBudget.sub(reward);
@@ -152,27 +147,14 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardsClaimed(msg.sender, reward);
   }
 
-  //TODO delete all flag?
-  function claimRewards(
-    bytes32[] calldata vaultIds_,
-    uint256[] calldata indices_,
-    uint8 deleteArray,
-  ) external nonReentrant {
-    require(
-      vaultIds_.length < 20 || indices_.length < 20,
-      "claiming too many vaults"
-    );
-    require(
-      vaultIds_.length == indices_.length,
-      "vaults and indices must match"
-    );
+  function claimRewards(uint256[] calldata indices_) external nonReentrant {
+    require(indices_.length < 20, "claiming too many vaults");
     uint256 total;
 
-    for (uint256 i = 0; i < vaultIds_.length; i++) {
-      if (vaults[vaultIds_[i]].status == VaultStatus.Open) {
-        total = total.add(
-          _claimVaultReward(vaultIds_[i], indices_[i], msg.sender)
-        );
+    for (uint256 i = 0; i < indices_.length; i++) {
+      bytes32 vaultId_ = userVaults[msg.sender][indices_[i]];
+      if (vaults[vaultId_].status == VaultStatus.Open) {
+        total = total.add(_claimVaultReward(vaultId_, indices_[i], msg.sender));
       }
     }
 
