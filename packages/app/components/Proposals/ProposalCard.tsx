@@ -31,9 +31,7 @@ export default function ProposalCard({
             name={proposal?.application.organizationName}
             missionStatement={proposal?.application.missionStatement}
           />
-          <div className="flex-shrink-0 ">
-            <VotingInformation {...proposal} />
-          </div>
+          <VotingInformation {...proposal} />
         </a>
       </Link>
     </div>
