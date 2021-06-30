@@ -11,11 +11,8 @@ import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { defaultFormData, FormStepProps } from './ProposalForm';
-import {
-  BeneficiaryApplication,
-  IpfsClient,
-  formatAndRoundBigNumber,
-} from '@popcorn/utils/';
+import { BeneficiaryApplication, IpfsClient } from '@popcorn/utils/';
+import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');

@@ -18,7 +18,7 @@ function VotingRow(data: IVotingRow): JSX.Element {
 
 export default function VotingInformation(proposal: Proposal): JSX.Element {
   return (
-    <div className="mb-4 mx-6">
+    <div className="my-4 mx-6">
       <VotingRow name={'Status'} value={Status[proposal.status]} />
       <VotingRow
         name={'Voting Deadline'}

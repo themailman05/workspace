@@ -4,6 +4,7 @@ import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
 import { Proposal, ProposalType, Status } from '@popcorn/utils/';
 import { useContext, useState } from 'react';
+import CountdownTimer from './CountdownTimer';
 
 enum VoteOptions {
   Yay,
@@ -16,7 +17,7 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
   const { contracts } = useContext(ContractsContext);
 
   return (
-    <div className="content-center mx-48">
+    <div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mt-8 text-xl text-gray-500 leading-8">
@@ -129,6 +130,7 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
         </RadioGroup>
       </div>
 
+      <CountdownTimer {...proposal} />
       <div className="grid my-2 justify-items-stretch">
         <button
           type="button"
@@ -157,6 +159,7 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
         >
           Cast Vote
         </button>
+        
       </div>
     </div>
   );

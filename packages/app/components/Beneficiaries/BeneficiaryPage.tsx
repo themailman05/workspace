@@ -22,8 +22,8 @@ export default function BeneficiaryPage({
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       {!isProposalPreview && <NavBar />}
-      <ImageHeader {...beneficiary} />
-      <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
+      <ImageHeader beneficiary={beneficiary} />
+      <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-36">
         <PhotoSideBar {...(beneficiary as BeneficiaryApplication)} />
         <MissionStatement missionStatement={beneficiary?.missionStatement} />
       </div>
@@ -32,10 +32,12 @@ export default function BeneficiaryPage({
           <div className="w-full border-t border-gray-300" />
         </div>
       </div>
-      <div className="mx-48 my-8">
-        <Verification {...(beneficiary as BeneficiaryApplication)} />
-        <ImpactReportLinks {...beneficiary} />
-        <SocialMedia {...beneficiary} />
+      <div className="relative px-4 sm:px-6 lg:px-8">
+        <div className="text-lg max-w-prose mx-auto">
+          <Verification {...(beneficiary as BeneficiaryApplication)} />
+          <ImpactReportLinks {...beneficiary} />
+          <SocialMedia {...beneficiary} />
+        </div>
       </div>
       {!isProposalPreview && <TriggerTakedownProposal />}
     </div>

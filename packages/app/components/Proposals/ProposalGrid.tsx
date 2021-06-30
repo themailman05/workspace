@@ -46,12 +46,15 @@ export default function ProposalGrid({
         }
         subtitle={
           proposalType === ProposalType.Nomination
-            ? 'You choose which social initiatives are included in grant elections. Browse and vote on beneficiary nominations.'
-            : 'Takedowns have been triggered against the following beneficiaries. Browse and vote in takedown elections.'
+            ? `You choose which social initiatives become eligible for grant
+            elections. Browse and vote on beneficiary nominations.`
+            : `Takedowns which, if successful, would result in organizations
+            becoming ineligible for grants, have been triggered against the
+            following beneficiaries. Browse and vote in takedown elections.`
         }
       />
-      <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
-        <div className="mt-12 sm:w-full sm:max-w-md lg:mt-0 lg:flex-1">
+      <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-36 h-1/2">
+        <div className="sm:w-full sm:max-w-md lg:mt-0 lg:flex-1">
           <form className="sm:flex">
             <input
               type="search"
@@ -70,14 +73,14 @@ export default function ProposalGrid({
             />
           </form>
         </div>
-        <span className="mx-4 flex flex-row justify-end items-center">
-          <div className="mt-10 w-full max-w-xs">
+        <span className="flex flex-row justify-end">
+          <div className="mt-10 w-full max-w-xs mb-10">
             <label
               htmlFor="status"
-              className="block text-base font-medium text-gray-500"
+              className="block text-base font-medium text-gray-200"
             >
-              <span>Stage Filter</span>
-              <span>
+              <div className="flex">
+                Stage Filter
                 <InformationCircleIcon
                   onClick={() => {
                     dispatch(
@@ -101,7 +104,7 @@ export default function ProposalGrid({
                   }}
                   className="h-5 w-5 text-white mx-2"
                 />
-              </span>
+              </div>
             </label>
             <div className="mt-1.5 relative">
               <select

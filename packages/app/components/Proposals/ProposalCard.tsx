@@ -31,6 +31,14 @@ export default function ProposalCard({
             name={proposal?.application.organizationName}
             missionStatement={proposal?.application.missionStatement}
           />
+          <div className="relative">
+            <div
+              className="absolute inset-0 flex items-center"
+              aria-hidden="true"
+            >
+              <div className="w-full border-t border-gray-300" />
+            </div>
+          </div>
           <VotingInformation {...proposal} />
         </a>
       </Link>

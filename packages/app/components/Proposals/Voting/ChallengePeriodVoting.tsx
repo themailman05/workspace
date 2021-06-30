@@ -1,18 +1,19 @@
 import { useContext } from 'react';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, ProposalType, Status } from '@popcorn/utils';
+import { Proposal, ProposalType } from '@popcorn/utils';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
+import CountdownTimer from './CountdownTimer';
 
 export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
 
   return (
-    <div className="content-center mx-48">
+    <div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
-        <p className="mt-8 text-xl text-gray-500 leading-8">
+          <p className="mt-8 text-xl text-gray-500 leading-8">
             {proposal.application?.organizationName}{' '}
             {proposal.proposalType === ProposalType.Takedown
               ? `is in the second phase of takedown voting, known
@@ -28,7 +29,7 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
       </div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
-        <p className="mt-8 text-xl text-gray-500 leading-8">
+          <p className="mt-8 text-xl text-gray-500 leading-8">
             {proposal.proposalType === ProposalType.Takedown
               ? `At the end of the challenge period, if the takedown proposal
             receives more yes votes than no votes, the elected organization will
@@ -39,6 +40,7 @@ export default function ChallengePeriodVoting(proposal: Proposal): JSX.Element {
           </p>
         </span>
       </div>
+      <CountdownTimer {...proposal} />
       <div className="grid my-2 justify-items-stretch">
         <button
           type="button"
