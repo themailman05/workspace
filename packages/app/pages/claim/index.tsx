@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
 import NavBar from '../../components/NavBar/NavBar';
 import { bigNumberToNumber } from '@popcorn/utils/formatBigNumber';
-import ClaimEarningsRow from 'components/Claims/ClaimEarningsRow';
+import { ClaimEarningsListItem } from 'components/Claims/ClaimEarningsListItem';
 
 export default function Claim(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
@@ -44,16 +44,15 @@ export default function Claim(): JSX.Element {
   return (
     <div className="w-full bg-gray-900 h-screen">
       <NavBar />
-      <div className="bg-gray-900">
-        <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
-          <div className="text-center">
-            <h2 className="text-lg leading-6 font-semibold text-gray-300 uppercase tracking-wider"></h2>
-            <p className="mt-2 text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl">
-              Claim Rewards
-            </p>
-          </div>
+      <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
+        <div className="text-center">
+          <h2 className="text-lg leading-6 font-semibold text-gray-300 uppercase tracking-wider"></h2>
+          <p className="mt-2 text-3xl font-extrabold text-white sm:text-4xl lg:text-5xl">
+            Claim Rewards
+          </p>
         </div>
       </div>
+
       <div className="mt-10 mx-10 shadow overflow-hidden flex justify-center ">
         <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div
@@ -79,33 +78,32 @@ export default function Claim(): JSX.Element {
         </dl>
       </div>
 
-      <div className="flex flex-col my-10">
+      <div className="flex flex-col my-10 bg-gray-900">
         <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
             <p className="mx-10 my-4 max-w-4xl  text-xl text-white sm:mt-5 sm:text-2xl">
               Claim rewards by contract
             </p>
-            <div className="mx-10 shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-              <table className="min-w-full divide-y divide-gray-200 gap-y-1">
-                <tbody className="bg-white divide-y divide-gray-200 gap-y-1">
-                  <ClaimEarningsRow
-                    contractName={'Beneficiary Governance'}
-                    rewardAmount={beneficiaryGovernanceRewards}
-                  />
-                  <ClaimEarningsRow
-                    contractName={'Escrow'}
-                    rewardAmount={escrowRewards}
-                  />
-                  <ClaimEarningsRow
-                    contractName={'Grant Elections'}
-                    rewardAmount={grantRewards}
-                  />
-                  <ClaimEarningsRow
-                    contractName={'Staking'}
-                    rewardAmount={stakingRewards}
-                  />
-                </tbody>
-              </table>
+            <div className="mx-10 shadow overflow-hidden border-b border-gray-200 ">
+              <ul className="space-y-3 my-16">
+                <ClaimEarningsListItem
+                  contractName={'Beneficiary Governance'}
+                  rewardAmount={beneficiaryGovernanceRewards}
+                />
+
+                <ClaimEarningsListItem
+                  contractName={'Escrow'}
+                  rewardAmount={escrowRewards}
+                />
+                <ClaimEarningsListItem
+                  contractName={'Grant Elections'}
+                  rewardAmount={grantRewards}
+                />
+                <ClaimEarningsListItem
+                  contractName={'Staking'}
+                  rewardAmount={stakingRewards}
+                />
+              </ul>
             </div>
           </div>
         </div>
