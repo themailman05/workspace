@@ -1,11 +1,16 @@
-import React, { useContext, useEffect, useState } from 'react';
+import { Web3Provider } from '@ethersproject/providers';
+import { useWeb3React } from '@web3-react/core';
+import { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
 import NavBar from '../../components/NavBar/NavBar';
 import { bigNumberToNumber } from '@popcorn/utils/formatBigNumber';
-import { ClaimEarningsListItem } from 'components/Claims/ClaimEarningsListItem';
+
+import { ClaimRewardsListItem } from 'components/Claims/ClaimRewardsListItem';
 
 export default function Claim(): JSX.Element {
+  const context = useWeb3React<Web3Provider>();
   const { contracts } = useContext(ContractsContext);
+  const { library } = context;
   const [beneficiaryGovernanceRewards, setBeneficiaryGovernanceRewards] =
     useState<number>(0);
   const [escrowRewards, setEscrowRewards] = useState<number>(0);
@@ -13,15 +18,18 @@ export default function Claim(): JSX.Element {
   const [stakingRewards, setStakingRewards] = useState<number>(0);
 
   async function getRewards() {
+    const signer = library.getSigner();
+    const connectedStaking = await contracts.staking.connect(signer);
+    const stakingRewardObject = await connectedStaking.getReward();
+    const stakingRewards = bigNumberToNumber(stakingRewardObject?.value);
     // TODO: Update placeholders
     // const escrowRewards = await contracts.rewardsEscrow.getVested();
     // const beneficiaryGovernanceRewards =
     //   await contracts.beneficiaryGovernance.claimRewards();
     // const grantRewards = await contracts.grant.claimRewards();
-    const stakingRewards = await contracts.staking.getReward();
-    const stakingReward = bigNumberToNumber(stakingRewards?.value);
+
     setBeneficiaryGovernanceRewards(100);
-    setStakingRewards(stakingReward);
+    setStakingRewards(stakingRewards);
     setGrantRewards(125);
     setEscrowRewards(350);
   }
@@ -85,21 +93,20 @@ export default function Claim(): JSX.Element {
               Claim rewards by contract
             </p>
             <div className="mx-10 shadow overflow-hidden border-b border-gray-200 ">
-              <ul className="space-y-3 my-16">
-                <ClaimEarningsListItem
+              <ul className="space-y-3 mt-6 mb-16">
+                <ClaimRewardsListItem
                   contractName={'Beneficiary Governance'}
                   rewardAmount={beneficiaryGovernanceRewards}
                 />
-
-                <ClaimEarningsListItem
+                <ClaimRewardsListItem
                   contractName={'Escrow'}
                   rewardAmount={escrowRewards}
                 />
-                <ClaimEarningsListItem
+                <ClaimRewardsListItem
                   contractName={'Grant Elections'}
                   rewardAmount={grantRewards}
                 />
-                <ClaimEarningsListItem
+                <ClaimRewardsListItem
                   contractName={'Staking'}
                   rewardAmount={stakingRewards}
                 />

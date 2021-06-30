@@ -24,7 +24,7 @@ function ContractIcon(contractName: string): JSX.Element {
   }
 }
 
-export function ClaimEarningsListItem({
+export function ClaimRewardsListItem({
   contractName,
   rewardAmount,
 }: {
