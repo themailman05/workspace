@@ -24,13 +24,19 @@ function ContractIcon(contractName: string): JSX.Element {
   }
 }
 
+interface ClaimRewardsListItemProps {
+  contractName: ContractName;
+  rewardAmount: number;
+  claimRewards: () => void;
+}
+
 export function ClaimRewardsListItem({
   contractName,
   rewardAmount,
-}: {
-  contractName: ContractName;
-  rewardAmount: number;
-}): JSX.Element {
+  claimRewards,
+}: ClaimRewardsListItemProps): JSX.Element {
+  console.log(rewardAmount > 0);
+  console.log(rewardAmount);
   return (
     <li
       className="gap-y-1 flex flex-row bg-white rounded-lg"
@@ -53,12 +59,22 @@ export function ClaimRewardsListItem({
         </div>
       </div>
       <div className="w-1/4 whitespace-nowrap flex flex-wrap content-center justify-end">
-        <button
-          type="button"
-          className="mx-6 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 "
-        >
-          Claim
-        </button>
+        {rewardAmount > 0 ? (
+          <button
+            type="button"
+            className="mx-6 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 "
+            onClick={claimRewards}
+          >
+            Claim
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="disabled:opacity-50 mx-6 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 "
+          >
+            Claim
+          </button>
+        )}
       </div>
     </li>
   );

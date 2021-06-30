@@ -1,54 +1,65 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
-import { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
 import NavBar from '../../components/NavBar/NavBar';
 import { bigNumberToNumber } from '@popcorn/utils/formatBigNumber';
-
+import { BigNumber } from '@ethersproject/bignumber';
+import { Staking } from '../../../contracts/typechain';
 import { ClaimRewardsListItem } from 'components/Claims/ClaimRewardsListItem';
 
 export default function Claim(): JSX.Element {
   const context = useWeb3React<Web3Provider>();
   const { contracts } = useContext(ContractsContext);
   const { library } = context;
+  const [connectedStaking, setConnectedStaking] = useState<Staking>();
   const [beneficiaryGovernanceRewards, setBeneficiaryGovernanceRewards] =
     useState<number>(0);
   const [escrowRewards, setEscrowRewards] = useState<number>(0);
   const [grantRewards, setGrantRewards] = useState<number>(0);
-  const [stakingRewards, setStakingRewards] = useState<number>(0);
+  const [stakingRewards, setStakingRewards] = useState<BigNumber>();
 
-  async function getRewards() {
-    const signer = library.getSigner();
-    const connectedStaking = await contracts.staking.connect(signer);
+  async function getAvailableRewards() {
     const stakingRewardObject = await connectedStaking.getReward();
-    const stakingRewards = bigNumberToNumber(stakingRewardObject?.value);
-    // TODO: Update placeholders
-    // const escrowRewards = await contracts.rewardsEscrow.getVested();
-    // const beneficiaryGovernanceRewards =
-    //   await contracts.beneficiaryGovernance.claimRewards();
-    // const grantRewards = await contracts.grant.claimRewards();
-
+    setStakingRewards(stakingRewardObject?.value);
     setBeneficiaryGovernanceRewards(100);
-    setStakingRewards(stakingRewards);
     setGrantRewards(125);
     setEscrowRewards(350);
   }
 
-  useEffect(() => {
-    if (contracts) {
-      getRewards();
+  async function claimStakingRewards() {
+    if (Number(stakingRewards) > 0) {
+      const transactionReceipt = await connectedStaking.withdraw(
+        stakingRewards,
+      );
+      getAvailableRewards();
     }
-  }, [contracts]);
+  }
 
-  const getTotalClaimRewards = () => {
+  async function connectToStaking() {
+    const signer = library.getSigner();
+    const connectedStaking = await contracts.staking.connect(signer);
+    setConnectedStaking(connectedStaking);
+  }
+
+  useEffect(() => {
+    connectToStaking();
+  }, []);
+
+  useEffect(() => {
+    if (contracts && connectedStaking) {
+      getAvailableRewards();
+    }
+  }, [contracts, connectedStaking]);
+
+  function getTotalClaimRewards(): number {
     return (
-      stakingRewards +
+      bigNumberToNumber(stakingRewards) +
       grantRewards +
       escrowRewards +
       beneficiaryGovernanceRewards
     );
-  };
-
+  }
   return (
     <div className="w-full bg-gray-900 h-screen">
       <NavBar />
@@ -97,18 +108,22 @@ export default function Claim(): JSX.Element {
                 <ClaimRewardsListItem
                   contractName={'Beneficiary Governance'}
                   rewardAmount={beneficiaryGovernanceRewards}
+                  claimRewards={() => {}}
                 />
                 <ClaimRewardsListItem
                   contractName={'Escrow'}
                   rewardAmount={escrowRewards}
+                  claimRewards={() => {}}
                 />
                 <ClaimRewardsListItem
                   contractName={'Grant Elections'}
                   rewardAmount={grantRewards}
+                  claimRewards={() => {}}
                 />
                 <ClaimRewardsListItem
                   contractName={'Staking'}
-                  rewardAmount={stakingRewards}
+                  rewardAmount={bigNumberToNumber(stakingRewards)}
+                  claimRewards={claimStakingRewards}
                 />
               </ul>
             </div>
