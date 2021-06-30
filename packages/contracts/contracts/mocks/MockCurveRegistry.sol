@@ -2,8 +2,9 @@
 
 pragma solidity >=0.6.0 <0.8.0;
 
-interface IMetapool  {
+interface IMetapool {
   function coins() external view returns (address[2] memory);
+
   function base_coins() external view returns (address[3] memory);
 }
 

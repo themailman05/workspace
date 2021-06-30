@@ -18,7 +18,14 @@ contract MockCurveMetapool {
 
   uint256 BPS_DENOMINATOR = 10000;
 
-  constructor(address token_, address lpToken_, address threeCrv_, address dai_, address usdc_, address usdt_) {
+  constructor(
+    address token_,
+    address lpToken_,
+    address threeCrv_,
+    address dai_,
+    address usdc_,
+    address usdt_
+  ) {
     token = MockERC20(token_);
     lpToken = MockERC20(lpToken_);
     threeCrv = MockERC20(threeCrv_);
@@ -28,19 +35,12 @@ contract MockCurveMetapool {
   }
 
   function coins() external view returns (address[2] memory) {
-    address[2] memory coins = [
-      address(threeCrv),
-      address(token)
-    ];
+    address[2] memory coins = [address(threeCrv), address(token)];
     return coins;
   }
 
   function base_coins() external view returns (address[3] memory) {
-    address[3] memory coins = [
-      address(dai),
-      address(usdc),
-      address(usdt)
-    ];
+    address[3] memory coins = [address(dai), address(usdc), address(usdt)];
     return coins;
   }
 

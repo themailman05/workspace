@@ -16,7 +16,13 @@ contract MockCurveDepositZap {
 
   uint256 BPS_DENOMINATOR = 10000;
 
-  constructor(address token_, address lpToken_, address dai_, address usdc_, address usdt_) {
+  constructor(
+    address token_,
+    address lpToken_,
+    address dai_,
+    address usdc_,
+    address usdt_
+  ) {
     token = MockERC20(token_);
     lpToken = MockERC20(lpToken_);
     dai = MockERC20(dai_);
@@ -24,10 +30,11 @@ contract MockCurveDepositZap {
     usdt = MockERC20(usdt_);
   }
 
-  function add_liquidity(address pool, uint256[4] calldata amounts, uint256 min_mint_amounts)
-    external
-    returns (uint256)
-  {
+  function add_liquidity(
+    address pool,
+    uint256[4] calldata amounts,
+    uint256 min_mint_amounts
+  ) external returns (uint256) {
     dai.transferFrom(msg.sender, address(this), amounts[1]);
     assert(amounts[1] > min_mint_amounts);
     lpToken.mint(msg.sender, amounts[1]);

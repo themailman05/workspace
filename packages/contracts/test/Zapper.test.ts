@@ -66,14 +66,27 @@ async function deployContracts(): Promise<Contracts> {
     "MockCurveMetapool"
   );
   const mockCurveMetapool = await (
-    await MockCurveMetapool.deploy(mockToken.address, mockLPToken.address, mock3crv.address, mockDai.address, mockUSDC.address, mockUSDT.address)
+    await MockCurveMetapool.deploy(
+      mockToken.address,
+      mockLPToken.address,
+      mock3crv.address,
+      mockDai.address,
+      mockUSDC.address,
+      mockUSDT.address
+    )
   ).deployed();
 
   const MockCurveDepositZap = await ethers.getContractFactory(
     "MockCurveDepositZap"
   );
   const mockCurveDepositZap = await (
-    await MockCurveDepositZap.deploy(mockToken.address, mockLPToken.address, mockDai.address, mockUSDC.address, mockUSDT.address)
+    await MockCurveDepositZap.deploy(
+      mockToken.address,
+      mockLPToken.address,
+      mockDai.address,
+      mockUSDC.address,
+      mockUSDT.address
+    )
   ).deployed();
 
   const MockCurveRegistry = await ethers.getContractFactory(
@@ -139,10 +152,7 @@ async function deployContracts(): Promise<Contracts> {
 
 describe("Zapper", function () {
   beforeEach(async function () {
-    [
-      depositor,
-      rewardsManager
-    ] = await ethers.getSigners();
+    [depositor, rewardsManager] = await ethers.getSigners();
     contracts = await deployContracts();
   });
 
@@ -168,15 +178,21 @@ describe("Zapper", function () {
 
   describe("zapping in", async function () {
     it("gets LP token from pool", async function () {
-      expect(await contracts.zapper.token(contracts.pool.address)).to.equal(contracts.mockLPToken.address);
+      expect(await contracts.zapper.token(contracts.pool.address)).to.equal(
+        contracts.mockLPToken.address
+      );
     });
 
     it("gets Curve pool for LP token", async function () {
-      expect(await contracts.zapper.curvePoolAddress(contracts.pool.address)).to.equal(contracts.mockCurveMetapool.address);
+      expect(
+        await contracts.zapper.curvePoolAddress(contracts.pool.address)
+      ).to.equal(contracts.mockCurveMetapool.address);
     });
 
     it("gets supported deposit tokens for underlying Curve pool", async function () {
-      expect(await contracts.zapper.depositTokens(contracts.pool.address)).to.eql([
+      expect(
+        await contracts.zapper.depositTokens(contracts.pool.address)
+      ).to.eql([
         contracts.mockToken.address,
         contracts.mockDai.address,
         contracts.mockUSDC.address,
@@ -184,22 +200,82 @@ describe("Zapper", function () {
         "0x0000000000000000000000000000000000000000",
         "0x0000000000000000000000000000000000000000",
         "0x0000000000000000000000000000000000000000",
-        "0x0000000000000000000000000000000000000000"
+        "0x0000000000000000000000000000000000000000",
       ]);
     });
 
     it("returns true if token is supported", async function () {
-      expect(await contracts.zapper.canZap(contracts.pool.address, contracts.mockDai.address)).to.be.true;
+      expect(
+        await contracts.zapper.canZap(
+          contracts.pool.address,
+          contracts.mockDai.address
+        )
+      ).to.be.true;
     });
 
     it("returns false if token is not supported", async function () {
-      expect(await contracts.zapper.canZap(contracts.pool.address, contracts.mock3crv.address)).to.be.false;
+      expect(
+        await contracts.zapper.canZap(
+          contracts.pool.address,
+          contracts.mock3crv.address
+        )
+      ).to.be.false;
     });
 
     it("reverts on zero address", async function () {
-      expect(contracts.zapper.canZap(contracts.pool.address,
-        "0x0000000000000000000000000000000000000000"
-      )).to.be.reverted;
+      expect(
+        contracts.zapper.canZap(
+          contracts.pool.address,
+          "0x0000000000000000000000000000000000000000"
+        )
+      ).to.be.reverted;
+    });
+
+    it("reverts on unsupported tokens", async function () {
+      expect(
+        contracts.zapper.zapIn(
+          contracts.pool.address,
+          contracts.mock3crv.address,
+          parseEther("1000")
+        )
+      ).to.be.reverted;
+    });
+
+    it("transfers in token on zapIn", async function () {
+      await contracts.mockDai.mint(depositor.address, parseEther("1000"));
+      expect(await contracts.mockDai.balanceOf(depositor.address)).to.equal(
+        parseEther("1000")
+      );
+      await contracts.mockDai
+        .connect(depositor)
+        .approve(contracts.zapper.address, parseEther("1000"));
+      await contracts.zapper
+        .connect(depositor)
+        .zapIn(
+          contracts.pool.address,
+          contracts.mockDai.address,
+          parseEther("1000")
+        );
+      expect(await contracts.mockDai.balanceOf(depositor.address)).to.equal(
+        parseEther("0")
+      );
+    });
+
+    it("zaps token into Curve", async function () {
+      await contracts.mockDai.mint(depositor.address, parseEther("1000"));
+      await contracts.mockDai
+        .connect(depositor)
+        .approve(contracts.zapper.address, parseEther("1000"));
+      await contracts.zapper
+        .connect(depositor)
+        .zapIn(
+          contracts.pool.address,
+          contracts.mockDai.address,
+          parseEther("1000")
+        );
+      expect(
+        await contracts.mockLPToken.balanceOf(contracts.zapper.address)
+      ).to.equal(parseEther("1000"));
     });
   });
 });
