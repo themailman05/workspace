@@ -1,6 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   MockERC20,
+  MockCurveDepositZap,
   MockCurveAddressProvider,
   MockCurveMetapool,
   MockCurveRegistry,
@@ -22,6 +23,7 @@ interface Contracts {
   mockDai: MockERC20;
   mockUSDC: MockERC20;
   mockUSDT: MockERC20;
+  mockCurveDepositZap: MockCurveDepositZap;
   mockCurveMetapool: MockCurveMetapool;
   mockCurveRegistry: MockCurveRegistry;
   mockCurveAddressProvider: MockCurveAddressProvider;
@@ -67,6 +69,13 @@ async function deployContracts(): Promise<Contracts> {
     await MockCurveMetapool.deploy(mockToken.address, mockLPToken.address, mock3crv.address, mockDai.address, mockUSDC.address, mockUSDT.address)
   ).deployed();
 
+  const MockCurveDepositZap = await ethers.getContractFactory(
+    "MockCurveDepositZap"
+  );
+  const mockCurveDepositZap = await (
+    await MockCurveDepositZap.deploy(mockToken.address, mockLPToken.address, mockDai.address, mockUSDC.address, mockUSDT.address)
+  ).deployed();
+
   const MockCurveRegistry = await ethers.getContractFactory(
     "MockCurveRegistry"
   );
@@ -84,7 +93,8 @@ async function deployContracts(): Promise<Contracts> {
   const Zapper = await ethers.getContractFactory("Zapper");
   const zapper = await (
     await Zapper.deploy(
-      mockCurveAddressProvider.address
+      mockCurveAddressProvider.address,
+      mockCurveDepositZap.address
     )
   ).deployed();
 
@@ -116,6 +126,7 @@ async function deployContracts(): Promise<Contracts> {
     mockDai,
     mockUSDC,
     mockUSDT,
+    mockCurveDepositZap,
     mockCurveMetapool,
     mockCurveRegistry,
     mockCurveAddressProvider,
@@ -145,6 +156,12 @@ describe("Zapper", function () {
     it("has the address of the Curve registry", async function () {
       expect(await contracts.zapper.curveAddressProvider()).to.equal(
         contracts.mockCurveAddressProvider.address
+      );
+    });
+
+    it("has the address of the Curve metapool deposit zap", async function () {
+      expect(await contracts.zapper.curveDepositZap()).to.equal(
+        contracts.mockCurveDepositZap.address
       );
     });
   });

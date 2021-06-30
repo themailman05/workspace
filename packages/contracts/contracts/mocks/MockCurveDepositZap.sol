@@ -7,18 +7,24 @@ import "./MockERC20.sol";
 import "hardhat/console.sol";
 
 contract MockCurveDepositZap {
+  MockERC20 token;
   MockERC20 lpToken;
   MockERC20 dai;
+  MockERC20 usdc;
+  MockERC20 usdt;
   uint256 withdrawalSlippageBps = 10;
 
   uint256 BPS_DENOMINATOR = 10000;
 
-  constructor(address lpToken_, address dai_) {
+  constructor(address token_, address lpToken_, address dai_, address usdc_, address usdt_) {
+    token = MockERC20(token_);
     lpToken = MockERC20(lpToken_);
     dai = MockERC20(dai_);
+    usdc = MockERC20(usdc_);
+    usdt = MockERC20(usdt_);
   }
 
-  function add_liquidity(uint256[4] calldata amounts, uint256 min_mint_amounts)
+  function add_liquidity(address pool, uint256[4] calldata amounts, uint256 min_mint_amounts)
     external
     returns (uint256)
   {

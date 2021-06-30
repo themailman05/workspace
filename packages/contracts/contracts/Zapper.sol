@@ -5,6 +5,10 @@ pragma solidity >=0.7.0 <0.8.0;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+interface CurveDepositZap {
+  function add_liquidity(address pool, uint256[4] calldata amounts, uint256 min_mint_amounts) external returns (uint256);
+}
+
 interface CurveAddressProvider {
   function get_registry() external view returns (address);
 }
@@ -42,10 +46,12 @@ interface IPool {
 contract Zapper {
   using SafeERC20 for IERC20;
 
+  CurveDepositZap public curveDepositZap;
   CurveAddressProvider public curveAddressProvider;
   CurveRegistry public curveRegistry;
 
-  constructor(address curveAddressProvider_) {
+  constructor(address curveAddressProvider_, address curveDepositZap_) {
+    curveDepositZap = CurveDepositZap(curveDepositZap_);
     curveAddressProvider = CurveAddressProvider(curveAddressProvider_);
     curveRegistry = CurveRegistry(curveAddressProvider.get_registry());
   }
