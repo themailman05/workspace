@@ -25,7 +25,10 @@ contract BeneficiaryGovernance is Governed {
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
    */
-  enum ProposalType {BeneficiaryNominationProposal, BeneficiaryTakedownProposal}
+  enum ProposalType {
+    BeneficiaryNominationProposal,
+    BeneficiaryTakedownProposal
+  }
 
   enum ProposalStatus {
     New,
@@ -35,7 +38,10 @@ contract BeneficiaryGovernance is Governed {
     Failed
   }
 
-  enum VoteOption {Yes, No}
+  enum VoteOption {
+    Yes,
+    No
+  }
 
   struct ConfigurationOptions {
     uint256 votingPeriod;
@@ -55,6 +61,7 @@ contract BeneficiaryGovernance is Governed {
     uint256 voterCount;
     ProposalType proposalType;
     ConfigurationOptions configurationOptions;
+    string language;
   }
 
   Proposal[] public proposals;
@@ -133,7 +140,8 @@ contract BeneficiaryGovernance is Governed {
   function createProposal(
     address _beneficiary,
     bytes memory _applicationCid,
-    ProposalType _type
+    ProposalType _type,
+    string _language
   )
     external
     validAddress(_beneficiary)
@@ -161,6 +169,7 @@ contract BeneficiaryGovernance is Governed {
     proposal.startTime = block.timestamp;
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
+    proposal.language = _language;
 
     pendingBeneficiaries[_beneficiary] = true;
 
