@@ -1,8 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BigNumber } from "ethers";
-import { hexDataSlice, parseEther } from "ethers/lib/utils";
-import { ethers, waffle } from "hardhat";
+import { parseEther } from "ethers/lib/utils";
+import { ethers } from "hardhat";
 import { MockERC20, ParticipationRewardHelper } from "../typechain";
 
 interface Contracts {
@@ -18,6 +17,27 @@ let now: number;
 let end: number;
 let vaultId: string;
 const rewardBudget = parseEther("10");
+
+async function initVaultAndAddShares(index: number): Promise<string> {
+  const currentTime = await (
+    await ethers.provider.getBlock("latest")
+  ).timestamp;
+  const ending = currentTime + 1000;
+  const id = ethers.utils.solidityKeccak256(
+    ["uint8", "uint256"],
+    [index, currentTime]
+  );
+  await contracts.rewardParticipationHelper.initializeVault(id, ending);
+  await contracts.rewardParticipationHelper.addShares(id, owner.address, 1000);
+  return id;
+}
+
+async function openVaultAndClaim(id: string, index: number): Promise<void> {
+  await contracts.rewardParticipationHelper.openVault(id);
+  if (index >= 50) {
+    await contracts.rewardParticipationHelper.connect(owner).claimReward(index);
+  }
+}
 
 async function deployContracts(): Promise<Contracts> {
   const mockPop = await (
@@ -82,7 +102,7 @@ describe("RewardParticipation", function () {
         .to.emit(contracts.rewardParticipationHelper, "VaultInitialized")
         .withArgs(vaultId);
 
-        const vault = await contracts.rewardParticipationHelper.vaults(vaultId);
+      const vault = await contracts.rewardParticipationHelper.vaults(vaultId);
       expect(vault.status).to.equal(0);
       expect(vault.endTime).to.equal(end);
       expect(vault.tokenBalance).to.equal(rewardBudget);
@@ -96,8 +116,10 @@ describe("RewardParticipation", function () {
         vaultId,
         end
       );
-      expect(result)
-        .to.not.emit(contracts.rewardParticipationHelper, "VaultInitialized")
+      expect(result).to.not.emit(
+        contracts.rewardParticipationHelper,
+        "VaultInitialized"
+      );
     });
   });
   describe("open a vault", function () {
@@ -300,6 +322,78 @@ describe("RewardParticipation", function () {
         "0x0000000000000000000000000000000000000000000000000000000000000000",
         "0x0000000000000000000000000000000000000000000000000000000000000000",
       ]);
+    });
+    it("still claims after a high amount of vaults", async function () {
+      //Preparation
+      await contracts.rewardParticipationHelper
+        .connect(governance)
+        .setRewardsBudget(parseEther("1"));
+      await contracts.mockPop.mint(owner.address, parseEther("100"));
+      await contracts.mockPop.approve(
+        contracts.rewardParticipationHelper.address,
+        parseEther("100")
+      );
+      await contracts.rewardParticipationHelper
+        .connect(owner)
+        .contributeReward(parseEther("100"));
+
+      const vaultIds = await Promise.all(
+        new Array(100)
+          .fill(0)
+          .map(async (x, i) => await initVaultAndAddShares(i))
+      );
+      ethers.provider.send("evm_increaseTime", [1000]);
+      ethers.provider.send("evm_mine", []);
+      await Promise.all(
+        vaultIds.map(async (id, i) => {
+          await openVaultAndClaim(id, i);
+        })
+      );
+
+      //Actual test
+      await expect(
+        contracts.rewardParticipationHelper
+          .connect(owner)
+          .claimRewards([0,1,2])
+      )
+        .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
+        .withArgs(owner.address, parseEther("3"));
+      expect(
+        (
+          await contracts.rewardParticipationHelper.getUserVaults(owner.address)
+        ).slice(0, 3)
+      ).to.deep.equal([
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "0x0000000000000000000000000000000000000000000000000000000000000000",
+      ]);
+
+      await expect(
+        contracts.rewardParticipationHelper.connect(owner).claimReward(3)
+      )
+        .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
+        .withArgs(owner.address, parseEther("1"));
+      expect(
+        (
+          await contracts.rewardParticipationHelper.getUserVaults(owner.address)
+        )[3]
+      ).to.equal(
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
+
+      await expect(
+        contracts.rewardParticipationHelper
+          .connect(owner)
+          .claimRewards([40, 41, 42, 45])
+      )
+        .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
+        .withArgs(owner.address, parseEther("4"));
+
+      await expect(
+        contracts.rewardParticipationHelper.connect(owner).claimReward(49)
+      )
+        .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
+        .withArgs(owner.address, parseEther("1"));
     });
   });
 });
