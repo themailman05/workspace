@@ -25,7 +25,10 @@ contract BeneficiaryGovernance is Governed {
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
    */
-  enum ProposalType {BeneficiaryNominationProposal, BeneficiaryTakedownProposal}
+  enum ProposalType {
+    BeneficiaryNominationProposal,
+    BeneficiaryTakedownProposal
+  }
 
   enum ProposalStatus {
     New,
@@ -35,7 +38,10 @@ contract BeneficiaryGovernance is Governed {
     Failed
   }
 
-  enum VoteOption {Yes, No}
+  enum VoteOption {
+    Yes,
+    No
+  }
 
   struct ConfigurationOptions {
     uint256 votingPeriod;
@@ -57,8 +63,8 @@ contract BeneficiaryGovernance is Governed {
     ConfigurationOptions configurationOptions;
   }
 
-  Proposal[] public proposals;
-
+  Proposal[] public nominations;
+  Proposal[] public takedowns;
   ConfigurationOptions public DefaultConfigurations;
 
   event ProposalCreated(
@@ -77,13 +83,6 @@ contract BeneficiaryGovernance is Governed {
   event Finalize(uint256 indexed proposalId);
   event BondWithdrawn(address _address, uint256 amount);
 
-  modifier onlyProposer(uint256 proposalId) {
-    require(
-      msg.sender == proposals[proposalId].proposer,
-      "only the proposer may call this function"
-    );
-    _;
-  }
   modifier validAddress(address _address) {
     require(_address == address(_address), "invalid address");
     _;
@@ -128,6 +127,7 @@ contract BeneficiaryGovernance is Governed {
    * @notice creates a beneficiary nomination proposal or a beneficiary takedown proposal
    * @param  _beneficiary address of the beneficiary
    * @param  _applicationCid IPFS content hash
+   * @param  _type the proposal type (nomination / takedown)
    * @return proposal id
    */
   function createProposal(
@@ -148,11 +148,18 @@ contract BeneficiaryGovernance is Governed {
       DefaultConfigurations.proposalBond
     );
 
-    uint256 proposalId = proposals.length;
+    uint256 proposalId;
 
+    if (_type == ProposalType.BeneficiaryNominationProposal) {
+      proposalId = nominations.length;
+      nominations.push();
+    } else {
+      proposalId = takedowns.length;
+      takedowns.push();
+    }
+
+    Proposal storage proposal = _getProposal(proposalId, _type);
     // Create a new proposal
-    proposals.push();
-    Proposal storage proposal = proposals[proposalId];
     proposal.status = ProposalStatus.New;
     proposal.beneficiary = _beneficiary;
     proposal.status = ProposalStatus.New;
@@ -194,10 +201,15 @@ contract BeneficiaryGovernance is Governed {
   /**
    * @notice votes to a specific proposal during the initial voting process
    * @param  proposalId id of the proposal which you are going to vote
+   * @param  _type the proposal type (nomination / takedown)
    */
-  function vote(uint256 proposalId, VoteOption _vote) external {
-    _refreshState(proposalId);
-    Proposal storage proposal = proposals[proposalId];
+  function vote(
+    uint256 proposalId,
+    ProposalType _type,
+    VoteOption _vote
+  ) external {
+    Proposal storage proposal = _getProposal(proposalId, _type);
+    _refreshState(proposal);
 
     require(
       proposal.status == ProposalStatus.New ||
@@ -248,10 +260,11 @@ contract BeneficiaryGovernance is Governed {
   /**
    * @notice finalizes the voting process
    * @param  proposalId id of the proposal
+   * @param  _type the proposal type (nomination / takedown)
    */
-  function finalize(uint256 proposalId) public {
-    _refreshState(proposalId);
-    Proposal storage proposal = proposals[proposalId];
+  function finalize(uint256 proposalId, ProposalType _type) public {
+    Proposal storage proposal = _getProposal(proposalId, _type);
+    _refreshState(proposal);
 
     require(
       proposal.status == ProposalStatus.PendingFinalization,
@@ -293,13 +306,19 @@ contract BeneficiaryGovernance is Governed {
   /**
    * @notice claims bond after a successful proposal voting
    * @param  proposalId id of the proposal
+   * @param  _type the proposal type (nomination / takedown)
    */
-  function claimBond(uint256 proposalId) public onlyProposer(proposalId) {
+  function claimBond(uint256 proposalId, ProposalType _type) public {
+    Proposal storage proposal = _getProposal(proposalId, _type);
     require(
-      proposals[proposalId].status == ProposalStatus.Passed,
+      msg.sender == proposal.proposer,
+      "only the proposer may call this function"
+    );
+    require(
+      proposal.status == ProposalStatus.Passed,
       "Proposal failed or is processing!"
     );
-    uint256 amount = proposals[proposalId].configurationOptions.proposalBond;
+    uint256 amount = proposal.configurationOptions.proposalBond;
 
     POP.approve(address(this), amount);
     POP.safeTransferFrom(address(this), msg.sender, amount);
@@ -309,10 +328,9 @@ contract BeneficiaryGovernance is Governed {
 
   /**
    * @notice updates the state of the proposal
-   * @param  proposalId id of the proposal
+   * @param  proposal passed in proposal
    */
-  function _refreshState(uint256 proposalId) internal {
-    Proposal storage proposal = proposals[proposalId];
+  function _refreshState(Proposal storage proposal) internal {
     if (
       proposal.status == ProposalStatus.Failed ||
       proposal.status == ProposalStatus.Passed
@@ -343,36 +361,64 @@ contract BeneficiaryGovernance is Governed {
   }
 
   /**
+   * @notice returns a proposal depending on the type
+   */
+  function _getProposal(uint256 _proposalId, ProposalType _type)
+    internal
+    returns (Proposal storage)
+  {
+    if (_type == ProposalType.BeneficiaryNominationProposal) {
+      return nominations[_proposalId];
+    }
+    return takedowns[_proposalId];
+  }
+
+  /**
    * @notice returns number of created proposals
    */
-  function getNumberOfProposals() public view returns (uint256) {
-    return proposals.length;
+  function getNumberOfProposals(ProposalType _type)
+    public
+    view
+    returns (uint256)
+  {
+    if (_type == ProposalType.BeneficiaryNominationProposal) {
+      return nominations.length;
+    }
+    return takedowns.length;
   }
 
   /**
    * @notice gets number of votes
    * @param  proposalId id of the proposal
+   * @param  _type the proposal type (nomination / takedown)
    * @return number of votes to a proposal
    */
-  function getNumberOfVoters(uint256 proposalId)
+  function getNumberOfVoters(uint256 proposalId, ProposalType _type)
     external
     view
     returns (uint256)
   {
-    return proposals[proposalId].voterCount;
+    if (_type == ProposalType.BeneficiaryNominationProposal) {
+      return nominations[proposalId].voterCount;
+    }
+    return takedowns[proposalId].voterCount;
   }
 
   /**
    * @notice checks if someone has voted to a specific proposal or not
    * @param  proposalId id of the proposal
+   * @param  _type the proposal type (nomination / takedown)
    * @param  voter IPFS content hash
    * @return true or false
    */
-  function hasVoted(uint256 proposalId, address voter)
-    external
-    view
-    returns (bool)
-  {
-    return proposals[proposalId].voters[voter];
+  function hasVoted(
+    uint256 proposalId,
+    ProposalType _type,
+    address voter
+  ) external view returns (bool) {
+    if (_type == ProposalType.BeneficiaryNominationProposal) {
+      return nominations[proposalId].voters[voter];
+    }
+    return takedowns[proposalId].voters[voter];
   }
 }
