@@ -80,15 +80,19 @@ export default function BeneficiaryProposal(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    const step = Number(router.query.step as string);
-    if (step === -1) setCurrentStep(0);
-    if (step && step !== currentStep && step < stepLimit) setCurrentStep(step);
-    if (step && step !== currentStep && step >= stepLimit)
-      setCurrentStep(stepLimit);
+    const stepName = router.query.step as string;
+    const stepIndex = stepOrder.indexOf(stepName);
+    if (stepName && stepIndex !== -1) {
+      if (stepIndex && stepIndex !== currentStep && stepIndex < stepLimit)
+        setCurrentStep(stepIndex);
+      if (stepIndex && stepIndex !== currentStep && stepIndex >= stepLimit)
+        setCurrentStep(stepLimit);
+    }
   }, [router]);
 
   useEffect(() => {
-    router.push(`/proposals/propose/?step=${currentStep}`, undefined, {
+    const stepName = stepOrder[currentStep];
+    router.push(`/proposals/propose/?step=${stepName}`, undefined, {
       shallow: true,
     });
   }, [currentStep]);
