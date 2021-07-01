@@ -59,7 +59,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
   function getVault(uint8 vaultId_)
     public
     view
-    vaultExists(vaultId_)
+    _vaultExists(vaultId_)
     returns (
       uint256 totalAllocated,
       uint256 currentBalance,
@@ -78,10 +78,14 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
   function hasClaimed(uint8 vaultId_, address beneficiary_)
     public
     view
-    vaultExists(vaultId_)
+    _vaultExists(vaultId_)
     returns (bool)
   {
     return vaults[vaultId_].claimed[beneficiary_];
+  }
+
+  function vaultExists(uint8 vaultId_) public view returns (bool) {
+    return vaultId_ < 3 && vaults[vaultId_].merkleRoot != "";
   }
 
   /* ========== MUTATIVE FUNCTIONS ========== */
@@ -120,7 +124,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
    * @dev Vault must be in an open state
    * @param vaultId_ Vault ID in range 0-2
    */
-  function closeVault(uint8 vaultId_) public onlyOwner vaultExists(vaultId_) {
+  function closeVault(uint8 vaultId_) public onlyOwner _vaultExists(vaultId_) {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
 
     uint256 _remainingBalance = vaults[vaultId_].currentBalance;
@@ -148,7 +152,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public view vaultExists(vaultId_) returns (bool) {
+  ) public view _vaultExists(vaultId_) returns (bool) {
     require(msg.sender == beneficiary_, "Sender must be beneficiary");
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
     require(
@@ -177,7 +181,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     bytes32[] memory proof_,
     address beneficiary_,
     uint256 share_
-  ) public nonReentrant vaultExists(vaultId_) {
+  ) public nonReentrant _vaultExists(vaultId_) {
     require(
       verifyClaim(vaultId_, proof_, beneficiary_, share_) == true,
       "Invalid claim"
@@ -278,9 +282,8 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
 
   /* ========== MODIFIERS ========== */
 
-  modifier vaultExists(uint8 vaultId_) {
-    require(vaultId_ < 3, "Invalid vault id");
-    require(vaults[vaultId_].merkleRoot != "", "Uninitialized vault slot");
+  modifier _vaultExists(uint8 vaultId_) {
+    require(vaultExists(vaultId_), "vault must exist");
     _;
   }
 }

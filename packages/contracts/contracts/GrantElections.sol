@@ -202,6 +202,10 @@ contract GrantElections is Governed {
         );
       }
     }
+    if (beneficiaryVaults.vaultExists(_term)) {
+      beneficiaryVaults.closeVault(_term);
+    }
+
     uint256 electionId = elections.length;
     activeElections[_term] = electionId;
 
