@@ -9,11 +9,14 @@ contract Region is IRegion, Governed {
 
   event RegionAdded(string region);
 
-  constructor() public Governed(msg.sender) {}
+  constructor() public Governed(msg.sender) {
+    regions.push("ww");
+    regionExists["ww"] = true;
+  }
 
   function addRegion(string region) external override onlyGovernance {
     require(regionExists[region] == false, "region already exists");
-    languages.push(region);
+    regions.push(region);
     regionExists[region] = true;
     emit RegionAdded(region);
   }

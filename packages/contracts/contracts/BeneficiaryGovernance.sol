@@ -18,8 +18,9 @@ contract BeneficiaryGovernance is Governed {
   using SafeERC20 for IERC20;
 
   IERC20 public immutable POP;
-  IStaking staking;
-  IBeneficiaryRegistry beneficiaryRegistry;
+  IRegion internal region;
+  IStaking internal staking;
+  IBeneficiaryRegistry internal beneficiaryRegistry;
 
   mapping(address => bool) pendingBeneficiaries;
   /**

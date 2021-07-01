@@ -1,79 +1,63 @@
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./IRegions.sol";
+import "./IRegion.sol";
 
 // https://docs.synthetix.io/contracts/source/contracts/owned
 contract CouncilControlled {
+  IRegion internal region;
   mapping(string => address) private council;
   mapping(string => address) public nominatedCouncil;
 
-  event CouncilNominated(string region, address newCouncil);
-  event CouncilChanged(string region, address oldCouncil, address newCouncil);
+  event CouncilNominated(string _region, address newCouncil);
+  event CouncilChanged(string _region, address oldCouncil, address newCouncil);
 
-  constructor(address _council) public {
+  constructor(address _council, IRegion _region) public {
     require(_council != address(0), "Council address cannot be 0");
     council["ww"] = _council;
+    region = _region;
   }
 
-  function nominateNewCouncil(address _council, string region)
+  function nominateNewCouncil(address _council, string _region)
     external
-    onlyCouncil(region)
+    onlyCouncil(_region)
   {
-    nominatedCouncil[region] = _council;
-    emit CouncilNominated(region, _council);
+    nominatedCouncil[_region] = _council;
+    emit CouncilNominated(_region, _council);
   }
 
-  function acceptCouncil(string region) external {
+  function acceptCouncil(string _region) external {
     require(
-      msg.sender == nominatedCouncil[region],
+      msg.sender == nominatedCouncil[_region],
       "You must be nominated before you can accept council"
     );
-    emit CouncilChanged(region, council[region], nominatedCouncil[region]);
-    council[region] = nominatedCouncil[region];
+    emit CouncilChanged(_region, council[_region], nominatedCouncil[_region]);
+    council[_region] = nominatedCouncil[_region];
     nominatedCouncil = address(0);
   }
 
-  function addRegion(string region, address newCouncil)
+  function nominateFirstCouncil(address _council, string _region)
     external
-    override
-    onlyGovernance
+    _onlyCouncil("ww")
   {
-    //TODO who has the right to add our delete new regions?
-    require(
-      msg.sender == council["en"],
-      "Only the contract council may perform this action"
-    );
-    regions.push(region);
-    council[region] = newCouncil;
-    emit regionAdded(region);
+    require(region.regionExists(_region), "region doesnt exist");
+    require(council[_region] == address(0), "region already has a council");
+    nominatedCouncil[_region] = _council;
+    emit CouncilNominated(_region, _council);
   }
 
-  function deleteLangauge(uint256 index) external {
-    //TODO who has the right to add our delete new regions?
-    require(
-      msg.sender == council["en"],
-      "Only the contract council may perform this action"
-    );
-    string region = regions[index];
-    delete regions[index];
-    delete council[region];
-    delete nominatedCouncil[region];
-    emit regionDeleted(region);
-  }
-
-  modifier onlyCouncil(string region) {
-    _onlyCouncil(region);
+  modifier onlyCouncil(string _region) {
+    _onlyCouncil(_region);
     _;
   }
 
-  function _onlyCouncil(string region) private view {
+  function _onlyCouncil(string _region) private view {
     require(
-      msg.sender == council[region],
+      msg.sender == council[_region],
       "Only the contract council may perform this action"
     );
   }
 
-  function getCouncil(string region) public view returns (address) {
-    return council[region];
+  function getCouncil(string _region) public view returns (address) {
+    return council[_region];
   }
 }

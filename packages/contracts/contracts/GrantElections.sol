@@ -90,7 +90,7 @@ contract GrantElections is Governed {
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(
     ElectionTerm _term,
-    string region,
+    string _region,
     uint256 _startTime
   );
   event FinalizationProposed(uint256 _electionId, bytes32 _merkleRoot);
@@ -220,7 +220,7 @@ contract GrantElections is Governed {
     }
 
     uint256 electionId = elections.length;
-    activeElections[region][_term] = electionId;
+    activeElections[_region][_term] = electionId;
 
     elections.push();
     Election storage election = elections[electionId];
