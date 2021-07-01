@@ -52,6 +52,20 @@ export const defaultFormData: BeneficiaryApplication = {
   },
 };
 
+const stepOrder: string[] = [
+  'intro',
+  'name',
+  'beneficiary-address',
+  'mission-statement',
+  'proof-of-ownership',
+  'profile-image',
+  'header-image',
+  'additional-images',
+  'impact-reports-audits',
+  'social-media',
+  'preview',
+];
+
 export default function BeneficiaryProposal(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [stepLimit, setStepLimit] = useState<number>(1);
@@ -67,6 +81,7 @@ export default function BeneficiaryProposal(): JSX.Element {
 
   useEffect(() => {
     const step = Number(router.query.step as string);
+    if (step === -1) setCurrentStep(0);
     if (step && step !== currentStep && step < stepLimit) setCurrentStep(step);
     if (step && step !== currentStep && step >= stepLimit)
       setCurrentStep(stepLimit);
@@ -101,57 +116,57 @@ export default function BeneficiaryProposal(): JSX.Element {
       <Intro
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 0}
+        visible={stepOrder[currentStep] === 'intro'}
       />
       <Name
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 1}
+        visible={stepOrder[currentStep] === 'name'}
       />
       <BeneficiaryAddress
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 2}
+        visible={stepOrder[currentStep] === 'beneficiary-address'}
       />
       <MissionStatement
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 3}
+        visible={stepOrder[currentStep] === 'mission-statement'}
       />
       <ProofOfOwnership
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 4}
+        visible={stepOrder[currentStep] === 'proof-of-ownership'}
       />
       <ProfileImage
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 5}
+        visible={stepOrder[currentStep] === 'profile-image'}
       />
       <HeaderImage
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 6}
+        visible={stepOrder[currentStep] === 'header-image'}
       />
       <AdditionalImages
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 7}
+        visible={stepOrder[currentStep] === 'additional-images'}
       />
       <ImpactReportsAudits
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 8}
+        visible={stepOrder[currentStep] === 'impact-reports-audits'}
       />
       <SocialMedia
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 9}
+        visible={stepOrder[currentStep] === 'social-media'}
       />
       <Preview
         form={[formData, setFormData]}
         navigation={navigation}
-        visible={currentStep === 10}
+        visible={stepOrder[currentStep] === 'preview'}
       />
       <NavigationButtons navigation={navigation} />
       <Toaster />
