@@ -84,7 +84,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     return vaults[vaultId_].claimed[beneficiary_];
   }
 
-  function vaultExists(uint8 vaultId_) public view returns (bool) {
+  function vaultExists(uint8 vaultId_) public view override returns (bool) {
     return vaultId_ < 3 && vaults[vaultId_].merkleRoot != "";
   }
 
@@ -124,7 +124,12 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
    * @dev Vault must be in an open state
    * @param vaultId_ Vault ID in range 0-2
    */
-  function closeVault(uint8 vaultId_) public onlyOwner _vaultExists(vaultId_) {
+  function closeVault(uint8 vaultId_)
+    public
+    override
+    onlyOwner
+    _vaultExists(vaultId_)
+  {
     require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
 
     uint256 _remainingBalance = vaults[vaultId_].currentBalance;
