@@ -14,6 +14,7 @@ contract BeneficiaryRegistry is
 {
   struct Beneficiary {
     bytes applicationCid; // ipfs address of application
+    string region;
     uint256 listPointer;
   }
 
@@ -44,22 +45,23 @@ contract BeneficiaryRegistry is
    * @notice add a beneficiary with their IPFS cid to the registry
    * TODO: allow only election contract to modify beneficiary
    */
-  function addBeneficiary(address _address, bytes calldata applicationCid)
-    external
-    override
-    onlyOwner
-  {
-    require(_address == address(_address), "invalid address");
+  function addBeneficiary(
+    address account,
+    string region,
+    bytes calldata applicationCid
+  ) external override onlyOwner {
+    require(account == address(account), "invalid address");
     require(applicationCid.length > 0, "!application");
-    require(!beneficiaryExists(_address), "exists");
+    require(!beneficiaryExists(account), "exists");
 
-    beneficiariesList.push(_address);
-    beneficiariesMap[_address] = Beneficiary({
+    beneficiariesList.push(account);
+    beneficiariesMap[account] = Beneficiary({
       applicationCid: applicationCid,
+      region: region,
       listPointer: beneficiariesList.length - 1
     });
 
-    emit BeneficiaryAdded(_address, applicationCid);
+    emit BeneficiaryAdded(account, applicationCid);
   }
 
   /**

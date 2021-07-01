@@ -142,8 +142,7 @@ describe("BeneficiaryGovernance", function () {
         .createProposal(
           beneficiary.address,
           ethers.utils.formatBytes32String("testCid"),
-          ProposalType.BNP,
-          "en"
+          ProposalType.BNP
         );
       const proposal = await contracts.beneficiaryGovernance.proposals(
         PROPOSALID
@@ -171,8 +170,7 @@ describe("BeneficiaryGovernance", function () {
           .createProposal(
             beneficiary.address,
             ethers.utils.formatBytes32String("testCid"),
-            ProposalType.BNP,
-            "en"
+            ProposalType.BNP
           )
       ).to.be.revertedWith("proposal bond is not enough");
     });
@@ -186,8 +184,7 @@ describe("BeneficiaryGovernance", function () {
           .createProposal(
             beneficiary.address,
             ethers.utils.formatBytes32String("testCid"),
-            ProposalType.BNP,
-            "en"
+            ProposalType.BNP
           )
       ).to.be.revertedWith(
         "Beneficiary proposal is pending or already exists!"
@@ -203,8 +200,7 @@ describe("BeneficiaryGovernance", function () {
           .createProposal(
             beneficiary2.address,
             ethers.utils.formatBytes32String("testCid"),
-            ProposalType.BTP,
-            "en"
+            ProposalType.BTP
           )
       ).to.be.revertedWith("Beneficiary doesnt exist!");
     });
@@ -221,8 +217,7 @@ describe("BeneficiaryGovernance", function () {
           .createProposal(
             beneficiary2.address,
             ethers.utils.formatBytes32String("testCid"),
-            ProposalType.BNP,
-            "en"
+            ProposalType.BNP
           )
       ).to.be.revertedWith(
         "Beneficiary proposal is pending or already exists!"
@@ -273,8 +268,7 @@ describe("BeneficiaryGovernance", function () {
         .createProposal(
           beneficiary.address,
           ethers.utils.formatBytes32String("testCid"),
-          ProposalType.BNP,
-          "en"
+          ProposalType.BNP
         );
       // create a BTP
       await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
@@ -288,8 +282,7 @@ describe("BeneficiaryGovernance", function () {
         .createProposal(
           beneficiary.address,
           ethers.utils.formatBytes32String("testCid"),
-          ProposalType.BTP,
-          "en"
+          ProposalType.BTP
         );
     });
     it("should prevent voting without voiceCredits", async function () {
@@ -529,8 +522,7 @@ describe("BeneficiaryGovernance", function () {
         .createProposal(
           beneficiary.address,
           ethers.utils.formatBytes32String("testCid"),
-          ProposalType.BNP,
-          "en"
+          ProposalType.BNP
         );
     });
     it("should finalize a voting during challenge period if novotes are more than yes votes", async function () {
@@ -710,8 +702,7 @@ describe("BeneficiaryGovernance", function () {
         .createProposal(
           beneficiary.address,
           ethers.utils.formatBytes32String("testCid"),
-          ProposalType.BTP,
-          "en"
+          ProposalType.BTP
         );
 
       //three yes votes
@@ -800,8 +791,7 @@ describe("BeneficiaryGovernance", function () {
         .createProposal(
           beneficiary.address,
           ethers.utils.formatBytes32String("testCid"),
-          ProposalType.BNP,
-          "en"
+          ProposalType.BNP
         );
     });
     it("should prevent claiming bond whith address other than the proposer address", async function () {

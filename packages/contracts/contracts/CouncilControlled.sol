@@ -1,81 +1,79 @@
 pragma solidity >=0.7.0 <0.8.0;
 
+import "./IRegions.sol";
+
 // https://docs.synthetix.io/contracts/source/contracts/owned
 contract CouncilControlled {
   mapping(string => address) private council;
   mapping(string => address) public nominatedCouncil;
-  string[] public languages;
 
-  event CouncilNominated(string language, address newCouncil);
-  event CouncilChanged(string language, address oldCouncil, address newCouncil);
-  event LanguageAdded(string language);
-  event LanguageDeleted(string language);
+  event CouncilNominated(string region, address newCouncil);
+  event CouncilChanged(string region, address oldCouncil, address newCouncil);
 
   constructor(address _council) public {
     require(_council != address(0), "Council address cannot be 0");
-    council["en"] = _council;
-    emit CouncilChanged(address(0), _council);
+    council["ww"] = _council;
   }
 
-  function nominateNewCouncil(address _council, string language)
+  function nominateNewCouncil(address _council, string region)
     external
-    onlyCouncil(language)
+    onlyCouncil(region)
   {
-    nominatedCouncil[language] = _council;
-    emit CouncilNominated(language, _council);
+    nominatedCouncil[region] = _council;
+    emit CouncilNominated(region, _council);
   }
 
-  function acceptCouncil(string language) external {
+  function acceptCouncil(string region) external {
     require(
-      msg.sender == nominatedCouncil[language],
+      msg.sender == nominatedCouncil[region],
       "You must be nominated before you can accept council"
     );
-    emit CouncilChanged(
-      language,
-      council[language],
-      nominatedCouncil[language]
-    );
-    council[language] = nominatedCouncil[language];
+    emit CouncilChanged(region, council[region], nominatedCouncil[region]);
+    council[region] = nominatedCouncil[region];
     nominatedCouncil = address(0);
   }
 
-  function addLanguage(string language, address newCouncil) external {
-    //TODO who has the right to add our delete new languages?
+  function addRegion(string region, address newCouncil)
+    external
+    override
+    onlyGovernance
+  {
+    //TODO who has the right to add our delete new regions?
     require(
       msg.sender == council["en"],
       "Only the contract council may perform this action"
     );
-    languages.push(language);
-    council[language] = newCouncil;
-    emit LanguageAdded(language);
+    regions.push(region);
+    council[region] = newCouncil;
+    emit regionAdded(region);
   }
 
   function deleteLangauge(uint256 index) external {
-    //TODO who has the right to add our delete new languages?
+    //TODO who has the right to add our delete new regions?
     require(
       msg.sender == council["en"],
       "Only the contract council may perform this action"
     );
-    string language = languages[index];
-    delete languages[index];
-    delete council[language];
-    delete nominatedCouncil[language];
-    emit LanguageDeleted(language);
+    string region = regions[index];
+    delete regions[index];
+    delete council[region];
+    delete nominatedCouncil[region];
+    emit regionDeleted(region);
   }
 
-  modifier onlyCouncil(string language) {
-    _onlyCouncil(language);
+  modifier onlyCouncil(string region) {
+    _onlyCouncil(region);
     _;
   }
 
-  function _onlyCouncil(string language) private view {
+  function _onlyCouncil(string region) private view {
     require(
-      msg.sender == council[language],
+      msg.sender == council[region],
       "Only the contract council may perform this action"
     );
   }
 
-  function getCouncil(string language) public view returns (address) {
-    return council[language];
+  function getCouncil(string region) public view returns (address) {
+    return council[region];
   }
 }

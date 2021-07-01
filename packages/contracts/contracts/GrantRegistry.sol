@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./BeneficiaryRegistry.sol";
 import "./Owned.sol";
+import "./Governed.sol";
 
 contract GrantRegistry is Governed, CouncilControlled {
   IBeneficiaryRegistry private beneficiaryRegistry;
@@ -11,7 +12,11 @@ contract GrantRegistry is Governed, CouncilControlled {
   uint8 private grantShareType;
   mapping(uint8 => bool) private grantTermsEnabled;
 
-  enum GrantTerm {MONTH, QUARTER, YEAR}
+  enum GrantTerm {
+    MONTH,
+    QUARTER,
+    YEAR
+  }
   uint256 constant SECONDS_IN_A_MONTH = 2592000;
   uint256 constant SECONDS_IN_A_QUARTER = 7776000;
   uint256 constant SECONDS_IN_A_YEAR = 31104000;
@@ -94,10 +99,12 @@ contract GrantRegistry is Governed, CouncilControlled {
     require(grantHasExpired(grantTerm), "grantIsActive");
     require(grantTermsEnabled[uint8(grantTerm)], "grantTerm disabled");
 
-    address[] memory eligibleBeneficiaries =
-      new address[](beneficiaries.length);
-    uint256[] memory eligibleBeneficiariesShares =
-      new uint256[](beneficiaries.length);
+    address[] memory eligibleBeneficiaries = new address[](
+      beneficiaries.length
+    );
+    uint256[] memory eligibleBeneficiariesShares = new uint256[](
+      beneficiaries.length
+    );
     uint8 _grantTerm = uint8(grantTerm);
 
     activeGrants[_grantTerm] = Grant({
@@ -137,8 +144,9 @@ contract GrantRegistry is Governed, CouncilControlled {
     returns (address[] memory)
   {
     uint8 _grantTerm = uint8(grantTerm);
-    address[] memory ret =
-      new address[](activeGrants[_grantTerm].awardeesCount);
+    address[] memory ret = new address[](
+      activeGrants[_grantTerm].awardeesCount
+    );
     for (uint256 i = 0; i < activeGrants[_grantTerm].awardeesCount; i++) {
       ret[i] = activeAwardees[_grantTerm][i].awardee;
     }
@@ -171,8 +179,9 @@ contract GrantRegistry is Governed, CouncilControlled {
     view
     returns (address[] memory _eligibleBeneficiaries)
   {
-    address[] memory eligibleBeneficiaries =
-      new address[](beneficiaries.length);
+    address[] memory eligibleBeneficiaries = new address[](
+      beneficiaries.length
+    );
     for (uint256 i = 0; i < beneficiaries.length; i++) {
       if (beneficiaryRegistry.beneficiaryExists(beneficiaries[i])) {
         eligibleBeneficiaries[i] = beneficiaries[i];
