@@ -60,16 +60,16 @@ export default function BeneficiaryProposal(): JSX.Element {
   const router = useRouter();
   useEffect(() => {
     const formData = localStorage.getItem('beneficiaryNominationProposal');
-    if (formData !== null) {
-      setFormData(JSON.parse(formData));
-    }
+    const stepLimit = Number(localStorage.getItem('stepLimit'));
+    if (formData !== null) setFormData(JSON.parse(formData));
+    if (stepLimit !== null) setStepLimit(stepLimit);
   }, []);
 
   useEffect(() => {
     const step = Number(router.query.step as string);
     if (step && step !== currentStep && step < stepLimit) setCurrentStep(step);
     if (step && step !== currentStep && step >= stepLimit)
-      setCurrentStep(stepLimit - 1);
+      setCurrentStep(stepLimit);
   }, [router]);
 
   useEffect(() => {
@@ -79,12 +79,15 @@ export default function BeneficiaryProposal(): JSX.Element {
   }, [currentStep]);
 
   useEffect(() => {
-    //global validation, submission and saving to localstorage can be handled here
     localStorage.setItem(
       'beneficiaryNominationProposal',
       JSON.stringify(formData),
     );
   }, [formData]);
+
+  useEffect(() => {
+    localStorage.setItem('stepLimit', String(stepLimit));
+  }, [stepLimit]);
 
   const navigation: Navigation = {
     currentStep,
