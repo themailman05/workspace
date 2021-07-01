@@ -1,9 +1,14 @@
+import { setDualActionModal } from 'context/actions';
+import { store } from 'context/store';
+
 import {
   CashIcon,
   HandIcon,
   LibraryIcon,
   UserIcon,
 } from '@heroicons/react/outline';
+import { useContext } from 'react';
+import { DualActionModalProps } from 'components/Modal/DualActionModal';
 
 type ContractName =
   | 'Beneficiary Governance'
@@ -35,8 +40,24 @@ export function ClaimRewardsListItem({
   rewardAmount,
   claimRewards,
 }: ClaimRewardsListItemProps): JSX.Element {
-  console.log(rewardAmount > 0);
-  console.log(rewardAmount);
+  const { dispatch } = useContext(store);
+  function triggerClaimReward({
+    title,
+    content,
+    visible,
+    onDismiss,
+    onConfirm,
+  }: DualActionModalProps) {
+    dispatch(
+      setDualActionModal({
+        title,
+        content,
+        visible,
+        onDismiss,
+        onConfirm,
+      }),
+    );
+  }
   return (
     <li
       className="gap-y-1 flex flex-row bg-white rounded-lg"
@@ -53,7 +74,7 @@ export function ClaimRewardsListItem({
         </div>
       </div>
       <div className="w-1/2 whitespace-nowrap flex flex-col content-start justify-center">
-        <div className="text-m text-gray-900">Earned</div>
+        <div className="text-m text-gray-900">Earned (POP)</div>
         <div className="mt-2 flex items-center text-m text-gray-500">
           {rewardAmount}
         </div>
@@ -63,14 +84,26 @@ export function ClaimRewardsListItem({
           <button
             type="button"
             className="mx-6 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 "
-            onClick={claimRewards}
+            onClick={() =>
+              triggerClaimReward({
+                title: `Trigger ${contractName} Reward Claim`,
+                content: `Are you sure you want to claim ${rewardAmount} POP from ${contractName} contract?`,
+                visible: true,
+                onDismiss: {
+                  label: 'Cancel',
+                  onClick: () => dispatch(setDualActionModal(false)),
+                },
+                onConfirm: { label: 'Confirm', onClick: claimRewards },
+              })
+            }
           >
             Claim
           </button>
         ) : (
           <button
             type="button"
-            className="disabled:opacity-50 mx-6 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 "
+            className="disabled:opacity-50 mx-6 px-4 py-2 border border-transparent text-sm font-medium rounded-md  text-gray-400 bg-indigo-200"
+            onClick={() => {}}
           >
             Claim
           </button>
