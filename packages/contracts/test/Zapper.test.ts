@@ -132,6 +132,8 @@ async function deployContracts(): Promise<Contracts> {
     )
   ).deployed();
 
+  await pool.approveContractAccess(zapper.address);
+
   return {
     mockToken,
     mockLPToken,
@@ -275,6 +277,23 @@ describe("Zapper", function () {
         );
       expect(
         await contracts.mockLPToken.balanceOf(contracts.zapper.address)
+      ).to.equal(parseEther("1000"));
+    });
+
+    it("deposits to Pool on behalf of sender", async function () {
+      await contracts.mockDai.mint(depositor.address, parseEther("1000"));
+      await contracts.mockDai
+        .connect(depositor)
+        .approve(contracts.zapper.address, parseEther("1000"));
+      await contracts.zapper
+        .connect(depositor)
+        .zapIn(
+          contracts.pool.address,
+          contracts.mockDai.address,
+          parseEther("1000")
+        );
+      expect(
+        await contracts.pool.balanceOf(depositor.address)
       ).to.equal(parseEther("1000"));
     });
   });

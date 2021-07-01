@@ -96,6 +96,29 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     return shares;
   }
 
+  function deposit(uint256 amount, address recipient)
+    public
+    defend
+    nonReentrant
+    whenNotPaused
+    blockLocked
+    returns (uint256)
+  {
+    require(amount <= token.balanceOf(msg.sender), "Insufficient balance");
+    _lockForBlock(msg.sender);
+    _takeFees();
+
+    uint256 sharesBefore = balanceOf(msg.sender);
+    super.deposit(amount);
+    uint256 sharesAfter = balanceOf(msg.sender);
+    uint256 shares = sharesAfter.sub(sharesBefore);
+    transfer(recipient, shares);
+
+    emit Deposit(recipient, amount, shares);
+    _reportPoolTokenHWM();
+    return shares;
+  }
+
   function withdraw(uint256 amount)
     public
     override

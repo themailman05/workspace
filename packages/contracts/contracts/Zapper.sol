@@ -45,6 +45,7 @@ interface CurveMetapool {
 
 interface IPool {
   function token() external view returns (address);
+  function deposit(uint256 amount, address recipient) external returns (uint256);
 }
 
 contract Zapper {
@@ -103,25 +104,27 @@ contract Zapper {
 
   function zapIn(
     address popcornPool,
-    address token,
+    address depositToken,
     uint256 amount
   ) public returns (uint256) {
-    require(canZap(popcornPool, token), "Unsupported token");
+    require(canZap(popcornPool, depositToken), "Unsupported deposit token");
 
-    IERC20(token).transferFrom(msg.sender, address(this), amount);
+    IERC20(depositToken).transferFrom(msg.sender, address(this), amount);
     uint256[4] memory amounts = [
       uint256(0),
       uint256(0),
       uint256(0),
       uint256(0)
     ];
-    amounts[tokenIndex(popcornPool, token)] = amount;
-    IERC20(token).safeIncreaseAllowance(address(curveDepositZap), amount);
+    amounts[tokenIndex(popcornPool, depositToken)] = amount;
+    IERC20(depositToken).safeIncreaseAllowance(address(curveDepositZap), amount);
     uint256 lpTokens = curveDepositZap.add_liquidity(
       curvePoolAddress(popcornPool),
       amounts,
       0
     );
-    return lpTokens;
+    IERC20(token(popcornPool)).safeIncreaseAllowance(popcornPool, lpTokens);
+    uint256 shares = IPool(popcornPool).deposit(lpTokens, msg.sender);
+    return shares;
   }
 }
