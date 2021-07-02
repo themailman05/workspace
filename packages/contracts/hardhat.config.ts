@@ -178,6 +178,10 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY]
     },
     hardhat: {
+      forking: {
+        url: process.env.RPC_URL,
+        blockNumber: 12724811
+      }
     },
     rinkeby: {
       url: process.env.RPC_URL,
