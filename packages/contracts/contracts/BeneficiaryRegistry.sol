@@ -5,6 +5,7 @@ pragma solidity >=0.7.0 <=0.8.3;
 import "./Governed.sol";
 import "./CouncilControlled.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./IRegion.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BeneficiaryRegistry is
@@ -14,7 +15,7 @@ contract BeneficiaryRegistry is
 {
   struct Beneficiary {
     bytes applicationCid; // ipfs address of application
-    string region;
+    bytes2 region;
     uint256 listPointer;
   }
 
@@ -31,15 +32,11 @@ contract BeneficiaryRegistry is
     require(_address == address(_address), "invalid address");
     _;
   }
-  modifier onlyOwnerOrCouncil(address _address) {
-    require(
-      msg.sender == owner() || msg.sender == getCouncil(),
-      "Only the owner or council may perform this action"
-    );
-    _;
-  }
 
-  constructor() Ownable() CouncilControlled(msg.sender) {}
+  constructor(IRegion _region)
+    Ownable()
+    CouncilControlled(msg.sender, _region)
+  {}
 
   /**
    * @notice add a beneficiary with their IPFS cid to the registry
@@ -47,7 +44,7 @@ contract BeneficiaryRegistry is
    */
   function addBeneficiary(
     address account,
-    string region,
+    bytes2 region,
     bytes calldata applicationCid
   ) external override onlyOwner {
     require(account == address(account), "invalid address");
@@ -67,11 +64,12 @@ contract BeneficiaryRegistry is
   /**
    * @notice remove a beneficiary from the registry. (callable only by council)
    */
-  function revokeBeneficiary(address _address)
-    external
-    override
-    onlyOwnerOrCouncil(msg.sender)
-  {
+  function revokeBeneficiary(address _address) external override {
+    require(
+      msg.sender == owner() ||
+        msg.sender == getCouncil(beneficiariesMap[_address].region),
+      "Only the owner or council may perform this action"
+    );
     require(beneficiaryExists(_address), "exists");
     delete beneficiariesList[beneficiariesMap[_address].listPointer];
     delete beneficiariesMap[_address];

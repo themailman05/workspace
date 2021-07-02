@@ -31,7 +31,7 @@ contract GrantElections is Governed {
     uint256 startTime;
     uint256 randomNumber;
     bytes32 merkleRoot;
-    string region;
+    bytes2 region;
   }
 
   struct ElectionConfiguration {
@@ -80,7 +80,7 @@ contract GrantElections is Governed {
   IRandomNumberConsumer internal randomNumberConsumer;
 
   Election[] public elections;
-  mapping(string => uint256[3]) public activeElections;
+  mapping(bytes32 => uint256[3]) public activeElections;
   ElectionConfiguration[3] public electionDefaults;
   uint256 public incentiveBudget;
 
@@ -90,7 +90,7 @@ contract GrantElections is Governed {
   event UserVoted(address _user, ElectionTerm _term);
   event ElectionInitialized(
     ElectionTerm _term,
-    string _region,
+    bytes2 _region,
     uint256 _startTime
   );
   event FinalizationProposed(uint256 _electionId, bytes32 _merkleRoot);
@@ -191,8 +191,8 @@ contract GrantElections is Governed {
 
   // todo: mint POP for caller to incentivize calling function
   // todo: use bonds to incentivize callers instead of minting
-  function initialize(ElectionTerm _grantTerm, string _region) public {
-    require(region.regionExists(_region), "region doesnt exist");
+  function initialize(ElectionTerm _grantTerm, bytes2 _region) public {
+    //require(region.regionExists(_region), "region doesnt exist");
 
     uint8 _term = uint8(_grantTerm);
     if (elections.length != 0) {
@@ -283,7 +283,12 @@ contract GrantElections is Governed {
     ) {
       election.electionState = ElectionState.Closed;
       if (election.electionConfiguration.useChainLinkVRF) {
-        randomNumberConsumer.getRandomNumber(_electionId);
+        randomNumberConsumer.getRandomNumber(
+          _electionId,
+          uint256(
+            keccak256(abi.encode(block.timestamp, blockhash(block.number)))
+          )
+        );
       }
     } else if (
       block.timestamp >=

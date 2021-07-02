@@ -4,17 +4,22 @@ import "./Governed.sol";
 import "./IRegion.sol";
 
 contract Region is IRegion, Governed {
-  string[] public regions;
-  mapping(string => bool) public regionExists;
+  bytes2 public immutable override defaultRegion = 0x5757; //"WW" in bytes2
+  bytes2[] public regions;
+  mapping(bytes2 => bool) public override regionExists;
 
-  event RegionAdded(string region);
+  event RegionAdded(bytes2 region);
 
   constructor() public Governed(msg.sender) {
-    regions.push("ww");
-    regionExists["ww"] = true;
+    regions.push(0x5757);
+    regionExists[0x5757] = true;
   }
 
-  function addRegion(string region) external override onlyGovernance {
+  function getAllRegions() public view override returns (bytes2[] memory) {
+    return regions;
+  }
+
+  function addRegion(bytes2 region) external override onlyGovernance {
     require(regionExists[region] == false, "region already exists");
     regions.push(region);
     regionExists[region] = true;

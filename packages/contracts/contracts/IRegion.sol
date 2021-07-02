@@ -1,11 +1,11 @@
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./Governed.sol";
+interface IRegion {
+  function defaultRegion() external view returns (bytes2);
 
-contract Region is Governed {
-  function regionExists(string region) external view returns (bool);
+  function regionExists(bytes2 region) external view returns (bool);
 
-  function regions() external view returns (string[]);
+  function getAllRegions() external view returns (bytes2[] memory);
 
-  function addRegion(string region) external;
+  function addRegion(bytes2 region) external;
 }

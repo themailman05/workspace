@@ -58,7 +58,7 @@ contract BeneficiaryGovernance is Governed {
     bytes applicationCid;
     address proposer;
     uint256 startTime;
-    string region;
+    bytes2 region;
     uint256 yesCount;
     uint256 noCount;
     uint256 voterCount;
@@ -143,8 +143,8 @@ contract BeneficiaryGovernance is Governed {
    */
   function createProposal(
     address _beneficiary,
-    string _region,
-    bytes memory _applicationCid,
+    bytes2 _region,
+    bytes calldata _applicationCid,
     ProposalType _type
   )
     external
@@ -152,7 +152,7 @@ contract BeneficiaryGovernance is Governed {
     enoughBond(msg.sender)
     returns (uint256)
   {
-    require(region.regionExists(_region), "region doesnt exist");
+    //require(region.regionExists(_region), "region doesnt exist");
     _assertProposalPreconditions(_type, _beneficiary);
 
     POP.safeTransferFrom(
