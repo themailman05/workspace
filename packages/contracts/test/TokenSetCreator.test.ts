@@ -16,8 +16,6 @@ describe("TokenSetCreator", function () {
   let configuration: Configuration;
   let owner: SignerWithAddress;
   let contracts: Contracts = {};
-  let subjectComponentRatio: number;
-
 
   before(async function () {
     [owner] = await ethers.getSigners();
@@ -62,7 +60,7 @@ describe("TokenSetCreator", function () {
       virtualPrice: parseEther("1.011013458944652876"),
       sharePrice: parseEther("1.019964776911275462"),
     });
-    
+
     configuration = {
       targetNAV: parseEther("200"),
       core: {
@@ -133,13 +131,13 @@ describe("TokenSetCreator", function () {
     let subjectConfiguration: Configuration;
 
     async function subject() {
-      return TokenSetCreator({ configuration: subjectConfiguration, hre: hardhat })._calculateUnits(
-        subjectComponent
-      );
+      return TokenSetCreator({
+        configuration: subjectConfiguration,
+        hre: hardhat,
+      })._calculateUnits(subjectComponent);
     }
 
-    describe('DUSD calculations', () => {
-
+    describe("DUSD calculations", () => {
       before(() => {
         subjectConfiguration = configuration;
         subjectComponent = configuration.components.ycrvDUSD;
@@ -149,10 +147,9 @@ describe("TokenSetCreator", function () {
         expect(await subject()).to.eq(parseEther("48.487287913484946687"));
       });
 
-      describe('calculation when component ratio changes', () => {
-
+      describe("calculation when component ratio changes", () => {
         beforeEach(() => {
-          subjectComponent = {  
+          subjectComponent = {
             ...configuration.components.ycrvDUSD,
             ratio: 50,
           };
@@ -163,8 +160,7 @@ describe("TokenSetCreator", function () {
         });
       });
     });
-    describe('FRAX calculations', () => {
-
+    describe("FRAX calculations", () => {
       before(() => {
         subjectConfiguration = configuration;
         subjectComponent = configuration.components.ycrvFRAX;
@@ -174,10 +170,9 @@ describe("TokenSetCreator", function () {
         expect(await subject()).to.eq(parseEther("48.963958299874173602"));
       });
 
-      describe('calculation when component ratio changes', () => {
-
+      describe("calculation when component ratio changes", () => {
         beforeEach(() => {
-          subjectComponent = {  
+          subjectComponent = {
             ...configuration.components.ycrvFRAX,
             ratio: 33,
           };
