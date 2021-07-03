@@ -10,7 +10,7 @@ import { BigNumber } from 'ethers';
 import { useRouter } from 'next/router';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { defaultFormData, FormStepProps } from './ProposalForm';
+import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import {
   BeneficiaryApplication,
   IpfsClient,
