@@ -322,4 +322,31 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     require(vaultExists(vaultId_, region_), "vault must exist");
     _;
   }
+
+  /* ========== SETTER ========== */
+
+  /**
+   * @notice Overrides existing BeneficiaryRegistry contract
+   * @param beneficiaryRegistry_ Address of new BeneficiaryRegistry contract
+   * @dev Must implement IBeneficiaryRegistry and cannot be same as existing
+   */
+  function setBeneficiaryRegistry(IBeneficiaryRegistry beneficiaryRegistry_)
+    public
+    onlyOwner
+  {
+    require(
+      beneficiaryRegistry != beneficiaryRegistry_,
+      "Same BeneficiaryRegistry"
+    );
+    IBeneficiaryRegistry _beneficiaryRegistry = beneficiaryRegistry;
+    beneficiaryRegistry = beneficiaryRegistry_;
+    emit BeneficiaryRegistryChanged(_beneficiaryRegistry, beneficiaryRegistry);
+  }
+
+  /* ========== MODIFIERS ========== */
+
+  modifier _vaultExists(uint8 vaultId_) {
+    require(vaultExists(vaultId_), "vault must exist");
+    _;
+  }
 }
