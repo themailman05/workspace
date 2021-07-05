@@ -35,7 +35,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
   IBeneficiaryRegistry public beneficiaryRegistry;
   IRegion public region;
   uint256 public totalDistributedBalance = 0;
-  mapping(bytes2 => Vault[3]) private vaults;
+  mapping(bytes2 => Vault[3]) public vaults;
   mapping(bytes2 => uint256) public regionBalance;
 
   /* ========== EVENTS ========== */
@@ -43,7 +43,6 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
   event VaultOpened(uint8 vaultId, bytes32 merkleRoot);
   event VaultClosed(uint8 vaultId);
   event RewardsDistributed(uint256 amount);
-  event RewardAllocated(uint8 vaultId, bytes2 region_, uint256 amount);
   event RewardClaimed(
     uint8 vaultId,
     bytes2 region_,
@@ -265,22 +264,25 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     require(regionBalance[region_] > 0, "empty region balance");
 
     uint8 _openVaultCount = _getOpenVaultCount(region_);
-    require(_openVaultCount == 0, "no open vaults");
+    require(_openVaultCount > 0, "no open vaults");
 
     //@todo handle dust after div
     uint256 _allocation = regionBalance[region_].div(_openVaultCount);
 
     for (uint8 _vaultId = 0; _vaultId < vaults[region_].length; _vaultId++) {
-      if (vaults[region_][_vaultId].status == VaultStatus.Open) {
+      if (
+        vaults[region_][_vaultId].status == VaultStatus.Open &&
+        vaults[region_][_vaultId].merkleRoot != ""
+      ) {
         vaults[region_][_vaultId].totalAllocated = vaults[region_][_vaultId]
         .totalAllocated
         .add(_allocation);
         vaults[region_][_vaultId].currentBalance = vaults[region_][_vaultId]
         .currentBalance
         .add(_allocation);
-        emit RewardAllocated(_vaultId, region_, _allocation);
       }
     }
+    regionBalance[region_] = 0;
   }
 
   function _getOpenVaultCount(bytes2 region_) internal view returns (uint8) {
