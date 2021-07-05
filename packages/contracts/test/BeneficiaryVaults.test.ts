@@ -20,6 +20,7 @@ const OwnerInitial = parseEther("10");
 const RewarderInitial = parseEther("5");
 const firstReward = parseEther("1");
 const secondReward = parseEther("0.05");
+const DEFAULT_REGION = "0x5757";
 
 let claims, merkleTree, merkleRoot;
 
@@ -48,16 +49,20 @@ async function deployContracts(): Promise<Contracts> {
   );
   await beneficiaryRegistry.mock.beneficiaryExists.returns(true); //assume true
 
+  const region = await (
+    await (await ethers.getContractFactory("Region")).deploy()
+  ).deployed();
+
   const beneficiaryVaults = await (
     await (
       await ethers.getContractFactory("BeneficiaryVaults")
-    ).deploy(mockPop.address, beneficiaryRegistry.address)
+    ).deploy(mockPop.address, beneficiaryRegistry.address, region.address)
   ).deployed();
 
   return { mockPop, beneficiaryRegistry, beneficiaryVaults };
 }
 
-describe("BeneficiaryVaults", function () {
+describe.only("BeneficiaryVaults", function () {
   beforeEach(async function () {
     [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
     contracts = await deployContracts();
@@ -76,21 +81,21 @@ describe("BeneficiaryVaults", function () {
   });
 
   it("reverts when trying to get uninitialized vault", async function () {
-    await expect(contracts.beneficiaryVaults.getVault(0)).to.be.revertedWith(
-      "Uninitialized vault slot"
-    );
+    await expect(
+      contracts.beneficiaryVaults.getVault(0, DEFAULT_REGION)
+    ).to.be.revertedWith("vault must exist");
   });
 
   it("reverts when trying to get invalid vault", async function () {
-    await expect(contracts.beneficiaryVaults.getVault(4)).to.be.revertedWith(
-      "Invalid vault id"
-    );
+    await expect(
+      contracts.beneficiaryVaults.getVault(4, DEFAULT_REGION)
+    ).to.be.revertedWith("vault must exist");
   });
 
   it("reverts when trying to initialize an invalid vault id", async function () {
     const currentBlock = (await provider.getBlock("latest")).number;
     await expect(
-      contracts.beneficiaryVaults.openVault(4, merkleRoot)
+      contracts.beneficiaryVaults.openVault(4, DEFAULT_REGION, merkleRoot)
     ).to.be.revertedWith("Invalid vault id");
   });
 
@@ -134,7 +139,11 @@ describe("BeneficiaryVaults", function () {
   describe("vault 0 is opened", function () {
     let result;
     beforeEach(async function () {
-      result = await contracts.beneficiaryVaults.openVault(0, merkleRoot);
+      result = await contracts.beneficiaryVaults.openVault(
+        0,
+        DEFAULT_REGION,
+        merkleRoot
+      );
     });
 
     it("emits a VaultOpened event", async function () {
@@ -144,17 +153,28 @@ describe("BeneficiaryVaults", function () {
     });
 
     it("vault has expected values", async function () {
-      const vaultData = await contracts.beneficiaryVaults.getVault(0);
+      const vaultData = await contracts.beneficiaryVaults.getVault(
+        0,
+        DEFAULT_REGION
+      );
       expect(vaultData.totalAllocated).to.equal(0);
       expect(vaultData.currentBalance).to.equal(0);
       expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
       expect(vaultData.status).to.equal(VaultStatus.Open);
       expect(
-        await contracts.beneficiaryVaults.hasClaimed(0, beneficiary1.address)
+        await contracts.beneficiaryVaults.hasClaimed(
+          0,
+          DEFAULT_REGION,
+          beneficiary1.address
+        )
       ).to.be.false;
       expect(
-        await contracts.beneficiaryVaults.hasClaimed(0, beneficiary2.address)
+        await contracts.beneficiaryVaults.hasClaimed(
+          0,
+          DEFAULT_REGION,
+          beneficiary2.address
+        )
       ).to.be.false;
     });
 
@@ -165,17 +185,28 @@ describe("BeneficiaryVaults", function () {
     });
 
     it("vault has expected values", async function () {
-      const vaultData = await contracts.beneficiaryVaults.getVault(0);
+      const vaultData = await contracts.beneficiaryVaults.getVault(
+        0,
+        DEFAULT_REGION
+      );
       expect(vaultData.totalAllocated).to.equal(0);
       expect(vaultData.currentBalance).to.equal(0);
       expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
       expect(vaultData.merkleRoot).to.equal(merkleRoot);
       expect(vaultData.status).to.equal(VaultStatus.Open);
       expect(
-        await contracts.beneficiaryVaults.hasClaimed(0, beneficiary1.address)
+        await contracts.beneficiaryVaults.hasClaimed(
+          0,
+          DEFAULT_REGION,
+          beneficiary1.address
+        )
       ).to.be.false;
       expect(
-        await contracts.beneficiaryVaults.hasClaimed(0, beneficiary2.address)
+        await contracts.beneficiaryVaults.hasClaimed(
+          0,
+          DEFAULT_REGION,
+          beneficiary2.address
+        )
       ).to.be.false;
     });
 
@@ -186,9 +217,9 @@ describe("BeneficiaryVaults", function () {
     });
 
     it("contract has expected vaulted balance", async function () {
-      expect(await contracts.beneficiaryVaults.totalVaultedBalance()).to.equal(
-        0
-      );
+      expect(
+        await contracts.beneficiaryVaults.totalDistributedBalance()
+      ).to.equal(0);
     });
 
     it("reverts claim with no reward", async function () {
@@ -200,13 +231,14 @@ describe("BeneficiaryVaults", function () {
           .connect(beneficiary1)
           .claimReward(
             0,
+            DEFAULT_REGION,
             proof,
             beneficiary1.address,
             claims[beneficiary1.address]
           )
       ).to.be.revertedWith("No reward");
     });
-    describe("deposits reward and distribute to vaults", function () {
+    describe("deposits reward and distribute it", function () {
       beforeEach(async function () {
         await contracts.mockPop
           .connect(rewarder)
@@ -222,14 +254,11 @@ describe("BeneficiaryVaults", function () {
 
       it("contract has expected vaulted balance", async function () {
         expect(
-          await contracts.beneficiaryVaults.totalVaultedBalance()
+          await contracts.beneficiaryVaults.totalDistributedBalance()
         ).to.equal(firstReward);
       });
 
       it("emits expected events", async function () {
-        expect(result)
-          .to.emit(contracts.beneficiaryVaults, "RewardAllocated")
-          .withArgs(0, firstReward);
         expect(result)
           .to.emit(contracts.beneficiaryVaults, "RewardsDistributed")
           .withArgs(firstReward);
@@ -238,7 +267,13 @@ describe("BeneficiaryVaults", function () {
       it("reverts invalid claim", async function () {
         const proof = [makeElement(owner.address, "10")];
         await expect(
-          contracts.beneficiaryVaults.claimReward(0, proof, owner.address, "10")
+          contracts.beneficiaryVaults.claimReward(
+            0,
+            DEFAULT_REGION,
+            proof,
+            owner.address,
+            "10"
+          )
         ).to.be.revertedWith("Invalid claim");
       });
 
@@ -254,6 +289,7 @@ describe("BeneficiaryVaults", function () {
             .connect(beneficiary1)
             .claimReward(
               0,
+              DEFAULT_REGION,
               proof,
               beneficiary1.address,
               claims[beneficiary1.address]
@@ -270,6 +306,7 @@ describe("BeneficiaryVaults", function () {
             .connect(beneficiary1)
             .verifyClaim(
               0,
+              DEFAULT_REGION,
               proof,
               beneficiary1.address,
               claims[beneficiary1.address]
@@ -286,6 +323,7 @@ describe("BeneficiaryVaults", function () {
             .connect(beneficiary2)
             .claimReward(
               0,
+              DEFAULT_REGION,
               proof,
               beneficiary1.address,
               claims[beneficiary1.address]
@@ -295,285 +333,412 @@ describe("BeneficiaryVaults", function () {
 
       it("reverts when reinitializing open vault", async function () {
         await expect(
-          contracts.beneficiaryVaults.openVault(0, merkleRoot)
+          contracts.beneficiaryVaults.openVault(0, DEFAULT_REGION, merkleRoot)
         ).to.be.revertedWith("Vault must not be open");
       });
 
-      describe("claim from beneficiary 1", function () {
-        let beneficiary1Claim: BigNumber;
+      describe("allocate rewards", function () {
         beforeEach(async function () {
-          beneficiary1Claim = firstReward
-            .mul(claims[beneficiary1.address])
-            .div(parseEther("100"));
-          const proof = merkleTree.getProof(
-            makeElement(beneficiary1.address, claims[beneficiary1.address])
-          );
-          result = await contracts.beneficiaryVaults
-            .connect(beneficiary1)
-            .claimReward(
-              0,
-              proof,
-              beneficiary1.address,
-              claims[beneficiary1.address]
-            );
-        });
-
-        it("emits expected events", async function () {
-          expect(result)
-            .to.emit(contracts.beneficiaryVaults, "RewardClaimed")
-            .withArgs(0, beneficiary1.address, beneficiary1Claim);
-        });
-
-        it("contract has expected balance", async function () {
-          expect(
-            await contracts.mockPop.balanceOf(
-              contracts.beneficiaryVaults.address
-            )
-          ).to.equal(firstReward.sub(beneficiary1Claim));
+          result = await contracts.beneficiaryVaults.allocateRewards(DEFAULT_REGION);
         });
 
         it("contract has expected vaulted balance", async function () {
           expect(
-            await contracts.beneficiaryVaults.totalVaultedBalance()
-          ).to.equal(firstReward.sub(beneficiary1Claim));
+            await contracts.beneficiaryVaults.totalDistributedBalance()
+          ).to.equal(firstReward);
         });
 
-        it("vault has expected data", async function () {
-          const currentBalance = firstReward.sub(beneficiary1Claim);
-          const unclaimedShare = parseEther("100").sub(
-            claims[beneficiary1.address]
-          );
-          const vaultData = await contracts.beneficiaryVaults.getVault(0);
-          expect(vaultData.totalAllocated).to.equal(firstReward);
-          expect(vaultData.currentBalance).to.equal(currentBalance);
-          expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
-          expect(
-            await contracts.beneficiaryVaults.hasClaimed(
+        it("emits expected events", async function () {
+          expect(result)
+            .to.emit(contracts.beneficiaryVaults, "RewardsDistributed")
+            .withArgs(firstReward);
+        });
+
+        it("reverts invalid claim", async function () {
+          const proof = [makeElement(owner.address, "10")];
+          await expect(
+            contracts.beneficiaryVaults.claimReward(
               0,
-              beneficiary1.address
+              DEFAULT_REGION,
+              proof,
+              owner.address,
+              "10"
             )
-          ).to.be.true;
+          ).to.be.revertedWith("Invalid claim");
         });
 
-        it("reverts a second claim", async function () {
+        it("reverts claim when beneficiary does not exist", async function () {
           const proof = merkleTree.getProof(
             makeElement(beneficiary1.address, claims[beneficiary1.address])
+          );
+          await contracts.beneficiaryRegistry.mock.beneficiaryExists.returns(
+            false
           );
           await expect(
             contracts.beneficiaryVaults
               .connect(beneficiary1)
               .claimReward(
                 0,
+                DEFAULT_REGION,
                 proof,
                 beneficiary1.address,
                 claims[beneficiary1.address]
               )
-          ).to.be.revertedWith("Already claimed");
+          ).to.be.revertedWith("Beneficiary does not exist");
         });
-        describe("deposit more rewards and distribute", function () {
-          beforeEach(async function () {
-            await contracts.mockPop
-              .connect(rewarder)
-              .transfer(contracts.beneficiaryVaults.address, secondReward);
-            result = await contracts.beneficiaryVaults
-              .connect(rewarder)
-              .distributeRewards();
-          });
 
-          it("has expected contract balance", async function () {
-            const currentBalance = firstReward
-              .sub(beneficiary1Claim)
-              .add(secondReward);
-            expect(
-              await contracts.mockPop.balanceOf(
-                contracts.beneficiaryVaults.address
+        it("verifies valid claim", async function () {
+          const proof = merkleTree.getProof(
+            makeElement(beneficiary1.address, claims[beneficiary1.address])
+          );
+          expect(
+            await contracts.beneficiaryVaults
+              .connect(beneficiary1)
+              .verifyClaim(
+                0,
+                DEFAULT_REGION,
+                proof,
+                beneficiary1.address,
+                claims[beneficiary1.address]
               )
-            ).to.equal(currentBalance);
-          });
+          ).to.be.true;
+        });
 
-          it("contract has expected vaulted balance", async function () {
-            const currentBalance = firstReward
-              .sub(beneficiary1Claim)
-              .add(secondReward);
-            expect(
-              await contracts.beneficiaryVaults.totalVaultedBalance()
-            ).to.equal(currentBalance);
+        it("reverts claim from wrong sender", async function () {
+          const proof = merkleTree.getProof(
+            makeElement(beneficiary1.address, claims[beneficiary1.address])
+          );
+          result = await expect(
+            contracts.beneficiaryVaults
+              .connect(beneficiary2)
+              .claimReward(
+                0,
+                DEFAULT_REGION,
+                proof,
+                beneficiary1.address,
+                claims[beneficiary1.address]
+              )
+          ).to.be.revertedWith("Sender must be beneficiary");
+        });
+
+        it("reverts when reinitializing open vault", async function () {
+          await expect(
+            contracts.beneficiaryVaults.openVault(0, DEFAULT_REGION, merkleRoot)
+          ).to.be.revertedWith("Vault must not be open");
+        });
+
+        describe("claim from beneficiary 1", function () {
+          let beneficiary1Claim: BigNumber;
+          beforeEach(async function () {
+            beneficiary1Claim = firstReward
+              .mul(claims[beneficiary1.address])
+              .div(parseEther("100"));
+            const proof = merkleTree.getProof(
+              makeElement(beneficiary1.address, claims[beneficiary1.address])
+            );
+            result = await contracts.beneficiaryVaults
+              .connect(beneficiary1)
+              .claimReward(
+                0,
+                DEFAULT_REGION,
+                proof,
+                beneficiary1.address,
+                claims[beneficiary1.address]
+              );
           });
 
           it("emits expected events", async function () {
             expect(result)
-              .to.emit(contracts.beneficiaryVaults, "RewardAllocated")
-              .withArgs(0, secondReward);
-            expect(result)
-              .to.emit(contracts.beneficiaryVaults, "RewardsDistributed")
-              .withArgs(secondReward);
+              .to.emit(contracts.beneficiaryVaults, "RewardClaimed")
+              .withArgs(0, beneficiary1.address, beneficiary1Claim);
           });
 
-          describe("claim from beneficiary 2", function () {
-            let beneficiary2Claim: BigNumber;
-            beforeEach(async function () {
-              beneficiary2Claim = firstReward
-                .add(secondReward)
-                .sub(beneficiary1Claim)
-                .mul(claims[beneficiary2.address])
-                .div(parseEther("100").sub(claims[beneficiary1.address]));
-              const proof = merkleTree.getProof(
-                makeElement(beneficiary2.address, claims[beneficiary2.address])
-              );
-              result = await contracts.beneficiaryVaults
-                .connect(beneficiary2)
+          it("contract has expected balance", async function () {
+            expect(
+              await contracts.mockPop.balanceOf(
+                contracts.beneficiaryVaults.address
+              )
+            ).to.equal(firstReward.sub(beneficiary1Claim));
+          });
+
+          it("contract has expected vaulted balance", async function () {
+            expect(
+              await contracts.beneficiaryVaults.totalDistributedBalance()
+            ).to.equal(firstReward.sub(beneficiary1Claim));
+          });
+
+          it("vault has expected data", async function () {
+            const currentBalance = firstReward.sub(beneficiary1Claim);
+            const unclaimedShare = parseEther("100").sub(
+              claims[beneficiary1.address]
+            );
+            const vaultData = await contracts.beneficiaryVaults.getVault(
+              0,
+              DEFAULT_REGION
+            );
+            expect(vaultData.totalAllocated).to.equal(firstReward);
+            expect(vaultData.currentBalance).to.equal(currentBalance);
+            expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
+            expect(
+              await contracts.beneficiaryVaults.hasClaimed(
+                0,
+                DEFAULT_REGION,
+                beneficiary1.address
+              )
+            ).to.be.true;
+          });
+
+          it("reverts a second claim", async function () {
+            const proof = merkleTree.getProof(
+              makeElement(beneficiary1.address, claims[beneficiary1.address])
+            );
+            await expect(
+              contracts.beneficiaryVaults
+                .connect(beneficiary1)
                 .claimReward(
                   0,
+                  DEFAULT_REGION,
                   proof,
-                  beneficiary2.address,
-                  claims[beneficiary2.address]
-                );
+                  beneficiary1.address,
+                  claims[beneficiary1.address]
+                )
+            ).to.be.revertedWith("Already claimed");
+          });
+          describe("deposit more rewards and distribute", function () {
+            beforeEach(async function () {
+              await contracts.mockPop
+                .connect(rewarder)
+                .transfer(contracts.beneficiaryVaults.address, secondReward);
+              result = await contracts.beneficiaryVaults
+                .connect(rewarder)
+                .distributeRewards();
+            });
+
+            it("has expected contract balance", async function () {
+              const currentBalance = firstReward
+                .sub(beneficiary1Claim)
+                .add(secondReward);
+              expect(
+                await contracts.mockPop.balanceOf(
+                  contracts.beneficiaryVaults.address
+                )
+              ).to.equal(currentBalance);
+            });
+
+            it("contract has expected vaulted balance", async function () {
+              const currentBalance = firstReward
+                .sub(beneficiary1Claim)
+                .add(secondReward);
+              expect(
+                await contracts.beneficiaryVaults.totalDistributedBalance()
+              ).to.equal(currentBalance);
             });
 
             it("emits expected events", async function () {
               expect(result)
-                .to.emit(contracts.beneficiaryVaults, "RewardClaimed")
-                .withArgs(0, beneficiary2.address, beneficiary2Claim);
+                .to.emit(contracts.beneficiaryVaults, "RewardsDistributed")
+                .withArgs(secondReward);
             });
 
-            it("vault has expected data", async function () {
-              const currentBalance = firstReward
-                .add(secondReward)
-                .sub(beneficiary1Claim)
-                .sub(beneficiary2Claim);
-              const unclaimedShare = parseEther("100")
-                .sub(claims[beneficiary1.address])
-                .sub(claims[beneficiary2.address]);
-              const vaultData = await contracts.beneficiaryVaults.getVault(0);
-              expect(vaultData.totalAllocated).to.equal(
-                firstReward.add(secondReward)
-              );
-              expect(vaultData.currentBalance).to.equal(currentBalance);
-              expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
-              expect(
-                await contracts.beneficiaryVaults.hasClaimed(
-                  0,
-                  beneficiary2.address
-                )
-              ).to.be.true;
-            });
-
-            it("has expected contract balance", async function () {
-              const currentBalance = firstReward
-                .add(secondReward)
-                .sub(beneficiary1Claim)
-                .sub(beneficiary2Claim);
-              expect(
-                await contracts.mockPop.balanceOf(
-                  contracts.beneficiaryVaults.address
-                )
-              ).to.equal(currentBalance);
-            });
-
-            it("contract has expected vaulted balance", async function () {
-              const currentBalance = firstReward
-                .sub(beneficiary1Claim)
-                .add(secondReward)
-                .sub(beneficiary2Claim);
-              expect(
-                await contracts.beneficiaryVaults.totalVaultedBalance()
-              ).to.equal(currentBalance);
-            });
-          });
-
-          describe("closes vault 0", function () {
-            beforeEach(async function () {
-              result = await contracts.beneficiaryVaults.closeVault(0);
-            });
-
-            it("emits a VaultClosed event", async function () {
-              expect(result)
-                .to.emit(contracts.beneficiaryVaults, "VaultClosed")
-                .withArgs(0);
-            });
-
-            it("has expected contract balance", async function () {
-              expect(
-                await contracts.mockPop.balanceOf(
-                  contracts.beneficiaryVaults.address
-                )
-              ).to.equal(firstReward.add(secondReward).sub(beneficiary1Claim));
-            });
-
-            it("contract has expected vaulted balance", async function () {
-              expect(
-                await contracts.beneficiaryVaults.totalVaultedBalance()
-              ).to.equal(0);
-            });
-
-            it("vault has expected data", async function () {
-              const vaultData = await contracts.beneficiaryVaults.getVault(0);
-              expect(vaultData.totalAllocated).to.equal(
-                firstReward.add(secondReward)
-              );
-              expect(vaultData.currentBalance).to.equal(0);
-            });
-          });
-          describe("open vault 1", function () {
-            beforeEach(async function () {
-              await contracts.beneficiaryVaults.openVault(1, merkleRoot);
-            });
-
-            it("vault 1 has expected values", async function () {
-              const vaultData = await contracts.beneficiaryVaults.getVault(1);
-              expect(vaultData.totalAllocated).to.equal(0);
-              expect(vaultData.currentBalance).to.equal(0);
-              expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
-              expect(vaultData.merkleRoot).to.equal(merkleRoot);
-              expect(vaultData.status).to.equal(VaultStatus.Open);
-              expect(
-                await contracts.beneficiaryVaults.hasClaimed(
-                  1,
-                  beneficiary1.address
-                )
-              ).to.be.false;
-              expect(
-                await contracts.beneficiaryVaults.hasClaimed(
-                  1,
-                  beneficiary2.address
-                )
-              ).to.be.false;
-            });
-
-            describe("close vault 0 and redirect remaining rewards to vault 1", function () {
+            describe("claim from beneficiary 2", function () {
+              let beneficiary2Claim: BigNumber;
               beforeEach(async function () {
-                await contracts.beneficiaryVaults.closeVault(0);
+                beneficiary2Claim = firstReward
+                  .add(secondReward)
+                  .sub(beneficiary1Claim)
+                  .mul(claims[beneficiary2.address])
+                  .div(parseEther("100").sub(claims[beneficiary1.address]));
+                const proof = merkleTree.getProof(
+                  makeElement(
+                    beneficiary2.address,
+                    claims[beneficiary2.address]
+                  )
+                );
+                result = await contracts.beneficiaryVaults
+                  .connect(beneficiary2)
+                  .claimReward(
+                    0,
+                    DEFAULT_REGION,
+                    proof,
+                    beneficiary2.address,
+                    claims[beneficiary2.address]
+                  );
+              });
+
+              it("emits expected events", async function () {
+                expect(result)
+                  .to.emit(contracts.beneficiaryVaults, "RewardClaimed")
+                  .withArgs(0, beneficiary2.address, beneficiary2Claim);
+              });
+
+              it("vault has expected data", async function () {
+                const currentBalance = firstReward
+                  .add(secondReward)
+                  .sub(beneficiary1Claim)
+                  .sub(beneficiary2Claim);
+                const unclaimedShare = parseEther("100")
+                  .sub(claims[beneficiary1.address])
+                  .sub(claims[beneficiary2.address]);
+                const vaultData = await contracts.beneficiaryVaults.getVault(
+                  0,
+                  DEFAULT_REGION
+                );
+                expect(vaultData.totalAllocated).to.equal(
+                  firstReward.add(secondReward)
+                );
+                expect(vaultData.currentBalance).to.equal(currentBalance);
+                expect(vaultData.unclaimedShare).to.equal(unclaimedShare);
+                expect(
+                  await contracts.beneficiaryVaults.hasClaimed(
+                    0,
+                    DEFAULT_REGION,
+                    beneficiary2.address
+                  )
+                ).to.be.true;
+              });
+
+              it("has expected contract balance", async function () {
+                const currentBalance = firstReward
+                  .add(secondReward)
+                  .sub(beneficiary1Claim)
+                  .sub(beneficiary2Claim);
+                expect(
+                  await contracts.mockPop.balanceOf(
+                    contracts.beneficiaryVaults.address
+                  )
+                ).to.equal(currentBalance);
               });
 
               it("contract has expected vaulted balance", async function () {
                 const currentBalance = firstReward
+                  .sub(beneficiary1Claim)
                   .add(secondReward)
-                  .sub(beneficiary1Claim);
+                  .sub(beneficiary2Claim);
                 expect(
-                  await contracts.beneficiaryVaults.totalVaultedBalance()
+                  await contracts.beneficiaryVaults.totalDistributedBalance()
                 ).to.equal(currentBalance);
+              });
+            });
+
+            describe("closes vault 0", function () {
+              beforeEach(async function () {
+                result = await contracts.beneficiaryVaults.closeVault(
+                  0,
+                  DEFAULT_REGION
+                );
+              });
+
+              it("emits a VaultClosed event", async function () {
+                expect(result)
+                  .to.emit(contracts.beneficiaryVaults, "VaultClosed")
+                  .withArgs(0);
+              });
+
+              it("has expected contract balance", async function () {
+                expect(
+                  await contracts.mockPop.balanceOf(
+                    contracts.beneficiaryVaults.address
+                  )
+                ).to.equal(
+                  firstReward.add(secondReward).sub(beneficiary1Claim)
+                );
+              });
+
+              it("contract has expected vaulted balance", async function () {
+                expect(
+                  await contracts.beneficiaryVaults.totalDistributedBalance()
+                ).to.equal(0);
+              });
+
+              it("vault has expected data", async function () {
+                const vaultData = await contracts.beneficiaryVaults.getVault(
+                  0,
+                  DEFAULT_REGION
+                );
+                expect(vaultData.totalAllocated).to.equal(
+                  firstReward.add(secondReward)
+                );
+                expect(vaultData.currentBalance).to.equal(0);
+              });
+            });
+            describe("open vault 1", function () {
+              beforeEach(async function () {
+                await contracts.beneficiaryVaults.openVault(
+                  1,
+                  DEFAULT_REGION,
+                  merkleRoot
+                );
               });
 
               it("vault 1 has expected values", async function () {
-                const currentBalance = firstReward
-                  .add(secondReward)
-                  .sub(beneficiary1Claim);
-                const vaultData = await contracts.beneficiaryVaults.getVault(1);
-                expect(vaultData.totalAllocated).to.equal(currentBalance);
-                expect(vaultData.currentBalance).to.equal(currentBalance);
+                const vaultData = await contracts.beneficiaryVaults.getVault(
+                  1,
+                  DEFAULT_REGION
+                );
+                expect(vaultData.totalAllocated).to.equal(0);
+                expect(vaultData.currentBalance).to.equal(0);
                 expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
+                expect(vaultData.merkleRoot).to.equal(merkleRoot);
+                expect(vaultData.status).to.equal(VaultStatus.Open);
                 expect(
                   await contracts.beneficiaryVaults.hasClaimed(
                     1,
+                    DEFAULT_REGION,
                     beneficiary1.address
                   )
                 ).to.be.false;
                 expect(
                   await contracts.beneficiaryVaults.hasClaimed(
                     1,
+                    DEFAULT_REGION,
                     beneficiary2.address
                   )
                 ).to.be.false;
+              });
+
+              describe("close vault 0 and redirect remaining rewards to vault 1", function () {
+                beforeEach(async function () {
+                  await contracts.beneficiaryVaults.closeVault(
+                    0,
+                    DEFAULT_REGION
+                  );
+                });
+
+                it("contract has expected vaulted balance", async function () {
+                  const currentBalance = firstReward
+                    .add(secondReward)
+                    .sub(beneficiary1Claim);
+                  expect(
+                    await contracts.beneficiaryVaults.totalDistributedBalance()
+                  ).to.equal(currentBalance);
+                });
+
+                it("vault 1 has expected values", async function () {
+                  const currentBalance = firstReward
+                    .add(secondReward)
+                    .sub(beneficiary1Claim);
+                  const vaultData = await contracts.beneficiaryVaults.getVault(
+                    1,
+                    DEFAULT_REGION
+                  );
+                  expect(vaultData.totalAllocated).to.equal(currentBalance);
+                  expect(vaultData.currentBalance).to.equal(currentBalance);
+                  expect(vaultData.unclaimedShare).to.equal(parseEther("100"));
+                  expect(
+                    await contracts.beneficiaryVaults.hasClaimed(
+                      1,
+                      DEFAULT_REGION,
+                      beneficiary1.address
+                    )
+                  ).to.be.false;
+                  expect(
+                    await contracts.beneficiaryVaults.hasClaimed(
+                      1,
+                      DEFAULT_REGION,
+                      beneficiary2.address
+                    )
+                  ).to.be.false;
+                });
               });
             });
           });

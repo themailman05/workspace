@@ -80,7 +80,7 @@ contract GrantElections is Governed {
   IRandomNumberConsumer internal randomNumberConsumer;
 
   Election[] public elections;
-  mapping(bytes32 => uint256[3]) public activeElections;
+  mapping(bytes2 => uint256[3]) public activeElections;
   ElectionConfiguration[3] public electionDefaults;
   uint256 public incentiveBudget;
 

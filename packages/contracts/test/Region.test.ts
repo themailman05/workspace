@@ -11,7 +11,7 @@ let owner: SignerWithAddress,
 
 let contract:Region;
 
-describe.only("Region", function () {
+describe("Region", function () {
   beforeEach(async function () {
     [owner, rewarder, nonOwner] = await ethers.getSigners();
     const regionFactory = await ethers.getContractFactory("Region");
