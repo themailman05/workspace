@@ -19,16 +19,12 @@ export default function GrantFunded({
   const [awarded, setAwarded] = useState(false);
 
   const isBeneficiaryGrantRecipient = async () => {
-    const awarded = (
-      await contracts.grant.getActiveAwardees(election.electionTerm)
-    ).map((a) => a.toLowerCase());
-    if (awarded.includes(beneficiary.beneficiaryAddress)) {
-      setAwarded(true);
-    }
+    //TODO how do check which beneficiary is awarded a grant?
+    setAwarded(true);
   };
 
   useEffect(() => {
-    if (contracts?.grant) {
+    if (contracts) {
       isBeneficiaryGrantRecipient();
     }
   }, [contracts]);
