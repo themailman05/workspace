@@ -30,9 +30,10 @@ contract CouncilControlled {
       msg.sender == nominatedCouncil[_region],
       "You must be nominated before you can accept council"
     );
+    emit CouncilChanged(_region, council[_region], nominatedCouncil[_region]);
+
     council[_region] = nominatedCouncil[_region];
     nominatedCouncil[_region] = address(0);
-    emit CouncilChanged(_region, council[_region], nominatedCouncil[_region]);
   }
 
   function nominateFirstCouncil(address _council, bytes2 _region)

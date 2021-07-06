@@ -65,7 +65,7 @@ async function deployContracts(): Promise<Contracts> {
   return { mockPop, beneficiaryRegistry, region, beneficiaryVaults };
 }
 
-describe.only("BeneficiaryVaults", function () {
+describe("BeneficiaryVaults", function () {
   beforeEach(async function () {
     [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
     contracts = await deployContracts();
