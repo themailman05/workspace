@@ -5,6 +5,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { waffle, ethers } from "hardhat";
 import { merklize, makeElement, generateClaims } from "../scripts/merkle";
+import { Region } from "../typechain";
 import { BeneficiaryVaults } from "../typechain/BeneficiaryVaults";
 import { MockERC20 } from "../typechain/MockERC20";
 const provider = waffle.provider;
@@ -12,6 +13,7 @@ const provider = waffle.provider;
 interface Contracts {
   mockPop: MockERC20;
   beneficiaryRegistry: MockContract;
+  region: Region;
   beneficiaryVaults: BeneficiaryVaults;
 }
 
@@ -21,6 +23,7 @@ const RewarderInitial = parseEther("5");
 const firstReward = parseEther("1");
 const secondReward = parseEther("0.05");
 const DEFAULT_REGION = "0x5757";
+const newRegion = "0x1111";
 
 let claims, merkleTree, merkleRoot;
 
@@ -59,10 +62,10 @@ async function deployContracts(): Promise<Contracts> {
     ).deploy(mockPop.address, beneficiaryRegistry.address, region.address)
   ).deployed();
 
-  return { mockPop, beneficiaryRegistry, beneficiaryVaults };
+  return { mockPop, beneficiaryRegistry, region, beneficiaryVaults };
 }
 
-describe("BeneficiaryVaults", function () {
+describe.only("BeneficiaryVaults", function () {
   beforeEach(async function () {
     [owner, rewarder, beneficiary1, beneficiary2] = await ethers.getSigners();
     contracts = await deployContracts();
@@ -264,6 +267,20 @@ describe("BeneficiaryVaults", function () {
           .withArgs(firstReward);
       });
 
+      it("distributes evenly across multiple regions", async function () {
+        await contracts.region.connect(owner).addRegion(newRegion);
+        await contracts.mockPop
+          .connect(rewarder)
+          .transfer(contracts.beneficiaryVaults.address, parseEther("1"));
+        await contracts.beneficiaryVaults.distributeRewards();
+        expect(
+          await contracts.beneficiaryVaults.regionBalance(DEFAULT_REGION)
+        ).to.equal(firstReward.add(parseEther("0.5")));
+        expect(
+          await contracts.beneficiaryVaults.regionBalance(newRegion)
+        ).to.equal(parseEther("0.5"));
+      });
+
       it("reverts invalid claim", async function () {
         const proof = [makeElement(owner.address, "10")];
         await expect(
@@ -347,6 +364,57 @@ describe("BeneficiaryVaults", function () {
             DEFAULT_REGION
           );
           expect(vault.totalAllocated).to.equal(firstReward);
+          expect(vault.currentBalance).to.equal(firstReward);
+          expect(
+            await contracts.beneficiaryVaults.regionBalance(DEFAULT_REGION)
+          ).to.equal(0);
+        });
+        it("allocates rewards to multiple vaults evenly", async function () {
+          await contracts.mockPop
+            .connect(owner)
+            .transfer(contracts.beneficiaryVaults.address, parseEther("1"));
+          await contracts.beneficiaryVaults.distributeRewards();
+          await contracts.beneficiaryVaults.openVault(
+            1,
+            DEFAULT_REGION,
+            merkleRoot
+          );
+          await contracts.beneficiaryVaults.allocateRewards(DEFAULT_REGION);
+          const vault0 = await contracts.beneficiaryVaults.getVault(
+            0,
+            DEFAULT_REGION
+          );
+          expect(vault0.totalAllocated).to.equal(
+            firstReward.add(parseEther("0.5"))
+          );
+          expect(vault0.currentBalance).to.equal(
+            firstReward.add(parseEther("0.5"))
+          );
+          const vault1 = await contracts.beneficiaryVaults.getVault(
+            1,
+            DEFAULT_REGION
+          );
+          expect(vault1.totalAllocated).to.equal(parseEther("0.5"));
+          expect(vault1.currentBalance).to.equal(parseEther("0.5"));
+        });
+        context("it reverts", function () {
+          beforeEach(async function () {
+            await contracts.region.connect(owner).addRegion(newRegion);
+          });
+          it("when a region has no balance", async function () {
+            await expect(
+              contracts.beneficiaryVaults.allocateRewards(newRegion)
+            ).to.be.revertedWith("empty region balance");
+          });
+          it("when a region as no open vaults", async function () {
+            await contracts.mockPop
+              .connect(owner)
+              .transfer(contracts.beneficiaryVaults.address, parseEther("1"));
+            await contracts.beneficiaryVaults.distributeRewards();
+            await expect(
+              contracts.beneficiaryVaults.allocateRewards(newRegion)
+            ).to.be.revertedWith("no open vaults");
+          });
         });
 
         describe("claim from beneficiary 1", function () {
