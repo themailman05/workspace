@@ -13,7 +13,7 @@ let region: Region;
 const DEFAULT_REGION = "0x5757";
 const newRegion = "0x1111";
 
-describe.only("Council Controlled", function () {
+describe("Council Controlled", function () {
   beforeEach(async function () {
     [owner, council, nonOwner] = await ethers.getSigners();
     region = await (
