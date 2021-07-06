@@ -178,7 +178,7 @@ describe("Zapper", function () {
     });
   });
 
-  describe("zapping in", async function () {
+  describe("finding supported tokens", async function () {
     it("gets LP token from pool", async function () {
       expect(await contracts.zapper.token(contracts.pool.address)).to.equal(
         contracts.mockLPToken.address
@@ -232,7 +232,9 @@ describe("Zapper", function () {
         )
       ).to.be.reverted;
     });
+  });
 
+  describe("zapping in", async function () {
     it("reverts on unsupported tokens", async function () {
       expect(
         contracts.zapper.zapIn(
@@ -263,23 +265,6 @@ describe("Zapper", function () {
       );
     });
 
-    it("zaps token into Curve", async function () {
-      await contracts.mockDai.mint(depositor.address, parseEther("1000"));
-      await contracts.mockDai
-        .connect(depositor)
-        .approve(contracts.zapper.address, parseEther("1000"));
-      await contracts.zapper
-        .connect(depositor)
-        .zapIn(
-          contracts.pool.address,
-          contracts.mockDai.address,
-          parseEther("1000")
-        );
-      expect(
-        await contracts.mockLPToken.balanceOf(contracts.zapper.address)
-      ).to.equal(parseEther("1000"));
-    });
-
     it("deposits to Pool on behalf of sender", async function () {
       await contracts.mockDai.mint(depositor.address, parseEther("1000"));
       await contracts.mockDai
@@ -297,4 +282,57 @@ describe("Zapper", function () {
       ).to.equal(parseEther("1000"));
     });
   });
+
+  describe("zapping out", async function () {
+
+    beforeEach(async () => {
+      await contracts.mockDai.mint(depositor.address, parseEther("1000"));
+      expect(await contracts.mockDai.balanceOf(depositor.address)).to.equal(
+        parseEther("1000")
+      );
+      await contracts.mockDai
+        .connect(depositor)
+        .approve(contracts.zapper.address, parseEther("1000"));
+      await contracts.zapper
+        .connect(depositor)
+        .zapIn(
+          contracts.pool.address,
+          contracts.mockDai.address,
+          parseEther("1000")
+        );
+    });
+
+    it("reverts on unsupported tokens", async function () {
+      expect(
+        contracts.zapper.zapOut(
+          contracts.pool.address,
+          contracts.mock3crv.address,
+          parseEther("1000")
+        )
+      ).to.be.reverted;
+    });
+
+    it("transfers in shares on zapOut", async function () {
+      await contracts.zapper
+        .connect(depositor)
+        .zapOut(
+          contracts.pool.address,
+          contracts.mockUSDC.address,
+          parseEther("1000")
+        );
+      expect(await contracts.pool.balanceOf(depositor.address)).to.equal(0);
+    });
+
+    it("returns USDC to sender", async function () {
+      await contracts.zapper
+        .connect(depositor)
+        .zapOut(
+          contracts.pool.address,
+          contracts.mockUSDC.address,
+          parseEther("1000")
+        );
+      expect(await contracts.mockUSDC.balanceOf(depositor.address)).to.equal(parseEther("994.004999370024709612"));
+    });
+  });
+
 });

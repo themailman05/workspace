@@ -42,18 +42,20 @@ contract MockCurveDepositZap {
   }
 
   function remove_liquidity_one_coin(
+    address pool,
     uint256 amount,
     int128 i,
-    uint256 min_underlying_amount
+    uint256 min_underlying_amount,
+    address receiver
   ) external returns (uint256) {
     lpToken.transferFrom(msg.sender, address(this), amount);
 
     uint256 slippage = (amount * withdrawalSlippageBps) / 10000;
     uint256 transferOut = amount - slippage;
 
-    dai.approve(address(this), transferOut);
-    dai.mint(address(this), transferOut);
-    dai.transferFrom(address(this), msg.sender, transferOut);
+    usdc.approve(address(this), transferOut);
+    usdc.mint(address(this), transferOut);
+    usdc.transferFrom(address(this), receiver, transferOut);
     return transferOut;
   }
 

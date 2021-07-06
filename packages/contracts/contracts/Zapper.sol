@@ -11,6 +11,14 @@ interface CurveDepositZap {
     uint256[4] calldata amounts,
     uint256 min_mint_amounts
   ) external returns (uint256);
+
+  function remove_liquidity_one_coin(
+    address pool,
+    uint256 burn_amount,
+    int128 i,
+    uint256 min_amount,
+    address receiver
+  ) external returns (uint256);
 }
 
 interface CurveAddressProvider {
@@ -46,10 +54,12 @@ interface CurveMetapool {
 interface IPool {
   function token() external view returns (address);
   function deposit(uint256 amount, address recipient) external returns (uint256);
+  function withdrawFrom(uint256 amount, address from) external returns (uint256);
 }
 
 contract Zapper {
   using SafeERC20 for IERC20;
+  using SafeERC20 for IPool;
 
   CurveDepositZap public curveDepositZap;
   CurveAddressProvider public curveAddressProvider;
@@ -107,7 +117,7 @@ contract Zapper {
     address depositToken,
     uint256 amount
   ) public returns (uint256) {
-    require(canZap(popcornPool, depositToken), "Unsupported deposit token");
+    require(canZap(popcornPool, depositToken), "Unsupported token");
 
     IERC20(depositToken).transferFrom(msg.sender, address(this), amount);
     uint256[4] memory amounts = [
@@ -126,5 +136,24 @@ contract Zapper {
     IERC20(token(popcornPool)).safeIncreaseAllowance(popcornPool, lpTokens);
     uint256 shares = IPool(popcornPool).deposit(lpTokens, msg.sender);
     return shares;
+  }
+
+  function zapOut(
+    address popcornPool,
+    address withdrawalToken,
+    uint256 amount
+  ) public returns (uint256) {
+    require(canZap(popcornPool, withdrawalToken), "Unsupported token");
+
+    uint256 lpTokens = IPool(popcornPool).withdrawFrom(amount, msg.sender);
+    IERC20(token(popcornPool)).safeIncreaseAllowance(address(curveDepositZap), lpTokens);
+    uint256 withdrawal = curveDepositZap.remove_liquidity_one_coin(
+      curvePoolAddress(popcornPool),
+      lpTokens,
+      tokenIndex(popcornPool, withdrawalToken),
+      0,
+      msg.sender
+    );
+    return withdrawal;
   }
 }

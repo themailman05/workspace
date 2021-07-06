@@ -108,11 +108,9 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     _lockForBlock(msg.sender);
     _takeFees();
 
-    uint256 sharesBefore = balanceOf(msg.sender);
-    super.deposit(amount);
-    uint256 sharesAfter = balanceOf(msg.sender);
-    uint256 shares = sharesAfter.sub(sharesBefore);
-    transfer(recipient, shares);
+    uint256 deposited = _deposit(msg.sender, address(this), amount, true);
+    uint256 shares = _sharesForValue(deposited);
+    _mint(recipient, shares);
 
     emit Deposit(recipient, amount, shares);
     _reportPoolTokenHWM();
@@ -137,6 +135,34 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     uint256 withdrawal = valueFor(withdrawalShares);
 
     _burn(msg.sender, amount);
+    _withdraw(address(this), msg.sender, withdrawal, true);
+    _withdraw(address(this), rewardsManager, fee, true);
+
+    emit WithdrawalFee(rewardsManager, fee);
+    emit Withdrawal(msg.sender, withdrawal);
+
+    _reportPoolTokenHWM();
+
+    return withdrawal;
+  }
+
+  function withdrawFrom(uint256 amount, address from)
+    public
+    nonReentrant
+    blockLocked
+    returns (uint256)
+  {
+    require(amount <= balanceOf(from), "Insufficient pool token balance");
+
+    _lockForBlock(msg.sender);
+    _takeFees();
+
+    uint256 feeShares = _calculateWithdrawalFee(amount);
+    uint256 withdrawalShares = amount.sub(feeShares);
+    uint256 fee = valueFor(feeShares);
+    uint256 withdrawal = valueFor(withdrawalShares);
+
+    _burn(from, amount);
     _withdraw(address(this), msg.sender, withdrawal, true);
     _withdraw(address(this), rewardsManager, fee, true);
 
