@@ -1,33 +1,32 @@
 import { Web3Provider } from '@ethersproject/providers';
-import { useWeb3React, UnsupportedChainIdError } from '@web3-react/core';
-import React, { useContext, useEffect } from 'react';
-import { createContext, useState } from 'react';
-import { connectors, networkMap } from './connectors';
 import {
-  NoEthereumProviderError,
-  UserRejectedRequestError as UserRejectedRequestErrorInjected,
-} from '@web3-react/injected-connector';
-import { store } from '../store';
-import { setSingleActionModal } from '../actions';
-
-import {
-  GrantElections,
-  GrantElections__factory,
-  Staking,
-  Staking__factory,
+  BeneficiaryGovernance,
+  BeneficiaryGovernance__factory,
   BeneficiaryRegistry,
   BeneficiaryRegistry__factory,
   ERC20,
   ERC20__factory,
-  BeneficiaryGovernance,
-  BeneficiaryGovernance__factory,
+  GrantElections,
+  GrantElections__factory,
+  Staking,
+  Staking__factory,
 } from '@popcorn/contracts/typechain';
+import { UnsupportedChainIdError, useWeb3React } from '@web3-react/core';
+import {
+  NoEthereumProviderError,
+  UserRejectedRequestError as UserRejectedRequestErrorInjected,
+} from '@web3-react/injected-connector';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { setSingleActionModal } from '../actions';
+import { store } from '../store';
+import { connectors, networkMap } from './connectors';
 
 export interface Contracts {
   staking: Staking;
   beneficiary: BeneficiaryRegistry;
   election: GrantElections;
   pop: ERC20;
+  beneficiaryGovernance: BeneficiaryGovernance;
 }
 
 interface ContractsContext {
@@ -110,7 +109,11 @@ export default function ContractsWrapper({
         process.env.ADDR_GRANT_ELECTION,
         library,
       ),
-      pop: ERC20__factory.connect(process.env.ADDR_POP, library)
+      pop: ERC20__factory.connect(process.env.ADDR_POP, library),
+      beneficiaryGovernance: BeneficiaryGovernance__factory.connect(
+        process.env.ADDR_BENEFICIARY_GOVERNANCE,
+        library,
+      ),
     });
   }, [library, active]);
 

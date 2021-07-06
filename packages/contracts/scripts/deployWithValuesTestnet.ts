@@ -20,7 +20,6 @@ import RewardsManagerAbi from "../artifacts/contracts/RewardsManager.sol/Rewards
 
 interface Contracts {
   beneficiaryRegistry: Contract;
-  grantRegistry: Contract;
   mockPop: Contract;
   staking: Contract;
   randomNumberConsumer: Contract;
@@ -51,11 +50,6 @@ export default async function deployTestnet(ethers): Promise<void> {
     ).deploy();
     await beneficiaryRegistry.deployTransaction.wait(2);
 
-    const grantRegistry = await (
-      await ethers.getContractFactory("GrantRegistry")
-    ).deploy(beneficiaryRegistry.address);
-    await grantRegistry.deployTransaction.wait(2);
-
     const mockPop = (await (
       await ethers.getContractFactory("MockERC20")
     ).deploy("TestPOP", "TPOP"));
@@ -80,7 +74,6 @@ export default async function deployTestnet(ethers): Promise<void> {
     ).deploy(
       staking.address,
       beneficiaryRegistry.address,
-      grantRegistry.address,
       randomNumberConsumer.address,
       mockPop.address,
       accounts[0].address
@@ -134,7 +127,6 @@ export default async function deployTestnet(ethers): Promise<void> {
 
     contracts = {
       beneficiaryRegistry,
-      grantRegistry,
       mockPop,
       staking,
       randomNumberConsumer,
