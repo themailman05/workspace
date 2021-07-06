@@ -17,6 +17,10 @@ module.exports = {
     ADDR_PRIVATE_SALE: process.env.ADDR_PRIVATE_SALE,
     ADDR_USDC: process.env.ADDR_USDC,
     ADDR_TREASURY: process.env.ADDR_TREASURY,
+    ADDR_BENEFICIARY_VAULT:process.env.ADDR_BENEFICIARY_VAULT,
+    ADDR_REWARDS_MANAGER:process.env.ADDR_REWARDS_MANAGER,
+    ADDR_UNISWAP_ROUTER:process.env.ADDR_UNISWAP_ROUTER,
+    ADDR_3CRV:process.env.ADDR_3CRV
   },
   poweredByHeader: false,
   webpack: (config, options) => {

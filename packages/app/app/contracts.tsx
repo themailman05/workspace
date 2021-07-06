@@ -21,6 +21,10 @@ import {
   BeneficiaryRegistry__factory,
   ERC20,
   ERC20__factory,
+  RewardsManager__factory,
+  RewardsManager,
+  UniswapV2Router02__factory,
+  UniswapV2Router02,
 } from '@popcorn/contracts/typechain';
 
 export interface Contracts {
@@ -29,6 +33,9 @@ export interface Contracts {
   election: GrantElections;
   pop: ERC20;
   grant: GrantRegistry;
+  rewardsManager:RewardsManager;
+  uniswap:UniswapV2Router02;
+  threeCrv:ERC20;
 }
 
 
@@ -115,6 +122,9 @@ export default function ContractsWrapper({
         process.env.ADDR_GRANT_REGISTRY,
         library,
       ),
+      rewardsManager: RewardsManager__factory.connect(process.env.ADDR_REWARDS_MANAGER, library),
+      uniswap:UniswapV2Router02__factory.connect(process.env.ADDR_UNISWAP_ROUTER,library),
+      threeCrv:ERC20__factory.connect(process.env.ADDR_3CRV, library),
     });
   }, [library, active]);
 
