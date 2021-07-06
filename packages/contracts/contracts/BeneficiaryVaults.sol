@@ -156,7 +156,9 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
 
     if (_remainingBalance > 0) {
       regionBalance[region_] = regionBalance[region_].add(_remainingBalance);
-      allocateRewards(region_);
+      if (_getOpenVaultCount(region_) > 0) {
+        allocateRewards(region_);
+      }
     }
 
     emit VaultClosed(vaultId_);
@@ -221,7 +223,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
 
     Vault storage vault = vaults[region_][vaultId_];
 
-    uint256 _reward = vault.currentBalance.mul(share_).div(
+    uint256 _reward = (vault.currentBalance.mul(share_)).div(
       vault.unclaimedShare
     );
 
@@ -287,7 +289,7 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
 
   function _getOpenVaultCount(bytes2 region_) internal view returns (uint8) {
     uint8 _openVaultCount = 0;
-    for (uint8 i = 0; i < vaults[region_].length; i++) {
+    for (uint8 i = 0; i < 3; i++) {
       if (
         vaults[region_][i].merkleRoot != "" &&
         vaults[region_][i].status == VaultStatus.Open
