@@ -193,7 +193,7 @@ describe("Zapper", function () {
 
     it("gets supported deposit tokens for underlying Curve pool", async function () {
       expect(
-        await contracts.zapper.depositTokens(contracts.pool.address)
+        await contracts.zapper.supportedTokens(contracts.pool.address)
       ).to.eql([
         contracts.mockToken.address,
         contracts.mockDai.address,
@@ -277,14 +277,13 @@ describe("Zapper", function () {
           contracts.mockDai.address,
           parseEther("1000")
         );
-      expect(
-        await contracts.pool.balanceOf(depositor.address)
-      ).to.equal(parseEther("1000"));
+      expect(await contracts.pool.balanceOf(depositor.address)).to.equal(
+        parseEther("1000")
+      );
     });
   });
 
   describe("zapping out", async function () {
-
     beforeEach(async () => {
       await contracts.mockDai.mint(depositor.address, parseEther("1000"));
       expect(await contracts.mockDai.balanceOf(depositor.address)).to.equal(
@@ -331,8 +330,9 @@ describe("Zapper", function () {
           contracts.mockUSDC.address,
           parseEther("1000")
         );
-      expect(await contracts.mockUSDC.balanceOf(depositor.address)).to.equal(parseEther("994.004999370024709612"));
+      expect(await contracts.mockUSDC.balanceOf(depositor.address)).to.equal(
+        parseEther("994.004999370024709612")
+      );
     });
   });
-
 });

@@ -15,6 +15,7 @@ contract MockCurveDepositZap {
   uint256 withdrawalSlippageBps = 10;
 
   uint256 BPS_DENOMINATOR = 10000;
+  MockERC20[] tokens;
 
   constructor(
     address token_,
@@ -28,6 +29,7 @@ contract MockCurveDepositZap {
     dai = MockERC20(dai_);
     usdc = MockERC20(usdc_);
     usdt = MockERC20(usdt_);
+    tokens = [token, dai, usdc, usdt];
   }
 
   function add_liquidity(
@@ -35,10 +37,13 @@ contract MockCurveDepositZap {
     uint256[4] calldata amounts,
     uint256 min_mint_amounts
   ) external returns (uint256) {
-    dai.transferFrom(msg.sender, address(this), amounts[1]);
-    assert(amounts[1] > min_mint_amounts);
-    lpToken.mint(msg.sender, amounts[1]);
-    return amounts[1];
+    uint256 lpTokens;
+    for (uint8 i = 0; i < tokens.length; i++) {
+      tokens[i].transferFrom(msg.sender, address(this), amounts[i]);
+      lpToken.mint(msg.sender, amounts[i]);
+      lpTokens += amounts[i];
+    }
+    return lpTokens;
   }
 
   function remove_liquidity_one_coin(
@@ -53,9 +58,10 @@ contract MockCurveDepositZap {
     uint256 slippage = (amount * withdrawalSlippageBps) / 10000;
     uint256 transferOut = amount - slippage;
 
-    usdc.approve(address(this), transferOut);
-    usdc.mint(address(this), transferOut);
-    usdc.transferFrom(address(this), receiver, transferOut);
+    uint256 i = uint256(i);
+    tokens[i].approve(address(this), transferOut);
+    tokens[i].mint(address(this), transferOut);
+    tokens[i].transferFrom(address(this), receiver, transferOut);
     return transferOut;
   }
 

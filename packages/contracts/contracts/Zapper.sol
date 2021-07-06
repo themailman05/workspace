@@ -37,24 +37,16 @@ interface CurveRegistry {
     returns (address[8] memory);
 }
 
-interface CurveMetapool {
-  function get_virtual_price() external view returns (uint256);
+interface IPool {
+  function token() external view returns (address);
 
-  function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amounts)
+  function depositFor(uint256 amount, address recipient)
     external
     returns (uint256);
 
-  function remove_liquidity_one_coin(
-    uint256 amount,
-    int128 i,
-    uint256 min_underlying_amount
-  ) external returns (uint256);
-}
-
-interface IPool {
-  function token() external view returns (address);
-  function deposit(uint256 amount, address recipient) external returns (uint256);
-  function withdrawFrom(uint256 amount, address from) external returns (uint256);
+  function withdrawFrom(uint256 amount, address from)
+    external
+    returns (uint256);
 }
 
 contract Zapper {
@@ -79,7 +71,7 @@ contract Zapper {
     return curveRegistry.get_pool_from_lp_token(token(popcornPool));
   }
 
-  function depositTokens(address popcornPool)
+  function supportedTokens(address popcornPool)
     public
     view
     returns (address[8] memory)
@@ -102,7 +94,7 @@ contract Zapper {
     returns (uint8)
   {
     uint8 index = 9;
-    address[8] memory supportedTokens = depositTokens(popcornPool);
+    address[8] memory supportedTokens = supportedTokens(popcornPool);
     for (uint8 i = 0; i < supportedTokens.length; i++) {
       if (address(supportedTokens[i]) == address(token)) {
         index = i;
@@ -127,14 +119,17 @@ contract Zapper {
       uint256(0)
     ];
     amounts[tokenIndex(popcornPool, depositToken)] = amount;
-    IERC20(depositToken).safeIncreaseAllowance(address(curveDepositZap), amount);
+    IERC20(depositToken).safeIncreaseAllowance(
+      address(curveDepositZap),
+      amount
+    );
     uint256 lpTokens = curveDepositZap.add_liquidity(
       curvePoolAddress(popcornPool),
       amounts,
       0
     );
     IERC20(token(popcornPool)).safeIncreaseAllowance(popcornPool, lpTokens);
-    uint256 shares = IPool(popcornPool).deposit(lpTokens, msg.sender);
+    uint256 shares = IPool(popcornPool).depositFor(lpTokens, msg.sender);
     return shares;
   }
 
@@ -146,7 +141,10 @@ contract Zapper {
     require(canZap(popcornPool, withdrawalToken), "Unsupported token");
 
     uint256 lpTokens = IPool(popcornPool).withdrawFrom(amount, msg.sender);
-    IERC20(token(popcornPool)).safeIncreaseAllowance(address(curveDepositZap), lpTokens);
+    IERC20(token(popcornPool)).safeIncreaseAllowance(
+      address(curveDepositZap),
+      lpTokens
+    );
     uint256 withdrawal = curveDepositZap.remove_liquidity_one_coin(
       curvePoolAddress(popcornPool),
       lpTokens,

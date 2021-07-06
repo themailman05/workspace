@@ -96,7 +96,7 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     return shares;
   }
 
-  function deposit(uint256 amount, address recipient)
+  function depositFor(uint256 amount, address recipient)
     public
     defend
     nonReentrant
