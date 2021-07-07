@@ -146,34 +146,6 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     return withdrawal;
   }
 
-  function withdrawFrom(uint256 amount, address from)
-    public
-    nonReentrant
-    blockLocked
-    returns (uint256)
-  {
-    require(amount <= balanceOf(from), "Insufficient pool token balance");
-
-    _lockForBlock(msg.sender);
-    _takeFees();
-
-    uint256 feeShares = _calculateWithdrawalFee(amount);
-    uint256 withdrawalShares = amount.sub(feeShares);
-    uint256 fee = valueFor(feeShares);
-    uint256 withdrawal = valueFor(withdrawalShares);
-
-    _burn(from, amount);
-    _withdraw(address(this), msg.sender, withdrawal, true);
-    _withdraw(address(this), rewardsManager, fee, true);
-
-    emit WithdrawalFee(rewardsManager, fee);
-    emit Withdrawal(msg.sender, withdrawal);
-
-    _reportPoolTokenHWM();
-
-    return withdrawal;
-  }
-
   function takeFees() external nonReentrant {
     _takeFees();
     _reportPoolTokenHWM();

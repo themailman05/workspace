@@ -299,6 +299,9 @@ describe("Zapper", function () {
           contracts.mockDai.address,
           parseEther("1000")
         );
+      await contracts.pool
+        .connect(depositor)
+        .approve(contracts.zapper.address, parseEther("1000"));
     });
 
     it("reverts on unsupported tokens", async function () {
@@ -331,7 +334,7 @@ describe("Zapper", function () {
           parseEther("1000")
         );
       expect(await contracts.mockUSDC.balanceOf(depositor.address)).to.equal(
-        parseEther("994.004999370024709612")
+        parseEther("994.004998740049419223")
       );
     });
   });

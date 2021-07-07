@@ -44,9 +44,13 @@ interface IPool {
     external
     returns (uint256);
 
-  function withdrawFrom(uint256 amount, address from)
-    external
-    returns (uint256);
+  function transferFrom(
+    address sender,
+    address recipient,
+    uint256 amount
+  ) external returns (bool);
+
+  function withdraw(uint256 amount) external returns (uint256);
 }
 
 contract Zapper {
@@ -111,7 +115,7 @@ contract Zapper {
   ) public returns (uint256) {
     require(canZap(popcornPool, depositToken), "Unsupported token");
 
-    IERC20(depositToken).transferFrom(msg.sender, address(this), amount);
+    IERC20(depositToken).safeTransferFrom(msg.sender, address(this), amount);
     uint256[4] memory amounts = [
       uint256(0),
       uint256(0),
@@ -140,7 +144,8 @@ contract Zapper {
   ) public returns (uint256) {
     require(canZap(popcornPool, withdrawalToken), "Unsupported token");
 
-    uint256 lpTokens = IPool(popcornPool).withdrawFrom(amount, msg.sender);
+    IPool(popcornPool).transferFrom(msg.sender, address(this), amount);
+    uint256 lpTokens = IPool(popcornPool).withdraw(amount);
     IERC20(token(popcornPool)).safeIncreaseAllowance(
       address(curveDepositZap),
       lpTokens
