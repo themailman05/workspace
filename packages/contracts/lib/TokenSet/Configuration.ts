@@ -1,7 +1,7 @@
 import { BigNumber, BigNumberish } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { ZERO, ADDRESS_ZERO } from './utils/constants';
+import { ZERO } from './utils/constants';
 
 export interface Configuration {
   targetNAV: BigNumber;
@@ -38,7 +38,7 @@ export interface Configuration {
 }
 
 export const DefaultConfiguration: Configuration = {
-  targetNAV: parseEther("100"),
+  targetNAV: parseEther("250"),
   core: {
     SetTokenCreator: {
       address: process.env.ADDR_SET_SET_TOKEN_CREATOR,
@@ -50,7 +50,7 @@ export const DefaultConfiguration: Configuration = {
       StreamingFeeModule: {
         address: process.env.ADDR_SET_STREAMING_FEE_MODULE,
         config: {
-          feeRecipient: ADDRESS_ZERO,
+          feeRecipient: process.env.ADDR_SET_STREAMING_FEE_MODULE_FEE_RECIPIENT,
           maxStreamingFeePercentage: parseEther('.03'),
           streamingFeePercentage: parseEther('.01'),
           lastStreamingFeeTimestamp: ZERO,

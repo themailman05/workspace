@@ -33,6 +33,7 @@ export class TokenSetManager {
 
     console.log("initializing modules ...");
     await this.initializeModules(tokenAddress);
+    console.log("Done! Created token set:", tokenAddress);
   }
 
   async initializeModules(setToken: Address): Promise<void> {

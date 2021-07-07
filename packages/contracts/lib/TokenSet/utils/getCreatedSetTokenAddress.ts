@@ -17,7 +17,6 @@ export const getCreatedSetTokenAddress = async (txnHash: string | undefined, pro
   });
 
   const parsed = iface.parseLog(logs[logs.length - 1]);
-  //@ts-expect-error
-  return parsed.values._setToken;
+  return parsed.args[0]
 }
 export default getCreatedSetTokenAddress;

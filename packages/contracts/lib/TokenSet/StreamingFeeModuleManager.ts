@@ -1,4 +1,4 @@
-import { StreamingFeeModule } from "./vendor/set-protocol/types";
+import { StreamingFeeModule } from "./vendor/set-protocol/types/StreamingFeeModule";
 import { Address } from "packages/utils/src/types";
 import { Configuration } from "./Configuration";
 import { StreamingFeeModuleFactory } from './vendor/set-protocol/types/StreamingFeeModuleFactory';

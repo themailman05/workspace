@@ -1,4 +1,4 @@
-import { BasicIssuanceModuleFactory } from "./vendor/set-protocol/types";
+import { BasicIssuanceModuleFactory } from "./vendor/set-protocol/types/BasicIssuanceModuleFactory";
 import { BasicIssuanceModule } from "./vendor/set-protocol/types/BasicIssuanceModule";
 import { Address } from "packages/utils/src/types";
 import { Configuration } from "./Configuration";
