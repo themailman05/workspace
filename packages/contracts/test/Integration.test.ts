@@ -179,7 +179,7 @@ async function prepareContracts(): Promise<void> {
   );
 }
 
-describe("Integration", function () {
+describe.only("Integration", function () {
   beforeEach(async function () {
     [owner, rewarder, nonOwner] = await ethers.getSigners();
     contracts = await deployContracts();

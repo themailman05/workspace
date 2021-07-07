@@ -121,6 +121,8 @@ export default async function deploy(ethers): Promise<void> {
       )
     ).deployed();
 
+    await staking.connect(accounts[0]).setRewardsManager(rewardsManager.address)
+
     const randomNumberConsumer = await (
       await (
         await ethers.getContractFactory("RandomNumberConsumer")
