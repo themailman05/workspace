@@ -1,72 +1,16 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { formatEther, parseEther } from "ethers/lib/utils";
-import { BigNumber } from "ethers";
-
-export interface Configuration {
-  targetNAV: BigNumber;
-  core: {
-    SetTokenCreator: {
-      address: string;
-    };
-    modules: {
-      [key: string]: {
-        address: string;
-      };
-    };
-  };
-  components: {
-    [key: string]: {
-      ratio: number; // percent of targetNAV (out of 100)
-      address: string;
-      oracle: string;
-    };
-  };
-}
-
-export const DefaultConfiguration: Configuration = {
-  targetNAV: parseEther("100"),
-  core: {
-    SetTokenCreator: {
-      address: process.env.ADDR_SET_SET_TOKEN_CREATOR,
-    },
-    modules: {
-      BasicIssuanceModule: {
-        address: process.env.ADDR_SET_BASIC_ISSUANCE_MODULE,
-      },
-      StreamingFeeModule: {
-        address: process.env.ADDR_SET_STREAMING_FEE_MODULE,
-      },
-    },
-  },
-  components: {
-    ycrvDUSD: {
-      ratio: 25,
-      address: process.env.ADDR_YEARN_CRVDUSD,
-      oracle: process.env.ADDR_CURVE_CRVDUSD,
-    },
-    ycrvFRAX: {
-      ratio: 25,
-      address: process.env.ADDR_YEARN_CRVFRAX,
-      oracle: process.env.ADDR_CURVE_CRVFRAX,
-    },
-    ycrvUSDN: {
-      ratio: 25,
-      address: process.env.ADDR_YEARN_CRVUSDN,
-      oracle: process.env.ADDR_CURVE_CRVUSDN,
-    },
-    ycrvUST: {
-      ratio: 25,
-      address: process.env.ADDR_YEARN_CRVUST,
-      oracle: process.env.ADDR_CURVE_CRVUST,
-    },
-  },
-};
+import { BigNumber, ContractReceipt } from "ethers";
+import { Configuration, DefaultConfiguration } from "./Configuration";
+import { getComponents } from "./utils/getComponents";
+import { getModules } from "./utils/getModules";
+import { SetTokenCreatorFactory } from "./vendor/set-protocol/types/SetTokenCreatorFactory";
 
 interface TokenSetCreator {
   _calculateUnits(
     component: Configuration["components"][0]
   ): Promise<BigNumber>;
-  run: () => Promise<void>;
+  create: () => Promise<ContractReceipt>;
 }
 
 interface Args {
@@ -80,8 +24,7 @@ export default function TokenSetCreator({
   debug,
   hre,
 }: Args): TokenSetCreator {
-  
-  const { components, targetNAV } = configuration
+  const { targetNAV } = configuration
     ? configuration
     : DefaultConfiguration;
 
@@ -128,29 +71,29 @@ export default function TokenSetCreator({
       return targetComponentUnits;
     },
 
-    run: async function (): Promise<void> {
-      const [manager] = await hre.ethers.getSigners();
-      const SetTokenCreator = await hre.ethers.getContractAt(
-        "SetTokenCreator",
-        configuration.core.SetTokenCreator.address
+    create: async function (): Promise<ContractReceipt> {
+
+      const creator = SetTokenCreatorFactory.connect(
+        configuration.core.SetTokenCreator.address,
+        configuration.manager
       );
 
-      const setComponents = Object.keys(components).map(
-        (component) => components[component]
-      );
+      const setComponents = getComponents(configuration);
 
-      const setModules = Object.keys(configuration.core.modules).map(
-        (module) => configuration.core.modules[module]
-      );
+      const setModules = getModules(configuration);
 
-      SetTokenCreator.create(
+      const tx = await creator.create(
         setComponents.map((component) => component.address),
         setComponents.map((component) => this._calculateUnits(component)),
         setModules.map((module) => module.address),
-        manager.address,
+        configuration.manager.address,
         "High-Yield Small Cap Stablecoin Index",
         "HYSI"
       );
+      console.log("waiting for block confirmation");
+      const receipt = tx.wait(1);
+      return receipt;
+
     },
   };
 }

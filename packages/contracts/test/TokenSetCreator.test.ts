@@ -1,9 +1,11 @@
 import { expect } from "chai";
 import hardhat, { ethers, waffle } from "hardhat";
-import TokenSetCreator, { Configuration } from "../lib/TokenSetCreator";
+import TokenSetCreator from "../lib/TokenSet/TokenSetCreator";
 import { parseEther } from "ethers/lib/utils";
 import { BigNumber, Contract } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { Configuration } from "../lib/TokenSet/Configuration";
+import { ADDRESS_ZERO } from '../lib/TokenSet/utils/constants';
 
 describe("TokenSetCreator", function () {
   interface Contracts {
@@ -20,16 +22,16 @@ describe("TokenSetCreator", function () {
   before(async function () {
     [owner] = await ethers.getSigners();
 
-    interface DeployPoolAndVault {
+    interface DeployMockPoolAndVault {
       virtualPrice: BigNumber;
       sharePrice: BigNumber;
       contractNames: (keyof Contracts)[];
     }
-    const deployPoolAndVault = async ({
+    const deployMockPoolAndVault = async ({
       virtualPrice,
       sharePrice,
       contractNames,
-    }: DeployPoolAndVault) => {
+    }: DeployMockPoolAndVault) => {
       const CurveMetapool = await ethers.getContractFactory(
         "MockCurveMetapool"
       );
@@ -49,13 +51,13 @@ describe("TokenSetCreator", function () {
       contracts[contractNames[1]] = ycrv;
     };
 
-    await deployPoolAndVault({
+    await deployMockPoolAndVault({
       contractNames: ["crvFRAXPool", "ycrvFRAX"],
       virtualPrice: parseEther("1.005114961893439729"),
       sharePrice: parseEther("1.015962661461740916"),
     });
 
-    await deployPoolAndVault({
+    await deployMockPoolAndVault({
       contractNames: ["crvDUSDPool", "ycrvDUSD"],
       virtualPrice: parseEther("1.011013458944652876"),
       sharePrice: parseEther("1.019964776911275462"),
@@ -65,12 +67,15 @@ describe("TokenSetCreator", function () {
       targetNAV: parseEther("200"),
       core: {
         SetTokenCreator: {
-          address: "0x0000000000000000000000",
+          address: ADDRESS_ZERO,
         },
         modules: {
           BasicIssuanceModule: {
-            address: "0x0000000000000000000000",
+            address: ADDRESS_ZERO,
           },
+          StreamingFeeModule: {
+            address: ADDRESS_ZERO,
+          }
         },
       },
       components: {
@@ -89,7 +94,7 @@ describe("TokenSetCreator", function () {
   });
 
   describe("test setup", () => {
-    it("configuration should be defined", () => {
+    it("should have configuration defined", () => {
       expect(configuration.targetNAV).to.equal(parseEther("200"));
       expect(configuration.components.ycrvDUSD.address).to.equal(
         "0x5eb3Bc0a489C5A8288765d2336659EbCA68FCd00"
@@ -105,7 +110,7 @@ describe("TokenSetCreator", function () {
       );
     });
 
-    it("should be able to retrieve a mock yearn contract by address", async () => {
+    it("should retrieve a mock yearn contract by address", async () => {
       const contract = await hardhat.ethers.getContractAt(
         "MockYearnV2Vault",
         configuration.components.ycrvDUSD.address
@@ -115,7 +120,7 @@ describe("TokenSetCreator", function () {
       );
     });
 
-    it("should be able to retrieve a MockCurveMetapool contract by address", async () => {
+    it("should retrieve a MockCurveMetapool contract by address", async () => {
       const contract = await hardhat.ethers.getContractAt(
         "MockCurveMetapool",
         configuration.components.ycrvDUSD.oracle
