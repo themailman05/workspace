@@ -6,7 +6,7 @@ import { getComponents } from "./utils/getComponents";
 import { getModules } from "./utils/getModules";
 import { SetTokenCreatorFactory } from "./vendor/set-protocol/types/SetTokenCreatorFactory";
 
-interface TokenSetCreator {
+interface SetTokenCreator {
   _calculateUnits(
     component: Configuration["components"][0]
   ): Promise<BigNumber>;
@@ -19,11 +19,11 @@ interface Args {
   hre: HardhatRuntimeEnvironment;
 }
 
-export default function TokenSetCreator({
+export default function SetTokenCreator({
   configuration,
   debug,
   hre,
-}: Args): TokenSetCreator {
+}: Args): SetTokenCreator {
   const { targetNAV } = configuration
     ? configuration
     : DefaultConfiguration;
@@ -90,6 +90,7 @@ export default function TokenSetCreator({
         "High-Yield Small Cap Stablecoin Index",
         "HYSI"
       );
+      
       console.log("waiting for block confirmation");
       const receipt = tx.wait(1);
       return receipt;

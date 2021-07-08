@@ -9,8 +9,8 @@ import { utils } from "ethers";
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
 import { GrantElectionAdapter } from "./scripts/helpers/GrantElectionAdapter";
-import TokenSetManager from "./lib/TokenSet/TokenSetManager";
-import { DefaultConfiguration } from "./lib/TokenSet/Configuration";
+import SetTokenManager from "./lib/SetToken/SetTokenManager";
+import { DefaultConfiguration } from "./lib/SetToken/Configuration";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -146,7 +146,7 @@ task("hysi:deploy", "deploys set token")
   .addOptionalParam("debug", "display debug information")
   .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
-    const manager = new TokenSetManager(
+    const manager = new SetTokenManager(
       { ...DefaultConfiguration, manager: signer },
       hre
     );

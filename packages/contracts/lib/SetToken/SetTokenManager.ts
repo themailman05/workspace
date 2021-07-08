@@ -1,13 +1,13 @@
 import { Address } from "packages/utils/src/types";
 import BasicIssuanceModuleManager from "./BasicIssuanceModuleManager";
 import { Configuration } from "./Configuration";
-import TokenSetCreator from "./TokenSetCreator";
+import SetTokenCreator from "./SetTokenCreator";
 import Bluebird from "bluebird";
 import getCreatedSetTokenAddress from "./utils/getCreatedSetTokenAddress";
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import StreamingFeeModuleManager from "./StreamingFeeModuleManager";
 
-export class TokenSetManager {
+export class SetTokenManager {
   constructor(
     private configuration: Configuration,
     private hre: HardhatRuntimeEnvironment
@@ -16,7 +16,7 @@ export class TokenSetManager {
   async createSet({ args }: { args: any }): Promise<void> {
     console.log("creating set ... ");
 
-    const creator = TokenSetCreator({
+    const creator = SetTokenCreator({
       hre: this.hre,
       debug: args.debug,
       configuration: this.configuration,
@@ -57,4 +57,4 @@ export class TokenSetManager {
     );
   }
 }
-export default TokenSetManager;
+export default SetTokenManager;
