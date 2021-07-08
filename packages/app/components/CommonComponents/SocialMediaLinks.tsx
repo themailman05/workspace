@@ -9,6 +9,20 @@ export default function SocialMediaLinks(
   return (
     <>
       <a
+        href={`https://${beneficiary?.website}`}
+        target="_blank"
+        className="text-gray-400 hover:text-gray-500"
+      >
+        <Icon.Globe aria-hidden="true" />
+      </a>
+      <a
+        href={`mailto:${beneficiary?.contactEmail}`}
+        target="_blank"
+        className="text-gray-400 hover:text-gray-500"
+      >
+        <Icon.Mail aria-hidden="true" />
+      </a>
+      <a
         href={`https://${beneficiary?.links?.twitterUrl}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
