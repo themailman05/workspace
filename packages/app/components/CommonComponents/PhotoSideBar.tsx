@@ -6,12 +6,12 @@ export default function PhotoSideBar(
   return (
     <div className="col-span-2 space-y-4">
       <p className="text-2xl text-black sm:text-4xl lg:text-5xl">Photos</p>
-      {beneficiary?.files?.additionalImages?.map((photoURL) => {
+      {beneficiary?.files?.additionalImages?.map((image) => {
         return (
           <img
             className="w-full"
-            src={`${process.env.IPFS_URL}${photoURL}`}
-            alt=""
+            src={`${process.env.IPFS_URL}${image?.image}`}
+            alt={image?.description}
           />
         );
       })}

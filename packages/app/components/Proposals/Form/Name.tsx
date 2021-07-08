@@ -1,6 +1,8 @@
 import React from 'react';
 import { FormStepProps } from 'pages/proposals/propose';
 import ControlledTextInput from './ControlledTextInput';
+import inputExists from 'utils/isValidInput';
+import ContinueButton from './ContinueButton';
 
 export default function Name({
   form,
@@ -8,9 +10,7 @@ export default function Name({
   visible,
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
-  function isValid(organizationName): boolean {
-    return organizationName.length > 0;
-  }
+
   function updateName(value: string): void {
     setFormData({ ...formData, organizationName: value });
   }
@@ -27,9 +27,11 @@ export default function Name({
           placeholder="Beneficiary Name"
           errorMessage="Beneficiary name cannot be blank."
           updateInput={updateName}
-          isValid={isValid}
-          navigation={navigation}
+          isValid={inputExists}
         />
+        {inputExists(formData.organizationName) && (
+          <ContinueButton {...navigation} />
+        )}
       </div>
     )
   );

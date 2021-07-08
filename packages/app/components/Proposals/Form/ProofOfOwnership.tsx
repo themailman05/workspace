@@ -1,6 +1,8 @@
 import React from 'react';
 import { FormStepProps } from 'pages/proposals/propose';
 import ControlledTextInput from './ControlledTextInput';
+import inputExists from 'utils/isValidInput';
+import ContinueButton from './ContinueButton';
 
 export default function ProofOfOwnership({
   form,
@@ -8,15 +10,12 @@ export default function ProofOfOwnership({
   visible,
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
+  
   function updateProofOfOwnership(proofOfOwnership: string): void {
     setFormData({
       ...formData,
       links: { ...formData.links, proofOfOwnership },
     });
-  }
-
-  function isValid(name: string): boolean {
-    return name.length > 0;
   }
 
   return (
@@ -33,14 +32,16 @@ export default function ProofOfOwnership({
           website or a tweet on the beneficiary's official Twitter account.
         </label>
         <ControlledTextInput
-          inputValue={formData.links.proofOfOwnership}
+          inputValue={formData?.links?.proofOfOwnership}
           id="proofofownership"
           placeholder="Proof of Ownership"
           errorMessage="The proof of ownership cannot be left blank."
           updateInput={updateProofOfOwnership}
-          isValid={isValid}
-          navigation={navigation}
+          isValid={inputExists}
         />
+        {inputExists(formData?.links?.proofOfOwnership) && (
+          <ContinueButton {...navigation} />
+        )}
       </div>
     )
   );

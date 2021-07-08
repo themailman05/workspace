@@ -12,8 +12,8 @@ export default function ImageHeader(
         <div className="w-2/3 mx-auto relative">
           <img
             className="object-cover shadow-lg rounded-lg w-full"
-            src={`${process.env.IPFS_URL}${beneficiary?.files?.headerImage}`}
-            alt="header image"
+            src={`${process.env.IPFS_URL}${beneficiary?.files?.headerImage?.image}`}
+            alt={beneficiary?.files?.headerImage?.description}
           />
           <div
             className="absolute -bottom-32 left-10 shadow-lg rounded-full h-60 w-60 border-black "

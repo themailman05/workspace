@@ -37,8 +37,8 @@ export const defaultFormData: BeneficiaryApplication = {
   missionStatement: '',
   beneficiaryAddress: '',
   files: {
-    profileImage: '',
-    headerImage: '',
+    profileImage: { image: '', description: '' },
+    headerImage: { image: '', description: '' },
     impactReports: [],
     additionalImages: [],
   },
