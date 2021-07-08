@@ -1,9 +1,10 @@
+import * as axios from 'axios';
+import { Navigation } from 'pages/proposals/propose';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
-import * as Icon from 'react-feather';
-import { Navigation } from 'pages/proposals/propose';
 
 const FIVE_MB = 5 * 1000 * 1024;
 
@@ -28,7 +29,7 @@ export const uploadImageToPinata = (files, setProfileImage) => {
   myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
   files.forEach((file) => {
     var formdata = new FormData();
-    formdata.append('file', file, 'download.png');
+    formdata.append('file', file, 'download.png'); // TODO: Source from filename
     loading();
     fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',
@@ -49,6 +50,37 @@ export const uploadImageToPinata = (files, setProfileImage) => {
   });
 };
 
+export const uploadVideo = (files, setVideo) => {
+  var myHeaders = new Headers();
+  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
+  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
+  files.forEach((file) => {
+    var data = new FormData();
+    data.append('file', file, 'download.png'); // TODO: Source video name from file
+    loading();
+    var config = {
+      onUploadProgress: function (progressEvent) {
+        var percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total,
+        );
+        console.log({ percentCompleted });
+      },
+    };
+    axios
+      .put('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
+      .then((response) => response.text())
+      .then((result) => {
+        const hash = JSON.parse(result).IpfsHash;
+        setVideo(hash);
+        toast.dismiss();
+        success();
+      })
+      .catch((error) => {
+        uploadError('Error uploading to IPFS');
+      });
+  });
+};
+
 function uploadMultipleImagesToPinata(files, localState, setLocalState) {
   toast.dismiss();
   var myHeaders = new Headers();
@@ -57,7 +89,7 @@ function uploadMultipleImagesToPinata(files, localState, setLocalState) {
   let newImageHashes = [];
   files.forEach((file) => {
     var formdata = new FormData();
-    formdata.append('file', file, 'download.png');
+    formdata.append('file', file, 'download.png'); // TODO: Source from filenames
     loading();
     fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',
