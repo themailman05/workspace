@@ -1,5 +1,8 @@
-import { ContractsContext } from 'context/Web3/contracts';
-import { useContext, useEffect, useState } from 'react';
+import {
+  BeneficiaryGovernanceAdapter,
+  IpfsClient,
+  Proposal,
+} from '@popcorn/utils/';
 import Divider from 'components/CommonComponents/Divider';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import ImpactReportLinks from 'components/CommonComponents/ImpactReportLinks';
@@ -8,15 +11,12 @@ import MissionStatement from 'components/CommonComponents/MissionStatement';
 import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
 import SocialMedia from 'components/CommonComponents/SocialMedia';
 import Verification from 'components/CommonComponents/Verification';
+import VideoSideBar from 'components/CommonComponents/VideoSideBar';
 import NavBar from 'components/NavBar/NavBar';
-import {
-  BeneficiaryGovernanceAdapter,
-  IpfsClient,
-  Proposal,
-} from '@popcorn/utils/';
-import React from 'react';
-import Voting from './Voting/Voting';
+import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import Voting from './Voting/Voting';
 
 export default function ProposalPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
@@ -42,7 +42,10 @@ export default function ProposalPage(): JSX.Element {
         <ImageHeader {...proposal?.application} />
         <Voting {...proposal} />
         <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-          <PhotoSideBar {...proposal?.application} />
+          <div className="col-span-2 space-y-4">
+            <VideoSideBar {...proposal?.application} />
+            <PhotoSideBar {...proposal?.application} />
+          </div>
           <MissionStatement
             missionStatement={proposal?.application?.missionStatement}
           />
