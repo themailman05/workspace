@@ -10,12 +10,12 @@ interface DisplayFilesProps {
   navigation: Navigation;
 }
 
-function ActionButtons({ setLocalState, navigation }): JSX.Element {
+function ActionButtons({ setLocalState, navigation, isArray }): JSX.Element {
   const { setCurrentStep, currentStep, setStepLimit } = navigation;
   return (
     <div className="row-auto my-2 justify-self-center">
       <button
-        onClick={() => setLocalState([])}
+        onClick={() => (isArray ? setLocalState([]) : setLocalState(''))}
         className="mx-2 justify-self-center mt-4 inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
       >
         Remove
@@ -41,28 +41,36 @@ export const DisplayImages: React.FC<DisplayFilesProps> = ({
   navigation,
 }): JSX.Element => {
   return (
-    <div className="grid justify-items-stretch">
-      <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        Image Preview
-      </p>
-      {Array.isArray(localState) ? (
-        <div className="my-4 grid grid-cols-4 gap-8 mx-16">
-          {localState.map((imgHash) => {
-            return (
-              <div key={imgHash}>
-                <img src={'https://gateway.pinata.cloud/ipfs/' + imgHash}></img>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <img
-          className="w-1/4 justify-self-center"
-          src={'https://gateway.pinata.cloud/ipfs/' + localState}
-        ></img>
-      )}
-      <ActionButtons setLocalState={setLocalState} navigation={navigation} />
-    </div>
+    localState !== '' && (
+      <div className="grid justify-items-stretch">
+        <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 justify-self-center">
+          Image Preview
+        </p>
+        {Array.isArray(localState) ? (
+          <div className="my-4 grid grid-cols-4 gap-8 mx-16">
+            {localState.map((imgHash) => {
+              return (
+                <div key={imgHash}>
+                  <img
+                    src={'https://gateway.pinata.cloud/ipfs/' + imgHash}
+                  ></img>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <img
+            className=" justify-self-center"
+            src={'https://gateway.pinata.cloud/ipfs/' + localState}
+          ></img>
+        )}
+        <ActionButtons
+          setLocalState={setLocalState}
+          navigation={navigation}
+          isArray={Array.isArray(localState)}
+        />
+      </div>
+    )
   );
 };
 
@@ -72,19 +80,25 @@ export const DisplayVideo: React.FC<DisplayFilesProps> = ({
   navigation,
 }): JSX.Element => {
   return (
-    <div className="grid justify-items-stretch">
-      <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        Video Preview
-      </p>
-      <video className="w-1/4 justify-self-center" controls>
+    localState !== '' && (
+      <div className="grid justify-items-stretch">
+        <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
+          Video Preview
+        </p>
+        <video className="w-1/4 justify-self-center" controls>
           <source
             src={'https://gateway.pinata.cloud/ipfs/' + localState}
             type="video/mp4"
           />
           Sorry, your browser doesn't support embedded videos.
         </video>
-      <ActionButtons setLocalState={setLocalState} navigation={navigation} />
-    </div>
+        <ActionButtons
+          setLocalState={setLocalState}
+          navigation={navigation}
+          isArray={Array.isArray(localState)}
+        />
+      </div>
+    )
   );
 };
 
@@ -94,32 +108,36 @@ export const DisplayPDFs: React.FC<DisplayFilesProps> = ({
   navigation,
 }): JSX.Element => {
   return (
-    <div className="grid justify-items-stretch">
-      <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        {localState.length ? 'Document Preview' : ''}
-      </p>
-      {Array.isArray(localState) ? (
-        <div>
-          {localState.map((IpfsHash, i) => {
-            return (
-              <div key={IpfsHash} className="row-auto justify-self-center">
-                <a
-                  className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1"
-                  href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}
-                >
-                  {'Impact Report/Audit ' + i + ': '}
-                  <DocumentReportIcon className="ml-2 h-5 w-5" />
-                </a>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div>
-          <p>None</p>
-        </div>
-      )}
-      <ActionButtons setLocalState={setLocalState} navigation={navigation} />
-    </div>
+    localState.length && (
+      <div className="grid justify-items-stretch">
+        <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
+          Document Preview
+        </p>
+        {Array.isArray(localState) ? (
+          <div>
+            {localState.map((IpfsHash, i) => {
+              return (
+                <div key={IpfsHash} className="row-auto justify-self-center">
+                  <a
+                    className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1"
+                    href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}
+                  >
+                    {'Impact Report/Audit ' + i + ': '}
+                    <DocumentReportIcon className="ml-2 h-5 w-5" />
+                  </a>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <></>
+        )}
+        <ActionButtons
+          setLocalState={setLocalState}
+          navigation={navigation}
+          isArray={Array.isArray(localState)}
+        />
+      </div>
+    )
   );
 };
