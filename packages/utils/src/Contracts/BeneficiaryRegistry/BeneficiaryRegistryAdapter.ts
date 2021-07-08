@@ -25,25 +25,15 @@ export const BeneficiaryRegistryAdapter = (
         }),
       );
     },
-    getAllBeneficiaryApplications: async (): Promise<
-      BeneficiaryApplication[]
-    > => {
+    getAllBeneficiaryApplicationMap: async (): Promise<BeneficiaryMap[]> => {
       const beneficiaryAddresses = await contract.getBeneficiaryList();
-      const ipfsHashes = await Promise.all(
+      return await Promise.all(
         beneficiaryAddresses.map(async (address) => {
-          return contract.getBeneficiary(address);
+          const cid = await contract.getBeneficiary(address);
+          const beneficiaryApplication = await IpfsClient().get(cid);
+          return { address, beneficiaryApplication };
         }),
       );
-      const beneficiaryData = await (
-        await Promise.all(
-          ipfsHashes.map(async (cid) => await IpfsClient().get(cid)),
-        )
-      ).map((beneficiaryApplication) => {
-        // TODO: Remove temporary address assignment
-        beneficiaryApplication.beneficiaryAddress = beneficiaryAddresses[0];
-        return beneficiaryApplication;
-      });
-      return beneficiaryData;
     },
   };
 };
