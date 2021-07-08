@@ -23,6 +23,7 @@ export default function ProfileImage({
         }
         fileType={'video/*'}
         numMaxFiles={1}
+        maxFileSizeMB={30}
         navigation={navigation}
       />
     )

@@ -26,6 +26,7 @@ export default function AdditionalImages({
         }
         fileType={'image/*'}
         numMaxFiles={4}
+        maxFileSizeMB={5}
         navigation={navigation}
       />
     )

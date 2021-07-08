@@ -1,23 +1,11 @@
 import * as axios from 'axios';
+import ProgressBar from 'components/ProgressBar';
 import { Navigation } from 'pages/proposals/propose';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
 import { DisplayImages, DisplayPDFs } from './DisplayFiles';
-
-const FIVE_MB = 5 * 1000 * 1024;
-
-function imageSizeValidator(file) {
-  if (file.size > FIVE_MB) {
-    uploadError('File size is greater than 5mb limit');
-    return {
-      code: 'file-too-large',
-      message: `Size is larger than ${FIVE_MB} bytes`,
-    };
-  }
-  return null;
-}
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -60,6 +48,7 @@ export const uploadVideo = (
   setVideo:
     | React.Dispatch<React.SetStateAction<string>>
     | React.Dispatch<React.SetStateAction<string[]>>,
+  setUploadProgress: React.Dispatch<React.SetStateAction<number>>,
 ) => {
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -73,19 +62,21 @@ export const uploadVideo = (
         var percentCompleted = Math.round(
           (progressEvent.loaded * 100) / progressEvent.total,
         );
-        console.log({ percentCompleted });
+        setUploadProgress(percentCompleted);
       },
     };
     axios
       .put('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
       .then((response) => response.text())
       .then((result) => {
+        console.log({ result });
         const hash = JSON.parse(result).IpfsHash;
         setVideo(hash);
         toast.dismiss();
         success();
       })
       .catch((error) => {
+        console.log(error);
         uploadError('Error uploading to IPFS');
       });
   });
@@ -135,6 +126,7 @@ interface IpfsProps {
   fileInstructions: string;
   fileType: string;
   numMaxFiles: number;
+  maxFileSizeMB: number;
   navigation: Navigation;
 }
 
@@ -146,9 +138,11 @@ export default function IpfsUpload({
   fileInstructions,
   fileType,
   numMaxFiles,
+  maxFileSizeMB,
   navigation,
 }: IpfsProps) {
   const [files, setFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const {
     acceptedFiles,
     fileRejections,
@@ -160,7 +154,17 @@ export default function IpfsUpload({
   } = useDropzone({
     accept: fileType,
     maxFiles: numMaxFiles,
-    validator: imageSizeValidator,
+    validator: (file) => {
+      const maxFileSizeBytes = maxFileSizeMB * 1000 * 1024;
+      if (file.size > maxFileSizeBytes) {
+        uploadError(`File size is greater than ${maxFileSizeBytes}mb limit`);
+        return {
+          code: 'file-too-large',
+          message: `Size is larger than ${maxFileSizeMB} MB`,
+        };
+      }
+      return null;
+    },
     onDrop: (acceptedFiles) => {
       if (fileRejections.length) {
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
@@ -168,7 +172,7 @@ export default function IpfsUpload({
         if (numMaxFiles === 1 && fileType === 'image/*') {
           uploadImageToPinata(acceptedFiles, setLocalState);
         } else if (fileType === 'video/*') {
-          uploadVideo(acceptedFiles, setLocalState);
+          uploadVideo(acceptedFiles, setLocalState, setUploadProgress);
         } else {
           uploadMultipleImagesToPinata(
             acceptedFiles,
@@ -205,6 +209,7 @@ export default function IpfsUpload({
                 ) : (
                   <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
                 )}
+
                 <div className="flex text-sm text-gray-600">
                   <label
                     htmlFor="file-upload"
@@ -229,6 +234,16 @@ export default function IpfsUpload({
         </div>
       ) : (
         <div></div>
+      )}
+      {uploadProgress > 0 && uploadProgress < 100 && fileType === 'video/*' && (
+        <div className="grid my-2 justify-items-stretch">
+          <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
+            <ProgressBar
+              progress={uploadProgress}
+              progressColor={'bg-green-300'}
+            />
+          </span>
+        </div>
       )}
       {numMaxFiles === 1 && localState && fileType === 'image/*' ? (
         <DisplayImages
