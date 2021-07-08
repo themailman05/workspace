@@ -1,5 +1,5 @@
 import { BeneficiaryRegistry } from '@popcorn/contracts/typechain';
-import { BeneficiaryApplication } from '../../';
+import { BeneficiaryApplication, BeneficiaryMap } from '../../';
 import { IIpfsClient } from '../../IpfsClient/IpfsClient';
 
 export const BeneficiaryRegistryAdapter = (
@@ -10,9 +10,20 @@ export const BeneficiaryRegistryAdapter = (
     getBeneficiaryApplication: async (
       id: string,
     ): Promise<BeneficiaryApplication> => {
-      const ipfsHash = await contract.getBeneficiary(id);
-      const beneficiaryApplication = await IpfsClient().get(ipfsHash);
+      const cid = await contract.getBeneficiary(id);
+      const beneficiaryApplication = await IpfsClient().get(cid);
       return beneficiaryApplication;
+    },
+    getBeneficiaryApplicationMap: async (
+      addresses: string[],
+    ): Promise<BeneficiaryMap[]> => {
+      return await Promise.all(
+        addresses.map(async (address) => {
+          const cid = await contract.getBeneficiary(address);
+          const beneficiaryApplication = await IpfsClient().get(cid);
+          return { address, beneficiaryApplication };
+        }),
+      );
     },
     getAllBeneficiaryApplications: async (): Promise<
       BeneficiaryApplication[]

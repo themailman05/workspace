@@ -13,7 +13,6 @@ export enum ProposalType {
   Nomination,
   Takedown,
 }
-
 export interface BeneficiaryApplication {
   organizationName: string;
   missionStatement: string;
@@ -44,4 +43,9 @@ export interface Proposal {
     for: BigNumber;
     against: BigNumber;
   };
+}
+
+export interface BeneficiaryMap {
+  address: string;
+  beneficiaryApplication: BeneficiaryApplication
 }

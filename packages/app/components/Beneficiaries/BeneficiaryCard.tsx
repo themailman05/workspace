@@ -22,6 +22,7 @@ export interface ElectionProps {
 export interface BeneficiaryCardProps {
   beneficiary: BeneficiaryApplication;
   electionProps?: ElectionProps;
+  address?: string;
 }
 
 export interface GrantSliderProps {
@@ -51,15 +52,16 @@ function GrantSlider({
 }
 
 export default function BeneficiaryCard({
+  address,
   beneficiary,
   electionProps,
 }: BeneficiaryCardProps): JSX.Element {
   return (
     <div
-      key={beneficiary.beneficiaryAddress}
+      key={address}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
-      <Link href={`/beneficiaries/${beneficiary.beneficiaryAddress}`} passHref>
+      <Link href={`/beneficiaries/${address}`} passHref>
         <a>
           <CardBody
             imgUrl={`${process.env.IPFS_URL}${beneficiary?.files.profileImage}`}
