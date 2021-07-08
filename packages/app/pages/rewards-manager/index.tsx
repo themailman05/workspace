@@ -77,8 +77,6 @@ export default function Register(): JSX.Element {
     setWait(false);
   }
 
-  console.log(popBalance.toString());
-
   return (
     <div className="w-full bg-gray-900 h-screen">
       <NavBar />
