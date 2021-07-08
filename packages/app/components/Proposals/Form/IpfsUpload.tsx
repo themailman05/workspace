@@ -132,6 +132,18 @@ interface IpfsProps {
   navigation: Navigation;
 }
 
+const isValidFileSize = (file: File, maxFileSizeMB: number) => {
+  const maxFileSizeBytes = maxFileSizeMB * 1000 * 1024;
+  if (file.size > maxFileSizeBytes) {
+    uploadError(`File size is greater than ${maxFileSizeMB}mb limit`);
+    return {
+      code: 'file-too-large',
+      message: `File is larger than ${maxFileSizeMB} MB`,
+    };
+  }
+  return null;
+};
+
 export default function IpfsUpload({
   stepName,
   localState,
@@ -156,16 +168,27 @@ export default function IpfsUpload({
   } = useDropzone({
     accept: fileType,
     maxFiles: numMaxFiles,
-    validator: (file) => {
-      const maxFileSizeBytes = maxFileSizeMB * 1000 * 1024;
-      if (file.size > maxFileSizeBytes) {
-        uploadError(`File size is greater than ${maxFileSizeBytes}mb limit`);
-        return {
-          code: 'file-too-large',
-          message: `Size is larger than ${maxFileSizeMB} MB`,
+    validator: (file: File) => {
+      if (fileType === 'video/*') {
+        var video = document.createElement('video');
+        video.preload = 'metadata';
+        video.src = URL.createObjectURL(file);
+        video.onloadedmetadata = function () {
+          window.URL.revokeObjectURL(video.src);
+          const videoLength = video.duration;
+          if (videoLength > 3 * 60) {
+            uploadError(`Video is too long`);
+            return {
+              code: 'file-too-large',
+              message: `Video is too long`,
+            };
+          } else {
+            return isValidFileSize(file, maxFileSizeMB);
+          }
         };
+      } else {
+        return isValidFileSize(file, maxFileSizeMB);
       }
-      return null;
     },
     onDrop: (acceptedFiles) => {
       if (fileRejections.length) {

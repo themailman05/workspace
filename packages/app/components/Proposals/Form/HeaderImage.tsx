@@ -23,6 +23,7 @@ export default function HeaderImage({
         }
         fileType={'image/*'}
         numMaxFiles={1}
+        maxFileSizeMB={5}
         navigation={navigation}
       />
     )
