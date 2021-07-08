@@ -87,7 +87,7 @@ export default async function deploy(ethers): Promise<void> {
     console.log("giving ETH to beneficiaries ...");
     await bluebird.map(
       bennies,
-      async (beneficiary) => {
+      async (beneficiary: SignerWithAddress) => {
         const balance = await ethers.provider.getBalance(beneficiary.address);
         if (balance.lt(parseEther(".01"))) {
           return accounts[0].sendTransaction({
@@ -104,7 +104,7 @@ export default async function deploy(ethers): Promise<void> {
     console.log("adding beneficiaries to registry ...");
     await bluebird.map(
       bennies,
-      async (beneficiary) => {
+      async (beneficiary: SignerWithAddress) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
           ethers.utils.formatBytes32String("1234"),
@@ -170,7 +170,7 @@ export default async function deploy(ethers): Promise<void> {
     );
     await bluebird.map(
       bennies,
-      async (beneficiary) => {
+      async (beneficiary: SignerWithAddress) => {
         console.log(`registering ${beneficiary.address}`);
         return contracts.grantElections.registerForElection(
           beneficiary.address,
@@ -203,7 +203,7 @@ export default async function deploy(ethers): Promise<void> {
 
   const stakePOP = async (voters): Promise<void> => {
     console.log("voters are staking POP ...");
-    await bluebird.map(voters, async (voter) => {
+    await bluebird.map(voters, async (voter: SignerWithAddress) => {
       return contracts.staking
         .connect(voter)
         .stake(utils.parseEther("1000"), 604800 * 52 * 4);
@@ -237,7 +237,7 @@ export default async function deploy(ethers): Promise<void> {
     );
     await bluebird.map(
       voters,
-      async (voter) => {
+      async (voter: SignerWithAddress) => {
         return contracts.grantElections.connect(voter).vote(
           beneficiaries.map((benny) => benny.address),
           [
