@@ -1,21 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { Toaster } from 'react-hot-toast';
 import { BeneficiaryApplication } from '@popcorn/utils';
-import MissionStatement from 'components/Proposals/Form/MissionStatement';
-import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import NavBar from 'components/NavBar/NavBar';
 import AdditionalImages from 'components/Proposals/Form/AdditionalImages';
 import BeneficiaryAddress from 'components/Proposals/Form/BeneficiaryAddress';
 import HeaderImage from 'components/Proposals/Form/HeaderImage';
 import ImpactReportsAudits from 'components/Proposals/Form/ImpactReportsAudits';
 import Intro from 'components/Proposals/Form/Intro';
+import MissionStatement from 'components/Proposals/Form/MissionStatement';
 import Name from 'components/Proposals/Form/Name';
 import NavigationButtons from 'components/Proposals/Form/NavigationButtons';
 import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
-import { useRouter } from 'next/router';
+import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import Video from 'components/Proposals/Form/Video';
+import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 export interface Navigation {
   currentStep: number;
@@ -42,7 +42,7 @@ export const defaultFormData: BeneficiaryApplication = {
     headerImage: '',
     impactReports: [],
     additionalImages: [],
-    video: ''
+    video: '',
   },
   links: {
     twitterUrl: '',
@@ -56,7 +56,6 @@ export const defaultFormData: BeneficiaryApplication = {
 
 const stepOrder: string[] = [
   'intro',
-  'video',
   'name',
   'beneficiary-address',
   'mission-statement',
@@ -64,6 +63,7 @@ const stepOrder: string[] = [
   'profile-image',
   'header-image',
   'additional-images',
+  'video',
   'impact-reports-audits',
   'social-media',
   'preview',
@@ -150,11 +150,6 @@ export default function BeneficiaryProposal(): JSX.Element {
         navigation={navigation}
         visible={stepOrder[currentStep] === 'profile-image'}
       />
-      <Video
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'video'}
-      />
       <HeaderImage
         form={[formData, setFormData]}
         navigation={navigation}
@@ -164,6 +159,11 @@ export default function BeneficiaryProposal(): JSX.Element {
         form={[formData, setFormData]}
         navigation={navigation}
         visible={stepOrder[currentStep] === 'additional-images'}
+      />
+      <Video
+        form={[formData, setFormData]}
+        navigation={navigation}
+        visible={stepOrder[currentStep] === 'video'}
       />
       <ImpactReportsAudits
         form={[formData, setFormData]}

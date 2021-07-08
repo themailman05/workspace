@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
-import { DisplayImages, DisplayPDFs } from './DisplayFiles';
+import { DisplayImages, DisplayPDFs, DisplayVideo } from './DisplayFiles';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -24,6 +24,7 @@ export const uploadImageToPinata = (
     var formdata = new FormData();
     formdata.append('file', file, 'download.png'); // TODO: Source from filename
     loading();
+
     fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
       method: 'POST',
       headers: myHeaders,
@@ -50,15 +51,17 @@ export const uploadVideo = (
     | React.Dispatch<React.SetStateAction<string[]>>,
   setUploadProgress: React.Dispatch<React.SetStateAction<number>>,
 ) => {
-  var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
   files.forEach((file) => {
     var data = new FormData();
     data.append('file', file, 'download.png'); // TODO: Source video name from file
     loading();
     var config = {
-      onUploadProgress: function (progressEvent) {
+      headers: {
+        'Content-Type': `multipart/form-data;`,
+        pinata_api_key: process.env.PINATA_API_KEY,
+        pinata_secret_api_key: process.env.PINATA_API_SECRET,
+      },
+      onUploadProgress: (progressEvent) => {
         var percentCompleted = Math.round(
           (progressEvent.loaded * 100) / progressEvent.total,
         );
@@ -66,14 +69,13 @@ export const uploadVideo = (
       },
     };
     axios
-      .put('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
-      .then((response) => response.text())
+      .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
       .then((result) => {
-        console.log({ result });
-        const hash = JSON.parse(result).IpfsHash;
+        const hash = result.data.IpfsHash;
         setVideo(hash);
         toast.dismiss();
         success();
+        setUploadProgress(0);
       })
       .catch((error) => {
         console.log(error);
@@ -247,6 +249,15 @@ export default function IpfsUpload({
       )}
       {numMaxFiles === 1 && localState && fileType === 'image/*' ? (
         <DisplayImages
+          localState={localState}
+          setLocalState={setLocalState}
+          navigation={navigation}
+        />
+      ) : (
+        <> </>
+      )}
+      {localState && fileType === 'video/*' ? (
+        <DisplayVideo
           localState={localState}
           setLocalState={setLocalState}
           navigation={navigation}
