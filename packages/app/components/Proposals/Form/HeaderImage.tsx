@@ -17,8 +17,8 @@ export default function HeaderImage({
         stepName={'6 - UPLOAD HEADER IMAGE'}
         localState={formData.files.headerImage}
         setLocalState={updateHeaderImage}
-        imageDescription={'a Header Image'}
-        imageInstructions={
+        fileDescription={'a Header Image'}
+        fileInstructions={
           'Ideal dimensions - 1500px x 500px and less than 5mb'
         }
         fileType={'image/*'}

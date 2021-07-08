@@ -23,7 +23,12 @@ const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-export const uploadImageToPinata = (files, setProfileImage) => {
+export const uploadImageToPinata = (
+  files: File[],
+  setProfileImage:
+    | React.Dispatch<React.SetStateAction<string>>
+    | React.Dispatch<React.SetStateAction<string[]>>,
+) => {
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
   myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
@@ -50,7 +55,12 @@ export const uploadImageToPinata = (files, setProfileImage) => {
   });
 };
 
-export const uploadVideo = (files, setVideo) => {
+export const uploadVideo = (
+  files: File[],
+  setVideo:
+    | React.Dispatch<React.SetStateAction<string>>
+    | React.Dispatch<React.SetStateAction<string[]>>,
+) => {
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
   myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
@@ -81,12 +91,16 @@ export const uploadVideo = (files, setVideo) => {
   });
 };
 
-function uploadMultipleImagesToPinata(files, localState, setLocalState) {
+function uploadMultipleImagesToPinata(
+  files: File[],
+  localState: string[], // TODO: Add type
+  setLocalState, // TODO: Add type
+) {
   toast.dismiss();
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
   myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  let newImageHashes = [];
+  let newImageHashes: string[] = [];
   files.forEach((file) => {
     var formdata = new FormData();
     formdata.append('file', file, 'download.png'); // TODO: Source from filenames
@@ -117,8 +131,8 @@ interface IpfsProps {
   setLocalState:
     | React.Dispatch<React.SetStateAction<string>>
     | React.Dispatch<React.SetStateAction<string[]>>;
-  imageDescription: string;
-  imageInstructions: string;
+  fileDescription: string;
+  fileInstructions: string;
   fileType: string;
   numMaxFiles: number;
   navigation: Navigation;
@@ -128,8 +142,8 @@ export default function IpfsUpload({
   stepName,
   localState,
   setLocalState,
-  imageDescription,
-  imageInstructions,
+  fileDescription,
+  fileInstructions,
   fileType,
   numMaxFiles,
   navigation,
@@ -151,12 +165,14 @@ export default function IpfsUpload({
       if (fileRejections.length) {
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
-        if (numMaxFiles === 1) {
+        if (numMaxFiles === 1 && fileType === 'image/*') {
           uploadImageToPinata(acceptedFiles, setLocalState);
+        } else if (fileType === 'video/*') {
+          uploadVideo(acceptedFiles, setLocalState);
         } else {
           uploadMultipleImagesToPinata(
             acceptedFiles,
-            localState,
+            localState as string[],
             setLocalState,
           );
         }
@@ -203,10 +219,10 @@ export default function IpfsUpload({
                     />
                   </label>
                   <p className="pl-1">
-                    or drag and drop {imageDescription.toLowerCase()}
+                    or drag and drop {fileDescription.toLowerCase()}
                   </p>
                 </div>
-                <p className="text-xs text-gray-500">{imageInstructions}</p>
+                <p className="text-xs text-gray-500">{fileInstructions}</p>
               </div>
             </div>
           </div>

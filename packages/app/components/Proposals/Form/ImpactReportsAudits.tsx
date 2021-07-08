@@ -17,8 +17,8 @@ export default function ImpactReportsAudits({
         stepName={'8 - Upload Impact Reports'}
         localState={formData.files.impactReports}
         setLocalState={updateImpactReports}
-        imageDescription={'Impact Reports'}
-        imageInstructions={
+        fileDescription={'Impact Reports'}
+        fileInstructions={
           'Impact report uploads are limited to up to a maximum of four PDFs, each with a maximum size of 5mb.'
         }
         fileType={'.pdf'}

@@ -20,8 +20,8 @@ export default function AdditionalImages({
         stepName={'7 - Upload Additional Images'}
         localState={formData.files.additionalImages}
         setLocalState={updateAdditionalImages}
-        imageDescription={'Additional Images'}
-        imageInstructions={
+        fileDescription={'Additional Images'}
+        fileInstructions={
           'The ideal image size and aspect ratio are 1200px X 675px and 16:9, respectively.'
         }
         fileType={'image/*'}

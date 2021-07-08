@@ -8,20 +8,20 @@ export default function ProfileImage({
   visible,
 }: FormStepProps) {
   const [formData, setFormData] = form;
-  function updateProfileImage(profileImage) {
-    setFormData({ ...formData, files: { ...formData.files, profileImage } });
+  function updateVideo(video) {
+    setFormData({ ...formData, files: { ...formData.files, video } });
   }
   return (
     visible && (
       <IpfsUpload
-        stepName={'5 - UPLOAD PROFILE IMAGE'}
-        localState={formData.files.profileImage}
-        setLocalState={updateProfileImage}
-        fileDescription={'a Profile Image'}
+        stepName={'5 - UPLOAD VIDEO'}
+        localState={formData.files.video}
+        setLocalState={updateVideo}
+        fileDescription={'a Video'}
         fileInstructions={
-          'Upload a square image, ideally 150px x 150px and less than 5mb'
+          'Upload a video less than 30mb and less than 3 minutes'
         }
-        fileType={'image/*'}
+        fileType={'video/*'}
         numMaxFiles={1}
         navigation={navigation}
       />

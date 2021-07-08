@@ -23,6 +23,7 @@ export interface BeneficiaryApplication {
     headerImage?: string;
     impactReports?: string[];
     additionalImages?: string[];
+    video: string;
   };
   links: {
     twitterUrl?: string;

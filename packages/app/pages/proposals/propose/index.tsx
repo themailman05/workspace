@@ -15,6 +15,7 @@ import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
 import { useRouter } from 'next/router';
+import Video from 'components/Proposals/Form/Video';
 
 export interface Navigation {
   currentStep: number;
@@ -41,6 +42,7 @@ export const defaultFormData: BeneficiaryApplication = {
     headerImage: '',
     impactReports: [],
     additionalImages: [],
+    video: ''
   },
   links: {
     twitterUrl: '',
@@ -54,6 +56,7 @@ export const defaultFormData: BeneficiaryApplication = {
 
 const stepOrder: string[] = [
   'intro',
+  'video',
   'name',
   'beneficiary-address',
   'mission-statement',
@@ -146,6 +149,11 @@ export default function BeneficiaryProposal(): JSX.Element {
         form={[formData, setFormData]}
         navigation={navigation}
         visible={stepOrder[currentStep] === 'profile-image'}
+      />
+      <Video
+        form={[formData, setFormData]}
+        navigation={navigation}
+        visible={stepOrder[currentStep] === 'video'}
       />
       <HeaderImage
         form={[formData, setFormData]}
