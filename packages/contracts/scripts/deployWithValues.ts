@@ -3,7 +3,6 @@ import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 import bluebird from "bluebird";
 import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { IUniswapV2Pair, UniswapV2Router02, WETH9 } from "../typechain";
 import { deployContract } from "ethereum-waffle";
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
@@ -73,7 +72,7 @@ export default async function deploy(ethers): Promise<void> {
 
     const WETH = (await (
       await (await ethers.getContractFactory("WETH9")).deploy()
-    ).deployed()) as WETH9;
+    ).deployed())
 
     const staking = await (
       await (await ethers.getContractFactory("Staking")).deploy(mockPop.address)
@@ -89,7 +88,7 @@ export default async function deploy(ethers): Promise<void> {
       UniswapV2Router02JSON,
       [uniswapFactory.address, WETH.address],
       overrides
-    )) as UniswapV2Router02;
+    ))
 
     await uniswapFactory.createPair(mock3CRV.address, mockPop.address);
     const uniswapPairAddress = await uniswapFactory.getPair(
@@ -100,7 +99,7 @@ export default async function deploy(ethers): Promise<void> {
       uniswapPairAddress,
       JSON.stringify(UniswapV2PairJSON.abi),
       accounts[0]
-    ) as IUniswapV2Pair;
+    )
 
     const beneficiaryVaults = await (
       await (
