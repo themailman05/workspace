@@ -1,6 +1,6 @@
+import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { FormStepProps } from 'pages/proposals/propose';
 
 export default function ProfileImage({
   form,
@@ -11,6 +11,7 @@ export default function ProfileImage({
   function updateVideo(video) {
     setFormData({ ...formData, files: { ...formData.files, video } });
   }
+  const maxVideoSizeMB = 30;
   return (
     visible && (
       <IpfsUpload
@@ -18,12 +19,10 @@ export default function ProfileImage({
         localState={formData.files.video}
         setLocalState={updateVideo}
         fileDescription={'a Video'}
-        fileInstructions={
-          'Upload a video less than 30mb and less than 3 minutes'
-        }
+        fileInstructions={`Upload a video less than ${maxVideoSizeMB}mb`}
         fileType={'video/*'}
         numMaxFiles={1}
-        maxFileSizeMB={30}
+        maxFileSizeMB={maxVideoSizeMB}
         navigation={navigation}
       />
     )

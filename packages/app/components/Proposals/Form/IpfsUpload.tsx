@@ -169,26 +169,7 @@ export default function IpfsUpload({
     accept: fileType,
     maxFiles: numMaxFiles,
     validator: (file: File) => {
-      if (fileType === 'video/*') {
-        var video = document.createElement('video');
-        video.preload = 'metadata';
-        video.src = URL.createObjectURL(file);
-        video.onloadedmetadata = function () {
-          window.URL.revokeObjectURL(video.src);
-          const videoLength = video.duration;
-          if (videoLength > 3 * 60) {
-            uploadError(`Video is too long`);
-            return {
-              code: 'file-too-large',
-              message: `Video is too long`,
-            };
-          } else {
-            return isValidFileSize(file, maxFileSizeMB);
-          }
-        };
-      } else {
-        return isValidFileSize(file, maxFileSizeMB);
-      }
+      return isValidFileSize(file, maxFileSizeMB);
     },
     onDrop: (acceptedFiles) => {
       if (fileRejections.length) {
