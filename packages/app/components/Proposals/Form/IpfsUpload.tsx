@@ -144,6 +144,10 @@ const isValidFileSize = (file: File, maxFileSizeMB: number) => {
   return null;
 };
 
+const videoUploading = (uploadProgress: number, fileType: string): boolean => {
+  return uploadProgress > 0 && uploadProgress < 100 && fileType === 'video/*';
+};
+
 export default function IpfsUpload({
   stepName,
   localState,
@@ -204,7 +208,8 @@ export default function IpfsUpload({
       <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
         {stepName}
       </h2>
-      {!localState || localState.length === 0 ? (
+      {(!localState || localState.length === 0) &&
+      !videoUploading(uploadProgress, fileType) ? (
         <div {...rootProps}>
           <input {...getInputProps()} />
           <div className="mt-1 sm:mt-0 sm:col-span-2">
@@ -241,7 +246,7 @@ export default function IpfsUpload({
       ) : (
         <div></div>
       )}
-      {uploadProgress > 0 && uploadProgress < 100 && fileType === 'video/*' && (
+      {videoUploading(uploadProgress, fileType) && (
         <div className="grid my-2 justify-items-stretch">
           <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
             <ProgressBar
@@ -250,15 +255,6 @@ export default function IpfsUpload({
             />
           </span>
         </div>
-      )}
-      {numMaxFiles === 1 && localState && fileType === 'image/*' ? (
-        <DisplayImages
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
-      ) : (
-        <> </>
       )}
       {localState && fileType === 'video/*' ? (
         <DisplayVideo
@@ -269,6 +265,16 @@ export default function IpfsUpload({
       ) : (
         <> </>
       )}
+      {numMaxFiles === 1 && localState && fileType === 'image/*' ? (
+        <DisplayImages
+          localState={localState}
+          setLocalState={setLocalState}
+          navigation={navigation}
+        />
+      ) : (
+        <> </>
+      )}
+
       {numMaxFiles > 1 && localState.length > 0 && fileType === 'image/*' ? (
         <DisplayImages
           localState={localState}
