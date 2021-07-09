@@ -7,11 +7,13 @@ import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 import "./IGrantRegistry.sol";
 import "./IRandomNumberConsumer.sol";
-import "./ParticipationReward.sol";
+import "./Governed.sol";
 
-contract GrantElections is ParticipationReward {
+contract GrantElections is Governed {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
+
+  IERC20 public immutable POP;
 
   struct Vote {
     address voter;
@@ -19,17 +21,8 @@ contract GrantElections is ParticipationReward {
     uint256 weight;
   }
 
-  enum ElectionTerm {
-    Monthly,
-    Quarterly,
-    Yearly
-  }
-  enum ElectionState {
-    Registration,
-    Voting,
-    Closed,
-    Finalized
-  }
+  enum ElectionTerm {Monthly, Quarterly, Yearly}
+  enum ElectionState {Registration, Voting, Closed, Finalized}
 
   uint256 constant ONE_DAY = 86400; // seconds in 1 day
 
@@ -43,7 +36,6 @@ contract GrantElections is ParticipationReward {
     ElectionConfiguration electionConfiguration;
     uint256 startTime;
     bool exists;
-    bytes32 vaultId;
   }
 
   struct ElectionConfiguration {
@@ -92,11 +84,12 @@ contract GrantElections is ParticipationReward {
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
-  ) ParticipationReward(_pop, _governance) {
+  ) Governed(_governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     grantRegistry = _grantRegistry;
     randomNumberConsumer = _randomNumberConsumer;
+    POP = _pop;
     _setDefaults();
   }
 
@@ -126,15 +119,6 @@ contract GrantElections is ParticipationReward {
     e.electionTerm = _grantTerm;
     e.startTime = block.timestamp;
     e.exists = true;
-    (bool vaultCreated, bytes32 vaultId) = _initializeVault(
-      keccak256(abi.encodePacked(_term, block.timestamp)),
-      block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
-        electionDefaults[_term].votingPeriod
-      )
-    );
-    if (vaultCreated) {
-      e.vaultId = vaultId;
-    }
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
   }
@@ -173,8 +157,8 @@ contract GrantElections is ParticipationReward {
     ];
     startTime_ = e.startTime;
     registrationBondRequired_ = e
-    .electionConfiguration
-    .registrationBondRequired;
+      .electionConfiguration
+      .registrationBondRequired;
     registrationBond_ = e.electionConfiguration.registrationBond;
   }
 
@@ -193,7 +177,7 @@ contract GrantElections is ParticipationReward {
     electionDefaults[uint8(_term)].registrationBondRequired = !electionDefaults[
       uint8(_term)
     ]
-    .registrationBondRequired;
+      .registrationBondRequired;
   }
 
   function getCurrentRanking(ElectionTerm _term)
@@ -207,10 +191,6 @@ contract GrantElections is ParticipationReward {
       _ranking[i] = electionRanking[_term][i];
     }
     return _ranking;
-  }
-
-  function getVaultId(ElectionTerm _term) public view returns (bytes32) {
-    return elections[uint8(_term)].vaultId;
   }
 
   /**
@@ -275,9 +255,9 @@ contract GrantElections is ParticipationReward {
     if (
       block.timestamp >=
       election
-      .startTime
-      .add(election.electionConfiguration.registrationPeriod)
-      .add(election.electionConfiguration.votingPeriod)
+        .startTime
+        .add(election.electionConfiguration.registrationPeriod)
+        .add(election.electionConfiguration.votingPeriod)
     ) {
       election.electionState = ElectionState.Closed;
     } else if (
@@ -323,27 +303,25 @@ contract GrantElections is ParticipationReward {
       _usedVoiceCredits = _usedVoiceCredits.add(_voiceCredits[i]);
       uint256 _sqredVoiceCredits = sqrt(_voiceCredits[i]);
 
-      Vote memory _vote = Vote({
-        voter: msg.sender,
-        beneficiary: _beneficiaries[i],
-        weight: _sqredVoiceCredits
-      });
+      Vote memory _vote =
+        Vote({
+          voter: msg.sender,
+          beneficiary: _beneficiaries[i],
+          weight: _sqredVoiceCredits
+        });
 
       election.votes.push(_vote);
       election.voters[msg.sender] = true;
       beneficiaryVotes[_electionTerm][_beneficiaries[i]] = beneficiaryVotes[
         _electionTerm
       ][_beneficiaries[i]]
-      .add(_sqredVoiceCredits);
+        .add(_sqredVoiceCredits);
       _recalculateRanking(_electionTerm, _beneficiaries[i], _sqredVoiceCredits);
     }
     require(
       _usedVoiceCredits <= _stakedVoiceCredits,
       "Insufficient voice credits"
     );
-    if (election.vaultId != "") {
-      _addShares(election.vaultId, msg.sender, _usedVoiceCredits);
-    }
   }
 
   function _recalculateRanking(
@@ -411,12 +389,10 @@ contract GrantElections is ParticipationReward {
     address[] memory _ranking = getCurrentRanking(_electionTerm);
     require(_ranking.length > 1, "no elegible awardees");
 
-    address[] memory _awardees = new address[](
-      _election.electionConfiguration.awardees
-    );
-    uint256[] memory _shares = new uint256[](
-      _election.electionConfiguration.awardees
-    );
+    address[] memory _awardees =
+      new address[](_election.electionConfiguration.awardees);
+    uint256[] memory _shares =
+      new uint256[](_election.electionConfiguration.awardees);
 
     if (_election.electionConfiguration.useChainLinkVRF) {
       randomNumberConsumer.getRandomNumber(
@@ -435,16 +411,11 @@ contract GrantElections is ParticipationReward {
     grantRegistry.createGrant(uint8(_electionTerm), _awardees, _shares);
     emit GrantCreated(_electionTerm, _awardees, _shares);
     _election.electionState = ElectionState.Finalized;
-
-    if (_election.vaultId != "") {
-      _openVault(_election.vaultId);
-    }
   }
 
   function _setDefaults() internal {
-    ElectionConfiguration storage monthlyDefaults = electionDefaults[
-      uint8(ElectionTerm.Monthly)
-    ];
+    ElectionConfiguration storage monthlyDefaults =
+      electionDefaults[uint8(ElectionTerm.Monthly)];
     monthlyDefaults.awardees = 1;
     monthlyDefaults.ranking = 3;
     monthlyDefaults.useChainLinkVRF = true;
@@ -454,9 +425,8 @@ contract GrantElections is ParticipationReward {
     monthlyDefaults.registrationPeriod = 7 * ONE_DAY;
     monthlyDefaults.cooldownPeriod = 21 * ONE_DAY;
 
-    ElectionConfiguration storage quarterlyDefaults = electionDefaults[
-      uint8(ElectionTerm.Quarterly)
-    ];
+    ElectionConfiguration storage quarterlyDefaults =
+      electionDefaults[uint8(ElectionTerm.Quarterly)];
     quarterlyDefaults.awardees = 2;
     quarterlyDefaults.ranking = 5;
     quarterlyDefaults.useChainLinkVRF = true;
@@ -466,9 +436,8 @@ contract GrantElections is ParticipationReward {
     quarterlyDefaults.registrationPeriod = 14 * ONE_DAY;
     quarterlyDefaults.cooldownPeriod = 83 * ONE_DAY;
 
-    ElectionConfiguration storage yearlyDefaults = electionDefaults[
-      uint8(ElectionTerm.Yearly)
-    ];
+    ElectionConfiguration storage yearlyDefaults =
+      electionDefaults[uint8(ElectionTerm.Yearly)];
     yearlyDefaults.awardees = 3;
     yearlyDefaults.ranking = 7;
     yearlyDefaults.useChainLinkVRF = true;
