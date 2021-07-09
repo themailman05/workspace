@@ -15,7 +15,7 @@ export default function ProfileImage({
   return (
     visible && (
       <IpfsUpload
-        stepName={'5 - UPLOAD VIDEO'}
+        stepName={'8 - UPLOAD VIDEO'}
         localState={formData.files.video}
         setLocalState={updateVideo}
         fileDescription={'a Video'}

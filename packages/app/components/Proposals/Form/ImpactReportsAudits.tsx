@@ -14,7 +14,7 @@ export default function ImpactReportsAudits({
   return (
     visible && (
       <IpfsUpload
-        stepName={'8 - Upload Impact Reports'}
+        stepName={'9 - Upload Impact Reports'}
         localState={formData.files.impactReports}
         setLocalState={updateImpactReports}
         fileDescription={'Impact Reports'}

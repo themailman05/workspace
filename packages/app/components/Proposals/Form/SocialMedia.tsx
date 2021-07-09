@@ -77,7 +77,7 @@ export default function SocialMedia({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          9 - Upload social media links
+          10 - Upload social media links
         </h2>
 
         <div className="grid justify-items-stretch ...">
