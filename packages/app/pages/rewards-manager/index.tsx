@@ -9,6 +9,7 @@ import { connectors } from 'containers/Web3/connectors';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import { useContext, useEffect, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import RewardDestination from '../../components/RewardsManager/RewardDestination';
 import NavBar from '../../containers/NavBar/NavBar';
 
@@ -58,28 +59,39 @@ export default function Register(): JSX.Element {
 
   async function swapToken(): Promise<void> {
     setWait(true);
+    toast.loading('Swap in Progress...');
     await contracts.rewardsManager
       .connect(library.getSigner())
       .swapTokenForRewards(
         [contracts.threeCrv.address, contracts.pop.address],
         swapOutput,
       )
-      .catch((err) => console.log('err', err));
+      .catch((err) => {
+        console.log('err', err);
+        toast.error('Swap failed');
+      });
+    toast.success('Funds swapped!');
     setWait(false);
   }
 
   async function distributeRewards(): Promise<void> {
     setWait(true);
+    toast.loading("Distributing funds...")
     await contracts.rewardsManager
       .connect(library.getSigner())
       .distributeRewards()
-      .catch((err) => console.log('err', err));
+      .catch((err) => {
+        console.log('err', err);
+        toast.error('Couldnt distribute funds');
+      });
+    toast.success("Funds distributed!")
     setWait(false);
   }
 
   return (
     <div className="w-full bg-gray-900 h-screen">
       <NavBar />
+      <Toaster position="top-right" />
       <div className="bg-gray-900">
         <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
           <div className="text-center">
