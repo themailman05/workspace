@@ -175,7 +175,7 @@ export default function BeneficiaryProposal(): JSX.Element {
         visible={stepOrder[currentStep] === 'preview'}
       />
       <NavigationButtons navigation={navigation} />
-      <Toaster />
+      <Toaster position="top-right"/>
     </div>
   );
 }
