@@ -26,8 +26,6 @@ export default function AdditionalImages({
   }
 
   function updateImageDescription(description: string, index: number): void {
-    console.log(description);
-    console.log(index);
     const stateCopy = { ...formData };
     stateCopy.files.additionalImages[index].description = description;
     setFormData(stateCopy);
@@ -48,7 +46,6 @@ export default function AdditionalImages({
       )
     );
   }
-  console.log(formData?.files.additionalImages[0]);
 
   return (
     visible && (
