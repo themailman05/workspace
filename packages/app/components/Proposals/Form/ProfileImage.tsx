@@ -67,7 +67,8 @@ export default function ProfileImage({
           numMaxFiles={1}
         />
         <DisplayImages localState={formData?.files?.profileImage?.image} />
-        <div className="mx-auto mt-4">
+        <div className="mt-8 w-80">
+          <p>Image Description</p>
           <ControlledTextInput
             inputValue={formData?.files?.profileImage?.description}
             id="profilImageDescription"
@@ -76,14 +77,14 @@ export default function ProfileImage({
             updateInput={updateProfilImageDescription}
             isValid={inputExists}
           />
-          {formData?.files?.profileImage?.image !== '' &&
-            formData?.files?.profileImage?.description !== '' && (
-              <ActionButtons
-                clearLocalState={clearLocalState}
-                navigation={navigation}
-              />
-            )}
         </div>
+        {formData?.files?.profileImage?.image !== '' &&
+          formData?.files?.profileImage?.description !== '' && (
+            <ActionButtons
+              clearLocalState={clearLocalState}
+              navigation={navigation}
+            />
+          )}
       </>
     )
   );

@@ -26,7 +26,11 @@ export default function AdditionalImages({
   }
 
   function updateImageDescription(description: string, index: number): void {
-    formData.files.additionalImages[index].description = description;
+    console.log(description);
+    console.log(index);
+    const stateCopy = { ...formData };
+    stateCopy.files.additionalImages[index].description = description;
+    setFormData(stateCopy);
   }
 
   function clearLocalState(): void {
@@ -44,6 +48,7 @@ export default function AdditionalImages({
       )
     );
   }
+  console.log(formData?.files.additionalImages[0]);
 
   return (
     visible && (
@@ -66,16 +71,20 @@ export default function AdditionalImages({
             (image) => image.image,
           )}
         />
-        <div className="mx-auto mt-4">
+        <div className="mt-8 w-80 mx-auto">
           {formData?.files?.additionalImages?.map((image, i) => (
-            <ControlledTextInput
-              inputValue={image.description}
-              id={`description ${i}`}
-              placeholder={`Description for Image ${i + 1}`}
-              errorMessage="Image description cannot be blank."
-              updateIndexedInput={updateImageDescription}
-              isValid={inputExists}
-            />
+            <div className="mb-4">
+              <p>Image {i + 1} Description</p>
+              <ControlledTextInput
+                inputValue={image.description}
+                id={`description ${i}`}
+                placeholder={`Description for Image ${i + 1}`}
+                errorMessage="Image description cannot be blank."
+                updateInput={updateImageDescription}
+                inputIndex={i}
+                isValid={inputExists}
+              />
+            </div>
           ))}
           {isFilled() && (
             <ActionButtons

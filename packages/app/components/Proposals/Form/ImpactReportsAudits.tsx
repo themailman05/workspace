@@ -1,9 +1,7 @@
-import IpfsUpload from './IpfsUpload';
 import { FormStepProps } from 'pages/proposals/propose';
-import { DisplayImages, DisplayPDFs } from './DisplayFiles';
+import { DisplayPDFs } from './DisplayFiles';
+import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
-import ControlledTextInput from './ControlledTextInput';
-import inputExists from 'utils/isValidInput';
 
 export default function HeaderImage({
   form,
@@ -38,7 +36,7 @@ export default function HeaderImage({
         <IpfsUpload
           stepName={'8 - Upload Impact Reports'}
           localState={formData?.files?.impactReports}
-          setLocalStateMultiple={updateImpactReports}
+          setLocalState={updateImpactReports}
           imageDescription={'Impact Reports'}
           imageInstructions={
             'Impact report uploads are limited to up to a maximum of four PDFs, each with a maximum size of 5mb.'
@@ -46,11 +44,15 @@ export default function HeaderImage({
           fileType={'.pdf'}
           numMaxFiles={4}
         />
-        <DisplayPDFs localState={formData?.files?.impactReports} />
-        <ActionButtons
-          clearLocalState={clearLocalState}
-          navigation={navigation}
-        />
+        <div className="mx-auto">
+          <DisplayPDFs localState={formData?.files?.impactReports} />
+          {formData?.files?.impactReports?.length > 0 && (
+            <ActionButtons
+              clearLocalState={clearLocalState}
+              navigation={navigation}
+            />
+          )}
+        </div>
       </>
     )
   );

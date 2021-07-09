@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Toaster } from 'react-hot-toast';
 import { BeneficiaryApplication } from '@popcorn/utils';
-import MissionStatement from 'components/Proposals/Form/MissionStatement';
-import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import NavBar from 'components/NavBar/NavBar';
 import AdditionalImages from 'components/Proposals/Form/AdditionalImages';
 import BeneficiaryAddress from 'components/Proposals/Form/BeneficiaryAddress';
 import HeaderImage from 'components/Proposals/Form/HeaderImage';
 import ImpactReportsAudits from 'components/Proposals/Form/ImpactReportsAudits';
 import Intro from 'components/Proposals/Form/Intro';
+import MissionStatement from 'components/Proposals/Form/MissionStatement';
 import Name from 'components/Proposals/Form/Name';
 import NavigationButtons from 'components/Proposals/Form/NavigationButtons';
 import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
+import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 
 export interface Navigation {
   currentStep: number;
@@ -122,51 +122,53 @@ export default function BeneficiaryProposal(): JSX.Element {
         navigation={navigation}
         visible={stepOrder[currentStep] === 'intro'}
       />
-      <Name
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'name'}
-      />
-      <BeneficiaryAddress
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'beneficiary-address'}
-      />
-      <MissionStatement
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'mission-statement'}
-      />
-      <ProofOfOwnership
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'proof-of-ownership'}
-      />
-      <ProfileImage
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'profile-image'}
-      />
-      <HeaderImage
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'header-image'}
-      />
-      <AdditionalImages
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'additional-images'}
-      />
-      <ImpactReportsAudits
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'impact-reports-audits'}
-      />
-      <SocialMedia
-        form={[formData, setFormData]}
-        navigation={navigation}
-        visible={stepOrder[currentStep] === 'social-media'}
-      />
+      <div className="mx-auto">
+        <Name
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'name'}
+        />
+        <BeneficiaryAddress
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'beneficiary-address'}
+        />
+        <MissionStatement
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'mission-statement'}
+        />
+        <ProofOfOwnership
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'proof-of-ownership'}
+        />
+        <ProfileImage
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'profile-image'}
+        />
+        <HeaderImage
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'header-image'}
+        />
+        <AdditionalImages
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'additional-images'}
+        />
+        <ImpactReportsAudits
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'impact-reports-audits'}
+        />
+        <SocialMedia
+          form={[formData, setFormData]}
+          navigation={navigation}
+          visible={stepOrder[currentStep] === 'social-media'}
+        />
+      </div>
       <Preview
         form={[formData, setFormData]}
         navigation={navigation}

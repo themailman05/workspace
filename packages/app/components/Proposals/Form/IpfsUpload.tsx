@@ -90,8 +90,7 @@ interface IpfsProps {
   imageInstructions: string;
   fileType: string;
   numMaxFiles: number;
-  setLocalState?: (input: string) => void;
-  setLocalStateMultiple?: (input: string[]) => void;
+  setLocalState: (input: string | string[]) => void;
 }
 
 export default function IpfsUpload({
@@ -102,7 +101,6 @@ export default function IpfsUpload({
   fileType,
   numMaxFiles,
   setLocalState,
-  setLocalStateMultiple,
 }: IpfsProps) {
   const [files, setFiles] = useState([]);
   const {
@@ -124,7 +122,7 @@ export default function IpfsUpload({
         if (numMaxFiles === 1) {
           uploadImageToPinata(acceptedFiles, setLocalState);
         } else {
-          uploadMultipleImagesToPinata(acceptedFiles, setLocalStateMultiple);
+          uploadMultipleImagesToPinata(acceptedFiles, setLocalState);
         }
       }
 

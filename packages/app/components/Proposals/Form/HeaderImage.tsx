@@ -66,7 +66,8 @@ export default function HeaderImage({
           numMaxFiles={1}
         />
         <DisplayImages localState={formData?.files?.headerImage?.image} />
-        <div className="mx-auto mt-4">
+        <div className="mt-8 w-80">
+          <p>Image Description</p>
           <ControlledTextInput
             inputValue={formData?.files?.headerImage?.description}
             id="headerImageDescription"
@@ -75,14 +76,14 @@ export default function HeaderImage({
             updateInput={updateHeaderImageDescription}
             isValid={inputExists}
           />
-          {formData?.files?.headerImage?.image !== '' &&
-            formData?.files?.headerImage?.description !== '' && (
-              <ActionButtons
-                clearLocalState={clearLocalState}
-                navigation={navigation}
-              />
-            )}
         </div>
+        {formData?.files?.headerImage?.image !== '' &&
+          formData?.files?.headerImage?.description !== '' && (
+            <ActionButtons
+              clearLocalState={clearLocalState}
+              navigation={navigation}
+            />
+          )}
       </>
     )
   );

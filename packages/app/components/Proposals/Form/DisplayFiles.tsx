@@ -1,5 +1,4 @@
 import { DocumentReportIcon } from '@heroicons/react/outline';
-import { Navigation } from 'pages/proposals/propose';
 
 interface DisplayFilesProps {
   localState: string | string[];
@@ -14,11 +13,16 @@ export const DisplayImages: React.FC<DisplayFilesProps> = ({
         Image Preview
       </p>
       {Array.isArray(localState) ? (
-        <div className="my-4 grid grid-cols-4 gap-8 mx-16">
+        <div className="flex flex-row justify-evenly my-4 mx-16">
           {localState.map((imgHash) => {
             return (
               <div key={imgHash}>
-                <img src={imgHash.length > 0 && 'https://gateway.pinata.cloud/ipfs/' + imgHash}></img>
+                <img
+                  src={
+                    imgHash.length > 0 &&
+                    'https://gateway.pinata.cloud/ipfs/' + imgHash
+                  }
+                ></img>
               </div>
             );
           })}
@@ -26,7 +30,10 @@ export const DisplayImages: React.FC<DisplayFilesProps> = ({
       ) : (
         <img
           className="w-1/4 justify-self-center"
-          src={localState.length > 0 && 'https://gateway.pinata.cloud/ipfs/' + localState}
+          src={
+            localState.length > 0 &&
+            'https://gateway.pinata.cloud/ipfs/' + localState
+          }
         ></img>
       )}
     </div>
@@ -37,7 +44,7 @@ export const DisplayPDFs: React.FC<DisplayFilesProps> = ({
   localState,
 }): JSX.Element => {
   return (
-    <div className="grid justify-items-stretch">
+    <>
       <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
         {localState.length ? 'Document Preview' : ''}
       </p>
@@ -45,13 +52,13 @@ export const DisplayPDFs: React.FC<DisplayFilesProps> = ({
         <div>
           {localState.map((IpfsHash, i) => {
             return (
-              <div key={IpfsHash} className="row-auto justify-self-center">
+              <div key={IpfsHash} className="flex flex-row items-center">
                 <a
                   className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1"
                   href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}
                 >
                   {'Impact Report/Audit ' + i + ': '}
-                  <DocumentReportIcon className="ml-2 h-5 w-5" />
+                  <DocumentReportIcon className="inline ml-2 h-5 w-5" />
                 </a>
               </div>
             );
@@ -62,6 +69,6 @@ export const DisplayPDFs: React.FC<DisplayFilesProps> = ({
           <p>None</p>
         </div>
       )}
-    </div>
+    </>
   );
 };

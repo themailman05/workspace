@@ -6,9 +6,8 @@ interface ControlledTextInputProps {
   placeholder: string;
   errorMessage: string;
   isValid: (input: string) => boolean;
-  updateInput?: (value: string) => void;
+  updateInput: (value: string, index?: number) => void;
   inputIndex?: number;
-  updateIndexedInput?: (value: string, index: number) => void;
 }
 
 export default function ControlledTextInput({
@@ -19,8 +18,8 @@ export default function ControlledTextInput({
   isValid,
   updateInput,
   inputIndex,
-  updateIndexedInput,
 }: ControlledTextInputProps): JSX.Element {
+  console.log('inputIndex', inputIndex);
   return (
     <>
       <div className="mt-1 relative rounded-md shadow-sm">
@@ -30,9 +29,9 @@ export default function ControlledTextInput({
           id={id}
           value={inputValue}
           onChange={(e) =>
-            inputIndex
-              ? updateIndexedInput(e.target.value, inputIndex)
-              : updateInput(e.target.value)
+            inputIndex == undefined
+              ? updateInput(e.target.value)
+              : updateInput(e.target.value, inputIndex)
           }
           className={`block w-full shadow-sm sm:text-sm rounded-md ${
             isValid(inputValue)
