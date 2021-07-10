@@ -1,4 +1,5 @@
-import { Proposal, Status } from '@popcorn/utils/';
+import { Proposal, Status } from '@popcorn/utils';
+import React from 'react';
 import CurrentStandings from '../CurrentStandings';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
@@ -6,7 +7,7 @@ import OpenVoting from './OpenVoting';
 
 export default function Voting(proposal: Proposal): JSX.Element {
   return (
-    <div>
+    <div className="mt-16">
       {proposal?.status === Status.Open ? (
         <OpenVoting {...proposal} />
       ) : proposal?.status === Status.Challenge ? (

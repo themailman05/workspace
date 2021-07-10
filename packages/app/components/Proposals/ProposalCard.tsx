@@ -1,5 +1,5 @@
 import CardBody from 'components/CommonComponents/CardBody';
-import { Proposal, ProposalType } from '@popcorn/utils/';
+import { Proposal, ProposalType } from '@popcorn/utils';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
 
@@ -31,9 +31,15 @@ export default function ProposalCard({
             name={proposal?.application.organizationName}
             missionStatement={proposal?.application.missionStatement}
           />
-          <div className="flex-shrink-0 ">
-            <VotingInformation {...proposal} />
+          <div className="relative">
+            <div
+              className="absolute inset-0 flex items-center"
+              aria-hidden="true"
+            >
+              <div className="w-full border-t border-gray-300" />
+            </div>
           </div>
+          <VotingInformation {...proposal} />
         </a>
       </Link>
     </div>

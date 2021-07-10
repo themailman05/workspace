@@ -7,12 +7,10 @@ export default function MissionStatement({
 }: MissionStatement): JSX.Element {
   return (
     <div className="col-span-6 space-y-4">
-      <p className="text-3xl text-black sm:text-4xl lg:text-5xl">
+      <h3 className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
         Mission Statement
-      </p>
-      <p className="max-w-4xl text-xl text-black sm:text-2xl">
-        {missionStatement}
-      </p>
+      </h3>
+      <p className="mt-8 text-lg text-gray-500">{missionStatement}</p>
     </div>
   );
 }

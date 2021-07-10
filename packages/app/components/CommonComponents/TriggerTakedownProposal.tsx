@@ -23,7 +23,7 @@ export default function TriggerTakedownProposal(): JSX.Element {
             dispatch(
               setDualActionModal({
                 content:
-                  'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
+                  'You are about to submit your vote. You will not be able to vote again for this proposal after you submit your vote. \
                      Confirm to continue.',
                 title: 'Trigger Takedown Proposal',
                 onConfirm: {
