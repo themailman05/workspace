@@ -1,8 +1,3 @@
-import { store } from 'context/store';
-import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
-import { useContext } from 'react';
-import { InfoIconWithModal } from './../../InfoIconWithModal';
-import { Popover, Transition } from '@headlessui/react'
 import {
   ChatAltIcon,
   CurrencyEuroIcon,
@@ -12,10 +7,10 @@ import {
   InboxIcon,
   PencilAltIcon,
   PhotographIcon,
-  ReplyIcon,
   SparklesIcon,
-  UsersIcon,
-} from '@heroicons/react/outline'
+} from '@heroicons/react/outline';
+import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
+import { InfoIconWithModal } from './../../InfoIconWithModal';
 
 export default function Intro({
   form,
@@ -25,43 +20,52 @@ export default function Intro({
   const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
 
-  const features = [
+  const requirements = [
     {
-      name: (<div>A connected wallet <InfoIconWithModal title="What's a wallet?">
-      <div>
-        A crypto wallet is a piece of software that is able to
-        transact with blockchains. Wallets let holders store and
-        trade various cryptocurrencies and tokens. The most common
-        ways to connect wallets are through browser extensions such
-        as{' '}
-        <a
-          href="https://metamask.io/"
-          target="_window"
-          className="text-blue-500"
-        >
-          MetaMask
-        </a>{' '}
-        on desktop or by visiting from a dApp browser on mobile.
-      </div>
-    </InfoIconWithModal></div>),
-      description: 'This is a decentralized application which requires a wallet ',
+      name: (
+        <div>
+          A connected wallet{' '}
+          <InfoIconWithModal title="What's a wallet?">
+            <div>
+              A crypto wallet is a piece of software that is able to transact
+              with blockchains. Wallets let holders store and trade various
+              cryptocurrencies and tokens. The most common ways to connect
+              wallets are through browser extensions such as{' '}
+              <a
+                href="https://metamask.io/"
+                target="_window"
+                className="text-blue-500"
+              >
+                MetaMask
+              </a>{' '}
+              on desktop or by visiting from a dApp browser on mobile.
+            </div>
+          </InfoIconWithModal>
+        </div>
+      ),
+      description:
+        'This is a decentralized application which requires a wallet ',
       icon: InboxIcon,
     },
     {
-      name: <div>
-        2000 POP tokens
-                <InfoIconWithModal
-                  title="What are POP tokens?"
-                  content="POP tokens are used by PopcornDAO - a decentralized autonomous organization. POP token holders
+      name: (
+        <div>
+          2000 POP tokens
+          <InfoIconWithModal
+            title="What are POP tokens?"
+            content="POP tokens are used by PopcornDAO - a decentralized autonomous organization. POP token holders
                   are able to submit and vote on proposals, grants, smart contract parameters and generally influence the direction of Popcorn."
-                ></InfoIconWithModal>
-      </div>,
-      description: 'An organization wishing to submit an application to receive grants must have at least 2000 POP tokens, but they may reach out to the Popcorn Foundation to seek a nomination at no cost.',
+          ></InfoIconWithModal>
+        </div>
+      ),
+      description:
+        'An organization wishing to submit an application to receive grants must have at least 2000 POP tokens, but they may reach out to the Popcorn Foundation to seek a nomination at no cost.',
       icon: CurrencyEuroIcon,
     },
     {
       name: 'A mission statement',
-      description: "Here's your chance to tell the world why you should receive grant funding and how you'll be making an impact",
+      description:
+        "Here's your chance to tell the world why you should receive grant funding and how you'll be making an impact",
       icon: PencilAltIcon,
     },
     {
@@ -71,22 +75,25 @@ export default function Intro({
     },
     {
       name: 'Impact reports and/or audited documents',
-      description: 'Impact reports help instill trust so funders know that funds are being put to good use.',
+      description:
+        'Impact reports help instill trust so funders know that funds are being put to good use.',
       icon: DocumentReportIcon,
     },
     {
       name: 'Proof of address ownership',
-      description: 'We need to verify that the organization owns the ethereum address. A simple tweet will do!',
+      description:
+        'We need to verify that the organization owns the ethereum address. A simple tweet will do!',
       icon: ChatAltIcon,
     },
     {
       name: 'Photos',
-      description: "Show your organization in action with photos!",
+      description: 'Show your organization in action with photos!',
       icon: PhotographIcon,
     },
     {
       name: 'Links to Social Media',
-      description: "Share your Facebook, Twitter and other social media accounts so users can follow you.",
+      description:
+        'Share your Facebook, Twitter and other social media accounts so users can follow you.',
       icon: HeartIcon,
     },
   ];
@@ -98,33 +105,35 @@ export default function Intro({
             Beneficiary Application
           </h3>
           <p className="mt-2 text-lg text-gray-500">
-            The following application is for educational, environmental and open source
-            projects seeking funding.
+            The following application is for educational, environmental and open
+            source projects seeking funding.
             <InfoIconWithModal
               title="About Funding"
               content="Grants are periodically awarded to organizations which have been voted on by token holders. It is necessary to fill out an application to be considered for grants."
             />
           </p>
 
-       {/* Gradient Feature Section */}
-            <p className="mt-2 max-w-3xl text-lg text-gray-500">
+          {/* Gradient Feature Section */}
+          <p className="mt-2 max-w-3xl text-lg text-gray-500">
             You'll need the following items to submit an application:
-            </p>
-            <div className="mt-12 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
-              {features.map((feature) => (
-                <div key={feature.name}>
-                  <div>
-                    <span className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-400 bg-opacity-10">
-                      <feature.icon className="h-6 w-6" aria-hidden="true" />
-                    </span>
-                  </div>
-                  <div className="mt-6">
-                    <h3 className="text-lg font-medium">{feature.name}</h3>
-                    <p className="mt-2 text-base text-gray-400">{feature.description}</p>
-                  </div>
+          </p>
+          <div className="mt-12 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-2 lg:mt-16 lg:grid-cols-4 lg:gap-x-8 lg:gap-y-16">
+            {requirements.map((feature) => (
+              <div key={feature.description}>
+                <div>
+                  <span className="flex items-center justify-center h-12 w-12 rounded-md bg-gray-400 bg-opacity-10">
+                    <feature.icon className="h-6 w-6" aria-hidden="true" />
+                  </span>
                 </div>
-              ))}
-            </div>
+                <div className="mt-6">
+                  <h3 className="text-lg font-medium">{feature.name}</h3>
+                  <p className="mt-2 text-base text-gray-400">
+                    {feature.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
 
           <div className="mt-24">
             <div className="lg:mx-auto lg:max-w-7xl lg:px-8 lg:grid lg:grid-cols-2 lg:grid-flow-col-dense lg:gap-24">
@@ -132,7 +141,10 @@ export default function Intro({
                 <div>
                   <div>
                     <span className="h-12 w-12 rounded-md flex items-center justify-center bg-gradient-to-r from-purple-600 to-indigo-600">
-                      <SparklesIcon className="h-6 w-6 text-white" aria-hidden="true" />
+                      <SparklesIcon
+                        className="h-6 w-6 text-white"
+                        aria-hidden="true"
+                      />
                     </span>
                   </div>
                   <div className="mt-6">
@@ -140,9 +152,11 @@ export default function Intro({
                       Grants are right this way
                     </h2>
                     <p className="mt-4 text-lg text-gray-500">
-                    After the application has been submitted, it will be subject to a round of voting. If it receives more "Yes" votes than "No" votes, the organization will be eligible to receive grants.
+                      After the application has been submitted, it will be
+                      subject to a round of voting. If it receives more "Yes"
+                      votes than "No" votes, the organization will be eligible
+                      to receive grants.
                     </p>
-     
                   </div>
                 </div>
               </div>
