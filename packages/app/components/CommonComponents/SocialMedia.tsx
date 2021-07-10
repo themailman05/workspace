@@ -38,9 +38,11 @@ export default function SocialMedia(
 ): JSX.Element {
   return (
     <>
-      <p className="text-3xl text-black py-4">Social Media</p>
-      <div className="flex space-x-6 my-4">
-        <SocialMediaIcon url={beneficiary?.links?.twitterUrl} platform={'twitter'} />
+      <div className="flex space-x-6">
+        <SocialMediaIcon
+          url={beneficiary?.links?.twitterUrl}
+          platform={'twitter'}
+        />
         <SocialMediaIcon
           url={beneficiary?.links?.facebookUrl}
           platform={'facebook'}
@@ -49,7 +51,10 @@ export default function SocialMedia(
           url={beneficiary?.links?.instagramUrl}
           platform={'instagram'}
         />
-        <SocialMediaIcon url={beneficiary?.links?.githubUrl} platform={'github'} />
+        <SocialMediaIcon
+          url={beneficiary?.links?.githubUrl}
+          platform={'github'}
+        />
         <SocialMediaIcon
           url={beneficiary?.links?.linkedinUrl}
           platform={'linkedin'}

@@ -2,7 +2,6 @@ import { setDualActionModal, setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { useContext } from 'react';
 
-
 export default function TriggerTakedownProposal(): JSX.Element {
   const { dispatch } = useContext(store);
   const triggerTakedownProposal = () => {
@@ -14,7 +13,7 @@ export default function TriggerTakedownProposal(): JSX.Element {
     );
   };
   return (
-    <footer className="bg-white ">
+    <footer className="bg-white py-4">
       <div className="flex justify-center space-x-6 md:order-2 items-center">
         <button
           type="button"
@@ -43,6 +42,7 @@ export default function TriggerTakedownProposal(): JSX.Element {
         >
           Trigger Takedown Proposal
         </button>
+        {/* TODO: Replace info icon and modal with InfoIconWithModal.tsx */}
         <button
           type="button"
           onClick={() => {
