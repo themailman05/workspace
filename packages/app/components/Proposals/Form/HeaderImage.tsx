@@ -1,6 +1,6 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 
 export default function HeaderImage({
   form,
@@ -9,13 +9,13 @@ export default function HeaderImage({
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
   function updateHeaderImage(headerImage) {
-    setFormData({ ...formData, headerImage });
+    setFormData({ ...formData, files: { ...formData.files, headerImage } });
   }
   return (
     visible && (
       <IpfsUpload
         stepName={'6 - UPLOAD HEADER IMAGE'}
-        localState={formData.headerImage}
+        localState={formData.files.headerImage}
         setLocalState={updateHeaderImage}
         imageDescription={'a Header Image'}
         imageInstructions={

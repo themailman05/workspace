@@ -1,7 +1,7 @@
-import { store } from 'context/store';
-import { useContext } from 'react';
-import { defaultFormData, FormStepProps } from './ProposalForm';
 import { setSingleActionModal } from 'context/actions';
+import { store } from 'context/store';
+import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
+import { useContext } from 'react';
 import * as Icon from 'react-feather';
 
 export default function Intro({
@@ -110,7 +110,7 @@ export default function Intro({
           </p>
           <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
             {/* Check for partially completed form */}
-            {formData.name !== '' ? (
+            {formData.organizationName !== '' ? (
               <div className="rounded-md shadow">
                 <a
                   onClick={() => {

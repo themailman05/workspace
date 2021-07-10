@@ -1,13 +1,21 @@
-export default function CardGridHeader({ title, subtitle }) {
+interface CardGridHeaderProps {
+  title: string;
+  subtitle: string;
+}
+
+export default function CardGridHeader({
+  title,
+  subtitle,
+}: CardGridHeaderProps): JSX.Element {
   return (
-    <div className="pt-12 px-4 bg-indigo-200 sm:px-6 lg:px-8 lg:pt-20 py-20">
-      <div className="text-center">
-        <p className="mt-2 text-3xl text-indigo-900 sm:text-4xl lg:text-5xl">
-          {title}
-        </p>
-        <p className="mt-3 max-w-4xl mx-auto text-xl text-indigo-900 sm:mt-5 sm:text-2xl">
-          {subtitle}
-        </p>
+    <div className="bg-gray-900">
+      <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2 className="text-4xl font-extrabold text-white sm:text-5xl sm:tracking-tight lg:text-6xl">
+            {title}
+          </h2>
+          <p className="mt-5 text-xl text-gray-400">{subtitle}</p>
+        </div>
       </div>
     </div>
   );

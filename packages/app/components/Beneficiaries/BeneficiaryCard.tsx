@@ -2,10 +2,10 @@ import {
   ElectionMetadata,
   GrantElectionAdapter,
 } from '@popcorn/utils/Contracts';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import CardBody from 'components/CommonComponents/CardBody';
 import GrantFunded from 'components/Grants/GrantFunded';
 import VoteSlider from 'components/Grants/VoteSlider';
-import { Beneficiary } from 'interfaces/beneficiaries';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
 
@@ -20,12 +20,12 @@ export interface ElectionProps {
 }
 
 export interface BeneficiaryCardProps {
-  beneficiary: Beneficiary;
+  beneficiary: BeneficiaryApplication;
   electionProps?: ElectionProps;
 }
 
 export interface GrantSliderProps {
-  beneficiary: Beneficiary;
+  beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;
 }
 
@@ -37,10 +37,7 @@ function GrantSlider({
     <div className="mt-6 flex items-center">
       <div className="flex-shrink-0">
         {GrantElectionAdapter().isActive(electionProps.election) ? (
-          <VoteSlider
-            beneficiary={beneficiary as Beneficiary}
-            electionProps={electionProps}
-          />
+          <VoteSlider beneficiary={beneficiary} electionProps={electionProps} />
         ) : (
           <GrantFunded
             beneficiary={beneficiary}
@@ -59,14 +56,14 @@ export default function BeneficiaryCard({
 }: BeneficiaryCardProps): JSX.Element {
   return (
     <div
-      key={beneficiary?.ethereumAddress}
+      key={beneficiary.beneficiaryAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden"
     >
-      <Link href={`/beneficiaries/${beneficiary.ethereumAddress}`} passHref>
+      <Link href={`/beneficiaries/${beneficiary.beneficiaryAddress}`} passHref>
         <a>
           <CardBody
-            imgUrl={`${process.env.IPFS_URL}${beneficiary?.profileImage}`}
-            name={beneficiary?.name}
+            imgUrl={`${process.env.IPFS_URL}${beneficiary?.files.profileImage}`}
+            name={beneficiary.organizationName}
             missionStatement={beneficiary?.missionStatement}
           />
         </a>

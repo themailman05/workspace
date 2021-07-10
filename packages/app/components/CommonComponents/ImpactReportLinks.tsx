@@ -1,15 +1,12 @@
-import {
-  Beneficiary,
-} from 'interfaces/beneficiaries';
-import { Proposal } from 'interfaces/proposals';
+import { BeneficiaryApplication } from '@popcorn/utils';
 
 export default function ImpactReportLinks(
-  displayData: Beneficiary | Proposal,
+  beneficiary: BeneficiaryApplication,
 ): JSX.Element {
   return (
     <div>
       <p className="text-3xl text-black py-4">Impact Reports/Audits</p>
-      {displayData?.impactReports?.map((reportUrl, index) => {
+      {beneficiary?.files?.impactReports?.map((reportUrl, index) => {
         return (
           <span className="flex flex-row justify-between">
             <p className="text-lg font-bold text-gray-700">

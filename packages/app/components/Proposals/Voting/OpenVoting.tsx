@@ -1,42 +1,36 @@
 import { RadioGroup } from '@headlessui/react';
+import { Proposal, ProposalType } from '@popcorn/utils';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, ProposalType } from 'interfaces/proposals';
 import { useContext, useState } from 'react';
-import CurrentStandings from '../CurrentStandings';
+import CountdownTimer from './CountdownTimer';
+import { useWeb3React } from '@web3-react/core';
+import { VoteOptions } from "@popcorn/contracts/lib/BeneficiaryGovernance/constants";
 
-enum VoteOptions {
-  Yay,
-  Nay,
-}
-
-interface OpenVotingProps {
-  proposal: Proposal;
-  proposalType: ProposalType;
-}
-
-export default function OpenVoting({
-  proposal,
-  proposalType = 'Nomination',
-}: OpenVotingProps): JSX.Element {
+export default function OpenVoting(proposal: Proposal): JSX.Element {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
   const { contracts } = useContext(ContractsContext);
+  const { library } = useWeb3React();
+
+  const vote = () => {
+    contracts.beneficiaryGovernance.connect(library.getSigner()).vote(proposal.id, selected);
+    dispatch(setDualActionModal(false));
+  }
 
   return (
-    <div className="content-center mx-48">
-      <p className="my-8 mx-5 text-3xl text-black sm:text-4xl lg:text-5xl text-center">
-        {proposal?.status} vote on {proposal?.name}
-      </p>
+    <div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
-          <p className="mb-4 text-base font-medium text-gray-900">
-            The organization is currently in the first phase of{' '}
-            {proposalType === 'Takedown' ? 'takedown' : ''} voting, users have
-            48 hours to cast their vote. If the beneficiary{' '}
-            {proposalType === 'Takedown' ? 'takedown' : ''} proposal passes with
-            a majority, the process moves onto the challenge period.
+          <p className="mt-8 text-xl text-gray-500 leading-8">
+            {proposal.application.organizationName} is currently in the first
+            phase of{' '}
+            {proposal.proposalType === ProposalType.Takedown ? 'takedown' : ''}{' '}
+            voting, users have 48 hours to cast their vote. If the beneficiary{' '}
+            {proposal.proposalType === ProposalType.Takedown ? 'takedown' : ''}{' '}
+            proposal passes with a majority, the process moves onto the
+            challenge period.
           </p>
         </span>
       </div>
@@ -84,7 +78,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposalType === 'Takedown'
+                      {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would become ineligible for grants'
                         : 'Beneficiary would become eligible for grants'}
                     </RadioGroup.Description>
@@ -127,7 +121,7 @@ export default function OpenVoting({
                         checked ? 'text-indigo-700' : 'text-gray-500'
                       }`}
                     >
-                      {proposalType === 'Takedown'
+                      {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would remain eligible for grants'
                         : 'Beneficiary would be not become eligible for grants'}
                     </RadioGroup.Description>
@@ -139,6 +133,7 @@ export default function OpenVoting({
         </RadioGroup>
       </div>
 
+      <CountdownTimer {...proposal} />
       <div className="grid my-2 justify-items-stretch">
         <button
           type="button"
@@ -146,16 +141,14 @@ export default function OpenVoting({
           onClick={() => {
             dispatch(
               setDualActionModal({
-                content:
-                  'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
-                 Confirm to continue.',
+                content: `You are about to submit a vote to ${
+                  selected == VoteOptions.Yay ? 'accept' : 'reject'
+                } this proposal. You will not be able to vote again for this proposal after you submit your vote. \
+                 Confirm to continue.`,
                 title: 'Confirm Vote',
                 onConfirm: {
                   label: 'Confirm Vote',
-                  onClick: () => {
-                    contracts.beneficiaryGovernance.vote(proposal.id, selected);
-                    dispatch(setDualActionModal(false));
-                  },
+                  onClick: vote,
                 },
                 onDismiss: {
                   label: 'Cancel',
@@ -167,8 +160,6 @@ export default function OpenVoting({
         >
           Cast Vote
         </button>
-
-        {proposal && <CurrentStandings {...proposal} />}
       </div>
     </div>
   );

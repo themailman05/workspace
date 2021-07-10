@@ -1,6 +1,6 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 
 export default function ProfileImage({
   form,
@@ -9,13 +9,13 @@ export default function ProfileImage({
 }: FormStepProps) {
   const [formData, setFormData] = form;
   function updateProfileImage(profileImage) {
-    setFormData({ ...formData, profileImage });
+    setFormData({ ...formData, files: { ...formData.files, profileImage } });
   }
   return (
     visible && (
       <IpfsUpload
         stepName={'5 - UPLOAD PROFILE IMAGE'}
-        localState={formData.profileImage}
+        localState={formData.files.profileImage}
         setLocalState={updateProfileImage}
         imageDescription={'a Profile Image'}
         imageInstructions={

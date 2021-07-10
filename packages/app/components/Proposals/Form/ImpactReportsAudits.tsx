@@ -1,6 +1,6 @@
 import React from 'react';
 import IpfsUpload from './IpfsUpload';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 
 export default function ImpactReportsAudits({
   form,
@@ -9,13 +9,13 @@ export default function ImpactReportsAudits({
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
   function updateImpactReports(impactReports) {
-    setFormData({ ...formData, impactReports });
+    setFormData({ ...formData, files: { ...formData.files, impactReports } });
   }
   return (
     visible && (
       <IpfsUpload
         stepName={'8 - Upload Impact Reports'}
-        localState={formData.impactReports}
+        localState={formData.files.impactReports}
         setLocalState={updateImpactReports}
         imageDescription={'Impact Reports'}
         imageInstructions={

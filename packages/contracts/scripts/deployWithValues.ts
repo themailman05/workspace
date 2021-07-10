@@ -125,7 +125,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
             ),
             0,
             { gasLimit: 3000000 }
@@ -146,7 +146,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
             ),
             0,
             { gasLimit: 3000000 }
@@ -169,7 +169,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
             ),
             0,
             { gasLimit: 3000000 }
@@ -194,7 +194,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
             ),
             1,
             { gasLimit: 3000000 }
@@ -238,7 +238,7 @@ export default async function deploy(ethers): Promise<void> {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
           getBytes32FromIpfsHash(
-            "Qmd6n841dv9QB21vu2gkB2dK1FK2cchm9sWh16dkrqknWj"
+            "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
           ),
           { gasLimit: 3000000 }
         );

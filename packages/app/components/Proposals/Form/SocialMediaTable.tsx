@@ -1,43 +1,56 @@
 // Display table that contains platform, url and option to delete
 
 import { TrashIcon } from '@heroicons/react/solid';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import Link from 'next/link';
 import React from 'react';
-import { Form } from './ProposalForm';
 
 interface SocialMediaTableProps {
-  form: [Form, React.Dispatch<React.SetStateAction<Form>>];
+  form: [
+    BeneficiaryApplication,
+    React.Dispatch<React.SetStateAction<BeneficiaryApplication>>,
+  ];
 }
 
 export default function SocialMediaTable({ form }: SocialMediaTableProps) {
   const [formData, setFormData] = form;
-  const {
-    twitterUrl,
-    linkedinUrl,
-    facebookUrl,
-    instagramUrl,
-    githubUrl,
-  } = formData;
+  const { twitterUrl, linkedinUrl, facebookUrl, instagramUrl, githubUrl } =
+    formData.links;
   function clearUrl(platform) {
     switch (platform) {
       case 'Twitter': {
-        setFormData({ ...formData, twitterUrl: '' });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, twitterUrl: '' },
+        });
         break;
       }
       case 'LinkedIn': {
-        setFormData({ ...formData, linkedinUrl: '' });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, linkedinUrl: '' },
+        });
         break;
       }
       case 'Instagram': {
-        setFormData({ ...formData, instagramUrl: '' });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, instagramUrl: '' },
+        });
         break;
       }
       case 'GitHub': {
-        setFormData({ ...formData, githubUrl: '' });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, githubUrl: '' },
+        });
         break;
       }
       case 'Facebook': {
-        setFormData({ ...formData, facebookUrl: '' });
+        setFormData({
+          ...formData,
+          links: { ...formData.links, facebookUrl: '' },
+        });
         break;
       }
     }

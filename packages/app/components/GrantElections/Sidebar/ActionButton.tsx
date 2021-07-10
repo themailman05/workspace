@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { ElectionMetadata } from '../../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
+import { ElectionMetadata } from '@popcorn/utils/Contracts';
 
 interface ISidebarActionButton {
   election: ElectionMetadata;

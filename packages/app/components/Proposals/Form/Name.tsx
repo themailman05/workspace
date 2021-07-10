@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormStepProps } from './ProposalForm';
+import { FormStepProps } from 'pages/proposals/propose';
 import ControlledTextInput from './ControlledTextInput';
 
 export default function Name({
@@ -8,11 +8,11 @@ export default function Name({
   visible,
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
-  function isValid(name): boolean {
-    return name.length > 0;
+  function isValid(organizationName): boolean {
+    return organizationName.length > 0;
   }
   function updateName(value: string): void {
-    setFormData({ ...formData, name: value });
+    setFormData({ ...formData, organizationName: value });
   }
 
   return (
@@ -22,7 +22,7 @@ export default function Name({
           1 - First things first, what's the name of the beneficiary?
         </h2>
         <ControlledTextInput
-          inputValue={formData.name}
+          inputValue={formData.organizationName}
           id="name"
           placeholder="Beneficiary Name"
           errorMessage="Beneficiary name cannot be blank."

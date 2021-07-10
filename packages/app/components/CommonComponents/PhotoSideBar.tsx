@@ -1,13 +1,12 @@
-import { Beneficiary } from 'interfaces/beneficiaries';
-import { Proposal } from 'interfaces/proposals';
+import { BeneficiaryApplication } from '@popcorn/utils';
 
 export default function PhotoSideBar(
-  displayData: Beneficiary | Proposal,
+  beneficiary: BeneficiaryApplication,
 ): JSX.Element {
   return (
     <div className="col-span-2 space-y-4">
-      <p className="text-2xl text-black sm:text-4xl lg:text-5xl">Photos</p>
-      {displayData?.additionalImages?.map((photoURL) => {
+      <h3 className="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">Photos</h3>
+      {beneficiary?.files?.additionalImages?.map((photoURL) => {
         return (
           <img
             className="w-full"

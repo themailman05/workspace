@@ -18,24 +18,24 @@ export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
           <ul className="space-y-6">
             <li className="flow-root">
               <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <Icon.Info className="mr-4" />
+                <Icon.Info className="flex-shrink-0 h-6 w-6 mr-2 text-gray-400" />
                 <NavbarLink
-                  label="View Beneficiary Proposals"
-                  url="/beneficiary-proposals"
+                  label="Beneficiary Nomination Proposals"
+                  url="/proposals/nominations"
                   onClick={toggleSubMenu}
-                  isActive={router.pathname === '/beneficiary-proposals'}
+                  isActive={router.pathname === '/proposals/nominations'}
                 />
               </span>
             </li>
             <li className="flow-root">
               <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <Icon.Info className="mr-4" />
+                <Icon.Info className="flex-shrink-0 h-6 w-6 mr-2 text-gray-400" />
                 <NavbarLink
-                  label="View Beneficiary Takedown Proposals"
-                  url="/beneficiary-proposals/takedowns"
+                  label="Beneficiary Takedown Proposals"
+                  url="/proposals/takedowns"
                   onClick={toggleSubMenu}
                   isActive={
-                    router.pathname === '/beneficiary-takedown-proposals'
+                    router.pathname === '/proposals/takedowns'
                   }
                 />
               </span>
@@ -43,13 +43,13 @@ export const ProposalsMenu: React.FC<Props> = ({ visible, toggleSubMenu }) => {
 
             <li className="flow-root">
               <span className="-m-3 p-3 flex items-center text-base font-medium text-gray-900 hover:bg-gray-50 transition ease-in-out duration-150">
-                <Icon.Plus className="mr-4" />
+                <Icon.Plus className="flex-shrink-0 h-6 w-6 mr-2 text-gray-400" />
                 <NavbarLink
                   label="Propose a New Beneficiary"
-                  url="/beneficiary-proposals/propose"
+                  url="/proposals/propose"
                   onClick={toggleSubMenu}
                   isActive={
-                    router.pathname === '/beneficiary-proposals/propose'
+                    router.pathname === '/proposals/propose'
                   }
                 />
               </span>

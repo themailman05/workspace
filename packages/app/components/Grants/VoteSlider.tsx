@@ -1,11 +1,11 @@
 import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
-import { Beneficiary } from 'interfaces/beneficiaries';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';
 
 interface VoteSlider {
-  beneficiary: Beneficiary;
+  beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;
 }
 
@@ -30,12 +30,12 @@ export default function VoteSlider({
   function handleSliderChange(value: number) {
     if (electionProps.voiceCredits - electionProps.pendingVotes[electionProps.election.electionTerm].total <= 0) {
       if (
-        electionProps.pendingVotes[electionProps.election.electionTerm].votes[beneficiary.ethereumAddress] >
+        electionProps.pendingVotes[electionProps.election.electionTerm].votes[beneficiary.beneficiaryAddress] >
         value
       ) {
         setVotesAssignedByUser(value);
         electionProps.assignVotes(electionProps.election.electionTerm, {
-          address: beneficiary.ethereumAddress,
+          address: beneficiary.beneficiaryAddress,
           votes: value,
         });
       }
@@ -43,7 +43,7 @@ export default function VoteSlider({
     }
     setVotesAssignedByUser(value);
     electionProps.assignVotes(electionProps.election.electionTerm, {
-      address: beneficiary.ethereumAddress,
+      address: beneficiary.beneficiaryAddress,
       votes: value,
     });
   }
@@ -65,7 +65,7 @@ export default function VoteSlider({
       {electionProps.assignVotes && electionProps.voiceCredits > 0 && (
         <div className="w-11/12 ml-1 pb-3">
           <Slider
-            key={beneficiary?.ethereumAddress}
+            key={beneficiary?.beneficiaryAddress}
             className="mt-2"
             value={votesAssignedByuser}
             onChange={(value) => handleSliderChange(value)}

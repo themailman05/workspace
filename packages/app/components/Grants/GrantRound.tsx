@@ -1,6 +1,6 @@
+import { BeneficiaryApplication } from '@popcorn/utils';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
-import { Beneficiary } from 'interfaces/beneficiaries';
 import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
 import { useEffect, useRef, useState } from 'react';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
@@ -39,7 +39,7 @@ export default function GrantRound({
   const ref = useRef(null);
   const [votes, setVotes] = useState<Votes>({ total: 0 });
   const [beneficiariesWithMetadata, setBeneficiaries] = useState<
-    Beneficiary[]
+    BeneficiaryApplication[]
   >([]);
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export default function GrantRound({
     }
   }, [election]);
 
-  const getBeneficiary = (address: string): Beneficiary => {
+  const getBeneficiary = (address: string): BeneficiaryApplication => {
     const beneficiary =
       beneficiariesHashMap[process.env.CHAIN_ID || '31337'][
         address.toLowerCase()
@@ -74,7 +74,6 @@ export default function GrantRound({
   if (!election) {
     return <></>;
   }
-
   return (
     <div
       ref={ref}
@@ -82,14 +81,14 @@ export default function GrantRound({
     >
       {beneficiariesWithMetadata?.map((beneficiary) => (
         <BeneficiaryCard
-          key={beneficiary.ethereumAddress}
+          key={beneficiary.beneficiaryAddress}
           electionProps={{
             election: election,
             pendingVotes: pendingVotes,
             voiceCredits: voiceCredits,
             votesAssignedByUser: 0,
             assignVotes: assignVotes,
-            totalVotes: votes[beneficiary.ethereumAddress],
+            totalVotes: votes[beneficiary.beneficiaryAddress],
           }}
           beneficiary={beneficiary}
         />

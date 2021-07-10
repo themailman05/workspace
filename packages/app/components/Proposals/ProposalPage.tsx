@@ -1,44 +1,77 @@
+import { ContractsContext } from 'context/Web3/contracts';
+import { useContext, useEffect, useState } from 'react';
+import Divider from 'components/CommonComponents/Divider';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import ImpactReportLinks from 'components/CommonComponents/ImpactReportLinks';
+import Loading from 'components/CommonComponents/Loading';
 import MissionStatement from 'components/CommonComponents/MissionStatement';
 import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
 import SocialMedia from 'components/CommonComponents/SocialMedia';
 import Verification from 'components/CommonComponents/Verification';
 import NavBar from 'components/NavBar/NavBar';
-import { Proposal, ProposalType } from 'interfaces/proposals';
+import {
+  BeneficiaryGovernanceAdapter,
+  IpfsClient,
+  Proposal,
+} from '@popcorn/utils';
+import React from 'react';
 import Voting from './Voting/Voting';
+import { useRouter } from 'next/router';
+import { Status } from '@popcorn/utils';
 
-interface ProposalPageProps {
-  proposal: Proposal;
-  proposalType: ProposalType;
-}
-
-export default function ProposalPage({
-  proposal,
-  proposalType = "Nomination",
-}: ProposalPageProps): JSX.Element {
+const getTitle = (proposal: Proposal): string => {
+  return `${Status[proposal.status]} vote on ${
+    proposal?.application?.organizationName
+  }`;
+};
+export default function ProposalPage(): JSX.Element {
+  const { contracts } = useContext(ContractsContext);
+  const router = useRouter();
+  const [proposal, setProposal] = useState<Proposal>();
+  const [proposalId, setProposalId] = useState<string>();
+  useEffect(() => {
+    const { id } = router.query;
+    if (id && id !== proposalId) setProposalId(id as string);
+  }, [router, proposalId]);
+  useEffect(() => {
+    if (contracts?.beneficiaryGovernance && proposalId) {
+      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+        .getProposal(proposalId)
+        .then((res) => setProposal(res));
+    }
+  }, [contracts, proposalId]);
+  function getContent() {
+    return proposalId !== undefined &&
+      proposal !== undefined &&
+      Object.keys(proposal).length > 0 ? (
+      <React.Fragment>
+        <ImageHeader
+          beneficiary={proposal?.application}
+          title={getTitle(proposal)}
+        />
+        <Voting {...proposal} />
+        <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
+          <PhotoSideBar {...proposal?.application} />
+          <MissionStatement
+            missionStatement={proposal?.application?.missionStatement}
+          />
+        </div>
+        <div className="relative px-4 sm:px-6 lg:px-8">
+          <div className="text-lg max-w-prose mx-auto">
+            <Verification {...proposal?.application} />
+            <ImpactReportLinks {...proposal?.application} />
+            <SocialMedia {...proposal?.application} />
+          </div>
+        </div>
+      </React.Fragment>
+    ) : (
+      <Loading />
+    );
+  }
   return (
     <div className="flex flex-col h-full w-full pb-16 ">
       <NavBar />
-      <ImageHeader {...proposal} />
-      <Voting
-        proposal={proposal as Proposal}
-        proposalType={proposalType}
-      />
-      <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-        <PhotoSideBar {...(proposal as Proposal)} />
-        <MissionStatement missionStatement={proposal?.missionStatement} />
-      </div>
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center" aria-hidden="true">
-          <div className="w-full border-t border-gray-300" />
-        </div>
-      </div>
-      <div className="mx-48 my-8">
-        <Verification {...(proposal as Proposal)} />
-        <ImpactReportLinks {...proposal} />
-        <SocialMedia {...proposal} />
-      </div>
+      {getContent()}
     </div>
   );
 }
