@@ -1,4 +1,4 @@
-import { Proposal, Status } from '@popcorn/utils/';
+import { Proposal, Status } from '@popcorn/utils';
 import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 interface IVotingRow {
   name: string;

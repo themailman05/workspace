@@ -5,7 +5,7 @@ import {
   bigNumberToNumber,
   formatAndRoundBigNumber,
 } from '@popcorn/utils/formatBigNumber';
-import { Proposal } from '@popcorn/utils/';
+import { Proposal } from '@popcorn/utils';
 export default function CurrentStandings(proposal: Proposal): JSX.Element {
   
   return (

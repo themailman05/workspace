@@ -1,5 +1,5 @@
 import CardBody from 'components/CommonComponents/CardBody';
-import { Proposal, ProposalType } from '@popcorn/utils/';
+import { Proposal, ProposalType } from '@popcorn/utils';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
 

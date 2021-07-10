@@ -144,6 +144,16 @@ task("random", "gets a random number")
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
+task("send-eth", "send eth to address")
+  .addPositionalParam('address')
+  .setAction(async (args, hre) =>{
+    const [signer] = await hre.ethers.getSigners();
+    await signer.sendTransaction({
+      to: args.address,
+      value: hre.ethers.utils.parseEther("2.0")
+    });
+  })
+
 
 
 

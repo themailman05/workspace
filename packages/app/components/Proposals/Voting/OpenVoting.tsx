@@ -1,20 +1,23 @@
 import { RadioGroup } from '@headlessui/react';
+import { Proposal, ProposalType } from '@popcorn/utils';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { Proposal, ProposalType, Status } from '@popcorn/utils/';
 import { useContext, useState } from 'react';
 import CountdownTimer from './CountdownTimer';
-
-enum VoteOptions {
-  Yay,
-  Nay,
-}
+import { useWeb3React } from '@web3-react/core';
+import { VoteOptions } from "@popcorn/contracts/lib/BeneficiaryGovernance/constants";
 
 export default function OpenVoting(proposal: Proposal): JSX.Element {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
   const { contracts } = useContext(ContractsContext);
+  const { library } = useWeb3React();
+
+  const vote = () => {
+    contracts.beneficiaryGovernance.connect(library.getSigner()).vote(proposal.id, selected);
+    dispatch(setDualActionModal(false));
+  }
 
   return (
     <div>
@@ -138,16 +141,14 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
           onClick={() => {
             dispatch(
               setDualActionModal({
-                content:
-                  'You are about to submit your vote. You will not be able to vote again for this grant election after you submit your vote. \
-                 Confirm to continue.',
+                content: `You are about to submit a vote to ${
+                  selected == VoteOptions.Yay ? 'accept' : 'reject'
+                } this proposal. You will not be able to vote again for this proposal after you submit your vote. \
+                 Confirm to continue.`,
                 title: 'Confirm Vote',
                 onConfirm: {
                   label: 'Confirm Vote',
-                  onClick: () => {
-                    contracts.beneficiaryGovernance.vote(proposal.id, selected);
-                    dispatch(setDualActionModal(false));
-                  },
+                  onClick: vote,
                 },
                 onDismiss: {
                   label: 'Cancel',
@@ -159,7 +160,6 @@ export default function OpenVoting(proposal: Proposal): JSX.Element {
         >
           Cast Vote
         </button>
-        
       </div>
     </div>
   );

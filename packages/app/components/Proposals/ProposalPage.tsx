@@ -13,7 +13,7 @@ import {
   BeneficiaryGovernanceAdapter,
   IpfsClient,
   Proposal,
-} from '@popcorn/utils/';
+} from '@popcorn/utils';
 import React from 'react';
 import Voting from './Voting/Voting';
 import { useRouter } from 'next/router';
