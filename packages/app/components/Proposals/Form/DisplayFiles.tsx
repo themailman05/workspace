@@ -41,7 +41,7 @@ export const DisplayImages: React.FC<DisplayFilesProps> = ({
 };
 
 export const DisplayVideo: React.FC<DisplayFilesProps> = ({
-  localState,  
+  localState,
 }): JSX.Element => {
   return (
     localState !== '' && (

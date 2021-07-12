@@ -62,6 +62,7 @@ export default function AdditionalImages({
           }
           fileType={'image/*'}
           numMaxFiles={4}
+          maxFileSizeMB={5}
         />
         <DisplayImages
           localState={formData?.files?.additionalImages?.map(

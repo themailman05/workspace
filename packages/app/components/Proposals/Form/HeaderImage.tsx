@@ -64,6 +64,7 @@ export default function HeaderImage({
           }
           fileType={'image/*'}
           numMaxFiles={1}
+          maxFileSizeMB={5}
         />
         <DisplayImages localState={formData?.files?.headerImage?.image} />
         <div className="mt-8 w-80">

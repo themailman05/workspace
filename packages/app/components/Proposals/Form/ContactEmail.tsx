@@ -32,7 +32,6 @@ export default function ContactEmail({
           errorMessage="Contact email cannot be blank."
           updateInput={updateName}
           isValid={isValid}
-          navigation={navigation}
         />
       </div>
     )
