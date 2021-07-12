@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import toast from 'react-hot-toast';
-import { DisplayImages, DisplayPDFs } from './DisplayFiles';
 import * as Icon from 'react-feather';
-import { Navigation } from 'pages/proposals/propose';
 
 const FIVE_MB = 5 * 1000 * 1024;
 
@@ -22,7 +20,10 @@ const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-export const uploadImageToPinata = (files, setProfileImage) => {
+export const uploadImageToPinata = (
+  files,
+  setProfileImage: (input: string) => void,
+) => {
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
   myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
@@ -49,7 +50,10 @@ export const uploadImageToPinata = (files, setProfileImage) => {
   });
 };
 
-function uploadMultipleImagesToPinata(files, localState, setLocalState) {
+function uploadMultipleImagesToPinata(
+  files,
+  setLocalState: (input: string[]) => void,
+) {
   toast.dismiss();
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -82,25 +86,21 @@ function uploadMultipleImagesToPinata(files, localState, setLocalState) {
 interface IpfsProps {
   stepName: string;
   localState: string | string[];
-  setLocalState:
-    | React.Dispatch<React.SetStateAction<string>>
-    | React.Dispatch<React.SetStateAction<string[]>>;
   imageDescription: string;
   imageInstructions: string;
   fileType: string;
   numMaxFiles: number;
-  navigation: Navigation;
+  setLocalState: (input: string | string[]) => void;
 }
 
 export default function IpfsUpload({
   stepName,
   localState,
-  setLocalState,
   imageDescription,
   imageInstructions,
   fileType,
   numMaxFiles,
-  navigation,
+  setLocalState,
 }: IpfsProps) {
   const [files, setFiles] = useState([]);
   const {
@@ -122,11 +122,7 @@ export default function IpfsUpload({
         if (numMaxFiles === 1) {
           uploadImageToPinata(acceptedFiles, setLocalState);
         } else {
-          uploadMultipleImagesToPinata(
-            acceptedFiles,
-            localState,
-            setLocalState,
-          );
+          uploadMultipleImagesToPinata(acceptedFiles, setLocalState);
         }
       }
 
@@ -142,14 +138,14 @@ export default function IpfsUpload({
 
   const rootProps = getRootProps() as any;
   return (
-    <div className="mx-auto content-center grid justify-items-stretch">
-      <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
+    <div className="mx-auto">
+      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
         {stepName}
       </h2>
-      {!localState || localState.length === 0 ? (
+      {(!localState || localState.length === 0) && (
         <div {...rootProps}>
           <input {...getInputProps()} />
-          <div className="mt-1 sm:mt-0 sm:col-span-2">
+          <div className="mt-8">
             <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
               <div className="space-y-1 text-center">
                 {fileType === 'image/*' ? (
@@ -179,35 +175,6 @@ export default function IpfsUpload({
             </div>
           </div>
         </div>
-      ) : (
-        <div></div>
-      )}
-      {numMaxFiles === 1 && localState && fileType === 'image/*' ? (
-        <DisplayImages
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
-      ) : (
-        <> </>
-      )}
-      {numMaxFiles > 1 && localState.length > 0 && fileType === 'image/*' ? (
-        <DisplayImages
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
-      ) : (
-        <> </>
-      )}
-      {numMaxFiles > 1 && localState.length > 0 && fileType === '.pdf' ? (
-        <DisplayPDFs
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
-      ) : (
-        <> </>
       )}
     </div>
   );

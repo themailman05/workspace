@@ -1,6 +1,7 @@
 import web3 from 'web3';
 import { FormStepProps } from 'pages/proposals/propose';
 import ControlledTextInput from './ControlledTextInput';
+import ContinueButton from './ContinueButton';
 
 export default function BeneficiaryAddress({
   form,
@@ -25,8 +26,10 @@ export default function BeneficiaryAddress({
           errorMessage="Please enter a valid ethereum address"
           updateInput={updateEthereumAddress}
           isValid={web3.utils.isAddress}
-          navigation={navigation}
         />
+        {web3.utils.isAddress(formData?.beneficiaryAddress) && (
+          <ContinueButton {...navigation} />
+        )}
       </div>
     )
   );

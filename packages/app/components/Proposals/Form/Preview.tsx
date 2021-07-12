@@ -1,8 +1,5 @@
 import { Web3Provider } from '@ethersproject/providers';
-import {
-  BeneficiaryApplication,
-  IpfsClient,
-} from '@popcorn/utils';
+import { BeneficiaryApplication, IpfsClient } from '@popcorn/utils';
 import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 import { getBytes32FromIpfsHash } from '@popcorn/utils/ipfsHashManipulation';
 import { useWeb3React } from '@web3-react/core';

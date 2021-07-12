@@ -1,20 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { Toaster } from 'react-hot-toast';
 import { BeneficiaryApplication } from '@popcorn/utils';
-import MissionStatement from 'components/Proposals/Form/MissionStatement';
-import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import NavBar from 'components/NavBar/NavBar';
 import AdditionalImages from 'components/Proposals/Form/AdditionalImages';
 import BeneficiaryAddress from 'components/Proposals/Form/BeneficiaryAddress';
 import HeaderImage from 'components/Proposals/Form/HeaderImage';
 import ImpactReportsAudits from 'components/Proposals/Form/ImpactReportsAudits';
 import Intro from 'components/Proposals/Form/Intro';
+import MissionStatement from 'components/Proposals/Form/MissionStatement';
 import Name from 'components/Proposals/Form/Name';
 import NavigationButtons from 'components/Proposals/Form/NavigationButtons';
 import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
+import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import { useRouter } from 'next/router';
+import React, { useEffect, useState } from 'react';
+import { Toaster } from 'react-hot-toast';
 import ContactEmail from 'components/Proposals/Form/ContactEmail';
 import Website from 'components/Proposals/Form/Website';
 
@@ -38,11 +38,9 @@ export const defaultFormData: BeneficiaryApplication = {
   organizationName: '',
   missionStatement: '',
   beneficiaryAddress: '',
-  contactEmail:"",
-  website:"",
   files: {
-    profileImage: '',
-    headerImage: '',
+    profileImage: { image: '', description: '' },
+    headerImage: { image: '', description: '' },
     impactReports: [],
     additionalImages: [],
   },
@@ -53,6 +51,8 @@ export const defaultFormData: BeneficiaryApplication = {
     instagramUrl: '',
     githubUrl: '',
     proofOfOwnership: '',
+    contactEmail: '',
+    website: '',
   },
   version:"1.0",
 };
@@ -190,7 +190,7 @@ export default function BeneficiaryProposal(): JSX.Element {
         visible={stepOrder[currentStep] === 'preview'}
       />
       <NavigationButtons navigation={navigation} />
-      <Toaster />
+      <Toaster position="top-right"/>
     </div>
   );
 }
