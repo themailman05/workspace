@@ -43,7 +43,7 @@ export default async function deploy(ethers): Promise<void> {
     const mockPop = (await (
       await (
         await ethers.getContractFactory("MockERC20")
-      ).deploy("TestPOP", "TPOP")
+      ).deploy("TestPOP", "TPOP", 18)
     ).deployed());
 
     const staking = await (
