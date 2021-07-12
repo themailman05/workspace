@@ -31,7 +31,10 @@ export interface BeneficiaryApplication {
     instagramUrl?: string;
     githubUrl?: string;
     proofOfOwnership?: string;
+    contactEmail:string;
+    website:string;
   };
+  version:string;
 }
 
 export interface Proposal {

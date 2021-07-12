@@ -20,7 +20,7 @@ export default function MissionStatement({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          3 - Please share the beneficiary's mission statement
+          {navigation.currentStep} - Please share the organization's mission statement
         </h2>
         <ControlledTextInput
           inputValue={formData.missionStatement}

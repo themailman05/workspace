@@ -15,6 +15,8 @@ import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
 import { useRouter } from 'next/router';
+import ContactEmail from 'components/Proposals/Form/ContactEmail';
+import Website from 'components/Proposals/Form/Website';
 
 export interface Navigation {
   currentStep: number;
@@ -36,6 +38,8 @@ export const defaultFormData: BeneficiaryApplication = {
   organizationName: '',
   missionStatement: '',
   beneficiaryAddress: '',
+  contactEmail:"",
+  website:"",
   files: {
     profileImage: '',
     headerImage: '',
@@ -50,6 +54,7 @@ export const defaultFormData: BeneficiaryApplication = {
     githubUrl: '',
     proofOfOwnership: '',
   },
+  version:"1.0",
 };
 
 const stepOrder: string[] = [
@@ -62,6 +67,8 @@ const stepOrder: string[] = [
   'header-image',
   'additional-images',
   'impact-reports-audits',
+  'website',
+  'contact-email',
   'social-media',
   'preview',
 ];
@@ -161,6 +168,16 @@ export default function BeneficiaryProposal(): JSX.Element {
         form={[formData, setFormData]}
         navigation={navigation}
         visible={stepOrder[currentStep] === 'impact-reports-audits'}
+      />
+      <Website
+        form={[formData, setFormData]}
+        navigation={navigation}
+        visible={stepOrder[currentStep] === 'website'}
+      />
+      <ContactEmail
+        form={[formData, setFormData]}
+        navigation={navigation}
+        visible={stepOrder[currentStep] === 'contact-email'}
       />
       <SocialMedia
         form={[formData, setFormData]}
