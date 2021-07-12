@@ -6,7 +6,7 @@ import {
   BeneficiaryApplication,
   IpfsClient,
   BeneficiaryRegistryAdapter,
-} from '@popcorn/utils/';
+} from '@popcorn/utils';
 import Loading from 'components/CommonComponents/Loading';
 
 export default function SingleBeneficiaryPage(): JSX.Element {
