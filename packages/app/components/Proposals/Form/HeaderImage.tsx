@@ -55,7 +55,7 @@ export default function HeaderImage({
     visible && (
       <>
         <IpfsUpload
-          stepName={'6 - UPLOAD HEADER IMAGE'}
+          stepName={`${navigation.currentStep} - UPLOAD HEADER IMAGE`}
           localState={formData?.files?.headerImage?.image}
           setLocalState={updateHeaderImage}
           imageDescription={'a Header Image'}

@@ -34,7 +34,7 @@ export default function HeaderImage({
     visible && (
       <>
         <IpfsUpload
-          stepName={'8 - Upload Impact Reports'}
+          stepName={`${navigation.currentStep} - Upload Impact Reports`}
           localState={formData?.files?.impactReports}
           setLocalState={updateImpactReports}
           imageDescription={'Impact Reports'}

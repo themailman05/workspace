@@ -56,7 +56,7 @@ export default function ProfileImage({
     visible && (
       <>
         <IpfsUpload
-          stepName={'5 - UPLOAD PROFILE IMAGE'}
+          stepName={`${navigation.currentStep} - UPLOAD PROFILE IMAGE`}
           localState={formData?.files?.profileImage?.image}
           setLocalState={updateProfileImage}
           imageDescription={'a Profile Image'}
