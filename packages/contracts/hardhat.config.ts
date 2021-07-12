@@ -6,6 +6,8 @@ import { parseEther } from "ethers/lib/utils";
 import "hardhat-contract-sizer";
 import "hardhat-gas-reporter";
 import { task } from "hardhat/config";
+import { DefaultConfiguration } from "./lib/SetToken/Configuration";
+import SetTokenManager from "./lib/SetToken/SetTokenManager";
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
 import { GrantElectionAdapter } from "./scripts/helpers/GrantElectionAdapter";
@@ -180,6 +182,27 @@ task("rewardsManager:addFees", "add to the fee balance")
     console.log("done", result);
   });
 
+task("send-eth", "send eth to address")
+  .addPositionalParam("address")
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    await signer.sendTransaction({
+      to: args.address,
+      value: hre.ethers.utils.parseEther("2.0"),
+    });
+  });
+
+task("hysi:deploy", "deploys set token")
+  .addOptionalParam("debug", "display debug information")
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    const manager = new SetTokenManager(
+      { ...DefaultConfiguration, manager: signer },
+      hre
+    );
+    await manager.createSet({ args });
+  });
+
 module.exports = {
   solidity: {
     compilers: [
@@ -209,7 +232,12 @@ module.exports = {
       url: process.env.RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
     },
-    hardhat: {},
+    hardhat: {
+      forking: {
+        url: process.env.RPC_URL,
+        blockNumber: 12724811,
+      },
+    },
     rinkeby: {
       url: process.env.RPC_URL,
       accounts: [process.env.PRIVATE_KEY].concat(
