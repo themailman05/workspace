@@ -24,7 +24,7 @@ export default function Name({
         <ControlledTextInput
           inputValue={formData.organizationName}
           id="name"
-          placeholder="Beneficiary Name"
+          placeholder="Organization's Name"
           errorMessage="Beneficiary name cannot be blank."
           updateInput={updateName}
           isValid={isValid}

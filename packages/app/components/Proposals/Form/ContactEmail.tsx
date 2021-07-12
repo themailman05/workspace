@@ -20,7 +20,7 @@ export default function ContactEmail({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          {navigation.currentStep+1} - Please enter a contact email address
+          {navigation.currentStep} - Please enter a contact email address
         </h2>
         <ControlledTextInput
           inputValue={formData.contactEmail}
