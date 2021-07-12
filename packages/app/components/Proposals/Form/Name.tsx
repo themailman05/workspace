@@ -25,7 +25,7 @@ export default function Name({
           inputValue={formData.organizationName}
           id="name"
           placeholder="Organization's Name"
-          errorMessage="Beneficiary name cannot be blank."
+          errorMessage="Organization name cannot be blank."
           updateInput={updateName}
           isValid={isValid}
           navigation={navigation}
