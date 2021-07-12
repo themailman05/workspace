@@ -10,6 +10,7 @@ import Name from 'components/Proposals/Form/Name';
 import NavigationButtons from 'components/Proposals/Form/NavigationButtons';
 import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
+import ProjectName from 'components/Proposals/Form/ProjectName';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
 import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import { useRouter } from 'next/router';
@@ -36,6 +37,7 @@ export interface FormStepProps {
 
 export const defaultFormData: BeneficiaryApplication = {
   organizationName: '',
+  projectName: '',
   missionStatement: '',
   beneficiaryAddress: '',
   files: {
@@ -54,12 +56,13 @@ export const defaultFormData: BeneficiaryApplication = {
     contactEmail: '',
     website: '',
   },
-  version:"1.0",
+  version: '1.0',
 };
 
 const stepOrder: string[] = [
   'intro',
   'name',
+  'projectName',
   'beneficiary-address',
   'mission-statement',
   'proof-of-ownership',
@@ -134,6 +137,11 @@ export default function BeneficiaryProposal(): JSX.Element {
         navigation={navigation}
         visible={stepOrder[currentStep] === 'name'}
       />
+      <ProjectName
+        form={[formData, setFormData]}
+        navigation={navigation}
+        visible={stepOrder[currentStep] === 'projectName'}
+      />
       <BeneficiaryAddress
         form={[formData, setFormData]}
         navigation={navigation}
@@ -190,7 +198,7 @@ export default function BeneficiaryProposal(): JSX.Element {
         visible={stepOrder[currentStep] === 'preview'}
       />
       <NavigationButtons navigation={navigation} />
-      <Toaster position="top-right"/>
+      <Toaster position="top-right" />
     </div>
   );
 }
