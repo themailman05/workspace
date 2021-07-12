@@ -2,16 +2,16 @@ import { Web3Provider } from '@ethersproject/providers';
 import { ArrowRightIcon } from '@heroicons/react/outline';
 import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 import { useWeb3React } from '@web3-react/core';
-import { ContractsContext } from 'app/contracts';
-import { store } from 'app/store';
 import MainActionButton from 'components/MainActionButton';
-import { connectors } from 'containers/Web3/connectors';
+import { store } from 'context/store';
+import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
 import { useContext, useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import RewardDestination from '../../components/RewardsManager/RewardDestination';
-import NavBar from '../../containers/NavBar/NavBar';
+import Navbar from 'components/NavBar/NavBar';
+import { connectors } from 'context/Web3/connectors';
 
 export default function Register(): JSX.Element {
   const context = useWeb3React<Web3Provider>();
@@ -90,7 +90,7 @@ export default function Register(): JSX.Element {
 
   return (
     <div className="w-full bg-gray-900 h-screen">
-      <NavBar />
+      <Navbar />
       <Toaster position="top-right" />
       <div className="bg-gray-900">
         <div className="pt-12 px-4 sm:px-6 lg:px-8 lg:pt-20">
