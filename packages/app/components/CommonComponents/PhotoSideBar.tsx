@@ -5,7 +5,7 @@ export default function PhotoSideBar(
 ): JSX.Element {
   return (
     <div className="col-span-2 space-y-4">
-      <p className="text-2xl text-black sm:text-4xl lg:text-5xl">Photos</p>
+      <h3 className="text-lg leading-6 font-medium text-gray-900">Photos</h3>
       {beneficiary?.files?.additionalImages?.map((image) => {
         return (
           <img

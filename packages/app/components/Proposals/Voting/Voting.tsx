@@ -1,4 +1,5 @@
-import { Proposal, Status } from '@popcorn/utils/';
+import { Proposal, Status } from '@popcorn/utils';
+import React from 'react';
 import CurrentStandings from '../CurrentStandings';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';

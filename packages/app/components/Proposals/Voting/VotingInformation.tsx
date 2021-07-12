@@ -1,4 +1,4 @@
-import { Proposal, Status } from '@popcorn/utils/';
+import { Proposal, Status } from '@popcorn/utils';
 import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 interface IVotingRow {
   name: string;
@@ -7,8 +7,8 @@ interface IVotingRow {
 
 function VotingRow(data: IVotingRow): JSX.Element {
   return (
-    <span className="mx-4 my-1 flex flex-row justify-between">
-      <p className="text-lg font-medium text-gray-700">{data.name}</p>
+    <span className="flex flex-row justify-between">
+      <p className="text-base font-medium text-gray-700">{data.name}</p>
       <span className="text-base text-gray-700 flex flex-row">
         <p>{data.value}</p>
       </span>
@@ -18,7 +18,7 @@ function VotingRow(data: IVotingRow): JSX.Element {
 
 export default function VotingInformation(proposal: Proposal): JSX.Element {
   return (
-    <div>
+    <div className="my-4 mx-6">
       <VotingRow name={'Status'} value={Status[proposal.status]} />
       <VotingRow
         name={'Voting Deadline'}
