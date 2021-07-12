@@ -4,14 +4,14 @@ export default function PhotoSideBar(
   beneficiary: BeneficiaryApplication,
 ): JSX.Element {
   return (
-    <div className="space-y-2">
-      <p className="text-2xl text-black sm:text-4xl lg:text-5xl">Photos</p>
-      {beneficiary?.files?.additionalImages?.map((photoURL) => {
+    <div className="col-span-2 space-y-4">
+      <h3 className="text-lg leading-6 font-medium text-gray-900">Photos</h3>
+      {beneficiary?.files?.additionalImages?.map((image) => {
         return (
           <img
             className="w-full"
-            src={`${process.env.IPFS_URL}${photoURL}`}
-            alt=""
+            src={`${process.env.IPFS_URL}${image?.image}`}
+            alt={image?.description}
           />
         );
       })}

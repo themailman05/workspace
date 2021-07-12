@@ -2,7 +2,7 @@ import {
   ElectionMetadata,
   GrantElectionAdapter,
 } from '@popcorn/utils/Contracts';
-import { BeneficiaryApplication } from '@popcorn/utils/';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import CardBody from 'components/CommonComponents/CardBody';
 import GrantFunded from 'components/Grants/GrantFunded';
 import VoteSlider from 'components/Grants/VoteSlider';

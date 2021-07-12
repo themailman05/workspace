@@ -2,22 +2,23 @@ import {
   BeneficiaryGovernanceAdapter,
   IpfsClient,
   Proposal,
-} from '@popcorn/utils/';
-import Divider from 'components/CommonComponents/Divider';
+  Status,
+} from '@popcorn/utils';
+import BeneficiaryInformation from 'components/CommonComponents/BeneficiaryInformation';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
-import ImpactReportLinks from 'components/CommonComponents/ImpactReportLinks';
 import Loading from 'components/CommonComponents/Loading';
-import MissionStatement from 'components/CommonComponents/MissionStatement';
 import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
-import SocialMedia from 'components/CommonComponents/SocialMedia';
-import Verification from 'components/CommonComponents/Verification';
-import VideoSideBar from 'components/CommonComponents/VideoSideBar';
 import NavBar from 'components/NavBar/NavBar';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import Voting from './Voting/Voting';
 
+const getTitle = (proposal: Proposal): string => {
+  return `${Status[proposal.status]} vote on ${
+    proposal?.application?.organizationName
+  }`;
+};
 export default function ProposalPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const router = useRouter();
@@ -39,22 +40,14 @@ export default function ProposalPage(): JSX.Element {
       proposal !== undefined &&
       Object.keys(proposal).length > 0 ? (
       <React.Fragment>
-        <ImageHeader {...proposal?.application} />
+        <ImageHeader
+          beneficiary={proposal?.application}
+          title={getTitle(proposal)}
+        />
         <Voting {...proposal} />
-        <div className="grid grid-cols-8 gap-4 space-x-12 mx-48 my-8">
-          <div className="col-span-2 space-y-4">
-            <VideoSideBar {...proposal?.application} />
-            <PhotoSideBar {...proposal?.application} />
-          </div>
-          <MissionStatement
-            missionStatement={proposal?.application?.missionStatement}
-          />
-        </div>
-        <Divider />
-        <div className="mx-48 my-8">
-          <Verification {...proposal?.application} />
-          <ImpactReportLinks {...proposal?.application} />
-          <SocialMedia {...proposal?.application} />
+        <div className="grid grid-cols-8 gap-4 space-x-12 mx-auto px-8">
+          <PhotoSideBar {...proposal?.application} />
+          <BeneficiaryInformation {...proposal?.application} />
         </div>
       </React.Fragment>
     ) : (

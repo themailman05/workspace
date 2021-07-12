@@ -1,11 +1,10 @@
-import * as axios from 'axios';
+import axios from 'axios';
 import ProgressBar from 'components/ProgressBar';
-import { Navigation } from 'pages/proposals/propose';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
-import { DisplayImages, DisplayPDFs, DisplayVideo } from './DisplayFiles';
+import { DisplayVideo } from './DisplayFiles';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -13,9 +12,7 @@ const uploadError = (errMsg: string) => toast.error(errMsg);
 
 export const uploadImageToPinata = (
   files: File[],
-  setProfileImage:
-    | React.Dispatch<React.SetStateAction<string>>
-    | React.Dispatch<React.SetStateAction<string[]>>,
+  setProfileImage: (input: string) => void,
 ) => {
   var myHeaders = new Headers();
   myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
@@ -46,9 +43,7 @@ export const uploadImageToPinata = (
 
 export const uploadVideo = (
   files: File[],
-  setVideo:
-    | React.Dispatch<React.SetStateAction<string>>
-    | React.Dispatch<React.SetStateAction<string[]>>,
+  setVideo: (input: string | string[]) => void,
   setUploadProgress: React.Dispatch<React.SetStateAction<number>>,
 ) => {
   files.forEach((file) => {
@@ -68,6 +63,7 @@ export const uploadVideo = (
         setUploadProgress(percentCompleted);
       },
     };
+
     axios
       .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
       .then((result) => {
@@ -86,8 +82,7 @@ export const uploadVideo = (
 
 function uploadMultipleImagesToPinata(
   files: File[],
-  localState: string[], // TODO: Add type
-  setLocalState, // TODO: Add type
+  setLocalState: (input: string[]) => void,
 ) {
   toast.dismiss();
   var myHeaders = new Headers();
@@ -121,15 +116,12 @@ function uploadMultipleImagesToPinata(
 interface IpfsProps {
   stepName: string;
   localState: string | string[];
-  setLocalState:
-    | React.Dispatch<React.SetStateAction<string>>
-    | React.Dispatch<React.SetStateAction<string[]>>;
   fileDescription: string;
   fileInstructions: string;
   fileType: string;
-  numMaxFiles: number;
   maxFileSizeMB: number;
-  navigation: Navigation;
+  numMaxFiles: number;
+  setLocalState: (input: string | string[]) => void;
 }
 
 const isValidFileSize = (file: File, maxFileSizeMB: number) => {
@@ -151,13 +143,12 @@ const videoUploading = (uploadProgress: number, fileType: string): boolean => {
 export default function IpfsUpload({
   stepName,
   localState,
-  setLocalState,
   fileDescription,
   fileInstructions,
   fileType,
   numMaxFiles,
   maxFileSizeMB,
-  navigation,
+  setLocalState,
 }: IpfsProps) {
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -184,11 +175,7 @@ export default function IpfsUpload({
         } else if (fileType === 'video/*') {
           uploadVideo(acceptedFiles, setLocalState, setUploadProgress);
         } else {
-          uploadMultipleImagesToPinata(
-            acceptedFiles,
-            localState as string[],
-            setLocalState,
-          );
+          uploadMultipleImagesToPinata(acceptedFiles, setLocalState);
         }
       }
 
@@ -204,15 +191,15 @@ export default function IpfsUpload({
 
   const rootProps = getRootProps() as any;
   return (
-    <div className="mx-auto content-center grid justify-items-stretch">
-      <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
+    <div className="mx-auto">
+      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
         {stepName}
       </h2>
       {(!localState || localState.length === 0) &&
       !videoUploading(uploadProgress, fileType) ? (
         <div {...rootProps}>
           <input {...getInputProps()} />
-          <div className="mt-1 sm:mt-0 sm:col-span-2">
+          <div className="mt-8">
             <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
               <div className="space-y-1 text-center">
                 {fileType === 'image/*' ? (
@@ -244,7 +231,7 @@ export default function IpfsUpload({
           </div>
         </div>
       ) : (
-        <div></div>
+        <></>
       )}
       {videoUploading(uploadProgress, fileType) && (
         <div className="grid my-2 justify-items-stretch">
@@ -257,39 +244,7 @@ export default function IpfsUpload({
         </div>
       )}
       {localState && fileType === 'video/*' ? (
-        <DisplayVideo
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
-      ) : (
-        <> </>
-      )}
-      {numMaxFiles === 1 && localState && fileType === 'image/*' ? (
-        <DisplayImages
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
-      ) : (
-        <> </>
-      )}
-
-      {numMaxFiles > 1 && localState.length > 0 && fileType === 'image/*' ? (
-        <DisplayImages
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
-      ) : (
-        <> </>
-      )}
-      {numMaxFiles > 1 && localState.length > 0 && fileType === '.pdf' ? (
-        <DisplayPDFs
-          localState={localState}
-          setLocalState={setLocalState}
-          navigation={navigation}
-        />
+        <DisplayVideo localState={localState} />
       ) : (
         <> </>
       )}

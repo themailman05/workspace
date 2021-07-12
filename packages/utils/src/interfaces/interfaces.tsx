@@ -14,15 +14,20 @@ export enum ProposalType {
   Takedown,
 }
 
+export interface BeneficiaryImage {
+  image: string;
+  description: string;
+}
+
 export interface BeneficiaryApplication {
   organizationName: string;
   missionStatement: string;
   beneficiaryAddress: string;
   files: {
-    profileImage: string;
-    headerImage?: string;
+    profileImage: BeneficiaryImage;
+    headerImage?: BeneficiaryImage;
     impactReports?: string[];
-    additionalImages?: string[];
+    additionalImages?: BeneficiaryImage[];
     video: string;
   };
   links: {
@@ -32,7 +37,10 @@ export interface BeneficiaryApplication {
     instagramUrl?: string;
     githubUrl?: string;
     proofOfOwnership?: string;
+    contactEmail: string;
+    website: string;
   };
+  version: string;
 }
 
 export interface Proposal {

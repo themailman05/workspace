@@ -1,4 +1,6 @@
 import { Web3Provider } from '@ethersproject/providers';
+import { BeneficiaryApplication, IpfsClient } from '@popcorn/utils';
+import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 import { getBytes32FromIpfsHash } from '@popcorn/utils/ipfsHashManipulation';
 import { useWeb3React } from '@web3-react/core';
 import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage';
@@ -8,14 +10,9 @@ import { connectors } from 'context/Web3/connectors';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
 import { useRouter } from 'next/router';
+import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
-import {
-  BeneficiaryApplication,
-  IpfsClient,
-  formatAndRoundBigNumber,
-} from '@popcorn/utils/';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -130,9 +127,9 @@ export default function Preview({
     visible && (
       <div>
         <div className="md:flex md:items-center md:justify-between my-8 mx-4">
-          <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-              Preview Beneficiary Nomination Proposal below
+          <div className="min-w-0 ">
+            <h2 className="text-xl font-bold text-gray-900 sm:text-xl sm:truncate">
+              Beneficiary Nomination Proposal Preview
             </h2>
           </div>
           <div className="mt-4 flex md:mt-0 md:ml-4">
