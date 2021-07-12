@@ -626,12 +626,8 @@ describe("GrantElections", function () {
       ethers.provider.send("evm_mine", []);
       await contracts.grantElections.refreshElectionState(GRANT_TERM.MONTH);
       await contracts.mockGrantRegistry.mock.createGrant.returns();
-      await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
-      await contracts.mockRandomNumberConsumer.mock.randomResult.returns(123);
       await contracts.grantElections.finalize(GRANT_TERM.MONTH);
       await contracts.mockGrantRegistry.mock.createGrant.returns();
-      await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
-      await contracts.mockRandomNumberConsumer.mock.randomResult.returns(123);
       await expect(
         contracts.grantElections.finalize(GRANT_TERM.MONTH)
       ).to.be.revertedWith("election already finalized");
