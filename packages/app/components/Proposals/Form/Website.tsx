@@ -1,5 +1,5 @@
-import React from 'react';
 import { FormStepProps } from 'pages/proposals/propose';
+import React from 'react';
 import ControlledTextInput from './ControlledTextInput';
 
 export default function Website({
@@ -9,22 +9,21 @@ export default function Website({
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
 
-  
   function isValid(website): boolean {
     return website.length > 0;
   }
   function updateWebsite(value: string): void {
-    setFormData({ ...formData, website: value });
+    setFormData({ ...formData, links: { ...formData.links, website: value } });
   }
 
   return (
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          {navigation.currentStep+1} - What is the name of your website?
+          {navigation.currentStep + 1} - What is the name of your website?
         </h2>
         <ControlledTextInput
-          inputValue={formData.website}
+          inputValue={formData?.links?.website}
           id="website"
           placeholder="Website"
           errorMessage="Website URL cannot be blank."

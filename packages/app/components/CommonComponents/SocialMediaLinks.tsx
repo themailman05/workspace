@@ -9,14 +9,14 @@ export default function SocialMediaLinks(
   return (
     <>
       <a
-        href={`https://${beneficiary?.website}`}
+        href={`https://${beneficiary?.links?.website}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >
         <Icon.Globe aria-hidden="true" />
       </a>
       <a
-        href={`mailto:${beneficiary?.contactEmail}`}
+        href={`mailto:${beneficiary?.links?.contactEmail}`}
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >

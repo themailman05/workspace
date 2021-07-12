@@ -14,8 +14,8 @@ import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import {
   BeneficiaryApplication,
   IpfsClient,
-  formatAndRoundBigNumber,
 } from '@popcorn/utils';
+import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');

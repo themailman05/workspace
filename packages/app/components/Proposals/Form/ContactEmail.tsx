@@ -1,5 +1,5 @@
-import React from 'react';
 import { FormStepProps } from 'pages/proposals/propose';
+import React from 'react';
 import ControlledTextInput from './ControlledTextInput';
 
 export default function ContactEmail({
@@ -13,7 +13,10 @@ export default function ContactEmail({
     return email.length > 0;
   }
   function updateName(value: string): void {
-    setFormData({ ...formData, contactEmail: value });
+    setFormData({
+      ...formData,
+      links: { ...formData.links, contactEmail: value },
+    });
   }
 
   return (
@@ -23,7 +26,7 @@ export default function ContactEmail({
           {navigation.currentStep} - Please enter a contact email address
         </h2>
         <ControlledTextInput
-          inputValue={formData.contactEmail}
+          inputValue={formData?.links?.contactEmail}
           id="contactEmail"
           placeholder="Contact Email"
           errorMessage="Contact email cannot be blank."

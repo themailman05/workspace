@@ -18,8 +18,6 @@ export interface BeneficiaryApplication {
   organizationName: string;
   missionStatement: string;
   beneficiaryAddress: string;
-  contactEmail:string;
-  website:string;
   files: {
     profileImage: string;
     headerImage?: string;
@@ -33,6 +31,8 @@ export interface BeneficiaryApplication {
     instagramUrl?: string;
     githubUrl?: string;
     proofOfOwnership?: string;
+    contactEmail:string;
+    website:string;
   };
   version:string;
 }
