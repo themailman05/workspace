@@ -2,8 +2,7 @@ import { MockContract } from "@ethereum-waffle/mock-contract";
 import { parseEther } from "@ethersproject/units";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { AbiCoder } from "ethers/lib/utils";
-import { waffle, ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import { GrantElectionAdapter } from "../scripts/helpers/GrantElectionAdapter";
 import { GrantElections, MockERC20 } from "../typechain";
 
@@ -92,8 +91,10 @@ async function deployContracts(): Promise<Contracts> {
       governance.address
     )
   ).deployed()) as GrantElections;
-  await mockPop.connect(owner).approve(grantElections.address, parseEther("100000"))  
-  await grantElections.connect(owner).contributeReward(parseEther("2000"))
+  await mockPop
+    .connect(owner)
+    .approve(grantElections.address, parseEther("100000"));
+  await grantElections.connect(owner).contributeReward(parseEther("2000"));
   await grantElections.initialize(GRANT_TERM.MONTH);
 
   return {
@@ -322,20 +323,19 @@ describe("GrantElections", function () {
 
   describe("initialization", function () {
     it("should successfully initialize an election if one hasn't already been created", async function () {
-      await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
-      await ethers.provider.send("evm_mine", []);
+      const currentBlock = await waffle.provider.getBlock("latest");
       const result = await contracts.grantElections.initialize(
         GRANT_TERM.QUARTER
       );
       expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, 1625097601);
+        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
       expect(result)
         .to.emit(contracts.grantElections, "VaultInitialized")
         .withArgs(
           ethers.utils.solidityKeccak256(
             ["uint8", "uint256"],
-            [GRANT_TERM.QUARTER, 1625097601]
+            [GRANT_TERM.QUARTER, currentBlock.timestamp + 1]
           )
         );
     });
@@ -374,19 +374,23 @@ describe("GrantElections", function () {
       ).to.be.revertedWith("election not yet closed");
     });
     it("should not initialize a vault even the neede budget is larger than rewardBudget", async function () {
-      await contracts.grantElections.connect(governance).setRewardsBudget(parseEther("3000"))
-      await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
-      await ethers.provider.send("evm_mine", []);
+      await contracts.grantElections
+        .connect(governance)
+        .setRewardsBudget(parseEther("3000"));
+      const currentBlock = await waffle.provider.getBlock("latest");
       const result = await contracts.grantElections.initialize(
         GRANT_TERM.QUARTER
       );
       expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, 1625097601);
-      expect(result)
-        .to.not.emit(contracts.grantElections, "VaultInitialized")
-      const election = await contracts.grantElections.elections(GRANT_TERM.QUARTER)
-      expect(election.vaultId).to.equal("0x0000000000000000000000000000000000000000000000000000000000000000")
+        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+      expect(result).to.not.emit(contracts.grantElections, "VaultInitialized");
+      const election = await contracts.grantElections.elections(
+        GRANT_TERM.QUARTER
+      );
+      expect(election.vaultId).to.equal(
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
     });
   });
 
@@ -610,7 +614,7 @@ describe("GrantElections", function () {
     });
   });
 
-  describe("finalization", function () {
+  describe.only("finalization", function () {
     it("require election closed", async function () {
       await expect(
         contracts.grantElections.finalize(GRANT_TERM.MONTH)
@@ -625,6 +629,9 @@ describe("GrantElections", function () {
       await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
       await contracts.mockRandomNumberConsumer.mock.randomResult.returns(123);
       await contracts.grantElections.finalize(GRANT_TERM.MONTH);
+      await contracts.mockGrantRegistry.mock.createGrant.returns();
+      await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
+      await contracts.mockRandomNumberConsumer.mock.randomResult.returns(123);
       await expect(
         contracts.grantElections.finalize(GRANT_TERM.MONTH)
       ).to.be.revertedWith("election already finalized");

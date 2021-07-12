@@ -1,9 +1,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { Signer } from "crypto";
 import { MockContract } from "ethereum-waffle";
 import { parseEther } from "ethers/lib/utils";
-import { waffle, ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import {
   BeneficiaryGovernance,
   BeneficiaryRegistry,
@@ -140,8 +139,7 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockPop
         .connect(proposer2)
         .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
-      await ethers.provider.send("evm_setNextBlockTimestamp", [1625097600]);
-      await ethers.provider.send("evm_mine", []);
+      const currentBlock = await waffle.provider.getBlock("latest");
       const result = await contracts.beneficiaryGovernance
         .connect(proposer2)
         .createProposal(
@@ -161,7 +159,10 @@ describe("BeneficiaryGovernance", function () {
       expect(result)
         .to.emit(contracts.beneficiaryGovernance, "VaultInitialized")
         .withArgs(
-          "0x25aeb8e2fc2a7f92b25947f2b28cb2fb421f1c14e3cf0152a335943d76d0e38f"
+          ethers.utils.solidityKeccak256(
+            ["uint256", "uint256"],
+            [0, currentBlock.timestamp + 1]
+          )
         );
 
       const proposal = await contracts.beneficiaryGovernance.proposals(
@@ -180,7 +181,7 @@ describe("BeneficiaryGovernance", function () {
       ).to.equal(1);
     });
 
-    it("should prevent to create proposal with not enough bond", async function () { 
+    it("should prevent to create proposal with not enough bond", async function () {
       await contracts.mockPop
         .connect(proposer1)
         .approve(contracts.beneficiaryGovernance.address, parseEther("1500"));
@@ -256,7 +257,6 @@ describe("BeneficiaryGovernance", function () {
       );
     });
     it("should not initialize a vault even the needed budget is larger than rewardBudget", async function () {
-      
       await contracts.beneficiaryGovernance
         .connect(owner)
         .setRewardsBudget(parseEther("3000"));
@@ -294,7 +294,7 @@ describe("BeneficiaryGovernance", function () {
   });
   describe("voting", function () {
     beforeEach(async function () {
-      await contracts.mockPop.mint(proposer1.address,parseEther("500"))
+      await contracts.mockPop.mint(proposer1.address, parseEther("500"));
       await contracts.mockPop
         .connect(proposer1)
         .approve(contracts.beneficiaryGovernance.address, parseEther("2000"));
@@ -522,7 +522,7 @@ describe("BeneficiaryGovernance", function () {
   });
   describe("finalize", function () {
     beforeEach(async function () {
-      await contracts.mockPop.mint(proposer1.address,parseEther("500"))
+      await contracts.mockPop.mint(proposer1.address, parseEther("500"));
       // pass the Beneficiary governance contract address as the governance address for the beneficiary registry contract
 
       // create a BNP proposal
@@ -781,7 +781,7 @@ describe("BeneficiaryGovernance", function () {
 
   describe("claimBond", function () {
     beforeEach(async function () {
-      await contracts.mockPop.mint(proposer1.address,parseEther("500"))
+      await contracts.mockPop.mint(proposer1.address, parseEther("500"));
       // pass the Beneficiary governance contract address as the governance address for the beneficiary registry contract
 
       // create a BNP proposal
@@ -877,7 +877,7 @@ describe("BeneficiaryGovernance", function () {
       )
         .to.emit(contracts.beneficiaryGovernance, "BondWithdrawn")
         .withArgs(proposer1.address, amount);
-      
+
       expect(
         await contracts.mockPop.connect(proposer1).balanceOf(proposer1.address)
       ).to.equal(parseEther("2000"));
