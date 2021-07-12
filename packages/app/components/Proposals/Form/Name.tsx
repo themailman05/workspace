@@ -18,8 +18,8 @@ export default function Name({
   return (
     visible && (
       <div className="mx-auto content-center justify-items-center">
-        <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          1 - First things first, what's the name of the beneficiary?
+        <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide">
+          {navigation.currentStep} - First things first, what's the name of the organization?
         </h2>
         <ControlledTextInput
           inputValue={formData.organizationName}

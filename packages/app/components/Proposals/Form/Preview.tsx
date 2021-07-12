@@ -15,7 +15,7 @@ import {
   BeneficiaryApplication,
   IpfsClient,
   formatAndRoundBigNumber,
-} from '@popcorn/utils/';
+} from '@popcorn/utils';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');

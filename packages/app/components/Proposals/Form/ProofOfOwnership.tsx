@@ -23,7 +23,7 @@ export default function ProofOfOwnership({
     visible && (
       <div className="mx-auto content-center justify-items-center px-10">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          4 - Proof of ownership
+        {navigation.currentStep} - Proof of ownership
         </h2>
         <label
           htmlFor="email"

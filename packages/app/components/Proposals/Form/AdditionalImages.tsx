@@ -17,7 +17,7 @@ export default function AdditionalImages({
   return (
     visible && (
       <IpfsUpload
-        stepName={'7 - Upload Additional Images'}
+        stepName={`${navigation.currentStep} - Upload Additional Images`}
         localState={formData.files.additionalImages}
         setLocalState={updateAdditionalImages}
         imageDescription={'Additional Images'}
