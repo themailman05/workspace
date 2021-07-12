@@ -7,7 +7,7 @@ import OpenVoting from './OpenVoting';
 
 export default function Voting(proposal: Proposal): JSX.Element {
   return (
-    <div className="mt-16">
+    <div>
       {proposal?.status === Status.Open ? (
         <OpenVoting {...proposal} />
       ) : proposal?.status === Status.Challenge ? (
