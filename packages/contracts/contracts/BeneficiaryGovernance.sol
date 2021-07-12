@@ -16,11 +16,6 @@ contract BeneficiaryGovernance is Governed {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
-  IERC20 public immutable POP;
-  IStaking staking;
-  IBeneficiaryRegistry beneficiaryRegistry;
-
-  mapping(address => bool) pendingBeneficiaries;
   /**
    * BNP for Beneficiary Nomination Proposal
    * BTP for Beneficiary Takedown Proposal
@@ -63,8 +58,15 @@ contract BeneficiaryGovernance is Governed {
     ConfigurationOptions configurationOptions;
   }
 
-  Proposal[] public nominations;
-  Proposal[] public takedowns;
+  IERC20 public immutable POP;
+  IStaking staking;
+  IBeneficiaryRegistry beneficiaryRegistry;
+
+  mapping(address => bool) pendingBeneficiaries;
+
+  Proposal[] public proposals;
+  uint256[] public nominations;
+  uint256[] public takedowns;
   ConfigurationOptions public DefaultConfigurations;
 
   event ProposalCreated(
@@ -148,17 +150,16 @@ contract BeneficiaryGovernance is Governed {
       DefaultConfigurations.proposalBond
     );
 
-    uint256 proposalId;
+    uint256 proposalId = proposals.length;
+    proposals.push();
 
     if (_type == ProposalType.BeneficiaryNominationProposal) {
-      proposalId = nominations.length;
-      nominations.push();
+      nominations.push(proposalId);
     } else {
-      proposalId = takedowns.length;
-      takedowns.push();
+      takedowns.push(proposalId);
     }
 
-    Proposal storage proposal = _getProposal(proposalId, _type);
+    Proposal storage proposal = proposals[proposalId];
     // Create a new proposal
     proposal.status = ProposalStatus.New;
     proposal.beneficiary = _beneficiary;
@@ -365,12 +366,43 @@ contract BeneficiaryGovernance is Governed {
    */
   function _getProposal(uint256 _proposalId, ProposalType _type)
     internal
+    view
     returns (Proposal storage)
   {
     if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return nominations[_proposalId];
+      return proposals[nominations[_proposalId]];
     }
-    return takedowns[_proposalId];
+    return proposals[takedowns[_proposalId]];
+  }
+
+  function getProposal(uint256 _proposalId, ProposalType _type)
+    external
+    view
+    returns (
+      ProposalStatus status_,
+      address beneficiary_,
+      bytes memory applicationCid_,
+      address proposer_,
+      uint256 startTime_,
+      uint256 yesCount_,
+      uint256 noCount_,
+      uint256 voterCount_,
+      ProposalType proposalType_,
+      ConfigurationOptions memory configurationOptions_
+    )
+  {
+    Proposal storage proposal = _getProposal(_proposalId, _type);
+
+    status_ = proposal.status;
+    beneficiary_ = proposal.beneficiary;
+    applicationCid_ = proposal.applicationCid;
+    proposer_ = proposal.proposer;
+    startTime_ = proposal.startTime;
+    yesCount_ = proposal.yesCount;
+    noCount_ = proposal.noCount;
+    voterCount_ = proposal.voterCount;
+    proposalType_ = proposal.proposalType;
+    configurationOptions_ = proposal.configurationOptions;
   }
 
   /**
@@ -399,9 +431,9 @@ contract BeneficiaryGovernance is Governed {
     returns (uint256)
   {
     if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return nominations[proposalId].voterCount;
+      return proposals[nominations[proposalId]].voterCount;
     }
-    return takedowns[proposalId].voterCount;
+    return proposals[takedowns[proposalId]].voterCount;
   }
 
   /**
@@ -417,8 +449,8 @@ contract BeneficiaryGovernance is Governed {
     address voter
   ) external view returns (bool) {
     if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return nominations[proposalId].voters[voter];
+      return proposals[nominations[proposalId]].voters[voter];
     }
-    return takedowns[proposalId].voters[voter];
+    return proposals[takedowns[proposalId]].voters[voter];
   }
 }
