@@ -5,9 +5,10 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./IStaking.sol";
-import "./IBeneficiaryRegistry.sol";
+import "./Governed.sol";
 import "./ParticipationReward.sol";
+import "./Interfaces/IStaking.sol";
+import "./Interfaces/IBeneficiaryRegistry.sol";
 
 /**
  * @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
