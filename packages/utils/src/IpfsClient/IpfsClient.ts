@@ -1,9 +1,11 @@
+import axios from 'axios';
 import { BeneficiaryApplication } from '../';
 import { getIpfsHashFromBytes32 } from '../ipfsHashManipulation';
 
 export interface IIpfsClient {
   get: (cid: string) => Promise<BeneficiaryApplication>;
   add: (beneficiaryApplication: BeneficiaryApplication) => Promise<string>;
+  uploadFile: (file: File) => Promise<string>;
 }
 
 export const IpfsClient = (): IIpfsClient => {
@@ -34,10 +36,31 @@ export const IpfsClient = (): IIpfsClient => {
           return JSON.parse(result).IpfsHash;
         })
         .catch((error) => {
-          console.log({ error });
           console.error(error);
         });
       return cid;
+    },
+
+    uploadFile: async (file: File): Promise<string> => {
+      var headers = new Headers();
+      headers.append('pinata_api_key', process.env.PINATA_API_KEY);
+      headers.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
+      var data = new FormData();
+      data.append('file', file, file.name); // TODO: Source from filename
+      var config = {
+        headers,
+      };
+      const uploadHash = axios
+        .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
+        .then((result) => {
+          const hash = result.data.IpfsHash;
+          return hash;
+        })
+        .catch((error) => {
+          console.error(error);
+          return error;
+        });
+      return uploadHash;
     },
   };
 };

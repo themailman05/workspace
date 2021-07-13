@@ -1,3 +1,4 @@
+import { IpfsClient } from '@popcorn/utils';
 import axios from 'axios';
 import ProgressBar from 'components/ProgressBar';
 import React, { useState } from 'react';
@@ -10,35 +11,15 @@ const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-export const uploadImageToPinata = (
+export const uploadImage = async (
   files: File[],
   setProfileImage: (input: string) => void,
 ) => {
-  var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  files.forEach((file) => {
-    var formdata = new FormData();
-    formdata.append('file', file, 'download.png'); // TODO: Source from filename
-    loading();
-
-    fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers: myHeaders,
-      body: formdata,
-      redirect: 'follow',
-    })
-      .then((response) => response.text())
-      .then((result) => {
-        const hash = JSON.parse(result).IpfsHash;
-        setProfileImage(hash);
-        toast.dismiss();
-        success();
-      })
-      .catch((error) => {
-        uploadError('Error uploading to IPFS');
-      });
-  });
+  loading();
+  const hash = await IpfsClient().uploadFile(files[0]);
+  setProfileImage(hash);
+  toast.dismiss();
+  success();
 };
 
 export const uploadVideo = (
@@ -80,7 +61,7 @@ export const uploadVideo = (
   });
 };
 
-function uploadMultipleImagesToPinata(
+function uploadMultipleFiles(
   files: File[],
   setLocalState: (input: string[]) => void,
 ) {
@@ -171,11 +152,11 @@ export default function IpfsUpload({
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
         if (numMaxFiles === 1 && fileType === 'image/*') {
-          uploadImageToPinata(acceptedFiles, setLocalState);
+          uploadImage(acceptedFiles, setLocalState);
         } else if (fileType === 'video/*') {
           uploadVideo(acceptedFiles, setLocalState, setUploadProgress);
         } else {
-          uploadMultipleImagesToPinata(acceptedFiles, setLocalState);
+          uploadMultipleFiles(acceptedFiles, setLocalState);
         }
       }
 
