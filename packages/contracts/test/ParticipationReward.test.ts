@@ -221,7 +221,7 @@ describe("RewardParticipation", function () {
         contracts.rewardParticipationHelper.connect(owner).claimReward(0)
       ).to.be.revertedWith("no rewards");
     });
-    it("doesnt allow to claim the same reward twice", async function(){
+    it("doesnt allow to claim the same reward twice", async function () {
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
         vaultId,
@@ -231,9 +231,11 @@ describe("RewardParticipation", function () {
       ethers.provider.send("evm_increaseTime", [604800]);
       ethers.provider.send("evm_mine", []);
       await contracts.rewardParticipationHelper.openVault(vaultId);
-      contracts.rewardParticipationHelper.connect(owner).claimReward(0)
-      expect(contracts.rewardParticipationHelper.connect(owner).claimReward(0)).to.be.revertedWith("already claimed")
-    })
+      await contracts.rewardParticipationHelper.connect(owner).claimReward(0);
+      await expect(
+        contracts.rewardParticipationHelper.connect(owner).claimReward(0)
+      ).to.be.revertedWith("vault is not open");
+    });
     it("claims rewards successfully", async function () {
       await contracts.rewardParticipationHelper.initializeVault(vaultId, end);
       await contracts.rewardParticipationHelper.addShares(
@@ -367,7 +369,7 @@ describe("RewardParticipation", function () {
       await expect(
         contracts.rewardParticipationHelper
           .connect(owner)
-          .claimRewards([0,1,2])
+          .claimRewards([0, 1, 2])
       )
         .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
         .withArgs(owner.address, parseEther("3"));

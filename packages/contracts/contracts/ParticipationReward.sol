@@ -191,14 +191,17 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     address account_
   ) internal returns (uint256) {
     uint256 userShares = vaults[vaultId_].shareBalances[account_];
-    uint256 reward = vaults[vaultId_].tokenBalance.mul(userShares).div(
-      vaults[vaultId_].shares
-    );
-    vaults[vaultId_].tokenBalance = vaults[vaultId_].tokenBalance.sub(reward);
-    vaults[vaultId_].claimed[account_] = true;
+    if (userShares > 0) {
+      uint256 reward = vaults[vaultId_].tokenBalance.mul(userShares).div(
+        vaults[vaultId_].shares
+      );
+      vaults[vaultId_].tokenBalance = vaults[vaultId_].tokenBalance.sub(reward);
+      vaults[vaultId_].claimed[account_] = true;
 
-    delete userVaults[account_][index_];
-    return reward;
+      delete userVaults[account_][index_];
+      return reward;
+    }
+    return 0;
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */
