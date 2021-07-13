@@ -13,49 +13,28 @@ const uploadError = (errMsg: string) => toast.error(errMsg);
 export const uploadSingleFile = async (
   files: File[],
   setVideo: (input: string | string[]) => void,
-  setUploadProgress: (progress: number) => void,
+  setUploadProgress?: (progress: number) => void,
 ) => {
   loading();
-  const hash = await IpfsClient().uploadFileWithProgressHandler(
-    files[0],
-    setUploadProgress,
-  );
+  const hash = await IpfsClient().upload(files[0], setUploadProgress);
   setVideo(hash);
   toast.dismiss();
   success();
 };
 
-function uploadMultipleFiles(
+async function uploadMultipleFiles(
   files: File[],
   setLocalState: (input: string[]) => void,
 ) {
+  loading();
+  const IpfsHashes = await Promise.all(
+    files.map((file) => {
+      return IpfsClient().upload(file);
+    }),
+  );
+  setLocalState(IpfsHashes);
   toast.dismiss();
-  var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  let newImageHashes: string[] = [];
-  files.forEach((file) => {
-    var formdata = new FormData();
-    formdata.append('file', file, 'download.png'); // TODO: Source from filenames
-    loading();
-    fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers: myHeaders,
-      body: formdata,
-      redirect: 'follow',
-    })
-      .then((response) => response.text())
-      .then((result) => {
-        const hash = JSON.parse(result).IpfsHash;
-        newImageHashes.push(hash);
-        setLocalState(newImageHashes);
-        toast.dismiss();
-        success();
-      })
-      .catch((error) => {
-        uploadError('Error uploading to IPFS');
-      });
-  });
+  success();
 }
 
 interface IpfsProps {
@@ -116,14 +95,13 @@ export default function IpfsUpload({
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
         if (numMaxFiles === 1 && fileType === 'image/*') {
-          uploadSingleFile(acceptedFiles, setLocalState, (x: number) => {});
+          uploadSingleFile(acceptedFiles, setLocalState);
         } else if (fileType === 'video/*') {
           uploadSingleFile(acceptedFiles, setLocalState, setUploadProgress);
         } else {
           uploadMultipleFiles(acceptedFiles, setLocalState);
         }
       }
-
       setFiles(
         acceptedFiles.map((file) =>
           Object.assign(file, {

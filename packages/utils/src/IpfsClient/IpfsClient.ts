@@ -5,9 +5,9 @@ import { getIpfsHashFromBytes32 } from '../ipfsHashManipulation';
 export interface IIpfsClient {
   get: (cid: string) => Promise<BeneficiaryApplication>;
   add: (beneficiaryApplication: BeneficiaryApplication) => Promise<string>;
-  uploadFileWithProgressHandler: (
+  upload: (
     file: File,
-    setUploadProgress: (progress: number) => void,
+    setUploadProgress?: (progress: number) => void,
   ) => Promise<string>;
 }
 
@@ -44,25 +44,30 @@ export const IpfsClient = (): IIpfsClient => {
       return cid;
     },
 
-    uploadFileWithProgressHandler: async (
+    upload: async (
       file: File,
-      setUploadProgress: (progress: number) => void,
+      setUploadProgress?: (progress: number) => void,
     ): Promise<string> => {
       var data = new FormData();
       data.append('file', file, file.name);
-      var config = {
-        headers: {
-          'Content-Type': `multipart/form-data;`,
-          pinata_api_key: process.env.PINATA_API_KEY,
-          pinata_secret_api_key: process.env.PINATA_API_SECRET,
-        },
-        onUploadProgress: (progressEvent) => {
-          var percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total,
-          );
-          setUploadProgress(percentCompleted);
-        },
+      const headers = {
+        'Content-Type': `multipart/form-data;`,
+        pinata_api_key: process.env.PINATA_API_KEY,
+        pinata_secret_api_key: process.env.PINATA_API_SECRET,
       };
+      const config = setUploadProgress
+        ? {
+            headers,
+            onUploadProgress: (progressEvent) => {
+              var percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total,
+              );
+              setUploadProgress(percentCompleted);
+            },
+          }
+        : {
+            headers,
+          };
       return await axios
         .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
         .then((result) => {
