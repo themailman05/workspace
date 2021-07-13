@@ -45,8 +45,10 @@ const ONE_DAY = 86400;
 
 async function deployContracts(): Promise<Contracts> {
   const MockERC20 = await ethers.getContractFactory("MockERC20");
-  const mockPop = await MockERC20.deploy("TestPOP", "TPOP", 18);
-  await mockPop.mint(owner.address, parseEther("50"));
+  const mockPop = await (
+    await MockERC20.deploy("TestPOP", "TPOP", 18)
+  ).deployed();
+  await mockPop.mint(owner.address, parseEther("2050"));
   await mockPop.mint(nonOwner.address, parseEther("50"));
   await mockPop.mint(beneficiary.address, parseEther("50"));
   await mockPop.mint(beneficiary2.address, parseEther("50"));
@@ -70,12 +72,22 @@ async function deployContracts(): Promise<Contracts> {
   const BeneficiaryGovernance = await ethers.getContractFactory(
     "BeneficiaryGovernance"
   );
-  const beneficiaryGovernance = await BeneficiaryGovernance.deploy(
-    mockStaking.address,
-    mockBeneficiaryRegistry.address,
-    mockPop.address,
-    owner.address
-  );
+  const beneficiaryGovernance = await (
+    await BeneficiaryGovernance.deploy(
+      mockStaking.address,
+      mockBeneficiaryRegistry.address,
+      mockPop.address,
+      owner.address
+    )
+  ).deployed();
+
+  await mockPop
+    .connect(owner)
+    .approve(beneficiaryGovernance.address, parseEther("100000"));
+  await beneficiaryGovernance
+    .connect(owner)
+    .contributeReward(parseEther("2000"));
+
   return {
     mockPop,
     mockStaking,
@@ -87,7 +99,7 @@ async function deployContracts(): Promise<Contracts> {
 describe("BeneficiaryGovernance", function () {
   const PROPOSALID = 0;
   const PROPOSALID_BTP = 1;
-  before(async function () {
+  beforeEach(async function () {
     [
       owner,
       governance,
@@ -179,9 +191,9 @@ describe("BeneficiaryGovernance", function () {
       ).to.equal(1);
     });
     it("should prevent to create proposal with not enough bond", async function () {
-      await contracts.mockPop
-        .connect(proposer1)
-        .approve(contracts.beneficiaryGovernance.address, parseEther("1500"));
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await expect(
         contracts.beneficiaryGovernance
           .connect(proposer1)

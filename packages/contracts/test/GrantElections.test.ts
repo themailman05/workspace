@@ -44,7 +44,7 @@ async function deployContracts(): Promise<Contracts> {
       await ethers.getContractFactory("MockERC20")
     ).deploy("TestPOP", "TPOP",18)
   ).deployed();
-  await mockPop.mint(owner.address, parseEther("500"));
+  await mockPop.mint(owner.address, parseEther("2500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
   await mockPop.mint(beneficiary2.address, parseEther("500"));
   await mockPop.mint(beneficiary3.address, parseEther("500"));
@@ -79,7 +79,7 @@ async function deployContracts(): Promise<Contracts> {
     randomNumberConsumerFactory.interface.format() as any[]
   );
 
-  const grantElections = await (
+  const grantElections = (await (
     await (
       await ethers.getContractFactory("GrantElections")
     ).deploy(
