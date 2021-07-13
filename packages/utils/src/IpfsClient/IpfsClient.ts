@@ -5,7 +5,10 @@ import { getIpfsHashFromBytes32 } from '../ipfsHashManipulation';
 export interface IIpfsClient {
   get: (cid: string) => Promise<BeneficiaryApplication>;
   add: (beneficiaryApplication: BeneficiaryApplication) => Promise<string>;
-  uploadFile: (file: File) => Promise<string>;
+  uploadFileWithProgressHandler: (
+    file: File,
+    setUploadProgress: (progress: number) => void,
+  ) => Promise<string>;
 }
 
 export const IpfsClient = (): IIpfsClient => {
@@ -41,14 +44,24 @@ export const IpfsClient = (): IIpfsClient => {
       return cid;
     },
 
-    uploadFile: async (file: File): Promise<string> => {
+    uploadFileWithProgressHandler: async (
+      file: File,
+      setUploadProgress: (progress: number) => void,
+    ): Promise<string> => {
       var headers = new Headers();
       headers.append('pinata_api_key', process.env.PINATA_API_KEY);
       headers.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
       var data = new FormData();
-      data.append('file', file, file.name); // TODO: Source from filename
+      data.append('file', file, 'none');
+      console.log(file.name);
       var config = {
         headers,
+        onUploadProgress: (progressEvent) => {
+          var percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total,
+          );
+          setUploadProgress(percentCompleted);
+        },
       };
       const uploadHash = axios
         .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)

@@ -1,5 +1,4 @@
 import { IpfsClient } from '@popcorn/utils';
-import axios from 'axios';
 import ProgressBar from 'components/ProgressBar';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -16,49 +15,28 @@ export const uploadImage = async (
   setProfileImage: (input: string) => void,
 ) => {
   loading();
-  const hash = await IpfsClient().uploadFile(files[0]);
+  const hash = await IpfsClient().uploadFileWithProgressHandler(
+    files[0],
+    (progress: number) => {},
+  );
   setProfileImage(hash);
   toast.dismiss();
   success();
 };
 
-export const uploadVideo = (
+export const uploadVideo = async (
   files: File[],
   setVideo: (input: string | string[]) => void,
   setUploadProgress: React.Dispatch<React.SetStateAction<number>>,
 ) => {
-  files.forEach((file) => {
-    var data = new FormData();
-    data.append('file', file, 'download.png'); // TODO: Source video name from file
-    loading();
-    var config = {
-      headers: {
-        'Content-Type': `multipart/form-data;`,
-        pinata_api_key: process.env.PINATA_API_KEY,
-        pinata_secret_api_key: process.env.PINATA_API_SECRET,
-      },
-      onUploadProgress: (progressEvent) => {
-        var percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total,
-        );
-        setUploadProgress(percentCompleted);
-      },
-    };
-
-    axios
-      .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
-      .then((result) => {
-        const hash = result.data.IpfsHash;
-        setVideo(hash);
-        toast.dismiss();
-        success();
-        setUploadProgress(0);
-      })
-      .catch((error) => {
-        console.log(error);
-        uploadError('Error uploading to IPFS');
-      });
-  });
+  loading();
+  const hash = await IpfsClient().uploadFileWithProgressHandler(
+    files[0],
+    setUploadProgress,
+  );
+  setVideo(hash);
+  toast.dismiss();
+  success();
 };
 
 function uploadMultipleFiles(
