@@ -22,6 +22,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     uint256 shares;
     uint256 tokenBalance;
     mapping(address => uint256) shareBalances;
+    mapping(address => bool) claimed;
   }
 
   IERC20 public immutable POP;
@@ -55,7 +56,9 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     vaultExists(vaultId_)
     returns (bool)
   {
-    return vaults[vaultId_].shareBalances[beneficiary_] > 0;
+    return
+      vaults[vaultId_].shareBalances[beneficiary_] > 0 &&
+      vaults[vaultId_].claimed[beneficiary_] == false;
   }
 
   function getVaultStatus(bytes32 vaultId_)
@@ -144,6 +147,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   function claimReward(uint256 index_) external nonReentrant {
     bytes32 vaultId_ = userVaults[msg.sender][index_];
     require(vaults[vaultId_].status == VaultStatus.Open, "vault is not open");
+    require(!vaults[vaultId_].claimed[msg.sender], "already claimed");
     uint256 reward = _claimVaultReward(vaultId_, index_, msg.sender);
     require(reward > 0, "no rewards");
     require(reward <= rewardBalance, "not enough funds for payout");
@@ -162,7 +166,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
     for (uint256 i = 0; i < indices_.length; i++) {
       bytes32 vaultId_ = userVaults[msg.sender][indices_[i]];
-      if (vaults[vaultId_].status == VaultStatus.Open) {
+      if (
+        vaults[vaultId_].status == VaultStatus.Open &&
+        !vaults[vaultId_].claimed[msg.sender]
+      ) {
         total = total.add(_claimVaultReward(vaultId_, indices_[i], msg.sender));
       }
     }
@@ -181,18 +188,17 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   function _claimVaultReward(
     bytes32 vaultId_,
     uint256 index_,
-    address account
+    address account_
   ) internal returns (uint256) {
-    uint256 userShares = vaults[vaultId_].shareBalances[account];
-    if (userShares > 0) {
-      uint256 reward = vaults[vaultId_].tokenBalance.mul(userShares).div(
-        vaults[vaultId_].shares
-      );
-      vaults[vaultId_].tokenBalance = vaults[vaultId_].tokenBalance.sub(reward);
-      delete userVaults[account][index_];
-      return reward;
-    }
-    return 0;
+    uint256 userShares = vaults[vaultId_].shareBalances[account_];
+    uint256 reward = vaults[vaultId_].tokenBalance.mul(userShares).div(
+      vaults[vaultId_].shares
+    );
+    vaults[vaultId_].tokenBalance = vaults[vaultId_].tokenBalance.sub(reward);
+    vaults[vaultId_].claimed[account_] = true;
+
+    delete userVaults[account][index_];
+    return reward;
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */
