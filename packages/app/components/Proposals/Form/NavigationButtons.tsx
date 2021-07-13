@@ -8,8 +8,7 @@ interface NavigationButtonProps {
 export default function NavigationButtons({
   navigation,
 }: NavigationButtonProps) {
-  const { currentStep, setCurrentStep, stepLimit } = navigation;
-  const numSteps = 11;
+  const { currentStep, setCurrentStep, stepLimit, numSteps } = navigation;
   const progressPercentage =
     currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / numSteps);
   const canProceed = currentStep !== numSteps && currentStep < stepLimit;

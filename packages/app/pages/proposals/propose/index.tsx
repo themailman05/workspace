@@ -24,6 +24,7 @@ export interface Navigation {
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   stepLimit: number;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  numSteps: number;
 }
 
 export interface FormStepProps {
@@ -123,6 +124,7 @@ export default function BeneficiaryProposal(): JSX.Element {
     setCurrentStep,
     stepLimit,
     setStepLimit,
+    numSteps: stepOrder.length - 1,
   };
   return (
     <div className="flex flex-col h-screen justify-between">
