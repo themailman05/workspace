@@ -1,6 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { Signer } from "crypto";
 import { MockContract } from "ethereum-waffle";
 import { parseEther } from "ethers/lib/utils";
 import { waffle, ethers } from "hardhat";
@@ -85,7 +84,7 @@ async function deployContracts(): Promise<Contracts> {
   };
 }
 
-describe("BeneficiaryGovernance", function () {
+describe.only("BeneficiaryGovernance", function () {
   const PROPOSALID = 0;
   const PROPOSALID_BTP = 1;
   before(async function () {
