@@ -197,7 +197,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     vaults[vaultId_].tokenBalance = vaults[vaultId_].tokenBalance.sub(reward);
     vaults[vaultId_].claimed[account_] = true;
 
-    delete userVaults[account][index_];
+    delete userVaults[account_][index_];
     return reward;
   }
 
