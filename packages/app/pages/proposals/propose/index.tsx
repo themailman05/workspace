@@ -2,6 +2,7 @@ import { BeneficiaryApplication } from '@popcorn/utils';
 import NavBar from 'components/NavBar/NavBar';
 import AdditionalImages from 'components/Proposals/Form/AdditionalImages';
 import BeneficiaryAddress from 'components/Proposals/Form/BeneficiaryAddress';
+import ContactEmail from 'components/Proposals/Form/ContactEmail';
 import HeaderImage from 'components/Proposals/Form/HeaderImage';
 import ImpactReportsAudits from 'components/Proposals/Form/ImpactReportsAudits';
 import Intro from 'components/Proposals/Form/Intro';
@@ -12,17 +13,18 @@ import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
 import SocialMedia from 'components/Proposals/Form/SocialMedia';
+import Video from 'components/Proposals/Form/Video';
+import Website from 'components/Proposals/Form/Website';
 import { useRouter } from 'next/router';
 import React, { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
-import ContactEmail from 'components/Proposals/Form/ContactEmail';
-import Website from 'components/Proposals/Form/Website';
 
 export interface Navigation {
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
   stepLimit: number;
   setStepLimit: React.Dispatch<React.SetStateAction<number>>;
+  numSteps: number;
 }
 
 export interface FormStepProps {
@@ -43,6 +45,7 @@ export const defaultFormData: BeneficiaryApplication = {
     headerImage: { image: '', description: '' },
     impactReports: [],
     additionalImages: [],
+    video: '',
   },
   links: {
     twitterUrl: '',
@@ -54,7 +57,7 @@ export const defaultFormData: BeneficiaryApplication = {
     contactEmail: '',
     website: '',
   },
-  version:"1.0",
+  version: '1.0',
 };
 
 const stepOrder: string[] = [
@@ -66,6 +69,7 @@ const stepOrder: string[] = [
   'profile-image',
   'header-image',
   'additional-images',
+  'video',
   'impact-reports-audits',
   'website',
   'contact-email',
@@ -120,6 +124,7 @@ export default function BeneficiaryProposal(): JSX.Element {
     setCurrentStep,
     stepLimit,
     setStepLimit,
+    numSteps: stepOrder.length - 1,
   };
   return (
     <div className="flex flex-col h-screen justify-between">
@@ -164,6 +169,11 @@ export default function BeneficiaryProposal(): JSX.Element {
         navigation={navigation}
         visible={stepOrder[currentStep] === 'additional-images'}
       />
+      <Video
+        form={[formData, setFormData]}
+        navigation={navigation}
+        visible={stepOrder[currentStep] === 'video'}
+      />
       <ImpactReportsAudits
         form={[formData, setFormData]}
         navigation={navigation}
@@ -190,7 +200,7 @@ export default function BeneficiaryProposal(): JSX.Element {
         visible={stepOrder[currentStep] === 'preview'}
       />
       <NavigationButtons navigation={navigation} />
-      <Toaster position="top-right"/>
+      <Toaster position="top-right" />
     </div>
   );
 }

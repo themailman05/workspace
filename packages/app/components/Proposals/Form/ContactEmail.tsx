@@ -1,5 +1,7 @@
 import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
+import inputExists from 'utils/isValidInput';
+import ContinueButton from './ContinueButton';
 import ControlledTextInput from './ControlledTextInput';
 
 export default function ContactEmail({
@@ -32,8 +34,10 @@ export default function ContactEmail({
           errorMessage="Contact email cannot be blank."
           updateInput={updateName}
           isValid={isValid}
-          navigation={navigation}
         />
+        {inputExists(formData.organizationName) && (
+          <ContinueButton {...navigation} />
+        )}
       </div>
     )
   );

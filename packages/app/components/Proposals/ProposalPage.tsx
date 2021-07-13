@@ -8,6 +8,7 @@ import BeneficiaryInformation from 'components/CommonComponents/BeneficiaryInfor
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import Loading from 'components/CommonComponents/Loading';
 import PhotoSideBar from 'components/CommonComponents/PhotoSideBar';
+import VideoSideBar from 'components/CommonComponents/VideoSideBar';
 import NavBar from 'components/NavBar/NavBar';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useRouter } from 'next/router';
@@ -46,7 +47,10 @@ export default function ProposalPage(): JSX.Element {
         />
         <Voting {...proposal} />
         <div className="grid grid-cols-8 gap-4 space-x-12 mx-auto px-8">
-          <PhotoSideBar {...proposal?.application} />
+          <div className="col-span-2 space-y-4">
+            <VideoSideBar {...proposal?.application} />
+            <PhotoSideBar {...proposal?.application} />
+          </div>
           <BeneficiaryInformation {...proposal?.application} />
         </div>
       </React.Fragment>

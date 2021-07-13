@@ -1,5 +1,7 @@
 import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
+import inputExists from 'utils/isValidInput';
+import ContinueButton from './ContinueButton';
 import ControlledTextInput from './ControlledTextInput';
 
 export default function Website({
@@ -29,8 +31,10 @@ export default function Website({
           errorMessage="Website URL cannot be blank."
           updateInput={updateWebsite}
           isValid={isValid}
-          navigation={navigation}
         />
+        {inputExists(formData.organizationName) && (
+          <ContinueButton {...navigation} />
+        )}
       </div>
     )
   );

@@ -59,12 +59,13 @@ export default function ProfileImage({
           stepName={`${navigation.currentStep} - UPLOAD PROFILE IMAGE`}
           localState={formData?.files?.profileImage?.image}
           setLocalState={updateProfileImage}
-          imageDescription={'a Profile Image'}
-          imageInstructions={
+          fileDescription={'a Profile Image'}
+          fileInstructions={
             'Upload a square image, ideally 150px x 150px and less than 5mb'
           }
           fileType={'image/*'}
           numMaxFiles={1}
+          maxFileSizeMB={5}
         />
         <DisplayImages localState={formData?.files?.profileImage?.image} />
         <div className="mt-8 w-80">

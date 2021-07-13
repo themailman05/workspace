@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
-import { CheckIcon } from '@heroicons/react/solid';
-import SocialMediaTable from './SocialMediaTable';
 import { FormStepProps } from 'pages/proposals/propose';
+import React, { useState } from 'react';
 import ContinueButton from './ContinueButton';
+import SocialMediaTable from './SocialMediaTable';
 
 export default function SocialMedia({
   form,
@@ -78,7 +77,7 @@ export default function SocialMedia({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide">
-        {navigation.currentStep} - Upload social media links
+          {navigation.currentStep} - Upload social media links
         </h2>
 
         <div className="grid justify-items-stretch ...">
