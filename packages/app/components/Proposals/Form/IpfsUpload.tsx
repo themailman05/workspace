@@ -10,24 +10,10 @@ const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-export const uploadImage = async (
-  files: File[],
-  setProfileImage: (input: string) => void,
-) => {
-  loading();
-  const hash = await IpfsClient().uploadFileWithProgressHandler(
-    files[0],
-    (progress: number) => {},
-  );
-  setProfileImage(hash);
-  toast.dismiss();
-  success();
-};
-
-export const uploadVideo = async (
+export const uploadSingleFile = async (
   files: File[],
   setVideo: (input: string | string[]) => void,
-  setUploadProgress: React.Dispatch<React.SetStateAction<number>>,
+  setUploadProgress: (progress: number) => void,
 ) => {
   loading();
   const hash = await IpfsClient().uploadFileWithProgressHandler(
@@ -130,9 +116,9 @@ export default function IpfsUpload({
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
         if (numMaxFiles === 1 && fileType === 'image/*') {
-          uploadImage(acceptedFiles, setLocalState);
+          uploadSingleFile(acceptedFiles, setLocalState, (x: number) => {});
         } else if (fileType === 'video/*') {
-          uploadVideo(acceptedFiles, setLocalState, setUploadProgress);
+          uploadSingleFile(acceptedFiles, setLocalState, setUploadProgress);
         } else {
           uploadMultipleFiles(acceptedFiles, setLocalState);
         }

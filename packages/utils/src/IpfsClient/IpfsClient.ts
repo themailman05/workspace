@@ -48,14 +48,14 @@ export const IpfsClient = (): IIpfsClient => {
       file: File,
       setUploadProgress: (progress: number) => void,
     ): Promise<string> => {
-      var headers = new Headers();
-      headers.append('pinata_api_key', process.env.PINATA_API_KEY);
-      headers.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
       var data = new FormData();
-      data.append('file', file, 'none');
-      console.log(file.name);
+      data.append('file', file, file.name);
       var config = {
-        headers,
+        headers: {
+          'Content-Type': `multipart/form-data;`,
+          pinata_api_key: process.env.PINATA_API_KEY,
+          pinata_secret_api_key: process.env.PINATA_API_SECRET,
+        },
         onUploadProgress: (progressEvent) => {
           var percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total,
@@ -63,17 +63,15 @@ export const IpfsClient = (): IIpfsClient => {
           setUploadProgress(percentCompleted);
         },
       };
-      const uploadHash = axios
+      return await axios
         .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
         .then((result) => {
-          const hash = result.data.IpfsHash;
-          return hash;
+          return result.data.IpfsHash;
         })
         .catch((error) => {
-          console.error(error);
+          console.log(error);
           return error;
         });
-      return uploadHash;
     },
   };
 };
