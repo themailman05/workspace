@@ -84,7 +84,7 @@ async function deployContracts(): Promise<Contracts> {
   };
 }
 
-describe.only("BeneficiaryGovernance", function () {
+describe("BeneficiaryGovernance", function () {
   const PROPOSALID = 0;
   const PROPOSALID_BTP = 1;
   before(async function () {
