@@ -8,11 +8,11 @@ import { GrantElections, MockERC20 } from "../typechain";
 
 interface Contracts {
   mockPop: MockERC20;
-  mockStaking:MockContract;
-  mockBeneficiaryRegistry:MockContract;
-  mockGrantRegistry:MockContract;
-  mockRandomNumberConsumer:MockContract;
-  grantElections:GrantElections;
+  mockStaking: MockContract;
+  mockBeneficiaryRegistry: MockContract;
+  mockGrantRegistry: MockContract;
+  mockRandomNumberConsumer: MockContract;
+  grantElections: GrantElections;
 }
 
 let owner: SignerWithAddress,
@@ -42,7 +42,7 @@ async function deployContracts(): Promise<Contracts> {
   const mockPop = await (
     await (
       await ethers.getContractFactory("MockERC20")
-    ).deploy("TestPOP", "TPOP",18)
+    ).deploy("TestPOP", "TPOP", 18)
   ).deployed();
   await mockPop.mint(owner.address, parseEther("2500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
@@ -96,7 +96,14 @@ async function deployContracts(): Promise<Contracts> {
     .approve(grantElections.address, parseEther("100000"));
   await grantElections.connect(owner).contributeReward(parseEther("2000"));
   await grantElections.initialize(GRANT_TERM.MONTH);
-  return {mockPop, mockStaking,mockBeneficiaryRegistry, mockGrantRegistry, mockRandomNumberConsumer, grantElections}
+  return {
+    mockPop,
+    mockStaking,
+    mockBeneficiaryRegistry,
+    mockGrantRegistry,
+    mockRandomNumberConsumer,
+    grantElections,
+  };
 }
 
 describe("GrantElections", function () {
@@ -153,9 +160,9 @@ describe("GrantElections", function () {
       });
     });
     it("should set correct yearly defaults", async function () {
-      const yearly = await GrantElectionAdapter(contracts.grantElections).electionDefaults(
-        GRANT_TERM.YEAR
-      );
+      const yearly = await GrantElectionAdapter(
+        contracts.grantElections
+      ).electionDefaults(GRANT_TERM.YEAR);
       expect(yearly).to.deep.contains({
         registrationBondRequired: true,
         registrationBond: parseEther("1000"),
@@ -201,7 +208,9 @@ describe("GrantElections", function () {
   describe("setters", function () {
     it("should prevent non-governance address from updating governance address", async function () {
       await expect(
-        contracts.grantElections.connect(nonOwner).nominateNewGovernance(nonOwner.address)
+        contracts.grantElections
+          .connect(nonOwner)
+          .nominateNewGovernance(nonOwner.address)
       ).to.be.revertedWith(
         "Only the contract governance may perform this action"
       );
@@ -220,7 +229,9 @@ describe("GrantElections", function () {
 
   describe("registration", function () {
     it("should allow beneficiary to register for election with no bond when bond disabled", async function () {
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.grantElections
         .connect(governance)
         .toggleRegistrationBondRequirement(GRANT_TERM.YEAR);
@@ -238,15 +249,22 @@ describe("GrantElections", function () {
     });
 
     it("should prevent beneficiary to register for election without a bond", async function () {
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.grantElections.initialize(GRANT_TERM.YEAR);
       await expect(
-        contracts.grantElections.registerForElection(beneficiary.address, GRANT_TERM.YEAR)
+        contracts.grantElections.registerForElection(
+          beneficiary.address,
+          GRANT_TERM.YEAR
+        )
       ).to.be.revertedWith("insufficient registration bond balance");
     });
 
     it("should allow beneficiary to register for election with a bond", async function () {
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.grantElections.initialize(GRANT_TERM.YEAR);
       await contracts.mockPop.mint(beneficiary2.address, parseEther("1000"));
       await contracts.mockPop
@@ -272,7 +290,9 @@ describe("GrantElections", function () {
     });
 
     it("should transfer POP to election contract on registration", async function () {
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.grantElections.initialize(GRANT_TERM.YEAR);
       await contracts.mockPop.mint(beneficiary2.address, parseEther("1000"));
       await contracts.mockPop
@@ -286,7 +306,7 @@ describe("GrantElections", function () {
       const popBalanceForElection = await contracts.mockPop.balanceOf(
         contracts.grantElections.address
       );
-      expect(popBalanceForElection).to.equal(parseEther("1000"));
+      expect(popBalanceForElection).to.equal(parseEther("3000"));
     });
   });
 
@@ -310,7 +330,7 @@ describe("GrantElections", function () {
     });
 
     it("should set correct election metadata", async function () {
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER)
+      await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
       ).getElectionMetadata(GRANT_TERM.QUARTER);
@@ -337,7 +357,7 @@ describe("GrantElections", function () {
     });
 
     it("should prevent an election from initializing if it isn't closed", async function () {
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER)
+      await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       await expect(
         contracts.grantElections.initialize(GRANT_TERM.QUARTER)
       ).to.be.revertedWith("election not yet closed");
@@ -378,42 +398,60 @@ describe("GrantElections", function () {
 
     it("should require election open for voting", async function () {
       await expect(
-        contracts.grantElections.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
+        contracts.grantElections.vote(
+          [beneficiary.address],
+          [1],
+          GRANT_TERM.MONTH
+        )
       ).to.be.revertedWith("Election not open for voting");
     });
 
     it("should require staked voice credits", async function () {
       ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
       await contracts.mockStaking.mock.getVoiceCredits.returns(0);
       await expect(
-        contracts.grantElections.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
+        contracts.grantElections.vote(
+          [beneficiary.address],
+          [1],
+          GRANT_TERM.MONTH
+        )
       ).to.be.revertedWith("must have voice credits from staking");
     });
 
     it("should require eligible beneficiary", async function () {
       ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
       await contracts.mockStaking.mock.getVoiceCredits.returns(10);
       await expect(
-        contracts.grantElections.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
+        contracts.grantElections.vote(
+          [beneficiary.address],
+          [1],
+          GRANT_TERM.MONTH
+        )
       ).to.be.revertedWith("ineligible beneficiary");
     });
 
     it("should vote successfully", async function () {
       ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
 
       await contracts.mockPop
         .connect(beneficiary)
         .approve(contracts.grantElections.address, registrationBondMonth);
 
       await contracts.mockStaking.mock.getVoiceCredits.returns(10);
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.grantElections
         .connect(beneficiary)
         .registerForElection(beneficiary.address, GRANT_TERM.MONTH);
-      await contracts.grantElections.vote([beneficiary.address], [5], GRANT_TERM.MONTH);
+      await contracts.grantElections.vote(
+        [beneficiary.address],
+        [5],
+        GRANT_TERM.MONTH
+      );
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
       ).getElectionMetadata(GRANT_TERM.MONTH);
@@ -428,18 +466,28 @@ describe("GrantElections", function () {
 
     it("should not allow to vote twice for same address and grant term", async function () {
       ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
       await contracts.mockPop
         .connect(beneficiary)
         .approve(contracts.grantElections.address, registrationBondMonth);
       await contracts.mockStaking.mock.getVoiceCredits.returns(10);
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.grantElections
         .connect(beneficiary)
         .registerForElection(beneficiary.address, GRANT_TERM.MONTH);
-      await contracts.grantElections.vote([beneficiary.address], [5], GRANT_TERM.MONTH);
+      await contracts.grantElections.vote(
+        [beneficiary.address],
+        [5],
+        GRANT_TERM.MONTH
+      );
       await expect(
-        contracts.grantElections.vote([beneficiary.address], [1], GRANT_TERM.MONTH)
+        contracts.grantElections.vote(
+          [beneficiary.address],
+          [1],
+          GRANT_TERM.MONTH
+        )
       ).to.be.revertedWith("address already voted for election term");
     });
   });
@@ -447,8 +495,10 @@ describe("GrantElections", function () {
   describe("getCurrentRanking", function () {
     it("return current ranking", async function () {
       ethers.provider.send("evm_increaseTime", [7 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      ethers.provider.send("evm_mine", []);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.mockPop
         .connect(beneficiary)
         .approve(contracts.grantElections.address, registrationBondMonth);
@@ -547,20 +597,26 @@ describe("GrantElections", function () {
     });
   });
 
-  describe.only("finalization", function () {
+  describe("finalization", function () {
     it("require election closed", async function () {
-      await expect(contracts.grantElections.finalize(GRANT_TERM.MONTH)).to.be.revertedWith(
-        "election not yet closed"
-      );
+      await expect(
+        contracts.grantElections.finalize(GRANT_TERM.MONTH)
+      ).to.be.revertedWith("election not yet closed");
     });
 
     it("require not finalized", async function () {
       ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
+
       await contracts.grantElections.refreshElectionState(GRANT_TERM.MONTH);
       await contracts.mockGrantRegistry.mock.createGrant.returns();
+      await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
+      await contracts.mockRandomNumberConsumer.mock.randomResult.returns(2893);
+
       await contracts.grantElections.finalize(GRANT_TERM.MONTH);
       await contracts.mockGrantRegistry.mock.createGrant.returns();
+      await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
+      await contracts.mockRandomNumberConsumer.mock.randomResult.returns(2893);
       await expect(
         contracts.grantElections.finalize(GRANT_TERM.MONTH)
       ).to.be.revertedWith("election already finalized");
@@ -569,7 +625,9 @@ describe("GrantElections", function () {
     it("finalizes an election with randomization", async function () {
       await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       // voting
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.mockPop
         .connect(beneficiary)
         .approve(contracts.grantElections.address, registrationBondQuarter);
@@ -602,7 +660,7 @@ describe("GrantElections", function () {
         .registerForElection(beneficiary5.address, GRANT_TERM.QUARTER);
       await contracts.mockStaking.mock.getVoiceCredits.returns(1000);
       ethers.provider.send("evm_increaseTime", [14 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
       await contracts.grantElections
         .connect(voter1)
         .vote([beneficiary.address], [10], GRANT_TERM.QUARTER);
@@ -620,7 +678,7 @@ describe("GrantElections", function () {
         .vote([beneficiary5.address], [50], GRANT_TERM.QUARTER);
       // finalization
       ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
       await contracts.grantElections.refreshElectionState(GRANT_TERM.QUARTER);
       await contracts.mockGrantRegistry.mock.createGrant.returns();
       await contracts.mockRandomNumberConsumer.mock.getRandomNumber.returns();
@@ -650,7 +708,9 @@ describe("GrantElections", function () {
         );
       await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       // voting
-      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
       await contracts.mockPop
         .connect(beneficiary)
         .approve(contracts.grantElections.address, registrationBondQuarter);
@@ -683,7 +743,7 @@ describe("GrantElections", function () {
         .registerForElection(beneficiary5.address, GRANT_TERM.QUARTER);
       await contracts.mockStaking.mock.getVoiceCredits.returns(1000);
       ethers.provider.send("evm_increaseTime", [14 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
       await contracts.grantElections
         .connect(voter1)
         .vote([beneficiary.address], [5], GRANT_TERM.QUARTER);
@@ -701,7 +761,7 @@ describe("GrantElections", function () {
         .vote([beneficiary5.address], [10], GRANT_TERM.QUARTER);
       // finalization
       ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
-      ethers.provider.send("evm_mine",[]);
+      ethers.provider.send("evm_mine", []);
       await contracts.grantElections.refreshElectionState(GRANT_TERM.QUARTER);
       await contracts.mockGrantRegistry.mock.createGrant.returns();
       expect(await contracts.grantElections.finalize(GRANT_TERM.QUARTER))
