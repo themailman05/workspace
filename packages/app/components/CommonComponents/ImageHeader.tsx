@@ -12,7 +12,7 @@ export default function ImageHeader({
       <div>
         <img
           className="h-32 w-full object-cover lg:h-48"
-          src={`${process.env.IPFS_URL}${beneficiary?.files?.headerImage}`}
+          src={`${process.env.IPFS_URL}${beneficiary?.files?.headerImage?.image}`}
           alt=""
         />
       </div>
@@ -21,7 +21,7 @@ export default function ImageHeader({
           <div className="flex">
             <img
               className="h-24 w-24 rounded-full ring-4 ring-white sm:h-32 sm:w-32"
-              src={`${process.env.IPFS_URL}${beneficiary?.files?.profileImage}`}
+              src={`${process.env.IPFS_URL}${beneficiary?.files?.profileImage?.image}`}
               alt={beneficiary?.files?.headerImage?.description}
             />
           </div>

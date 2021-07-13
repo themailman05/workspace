@@ -4,7 +4,7 @@ export default function PhotoSideBar(
   beneficiary: BeneficiaryApplication,
 ): JSX.Element {
   return (
-    <div className="col-span-2 space-y-4">
+    <div>
       <h3 className="text-lg leading-6 font-medium text-gray-900">Photos</h3>
       {beneficiary?.files?.additionalImages?.map((image) => {
         return (

@@ -4,8 +4,8 @@ export default function VideoSideBar(
   beneficiary: BeneficiaryApplication,
 ): JSX.Element {
   return (
-    <div className="space-y-4">
-      <p className="text-2xl text-black sm:text-4xl lg:text-5xl">Video</p>
+    <div>
+      <h3 className="text-lg leading-6 font-medium text-gray-900">Video</h3>
       <video className="justify-self-center" controls>
         <source
           src={'https://gateway.pinata.cloud/ipfs/' + beneficiary?.files?.video}
