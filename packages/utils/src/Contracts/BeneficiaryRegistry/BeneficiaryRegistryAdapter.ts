@@ -11,7 +11,7 @@ export const BeneficiaryRegistryAdapter = (
       id: string,
     ): Promise<BeneficiaryApplication> => {
       const ipfsHash = await contract.getBeneficiary(id);
-      let beneficiaryApplication = await IpfsClient().get(ipfsHash);
+      const beneficiaryApplication = await IpfsClient().get(ipfsHash);
       // TODO: Remove temporary address assignment
       beneficiaryApplication.beneficiaryAddress = id;
       return beneficiaryApplication;
