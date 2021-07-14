@@ -1,8 +1,8 @@
+import { BeneficiaryApplication } from '@popcorn/utils';
 import {
   ElectionMetadata,
   GrantElectionAdapter,
 } from '@popcorn/utils/Contracts';
-import { BeneficiaryApplication } from '@popcorn/utils';
 import CardBody from 'components/CommonComponents/CardBody';
 import GrantFunded from 'components/Grants/GrantFunded';
 import VoteSlider from 'components/Grants/VoteSlider';
@@ -34,7 +34,7 @@ function GrantSlider({
   electionProps,
 }: GrantSliderProps): JSX.Element {
   return (
-    <div className="mt-6 flex items-center">
+    <div className="flex-1 bg-white pb-6 px-6 flex flex-col justify-between">
       <div className="flex-shrink-0">
         {GrantElectionAdapter().isActive(electionProps.election) ? (
           <VoteSlider beneficiary={beneficiary} electionProps={electionProps} />
@@ -57,7 +57,7 @@ export default function BeneficiaryCard({
   return (
     <div
       key={beneficiary.beneficiaryAddress}
-      className="flex flex-col rounded-lg shadow-lg overflow-hidden"
+      className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white"
     >
       <Link href={`/beneficiaries/${beneficiary.beneficiaryAddress}`} passHref>
         <a>
@@ -68,10 +68,8 @@ export default function BeneficiaryCard({
           />
         </a>
       </Link>
-      {electionProps ? (
+      {electionProps && (
         <GrantSlider beneficiary={beneficiary} electionProps={electionProps} />
-      ) : (
-        <></>
       )}
     </div>
   );

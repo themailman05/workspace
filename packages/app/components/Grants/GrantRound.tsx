@@ -75,9 +75,9 @@ export default function GrantRound({
     return <></>;
   }
   return (
-    <div
+    <ul
       ref={ref}
-      className="mb-16 w-full flex flex-row flex-wrap items-center"
+      className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36"
     >
       {beneficiariesWithMetadata?.map((beneficiary) => (
         <BeneficiaryCard
@@ -93,6 +93,6 @@ export default function GrantRound({
           beneficiary={beneficiary}
         />
       ))}
-    </div>
+    </ul>
   );
 }
