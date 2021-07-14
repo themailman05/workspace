@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./lib/AffiliateToken.sol";
 import "./Defended.sol";
-import "./Interfaces/Cooperations/YearnVault.sol";
-import "./Interfaces/Cooperations/CurveContracts.sol";
+import "./Interfaces/Integrations/YearnVault.sol";
+import "./Interfaces/Integrations/CurveContracts.sol";
 
 contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   using SafeMath for uint256;
