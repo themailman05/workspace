@@ -21,6 +21,15 @@ interface IBeneficiaryCard {
   electionProps: ElectionProps;
 }
 
+const truncate = (input: string): string => {
+  const maxLength = 180;
+  const trimmedInput = input.substr(0, maxLength);
+  const trimmedOnCompleteWord = trimmedInput.substr(
+    0,
+    Math.min(trimmedInput.length, trimmedInput.lastIndexOf(' ')),
+  );
+  return trimmedOnCompleteWord + ' ...';
+};
 
 export default function BeneficiaryCard({
   electionProps,
@@ -62,7 +71,7 @@ export default function BeneficiaryCard({
           >
             <a>
               <p className="text-sm text-gray-700">
-                {beneficiary?.missionStatement}
+                {truncate(beneficiary?.missionStatement)}
               </p>
             </a>
           </Link>
