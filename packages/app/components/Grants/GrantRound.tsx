@@ -1,11 +1,15 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import {
+  BeneficiaryApplication,
+  BeneficiaryRegistryAdapter,
+  IpfsClient,
+} from '@popcorn/utils';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber, utils } from 'ethers';
 import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
-import React, { useEffect, useRef, useState } from 'react';
-import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
 import BeneficiaryCardWithElectionData from './BeneficiaryCardWithElectionData';
 
+import { useContext, useEffect, useRef, useState } from 'react';
 interface IGrantRound {
   voiceCredits: number;
   votes?: Vote[];
@@ -36,6 +40,7 @@ export default function GrantRound({
   election,
   scrollToMe = false,
 }: IGrantRound): JSX.Element {
+  const { contracts } = useContext(ContractsContext);
   const ref = useRef(null);
   const [votes, setVotes] = useState<Votes>({ total: 0 });
   const [beneficiariesWithMetadata, setBeneficiaries] = useState<
@@ -48,21 +53,27 @@ export default function GrantRound({
     }
   }, [election]);
 
-  const getBeneficiary = (address: string): BeneficiaryApplication => {
-    const beneficiary =
-      beneficiariesHashMap[process.env.CHAIN_ID || '31337'][
-        address.toLowerCase()
-      ];
+  const getBeneficiary = async (
+    address: string,
+  ): Promise<BeneficiaryApplication> => {
+    const beneficiary = await BeneficiaryRegistryAdapter(
+      contracts.beneficiary,
+      IpfsClient,
+    ).getBeneficiaryApplication(address);
     return beneficiary;
+  };
+
+  const getAllBeneficiaries = async (registeredBeneficiaries: string[]) => {
+    setBeneficiaries(
+      await Promise.all(
+        registeredBeneficiaries.map((address) => getBeneficiary(address)),
+      ),
+    );
   };
 
   useEffect(() => {
     if (votes && election) {
-      setBeneficiaries(
-        election.registeredBeneficiaries.map((address) =>
-          getBeneficiary(address),
-        ),
-      );
+      getAllBeneficiaries(election.registeredBeneficiaries);
     }
   }, [votes, election]);
 
