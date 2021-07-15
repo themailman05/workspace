@@ -31,7 +31,7 @@ const truncate = (input: string): string => {
   return trimmedOnCompleteWord + ' ...';
 };
 
-export default function BeneficiaryCard({
+export default function BeneficiaryCardWithElectionData({
   electionProps,
   beneficiary,
 }: IBeneficiaryCard): JSX.Element {
@@ -40,14 +40,12 @@ export default function BeneficiaryCard({
       <Link href={`/beneficiary/${beneficiary?.beneficiaryAddress}`} passHref>
         <a>
           <div className="w-full h-32 rounded-t-lg">
-            {beneficiary?.files?.profileImage?.image && (
-              <img
-                className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
-                src={beneficiary?.files?.headerImage?.image}
-                alt=""
-                style={{ objectFit: 'cover', height: '140px' }}
-              ></img>
-            )}
+            <img
+              className="w-100 h-auto md:w-100 md:h-auto md:rounded-t rounded-t mx-auto"
+              src={`${process.env.IPFS_URL}${beneficiary?.files?.profileImage?.image}`}
+              alt=""
+              style={{ objectFit: 'cover', height: '140px' }}
+            ></img>
           </div>
         </a>
       </Link>

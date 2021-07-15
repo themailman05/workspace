@@ -1,8 +1,8 @@
 import { BeneficiaryApplication } from '@popcorn/utils';
-import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
 import { useContext, useEffect, useState } from 'react';
 import { Check } from 'react-feather';
 import { ContractsContext } from '../../context/Web3/contracts';
+import { ElectionProps } from './BeneficiaryCardWithElectionData';
 
 interface GrantFundedProps {
   beneficiary: BeneficiaryApplication;

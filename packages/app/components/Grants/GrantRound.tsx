@@ -4,7 +4,7 @@ import { BigNumber, utils } from 'ethers';
 import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
 import React, { useEffect, useRef, useState } from 'react';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
-import BeneficiaryCard from './BeneficiaryCard';
+import BeneficiaryCardWithElectionData from './BeneficiaryCardWithElectionData';
 
 interface IGrantRound {
   voiceCredits: number;
@@ -80,7 +80,7 @@ export default function GrantRound({
       className="mb-16 w-full flex flex-row flex-wrap items-center"
     >
       {beneficiariesWithMetadata?.map((beneficiary) => (
-        <BeneficiaryCard
+        <BeneficiaryCardWithElectionData
           key={beneficiary.beneficiaryAddress}
           electionProps={{
             election: election,
