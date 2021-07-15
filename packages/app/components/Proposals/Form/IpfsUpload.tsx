@@ -192,7 +192,7 @@ export default function IpfsUpload({
   const rootProps = getRootProps() as any;
   return (
     <div className="mx-auto">
-      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
+      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide">
         {stepName}
       </h2>
       {(!localState || localState.length === 0) &&
