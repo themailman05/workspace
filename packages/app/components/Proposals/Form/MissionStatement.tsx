@@ -1,6 +1,6 @@
-import React from 'react';
+import { ExclamationCircleIcon } from '@heroicons/react/outline';
 import { FormStepProps } from 'pages/proposals/propose';
-import ControlledTextInput from './ControlledTextInput';
+import React from 'react';
 import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
 
@@ -10,24 +10,40 @@ export default function MissionStatement({
   visible,
 }: FormStepProps): JSX.Element {
   const [formData, setFormData] = form;
-  function updateMissionStatement(value: string): void {
-    setFormData({ ...formData, missionStatement: value });
+  function updateMissionStatement(event): void {
+    setFormData({ ...formData, missionStatement: event.target.value });
   }
-
   return (
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide ">
-          {navigation.currentStep} - Please share the organization's mission statement
+          {navigation.currentStep} - Please share the organization's mission
+          statement
         </h2>
-        <ControlledTextInput
-          inputValue={formData?.missionStatement}
-          id="missionstatement"
-          placeholder="Mission Statement"
-          errorMessage="The mission statement cannot be blank."
-          updateInput={updateMissionStatement}
-          isValid={inputExists}
-        />
+        <div className="mt-1 relative rounded-md shadow-sm">
+          <textarea
+            name="missionstatement"
+            id="missionstatement"
+            rows={10}
+            value={formData?.missionStatement}
+            onChange={updateMissionStatement}
+            className={
+              formData?.missionStatement
+                ? 'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md'
+                : 'block w-full pr-10 border-red-300 text-red-900 placeholder-red-300 focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm rounded-md'
+            }
+            placeholder="Mission Statement"
+          />
+          {!formData?.missionStatement && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+              <ExclamationCircleIcon
+                className="h-5 w-5 text-red-500"
+                aria-hidden="true"
+              />
+            </div>
+          )}
+        </div>
+
         {inputExists(formData?.missionStatement) && (
           <ContinueButton {...navigation} />
         )}
