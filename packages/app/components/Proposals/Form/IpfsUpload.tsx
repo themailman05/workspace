@@ -199,36 +199,38 @@ export default function IpfsUpload({
       !videoUploading(uploadProgress, fileType) ? (
         <div {...rootProps}>
           <input {...getInputProps()} />
-          <div className="mt-8">
-            <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-              <div className="space-y-1 text-center">
-                {fileType === 'image/*' ? (
-                  <Icon.Image className="mx-auto h-12 w-12 text-gray-400" />
-                ) : (
-                  <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
-                )}
+          <button
+            type="button"
+            className="relative block w-full border-2 border-gray-300 border-dashed rounded-lg p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            {fileType === 'image/*' ? (
+              <Icon.Image className="mx-auto h-12 w-12 text-gray-400" />
+            ) : (
+              <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
+            )}
 
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                  >
-                    <span>Upload</span>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                    />
-                  </label>
-                  <p className="pl-1">
-                    or drag and drop {fileDescription.toLowerCase()}
-                  </p>
-                </div>
-                <p className="text-xs text-gray-500">{fileInstructions}</p>
+            <span className="mt-2 block text-sm font-medium text-gray-900">
+              <div className="flex text-sm text-gray-600">
+                <label
+                  htmlFor="file-upload"
+                  className="pl-1 mt-2 block text-sm font-medium text-indigo-500"
+                >
+                  <span>Upload</span>
+                  <input
+                    id="file-upload"
+                    name="file-upload"
+                    type="file"
+                    className="sr-only"
+                  />
+                </label>
+                <p className="pl-1 mt-2 block text-sm font-medium text-gray-900">
+                  or drag and drop {fileDescription.toLowerCase()}
+                </p>
               </div>
-            </div>
-          </div>
+            </span>
+          </button>
+
+          <p className="text-xs text-gray-500">{fileInstructions}</p>
         </div>
       ) : (
         <></>
