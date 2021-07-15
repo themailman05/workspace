@@ -2,9 +2,9 @@ import { BeneficiaryApplication } from '@popcorn/utils';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { BigNumber, utils } from 'ethers';
 import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import beneficiariesHashMap from '../../fixtures/beneficiaries.json';
-import BeneficiaryCard from '../Beneficiaries/BeneficiaryCard';
+import BeneficiaryCardWithElectionData from './BeneficiaryCardWithElectionData';
 
 interface IGrantRound {
   voiceCredits: number;
@@ -75,12 +75,12 @@ export default function GrantRound({
     return <></>;
   }
   return (
-    <ul
+    <div
       ref={ref}
-      className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36"
+      className="mb-16 w-full flex flex-row flex-wrap items-center"
     >
       {beneficiariesWithMetadata?.map((beneficiary) => (
-        <BeneficiaryCard
+        <BeneficiaryCardWithElectionData
           key={beneficiary.beneficiaryAddress}
           electionProps={{
             election: election,
@@ -93,6 +93,6 @@ export default function GrantRound({
           beneficiary={beneficiary}
         />
       ))}
-    </ul>
+    </div>
   );
 }
