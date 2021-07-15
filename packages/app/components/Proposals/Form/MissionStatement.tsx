@@ -11,7 +11,6 @@ export default function MissionStatement({
 }: FormStepProps): JSX.Element {
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const [formData, setFormData] = form;
-  console.log(inputExists(formData?.missionStatement));
   return (
     visible && (
       <div className="mx-auto content-center justify-items-center">
