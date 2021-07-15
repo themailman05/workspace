@@ -42,7 +42,6 @@ export default function HeaderImage({
             each with a maximum size of 5mb.`}
           fileType={'.pdf'}
           numMaxFiles={4}
-          maxFileSizeMB={10}
         />
         <div className="mx-auto">
           <DisplayPDFs localState={formData?.files?.impactReports} />

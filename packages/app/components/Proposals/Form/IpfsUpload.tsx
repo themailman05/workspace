@@ -119,7 +119,7 @@ interface IpfsProps {
   fileDescription: string;
   fileInstructions: string;
   fileType: string;
-  maxFileSizeMB: number;
+  maxFileSizeMB?: number;
   numMaxFiles: number;
   setLocalState: (input: string | string[]) => void;
 }
@@ -164,7 +164,7 @@ export default function IpfsUpload({
     accept: fileType,
     maxFiles: numMaxFiles,
     validator: (file: File) => {
-      return isValidFileSize(file, maxFileSizeMB);
+      return maxFileSizeMB ? isValidFileSize(file, maxFileSizeMB) : null;
     },
     onDrop: (acceptedFiles) => {
       if (fileRejections.length) {
