@@ -11,7 +11,7 @@ export interface IIpfsClient {
   ) => Promise<UploadResult>;
 }
 
-interface UploadResult {
+export interface UploadResult {
   status: number;
   hash?: string;
   errorDetails?: string;

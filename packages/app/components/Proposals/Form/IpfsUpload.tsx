@@ -1,4 +1,5 @@
 import { IpfsClient } from '@popcorn/utils';
+import { UploadResult } from '@popcorn/utils/IpfsClient/IpfsClient';
 import ProgressBar from 'components/ProgressBar';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -10,6 +11,9 @@ const success = (msg: string) => toast.success(msg);
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
+const isSuccessfulUpload = (res: UploadResult): boolean => res.status === 200;
+const isFailedUpload = (res: UploadResult): boolean => res.status !== 200;
+
 export const uploadSingleFile = async (
   files: File[],
   setVideo: (input: string | string[]) => void,
@@ -17,14 +21,14 @@ export const uploadSingleFile = async (
 ) => {
   loading();
   const res = await IpfsClient().upload(files[0], setUploadProgress);
-  if (res.status === 200) {
+  if (isSuccessfulUpload(res)) {
     setVideo(res.hash);
     toast.dismiss();
     success('Successful upload to IPFS');
   } else {
     toast.dismiss();
     uploadError(
-      `Upload was unsuccessful with status ${res.status} as ${res.errorDetails}`,
+      `Upload was unsuccessful with status ${res.status}. ${res.errorDetails}`,
     );
   }
 };
@@ -34,14 +38,37 @@ async function uploadMultipleFiles(
   setLocalState: (input: string[]) => void,
 ) {
   loading();
-  const IpfsHashes = await Promise.all(
+  const uploadResults = await Promise.all(
     files.map((file) => {
       return IpfsClient().upload(file);
     }),
   );
-  setLocalState(IpfsHashes);
-  toast.dismiss();
-  success();
+  if (uploadResults.every(isSuccessfulUpload)) {
+    setLocalState(uploadResults.map((result) => result.hash));
+    toast.dismiss();
+    success('Images successfully uploaded to IPFS');
+  } else if (uploadResults.every(isFailedUpload)) {
+    toast.dismiss();
+    uploadError(
+      `Uploads were unsuccessful with status ${uploadResults[0].status}: 
+      ${uploadResults[0].errorDetails}`,
+    );
+  } else {
+    const successfulUploads = uploadResults
+      .filter(isSuccessfulUpload)
+      .map((result) => {
+        return result.hash;
+      });
+    const unsuccessfulUploads = uploadResults.filter(isFailedUpload);
+    setLocalState(successfulUploads);
+    success(
+      `${successfulUploads.length} images were successfully upload to IPFS`,
+    );
+    uploadError(
+      `${successfulUploads.length} images were unsuccessfully uploaded to IPFS 
+      with status ${unsuccessfulUploads[0].status}: ${unsuccessfulUploads[0].errorDetails}`,
+    );
+  }
 }
 
 interface IpfsProps {
