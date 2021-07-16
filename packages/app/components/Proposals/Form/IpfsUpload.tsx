@@ -54,13 +54,9 @@ async function uploadMultipleFiles(
       ${uploadResults[0].errorDetails}`,
     );
   } else {
-    const successfulUploads = uploadResults
-      .filter(isSuccessfulUpload)
-      .map((result) => {
-        return result.hash;
-      });
+    const successfulUploads = uploadResults.filter(isSuccessfulUpload);
     const unsuccessfulUploads = uploadResults.filter(isFailedUpload);
-    setLocalState(successfulUploads);
+    setLocalState(successfulUploads.map((result) => result.hash));
     success(
       `${successfulUploads.length} images were successfully upload to IPFS`,
     );
