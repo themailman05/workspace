@@ -140,7 +140,7 @@ const videoUploading = (uploadProgress: number, fileType: string): boolean => {
   return uploadProgress > 0 && uploadProgress < 100 && fileType === 'video/*';
 };
 
-export default function IpfsUpload({
+const IpfsUpload: React.FC<IpfsProps> = ({
   stepName,
   localState,
   fileDescription,
@@ -149,7 +149,7 @@ export default function IpfsUpload({
   numMaxFiles,
   maxFileSizeMB,
   setLocalState,
-}: IpfsProps) {
+}) => {
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const {
@@ -250,4 +250,5 @@ export default function IpfsUpload({
       )}
     </div>
   );
-}
+};
+export default IpfsUpload
