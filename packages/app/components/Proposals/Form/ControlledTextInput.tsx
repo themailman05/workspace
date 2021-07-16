@@ -19,7 +19,6 @@ export default function ControlledTextInput({
   updateInput,
   inputIndex,
 }: ControlledTextInputProps): JSX.Element {
-  console.log('inputIndex', inputIndex);
   return (
     <>
       <div className="mt-1 relative rounded-md shadow-sm">
