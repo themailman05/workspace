@@ -6,7 +6,7 @@ import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
 import { DisplayVideo } from './DisplayFiles';
 
-const success = () => toast.success('Successful upload to IPFS');
+const success = (msg: string) => toast.success(msg);
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
@@ -16,10 +16,17 @@ export const uploadSingleFile = async (
   setUploadProgress?: (progress: number) => void,
 ) => {
   loading();
-  const hash = await IpfsClient().upload(files[0], setUploadProgress);
-  setVideo(hash);
-  toast.dismiss();
-  success();
+  const res = await IpfsClient().upload(files[0], setUploadProgress);
+  if (res.status === 200) {
+    setVideo(res.hash);
+    toast.dismiss();
+    success('Successful upload to IPFS');
+  } else {
+    toast.dismiss();
+    uploadError(
+      `Upload was unsuccessful with status ${res.status} as ${res.errorDetails}`,
+    );
+  }
 };
 
 async function uploadMultipleFiles(
