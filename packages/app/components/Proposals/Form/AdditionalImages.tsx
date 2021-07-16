@@ -59,7 +59,7 @@ export default function AdditionalImages({
           setLocalState={updateAdditionalImages}
           fileDescription={'Additional Images'}
           fileInstructions={
-            'The ideal image size and aspect ratio are 1200px X 675px and 16:9, respectively.'
+            'Images should be 1200px X 675px and 16:9, and less than 5mb'
           }
           fileType={'image/*'}
           numMaxFiles={4}

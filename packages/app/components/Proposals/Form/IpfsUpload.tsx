@@ -208,9 +208,8 @@ export default function IpfsUpload({
             ) : (
               <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
             )}
-
-            <span className="mt-2 block text-sm font-medium text-gray-900">
-              <div className="flex text-sm text-gray-600">
+            <span className="mt-2 block">
+              <div className="flex">
                 <label
                   htmlFor="file-upload"
                   className="pl-1 mt-2 block text-sm font-medium text-indigo-500"
@@ -221,7 +220,7 @@ export default function IpfsUpload({
                     name="file-upload"
                     type="file"
                     className="sr-only"
-                  />
+                  />{' '}
                 </label>
                 <p className="pl-1 mt-2 block text-sm font-medium text-gray-900">
                   or drag and drop {fileDescription.toLowerCase()}
@@ -229,8 +228,9 @@ export default function IpfsUpload({
               </div>
             </span>
           </button>
-
-          <p className="text-xs text-gray-500">{fileInstructions}</p>
+          <div className="mt-1 text-center">
+            <p className="text-xs text-gray-500">{fileInstructions}</p>
+          </div>
         </div>
       ) : (
         <></>
