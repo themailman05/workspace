@@ -1,9 +1,8 @@
-// FIXME: When was there ever an ElectronProps in that file?
-import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
 import { BeneficiaryApplication } from '@popcorn/utils';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';
+import { ElectionProps } from './BeneficiaryCardWithElectionData';
 
 interface VoteSliderProps {
   beneficiary: BeneficiaryApplication;
@@ -29,10 +28,15 @@ const VoteSlider: React.FC<VoteSliderProps> = ({
   });
 
   function handleSliderChange(value: number) {
-    if (electionProps.voiceCredits - electionProps.pendingVotes[electionProps.election.electionTerm].total <= 0) {
+    if (
+      electionProps.voiceCredits -
+        electionProps.pendingVotes[electionProps.election.electionTerm].total <=
+      0
+    ) {
       if (
-        electionProps.pendingVotes[electionProps.election.electionTerm].votes[beneficiary.beneficiaryAddress] >
-        value
+        electionProps.pendingVotes[electionProps.election.electionTerm].votes[
+          beneficiary.beneficiaryAddress
+        ] > value
       ) {
         setVotesAssignedByUser(value);
         electionProps.assignVotes(electionProps.election.electionTerm, {
