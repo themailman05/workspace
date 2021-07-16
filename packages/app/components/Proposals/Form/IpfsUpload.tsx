@@ -36,6 +36,7 @@ export const uploadSingleFile = async (
 async function uploadMultipleFiles(
   files: File[],
   setLocalState: (input: string[]) => void,
+  fileType: string,
 ) {
   loading();
   const uploadResults = await Promise.all(
@@ -46,7 +47,11 @@ async function uploadMultipleFiles(
   if (uploadResults.every(isSuccessfulUpload)) {
     setLocalState(uploadResults.map((result) => result.hash));
     toast.dismiss();
-    success('Images successfully uploaded to IPFS');
+    success(
+      `${
+        fileType === 'image/*' ? 'Images' : 'Files'
+      } successfully uploaded to IPFS`,
+    );
   } else if (uploadResults.every(isFailedUpload)) {
     toast.dismiss();
     uploadError(
@@ -58,11 +63,17 @@ async function uploadMultipleFiles(
     const unsuccessfulUploads = uploadResults.filter(isFailedUpload);
     setLocalState(successfulUploads.map((result) => result.hash));
     success(
-      `${successfulUploads.length} images were successfully upload to IPFS`,
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were successfully upload to IPFS`,
     );
     uploadError(
-      `${successfulUploads.length} images were unsuccessfully uploaded to IPFS 
-      with status ${unsuccessfulUploads[0].status}: ${unsuccessfulUploads[0].errorDetails}`,
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were unsuccessfully uploaded to IPFS 
+      with status ${unsuccessfulUploads[0].status}: ${
+        unsuccessfulUploads[0].errorDetails
+      }`,
     );
   }
 }
@@ -129,7 +140,7 @@ export default function IpfsUpload({
         } else if (fileType === 'video/*') {
           uploadSingleFile(acceptedFiles, setLocalState, setUploadProgress);
         } else {
-          uploadMultipleFiles(acceptedFiles, setLocalState);
+          uploadMultipleFiles(acceptedFiles, setLocalState, fileType);
         }
       }
       setFiles(
