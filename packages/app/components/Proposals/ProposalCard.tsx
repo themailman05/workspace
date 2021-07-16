@@ -1,5 +1,5 @@
-import CardBody from 'components/CommonComponents/CardBody';
 import { Proposal, ProposalType } from '@popcorn/utils';
+import CardBody from 'components/CommonComponents/CardBody';
 import Link from 'next/link';
 import VotingInformation from './Voting/VotingInformation';
 
@@ -27,7 +27,7 @@ export default function ProposalCard({
       >
         <a>
           <CardBody
-            imgUrl={`${process.env.IPFS_URL}${proposal.application.files.profileImage}`}
+            imgUrl={`${process.env.IPFS_URL}${proposal.application.files.profileImage?.image}`}
             name={proposal?.application.organizationName}
             missionStatement={proposal?.application.missionStatement}
           />

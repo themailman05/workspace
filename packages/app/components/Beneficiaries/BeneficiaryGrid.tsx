@@ -2,7 +2,6 @@ import { BeneficiaryApplication } from '@popcorn/utils';
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { useState } from 'react';
-import * as Icon from 'react-feather';
 import BeneficiaryCard from './BeneficiaryCard';
 
 interface BeneficiaryGridProps {
@@ -44,10 +43,7 @@ export default function BeneficiaryGrid({
               .includes(searchFilter.toLowerCase());
           })
           .map((beneficiary) => (
-            <BeneficiaryCard
-              key={beneficiary.beneficiaryAddress}
-              beneficiary={beneficiary}
-            />
+            <BeneficiaryCard {...beneficiary} />
           ))}
       </ul>
     </div>
