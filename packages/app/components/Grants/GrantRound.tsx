@@ -4,10 +4,11 @@ import {
   IpfsClient,
 } from '@popcorn/utils';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
-import BeneficiaryCard from 'components/Beneficiaries/BeneficiaryCard';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber, utils } from 'ethers';
 import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
+import BeneficiaryCardWithElectionData from './BeneficiaryCardWithElectionData';
+
 import { useContext, useEffect, useRef, useState } from 'react';
 interface IGrantRound {
   voiceCredits: number;
@@ -90,7 +91,7 @@ export default function GrantRound({
       className="mb-16 w-full flex flex-row flex-wrap items-center"
     >
       {beneficiariesWithMetadata?.map((beneficiary) => (
-        <BeneficiaryCard
+        <BeneficiaryCardWithElectionData
           key={beneficiary.beneficiaryAddress}
           electionProps={{
             election: election,
