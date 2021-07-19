@@ -58,4 +58,4 @@ const ControlledTextInput: React.FC<ControlledTextInputProps> = ({
     </>
   );
 };
-export default ControlledTextInput
+export default ControlledTextInput;

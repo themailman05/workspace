@@ -8,7 +8,7 @@ export enum Gas {
 }
 
 export interface GasSliderProps {
-  setGas: any
+  setGas: any;
 }
 
 const GasSlider: React.FC<GasSliderProps> = ({ setGas }) => {
@@ -66,4 +66,4 @@ const GasSlider: React.FC<GasSliderProps> = ({ setGas }) => {
     </>
   );
 };
-export default GasSlider
+export default GasSlider;

@@ -50,4 +50,4 @@ const GrantFunded: React.FC<GrantFundedProps> = ({
     </span>
   );
 };
-export default GrantFunded
+export default GrantFunded;

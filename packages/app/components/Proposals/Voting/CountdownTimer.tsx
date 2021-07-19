@@ -37,7 +37,11 @@ const CountdownTimer: React.FC<Proposal> = (proposal) => {
   return (
     <div className="grid my-2 justify-items-stretch">
       <p
-        title={proposal?.stageDeadline.toLocaleDateString() + " " + proposal?.stageDeadline.toLocaleTimeString()}
+        title={
+          proposal?.stageDeadline.toLocaleDateString() +
+          ' ' +
+          proposal?.stageDeadline.toLocaleTimeString()
+        }
         className="justify-self-center mt-1 text-l text-gray-500"
       >
         {timeLeft}
@@ -45,4 +49,4 @@ const CountdownTimer: React.FC<Proposal> = (proposal) => {
     </div>
   );
 };
-export default CountdownTimer
+export default CountdownTimer;

@@ -1,30 +1,28 @@
-import { useContext, useEffect, useState } from 'react';
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
+import {
+  BeneficiaryGovernanceAdapter,
+  IpfsClient,
+  Proposal,
+  ProposalType,
+  Status,
+} from '@popcorn/utils';
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
 import { store } from 'context/store';
-import ProposalCard from './ProposalCard';
 import { ContractsContext } from 'context/Web3/contracts';
-import {
-  Proposal,
-  ProposalType,
-  Status,
-  IpfsClient,
-  BeneficiaryGovernanceAdapter,
-} from '@popcorn/utils';
+import { useContext, useEffect, useState } from 'react';
+import ProposalCard from './ProposalCard';
 import {
   ProposalStageExplanations,
   TakedownStageExplanations,
 } from './StageExplanations';
 
 export interface ProposalGridProps {
-    proposalType: ProposalType
+  proposalType: ProposalType;
 }
 
-const ProposalGrid: React.FC<ProposalGridProps> = ({
-  proposalType,
-}) => {
+const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
@@ -156,4 +154,4 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({
     </div>
   );
 };
-export default ProposalGrid
+export default ProposalGrid;

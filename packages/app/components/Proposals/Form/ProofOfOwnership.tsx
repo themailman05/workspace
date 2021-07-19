@@ -1,8 +1,8 @@
-import React from 'react';
 import { FormStepProps } from 'pages/proposals/propose';
-import ControlledTextInput from './ControlledTextInput';
+import React from 'react';
 import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
+import ControlledTextInput from './ControlledTextInput';
 
 const ProofOfOwnership: React.FC<FormStepProps> = ({
   form,
@@ -22,7 +22,7 @@ const ProofOfOwnership: React.FC<FormStepProps> = ({
     visible && (
       <div className="mx-auto content-center justify-items-center px-10">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-        {navigation.currentStep} - Proof of ownership
+          {navigation.currentStep} - Proof of ownership
         </h2>
         <label
           htmlFor="email"
@@ -46,4 +46,4 @@ const ProofOfOwnership: React.FC<FormStepProps> = ({
     )
   );
 };
-export default ProofOfOwnership
+export default ProofOfOwnership;

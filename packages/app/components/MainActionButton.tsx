@@ -10,14 +10,14 @@ const MainActionButton: React.FC<MainActionButtonProps> = ({
   disabled = false,
 }) => {
   return (
-      <button
-          type="button"
-          className="button button-primary w-full"
-          onClick={handleClick}
-          disabled={disabled}
-      >
-        {label}
-      </button>
+    <button
+      type="button"
+      className="button button-primary w-full"
+      onClick={handleClick}
+      disabled={disabled}
+    >
+      {label}
+    </button>
   );
 };
-export default MainActionButton
+export default MainActionButton;

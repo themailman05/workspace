@@ -57,4 +57,4 @@ const HeaderImage: React.FC<FormStepProps> = ({
     )
   );
 };
-export default HeaderImage
+export default HeaderImage;

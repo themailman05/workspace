@@ -9,15 +9,15 @@ const ProgressBar: React.FC<ProgressbarProps> = ({
   progressColor = 'bg-gray-500',
   height = 'h-4',
 }) => {
-    return (
-        <div className={`w-full bg-gray-200 rounded ${height}`}>
-            <div
-                className={`h-full rounded ${progressColor}`}
-                style={{
-                    width: `${progress.toFixed(2)}%`,
-                }}
-                />
-        </div>
-    );
+  return (
+    <div className={`w-full bg-gray-200 rounded ${height}`}>
+      <div
+        className={`h-full rounded ${progressColor}`}
+        style={{
+          width: `${progress.toFixed(2)}%`,
+        }}
+      />
+    </div>
+  );
 };
-export default ProgressBar
+export default ProgressBar;

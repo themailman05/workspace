@@ -38,4 +38,4 @@ const FilterGrantRounds: React.FC<FilterGrantRoundsProps> = ({
     </span>
   );
 };
-export default FilterGrantRounds
+export default FilterGrantRounds;

@@ -143,4 +143,4 @@ const SocialMedia: React.FC<FormStepProps> = ({
     )
   );
 };
-export default SocialMedia
+export default SocialMedia;

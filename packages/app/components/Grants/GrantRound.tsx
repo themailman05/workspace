@@ -7,9 +7,9 @@ import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber, utils } from 'ethers';
 import { PendingVotes, Vote, Votes } from 'pages/grant-elections/[type]';
+import { useContext, useEffect, useRef, useState } from 'react';
 import BeneficiaryCardWithElectionData from './BeneficiaryCardWithElectionData';
 
-import { useContext, useEffect, useRef, useState } from 'react';
 interface GrantRoundProps {
   voiceCredits: number;
   votes?: Vote[];
@@ -108,4 +108,4 @@ const GrantRound: React.FC<GrantRoundProps> = ({
     </div>
   );
 };
-export default GrantRound
+export default GrantRound;

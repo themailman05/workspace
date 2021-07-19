@@ -94,4 +94,4 @@ const VoteSlider: React.FC<VoteSliderProps> = ({
     </>
   );
 };
-export default VoteSlider
+export default VoteSlider;

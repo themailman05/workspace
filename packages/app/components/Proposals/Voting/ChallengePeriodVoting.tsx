@@ -7,7 +7,6 @@ import { ContractsContext } from 'context/Web3/contracts';
 import { useContext } from 'react';
 import CountdownTimer from './CountdownTimer';
 
-
 const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
@@ -88,4 +87,4 @@ const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
     </div>
   );
 };
-export default ChallengePeriodVoting
+export default ChallengePeriodVoting;

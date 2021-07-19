@@ -50,4 +50,4 @@ const BeneficiaryGrid: React.FC<BeneficiaryGridProps> = ({
   );
 };
 
-export default BeneficiaryGrid
+export default BeneficiaryGrid;

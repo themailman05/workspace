@@ -1,5 +1,5 @@
-import { PendingVotes } from '../../../pages/grant-elections/[type]';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import { PendingVotes } from '../../../pages/grant-elections/[type]';
 
 interface VoteCounterProps {
   election: ElectionMetadata;
@@ -26,4 +26,4 @@ const VoteCounter: React.FC<VoteCounterProps> = ({
     </div>
   );
 };
-export default VoteCounter
+export default VoteCounter;
