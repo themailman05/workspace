@@ -95,4 +95,4 @@ const AdditionalImages: React.FC<FormStepProps> = ({
     )
   );
 };
-export default AdditionalImages
+export default AdditionalImages;

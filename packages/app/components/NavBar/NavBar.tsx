@@ -1,11 +1,10 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
-import { connectors } from '../../context/Web3/connectors';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import { connectors } from '../../context/Web3/connectors';
 import NavbarLink from './NavbarLinks';
-import { GrantsMenu } from './GrantsMenu';
 import { ProposalsMenu } from './ProposalsMenu';
 
 const Navbar: React.FC = () => {
@@ -34,12 +33,12 @@ const Navbar: React.FC = () => {
                 src="/images/popcorn_v1_rainbow_bg.png"
                 alt="Logo"
                 className="w-8 h-8"
-                />
+              />
             </a>
           </Link>
         </div>
         <ul className="flex flex-row items-center mx-auto space-x-16">
-          <li/>
+          <li />
           <li>
             <NavbarLink
               label="Staking"
@@ -80,11 +79,11 @@ const Navbar: React.FC = () => {
         >
           <p>Connect{account && 'ed'}</p>
           {account && (
-            <div className="w-2 h-2 bg-green-400 rounded-full ml-2"/>
+            <div className="w-2 h-2 bg-green-400 rounded-full ml-2" />
           )}
         </button>
       </nav>
     </>
   );
 };
-export default Navbar
+export default Navbar;

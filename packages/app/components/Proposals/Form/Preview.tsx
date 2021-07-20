@@ -18,11 +18,7 @@ const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-const Preview: React.FC<FormStepProps> = ({
-  form,
-  navigation,
-  visible,
-}) => {
+const Preview: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
   const context = useWeb3React<Web3Provider>();
 
   const { dispatch } = useContext(store);
@@ -160,4 +156,4 @@ const Preview: React.FC<FormStepProps> = ({
     )
   );
 };
-export default Preview
+export default Preview;

@@ -1,7 +1,7 @@
-import { store } from '../context/store';
 import { useRouter } from 'next/router';
 import React, { useContext, useEffect } from 'react';
 import { setDualActionWideModal } from '../context/actions';
+import { store } from '../context/store';
 
 export const Debug: React.FC = () => {
   const { dispatch } = useContext(store);

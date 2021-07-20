@@ -174,4 +174,4 @@ const IpfsUpload: React.FC<IpfsProps> = ({
     </div>
   );
 };
-export default IpfsUpload
+export default IpfsUpload;

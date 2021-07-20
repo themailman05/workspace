@@ -42,4 +42,4 @@ const ContactEmail: React.FC<FormStepProps> = ({
     )
   );
 };
-export default ContactEmail
+export default ContactEmail;

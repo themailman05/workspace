@@ -90,4 +90,4 @@ const ProfileImage: React.FC<FormStepProps> = ({
     )
   );
 };
-export default ProfileImage
+export default ProfileImage;

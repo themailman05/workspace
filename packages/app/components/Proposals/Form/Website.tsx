@@ -4,11 +4,7 @@ import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
 import ControlledTextInput from './ControlledTextInput';
 
-const Website: React.FC<FormStepProps> = ({
-  form,
-  navigation,
-  visible,
-}) => {
+const Website: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
   const [formData, setFormData] = form;
 
   function isValid(website): boolean {
@@ -39,4 +35,4 @@ const Website: React.FC<FormStepProps> = ({
     )
   );
 };
-export default Website
+export default Website;

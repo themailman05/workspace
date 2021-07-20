@@ -9,7 +9,10 @@ interface GrantsMenuProps {
   visible: boolean;
   toggleSubMenu: Function;
 }
-export const GrantsMenu: React.FC<GrantsMenuProps> = ({ visible, toggleSubMenu }) => {
+export const GrantsMenu: React.FC<GrantsMenuProps> = ({
+  visible,
+  toggleSubMenu,
+}) => {
   const router = useRouter();
   if (!visible) return <></>;
   return (

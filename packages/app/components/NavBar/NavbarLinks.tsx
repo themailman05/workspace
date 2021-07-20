@@ -49,4 +49,4 @@ const NavbarLink: React.FC<NavbarLinkProps> = ({
     </Link>
   );
 };
-export default NavbarLink
+export default NavbarLink;

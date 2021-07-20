@@ -68,4 +68,4 @@ const TriggerTakedownProposal: React.FC = () => {
     </footer>
   );
 };
-export default TriggerTakedownProposal
+export default TriggerTakedownProposal;

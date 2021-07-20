@@ -1,6 +1,5 @@
 import { IGrantRoundFilter } from 'pages/grant-elections/[type]';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GrantRoundLink, { IGrantRound } from './GrantRoundLink';
 
 interface YearSpoilerProps {
@@ -61,4 +60,4 @@ const YearSpoiler: React.FC<YearSpoilerProps> = ({
     </div>
   );
 };
-export default YearSpoiler
+export default YearSpoiler;

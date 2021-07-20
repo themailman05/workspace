@@ -123,4 +123,4 @@ const SocialMediaTable: React.FC<SocialMediaTableProps> = ({ form }) => {
     </div>
   );
 };
-export default SocialMediaTable
+export default SocialMediaTable;

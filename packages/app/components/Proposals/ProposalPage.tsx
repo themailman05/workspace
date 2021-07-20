@@ -21,7 +21,6 @@ const getTitle = (proposal: Proposal): string => {
   }`;
 };
 
-
 const ProposalPage: React.FC = () => {
   const { contracts } = useContext(ContractsContext);
   const router = useRouter();
@@ -67,4 +66,4 @@ const ProposalPage: React.FC = () => {
     </div>
   );
 };
-export default ProposalPage
+export default ProposalPage;

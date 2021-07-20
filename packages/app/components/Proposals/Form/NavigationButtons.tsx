@@ -6,9 +6,7 @@ interface NavigationButtonProps {
   navigation: Navigation;
 }
 
-const NavigationButtons: React.FC<NavigationButtonProps> = ({
-  navigation,
-}) => {
+const NavigationButtons: React.FC<NavigationButtonProps> = ({ navigation }) => {
   const { currentStep, setCurrentStep, stepLimit, numSteps } = navigation;
   const progressPercentage =
     currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / numSteps);
@@ -55,4 +53,4 @@ const NavigationButtons: React.FC<NavigationButtonProps> = ({
     </footer>
   );
 };
-export default NavigationButtons
+export default NavigationButtons;

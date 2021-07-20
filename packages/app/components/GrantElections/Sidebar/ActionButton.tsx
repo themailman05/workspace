@@ -1,6 +1,6 @@
-import { useRouter } from 'next/router';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
-import React from "react";
+import { useRouter } from 'next/router';
+import React from 'react';
 
 interface SidebarActionButtonProps {
   election: ElectionMetadata;
@@ -46,4 +46,4 @@ const SidebarActionButton: React.FC<SidebarActionButtonProps> = ({
     );
   }
 };
-export default SidebarActionButton
+export default SidebarActionButton;

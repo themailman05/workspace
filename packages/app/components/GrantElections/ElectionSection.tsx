@@ -1,13 +1,13 @@
-import GrantRound from '../Grants/GrantRound';
-import Sidebar from './Sidebar/Sidebar';
+import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import {
   IGrantRoundFilter,
   PendingVotes,
   Vote,
 } from 'pages/grant-elections/[type]';
 import { Dispatch } from 'react';
-import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import createElectionName from 'utils/createElectionName';
+import GrantRound from '../Grants/GrantRound';
+import Sidebar from './Sidebar/Sidebar';
 
 interface ElectionSectionProps {
   id: number;
@@ -82,4 +82,4 @@ const ElectionSection: React.FC<ElectionSectionProps> = ({
     </div>
   );
 };
-export default ElectionSection
+export default ElectionSection;
