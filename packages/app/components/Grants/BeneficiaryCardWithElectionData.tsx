@@ -2,6 +2,7 @@ import { BeneficiaryApplication } from '@popcorn/utils';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
+import truncate from 'utils/truncate';
 import GrantElectionAdapter from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
@@ -20,16 +21,6 @@ interface IBeneficiaryCard {
   beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;
 }
-
-const truncate = (input: string): string => {
-  const maxLength = 180;
-  const trimmedInput = input.substr(0, maxLength);
-  const trimmedOnCompleteWord = trimmedInput.substr(
-    0,
-    Math.min(trimmedInput.length, trimmedInput.lastIndexOf(' ')),
-  );
-  return trimmedOnCompleteWord + ' ...';
-};
 
 export default function BeneficiaryCardWithElectionData({
   electionProps,
@@ -69,7 +60,7 @@ export default function BeneficiaryCardWithElectionData({
           >
             <a>
               <p className="text-sm text-gray-700">
-                {truncate(beneficiary?.missionStatement)}
+                {truncate(beneficiary?.missionStatement, 180)}
               </p>
             </a>
           </Link>
