@@ -1,11 +1,11 @@
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import Link from 'next/link';
+import { Check } from 'react-feather';
+import { PendingVotes } from '../../../pages/grant-elections/[type]';
 import ActionButton from './ActionButton';
 import VoteCounter from './VoteCounter';
-import { PendingVotes } from '../../../pages/grant-elections/[type]';
-import { Check } from 'react-feather';
-import Link from 'next/link';
 
-interface ISideBar {
+interface SidebarProps {
   election?: ElectionMetadata;
   pendingVotes: PendingVotes;
   voiceCredits: number;
@@ -17,7 +17,7 @@ interface ISideBar {
   alreadyRegistered: boolean;
 }
 
-export default function Sidebar({
+const Sidebar: React.FC<SidebarProps> = ({
   election,
   pendingVotes,
   voiceCredits,
@@ -25,7 +25,7 @@ export default function Sidebar({
   connectWallet,
   submitVotes,
   alreadyRegistered,
-}: ISideBar): JSX.Element {
+}) => {
   return (
     <div className="w-9/12 mx-auto">
       {election && 'registration' == election.electionStateStringShort && (
@@ -164,21 +164,22 @@ export default function Sidebar({
         </>
       )}
       <ul className="mt-4">
-        {/** 
-        {grantYears?.map((grantYear, i) => (
-          <YearSpoiler
-            key={grantYear}
-            year={grantYear}
-            grantRounds={grantRounds.filter(
-              (grantRound) => grantRound.year === grantYear,
-            )}
-            scrollToGrantRound={scrollToGrantRound}
-            opened={i === 0}
-            grantRoundFilter={grantRoundFilter}
-          />
-        ))}
-            **/}
+        {/**
+           {grantYears?.map((grantYear, i) => (
+            <YearSpoiler
+              key={grantYear}
+              year={grantYear}
+              grantRounds={grantRounds.filter(
+                (grantRound) => grantRound.year === grantYear,
+              )}
+              scrollToGrantRound={scrollToGrantRound}
+              opened={i === 0}
+              grantRoundFilter={grantRoundFilter}
+            />
+          ))}
+           **/}
       </ul>
     </div>
   );
-}
+};
+export default Sidebar;

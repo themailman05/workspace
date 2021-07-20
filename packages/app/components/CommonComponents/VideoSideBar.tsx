@@ -1,8 +1,10 @@
 import { BeneficiaryApplication } from '@popcorn/utils';
 
-export default function VideoSideBar(
-  beneficiary: BeneficiaryApplication,
-): JSX.Element {
+export interface VideoSideBarProps {
+  beneficiary: BeneficiaryApplication;
+}
+
+const VideoSideBar: React.FC<VideoSideBarProps> = ({ beneficiary }) => {
   return (
     <div>
       <h3 className="text-lg leading-6 font-medium text-gray-900">Video</h3>
@@ -15,4 +17,5 @@ export default function VideoSideBar(
       </video>
     </div>
   );
-}
+};
+export default VideoSideBar;

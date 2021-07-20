@@ -1,7 +1,7 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useEffect, useRef, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { CheckIcon } from '@heroicons/react/outline';
+import { Fragment, useEffect, useRef, useState } from 'react';
 export interface DualActionWideModalProps {
   title: string;
   content: React.ReactElement | string;
@@ -19,14 +19,14 @@ export const DefaultDualActionWideModalProps = {
   onConfirm: { label: '', onClick: () => {} },
 };
 
-export default function Example({
+const Example: React.FC<DualActionWideModalProps> = ({
   content,
   title,
   visible,
   progress,
   onConfirm,
   onDismiss,
-}: DualActionWideModalProps) {
+}) => {
   const [open, setOpen] = useState(visible);
   const cancelButtonRef = useRef();
 
@@ -131,4 +131,5 @@ export default function Example({
       </Dialog>
     </Transition.Root>
   );
-}
+};
+export default Example;

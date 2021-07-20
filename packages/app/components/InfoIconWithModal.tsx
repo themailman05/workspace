@@ -13,7 +13,6 @@ export const InfoIconWithModal: React.FC<InfoIconWithModalProps> = ({
   content,
   children,
 }) => {
-
   const { dispatch } = useContext(store);
 
   return (
