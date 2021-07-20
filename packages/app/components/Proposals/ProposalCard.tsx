@@ -8,10 +8,10 @@ export interface ProposalCardProps {
   proposalType: ProposalType;
 }
 
-export default function ProposalCard({
+const ProposalCard: React.FC<ProposalCardProps> = ({
   proposal,
   proposalType = 0,
-}: ProposalCardProps): JSX.Element {
+}) => {
   return (
     <div
       key={proposal?.id}
@@ -44,4 +44,5 @@ export default function ProposalCard({
       </Link>
     </div>
   );
-}
+};
+export default ProposalCard;

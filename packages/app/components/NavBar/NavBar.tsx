@@ -1,14 +1,13 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { useWeb3React } from '@web3-react/core';
-import { connectors } from '../../context/Web3/connectors';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';
+import { connectors } from '../../context/Web3/connectors';
 import NavbarLink from './NavbarLinks';
-import { GrantsMenu } from './GrantsMenu';
 import { ProposalsMenu } from './ProposalsMenu';
 
-export default function Navbar(): JSX.Element {
+const Navbar: React.FC = () => {
   const context = useWeb3React<Web3Provider>();
   const {
     connector,
@@ -34,12 +33,12 @@ export default function Navbar(): JSX.Element {
                 src="/images/popcorn_v1_rainbow_bg.png"
                 alt="Logo"
                 className="w-8 h-8"
-              ></img>
+              />
             </a>
           </Link>
         </div>
         <ul className="flex flex-row items-center mx-auto space-x-16">
-          <li></li>
+          <li />
           <li>
             <NavbarLink
               label="Staking"
@@ -80,10 +79,11 @@ export default function Navbar(): JSX.Element {
         >
           <p>Connect{account && 'ed'}</p>
           {account && (
-            <div className="w-2 h-2 bg-green-400 rounded-full ml-2"></div>
+            <div className="w-2 h-2 bg-green-400 rounded-full ml-2" />
           )}
         </button>
       </nav>
     </>
   );
-}
+};
+export default Navbar;

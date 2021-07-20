@@ -12,11 +12,7 @@ import {
 import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import { InfoIconWithModal } from './../../InfoIconWithModal';
 
-export default function Intro({
-  form,
-  navigation,
-  visible,
-}: FormStepProps): JSX.Element {
+const Intro: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
   const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
 
@@ -55,7 +51,7 @@ export default function Intro({
             title="What are POP tokens?"
             content="POP tokens are used by PopcornDAO - a decentralized autonomous organization. POP token holders
                   are able to submit and vote on proposals, grants, smart contract parameters and generally influence the direction of Popcorn."
-          ></InfoIconWithModal>
+          />
         </div>
       ),
       description:
@@ -212,4 +208,5 @@ export default function Intro({
       </main>
     )
   );
-}
+};
+export default Intro;

@@ -2,9 +2,11 @@ import { BeneficiaryApplication } from '@popcorn/utils';
 import CardBody from 'components/CommonComponents/CardBody';
 import Link from 'next/link';
 
-export default function BeneficiaryCard(
-  beneficiary: BeneficiaryApplication,
-): JSX.Element {
+interface BeneficiaryCardProps {
+  beneficiary: BeneficiaryApplication;
+}
+
+const BeneficiaryCard: React.FC<BeneficiaryCardProps> = ({ beneficiary }) => {
   return (
     <div
       key={beneficiary.beneficiaryAddress}
@@ -21,4 +23,5 @@ export default function BeneficiaryCard(
       </Link>
     </div>
   );
-}
+};
+export default BeneficiaryCard;

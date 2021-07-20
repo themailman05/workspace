@@ -4,11 +4,11 @@ interface ProgressbarProps {
   height?: string;
 }
 
-export default function ProgressBar({
+const ProgressBar: React.FC<ProgressbarProps> = ({
   progress,
   progressColor = 'bg-gray-500',
   height = 'h-4',
-}: ProgressbarProps): JSX.Element {
+}) => {
   return (
     <div className={`w-full bg-gray-200 rounded ${height}`}>
       <div
@@ -16,7 +16,8 @@ export default function ProgressBar({
         style={{
           width: `${progress.toFixed(2)}%`,
         }}
-      ></div>
+      />
     </div>
   );
-}
+};
+export default ProgressBar;

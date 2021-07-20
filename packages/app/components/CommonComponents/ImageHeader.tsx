@@ -1,12 +1,14 @@
 import { BeneficiaryApplication } from '@popcorn/utils';
 
-export default function ImageHeader({
-  beneficiary,
-  title,
-}: {
+export interface ImageHeaderProps {
   beneficiary: BeneficiaryApplication;
   title?: string;
-}): JSX.Element {
+}
+
+const ImageHeader: React.FC<ImageHeaderProps> = ({
+  beneficiary,
+  title,
+}) => {
   return (
     <div>
       <div>
@@ -41,4 +43,5 @@ export default function ImageHeader({
       </div>
     </div>
   );
-}
+};
+export default ImageHeader;
