@@ -36,7 +36,7 @@ export default function ContactEmail({
           isValid={isValid}
         />
         {inputExists(formData.organizationName) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
