@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./lib/AffiliateToken.sol";
 import "./Defended.sol";
 
+
 interface IERC20Metadata is IERC20 {
   function name() external view returns (string memory);
 
