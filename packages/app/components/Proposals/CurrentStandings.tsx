@@ -1,13 +1,12 @@
-import Divider from 'components/CommonComponents/Divider';
-import ProgressBar from 'components/ProgressBar';
-
+import { Proposal } from '@popcorn/utils';
 import {
   bigNumberToNumber,
   formatAndRoundBigNumber,
 } from '@popcorn/utils/formatBigNumber';
-import { Proposal } from '@popcorn/utils';
-export default function CurrentStandings(proposal: Proposal): JSX.Element {
-  
+import Divider from 'components/CommonComponents/Divider';
+import ProgressBar from 'components/ProgressBar';
+
+const CurrentStandings: React.FC<Proposal> = (proposal) => {
   return (
     <div className="content-center mx-48">
       <div className="grid my-2 justify-items-stretch">
@@ -81,4 +80,5 @@ export default function CurrentStandings(proposal: Proposal): JSX.Element {
       <Divider />
     </div>
   );
-}
+};
+export default CurrentStandings;

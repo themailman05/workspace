@@ -3,10 +3,7 @@ interface CardGridHeaderProps {
   subtitle: string;
 }
 
-export default function CardGridHeader({
-  title,
-  subtitle,
-}: CardGridHeaderProps): JSX.Element {
+const CardGridHeader: React.FC<CardGridHeaderProps> = ({ title, subtitle }) => {
   return (
     <div className="bg-gray-900">
       <div className="max-w-7xl mx-auto py-16 px-4 sm:py-24 sm:px-6 lg:px-8">
@@ -19,4 +16,5 @@ export default function CardGridHeader({
       </div>
     </div>
   );
-}
+};
+export default CardGridHeader;

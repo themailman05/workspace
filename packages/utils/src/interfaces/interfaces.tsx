@@ -14,9 +14,9 @@ export enum ProposalType {
   Takedown,
 }
 
-export interface BeneficiaryImage{
-  image:string;
-  description:string;
+export interface BeneficiaryImage {
+  image: string;
+  description: string;
 }
 
 export interface BeneficiaryApplication {
@@ -29,6 +29,7 @@ export interface BeneficiaryApplication {
     headerImage?: BeneficiaryImage;
     impactReports?: string[];
     additionalImages?: BeneficiaryImage[];
+    video: string;
   };
   links: {
     twitterUrl?: string;
@@ -37,10 +38,10 @@ export interface BeneficiaryApplication {
     instagramUrl?: string;
     githubUrl?: string;
     proofOfOwnership?: string;
-    contactEmail:string;
-    website:string;
+    contactEmail: string;
+    website: string;
   };
-  version:string;
+  version: string;
 }
 
 export interface Proposal {

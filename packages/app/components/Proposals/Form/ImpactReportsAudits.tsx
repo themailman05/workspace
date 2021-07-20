@@ -3,11 +3,11 @@ import { DisplayPDFs } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function HeaderImage({
+const HeaderImage: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps) {
+}) => {
   const [formData, setFormData] = form;
 
   function updateImpactReports(impactReports: string[]): void {
@@ -37,12 +37,12 @@ export default function HeaderImage({
           stepName={`${navigation.currentStep} - Upload Impact Reports`}
           localState={formData?.files?.impactReports}
           setLocalState={updateImpactReports}
-          imageDescription={'Impact Reports'}
-          imageInstructions={
-            'Impact report uploads are limited to up to a maximum of four PDFs, each with a maximum size of 5mb.'
-          }
+          fileDescription={'Impact Reports'}
+          fileInstructions={`Impact report uploads are limited to up to a maximum of four PDFs,
+            each with a maximum size of 5mb.`}
           fileType={'.pdf'}
           numMaxFiles={4}
+          maxFileSizeMB={10}
         />
         <div className="mx-auto">
           <DisplayPDFs localState={formData?.files?.impactReports} />
@@ -56,4 +56,5 @@ export default function HeaderImage({
       </>
     )
   );
-}
+};
+export default HeaderImage;

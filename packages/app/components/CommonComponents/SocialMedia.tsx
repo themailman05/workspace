@@ -1,7 +1,13 @@
 import { BeneficiaryApplication } from '@popcorn/utils';
 import * as Icon from 'react-feather';
 
-function getSocialMediaIcon(platform: string): JSX.Element {
+interface GetSocialMediaIconProps {
+  platform: string;
+}
+
+const getSocialMediaIcon: React.FC<GetSocialMediaIconProps> = ({
+  platform,
+}) => {
   switch (platform) {
     case 'twitter':
       return <Icon.Twitter aria-hidden="true" />;
@@ -18,15 +24,14 @@ function getSocialMediaIcon(platform: string): JSX.Element {
     case 'email':
       return <Icon.Mail aria-hidden="true" />;
   }
-}
+};
 
-const SocialMediaIcon = ({
-  url,
-  platform,
-}: {
+interface SocialMediaIconProps {
   url: string;
   platform: string;
-}): JSX.Element => {
+}
+
+const SocialMediaIcon: React.FC<SocialMediaIconProps> = ({ url, platform }) => {
   return (
     url !== '' && (
       <a
@@ -34,15 +39,17 @@ const SocialMediaIcon = ({
         target="_blank"
         className="text-gray-400 hover:text-gray-500"
       >
-        {getSocialMediaIcon(platform)}
+        {getSocialMediaIcon({ platform })}
       </a>
     )
   );
 };
 
-export default function SocialMedia(
-  beneficiary: BeneficiaryApplication,
-): JSX.Element {
+export interface SocialMediaProps {
+  beneficiary: BeneficiaryApplication;
+}
+
+const SocialMedia: React.FC<SocialMediaProps> = ({ beneficiary }) => {
   return (
     <>
       <div className="flex space-x-6">
@@ -77,4 +84,5 @@ export default function SocialMedia(
       </div>
     </>
   );
-}
+};
+export default SocialMedia;

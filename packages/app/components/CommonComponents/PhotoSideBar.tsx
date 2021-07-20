@@ -1,10 +1,12 @@
 import { BeneficiaryApplication } from '@popcorn/utils';
 
-export default function PhotoSideBar(
-  beneficiary: BeneficiaryApplication,
-): JSX.Element {
+export interface PhotoSideBarProps {
+  beneficiary: BeneficiaryApplication;
+}
+
+const PhotoSideBar: React.FC<PhotoSideBarProps> = ({ beneficiary }) => {
   return (
-    <div className="col-span-2 space-y-4">
+    <div>
       <h3 className="text-lg leading-6 font-medium text-gray-900">Photos</h3>
       {beneficiary?.files?.additionalImages?.map((image) => {
         return (
@@ -17,4 +19,5 @@ export default function PhotoSideBar(
       })}
     </div>
   );
-}
+};
+export default PhotoSideBar;

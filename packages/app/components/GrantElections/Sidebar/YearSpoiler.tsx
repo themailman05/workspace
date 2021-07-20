@@ -1,9 +1,8 @@
 import { IGrantRoundFilter } from 'pages/grant-elections/[type]';
-import { useEffect } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GrantRoundLink, { IGrantRound } from './GrantRoundLink';
 
-interface IYearSpoiler {
+interface YearSpoilerProps {
   year: number;
   grantRounds: IGrantRound[];
   scrollToGrantRound: (grantId: number) => void;
@@ -11,13 +10,13 @@ interface IYearSpoiler {
   opened?: boolean;
 }
 
-export default function YearSpoiler({
+const YearSpoiler: React.FC<YearSpoilerProps> = ({
   year,
   grantRounds,
   scrollToGrantRound,
   grantRoundFilter,
   opened = false,
-}: IYearSpoiler): JSX.Element {
+}) => {
   const [showGrants, setGrantVisibility] = useState<boolean>(false);
 
   useEffect(() => {
@@ -60,4 +59,5 @@ export default function YearSpoiler({
       )}
     </div>
   );
-}
+};
+export default YearSpoiler;

@@ -1,108 +1,122 @@
+import { IpfsClient } from '@popcorn/utils';
+import { UploadResult } from '@popcorn/utils/IpfsClient/IpfsClient';
+import ProgressBar from 'components/ProgressBar';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import toast from 'react-hot-toast';
 import * as Icon from 'react-feather';
+import toast from 'react-hot-toast';
+import { DisplayVideo } from './DisplayFiles';
 
-const FIVE_MB = 5 * 1000 * 1024;
-
-function imageSizeValidator(file) {
-  if (file.size > FIVE_MB) {
-    uploadError('File size is greater than 5mb limit');
-    return {
-      code: 'file-too-large',
-      message: `Size is larger than ${FIVE_MB} bytes`,
-    };
-  }
-  return null;
-}
-
-const success = () => toast.success('Successful upload to IPFS');
+const success = (msg: string) => toast.success(msg);
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-export const uploadImageToPinata = (
-  files,
-  setProfileImage: (input: string) => void,
+const isSuccessfulUpload = (res: UploadResult): boolean => res.status === 200;
+const isFailedUpload = (res: UploadResult): boolean => res.status !== 200;
+
+export const uploadSingleFile = async (
+  files: File[],
+  setVideo: (input: string | string[]) => void,
+  setUploadProgress?: (progress: number) => void,
 ) => {
-  var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  files.forEach((file) => {
-    var formdata = new FormData();
-    formdata.append('file', file, 'download.png');
-    loading();
-    fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers: myHeaders,
-      body: formdata,
-      redirect: 'follow',
-    })
-      .then((response) => response.text())
-      .then((result) => {
-        const hash = JSON.parse(result).IpfsHash;
-        setProfileImage(hash);
-        toast.dismiss();
-        success();
-      })
-      .catch((error) => {
-        uploadError('Error uploading to IPFS');
-      });
-  });
+  loading();
+  const res = await IpfsClient().upload(files[0], setUploadProgress);
+  if (isSuccessfulUpload(res)) {
+    setVideo(res.hash);
+    toast.dismiss();
+    success('Successful upload to IPFS');
+  } else {
+    toast.dismiss();
+    uploadError(
+      `Upload was unsuccessful with status ${res.status}. ${res.errorDetails}`,
+    );
+  }
 };
 
-function uploadMultipleImagesToPinata(
-  files,
+async function uploadMultipleFiles(
+  files: File[],
   setLocalState: (input: string[]) => void,
+  fileType: string,
 ) {
-  toast.dismiss();
-  var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  let newImageHashes = [];
-  files.forEach((file) => {
-    var formdata = new FormData();
-    formdata.append('file', file, 'download.png');
-    loading();
-    fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers: myHeaders,
-      body: formdata,
-      redirect: 'follow',
-    })
-      .then((response) => response.text())
-      .then((result) => {
-        const hash = JSON.parse(result).IpfsHash;
-        newImageHashes.push(hash);
-        setLocalState(newImageHashes);
-        toast.dismiss();
-        success();
-      })
-      .catch((error) => {
-        uploadError('Error uploading to IPFS');
-      });
-  });
+  loading();
+  const uploadResults = await Promise.all(
+    files.map((file) => {
+      return IpfsClient().upload(file);
+    }),
+  );
+  if (uploadResults.every(isSuccessfulUpload)) {
+    setLocalState(uploadResults.map((result) => result.hash));
+    toast.dismiss();
+    success(
+      `${
+        fileType === 'image/*' ? 'Images' : 'Files'
+      } successfully uploaded to IPFS`,
+    );
+  } else if (uploadResults.every(isFailedUpload)) {
+    toast.dismiss();
+    uploadError(
+      `Uploads were unsuccessful with status ${uploadResults[0].status}: 
+      ${uploadResults[0].errorDetails}`,
+    );
+  } else {
+    const successfulUploads = uploadResults.filter(isSuccessfulUpload);
+    const unsuccessfulUploads = uploadResults.filter(isFailedUpload);
+    setLocalState(successfulUploads.map((result) => result.hash));
+    success(
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were successfully upload to IPFS`,
+    );
+    uploadError(
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were unsuccessfully uploaded to IPFS 
+      with status ${unsuccessfulUploads[0].status}: ${
+        unsuccessfulUploads[0].errorDetails
+      }`,
+    );
+  }
 }
 
 interface IpfsProps {
   stepName: string;
   localState: string | string[];
-  imageDescription: string;
-  imageInstructions: string;
+  fileDescription: string;
+  fileInstructions: string;
   fileType: string;
+  maxFileSizeMB: number;
   numMaxFiles: number;
   setLocalState: (input: string | string[]) => void;
 }
 
-export default function IpfsUpload({
+const isValidFileSize = (file: File, maxFileSizeMB: number) => {
+  const maxFileSizeBytes = maxFileSizeMB * 1000 * 1024;
+  if (file.size > maxFileSizeBytes) {
+    uploadError(`File size is greater than ${maxFileSizeMB}mb limit`);
+    return {
+      code: 'file-too-large',
+      message: `File is larger than ${maxFileSizeMB} MB`,
+    };
+  }
+  return null;
+};
+
+const videoUploading = (uploadProgress: number, fileType: string): boolean => {
+  return uploadProgress > 0 && uploadProgress < 100 && fileType === 'video/*';
+};
+
+const IpfsUpload: React.FC<IpfsProps> = ({
   stepName,
   localState,
-  imageDescription,
-  imageInstructions,
+  fileDescription,
+  fileInstructions,
   fileType,
   numMaxFiles,
+  maxFileSizeMB,
   setLocalState,
-}: IpfsProps) {
+}) => {
   const [files, setFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   const {
     acceptedFiles,
     fileRejections,
@@ -114,18 +128,21 @@ export default function IpfsUpload({
   } = useDropzone({
     accept: fileType,
     maxFiles: numMaxFiles,
-    validator: imageSizeValidator,
+    validator: (file: File) => {
+      return isValidFileSize(file, maxFileSizeMB);
+    },
     onDrop: (acceptedFiles) => {
       if (fileRejections.length) {
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
-        if (numMaxFiles === 1) {
-          uploadImageToPinata(acceptedFiles, setLocalState);
+        if (numMaxFiles === 1 && fileType === 'image/*') {
+          uploadSingleFile(acceptedFiles, setLocalState);
+        } else if (fileType === 'video/*') {
+          uploadSingleFile(acceptedFiles, setLocalState, setUploadProgress);
         } else {
-          uploadMultipleImagesToPinata(acceptedFiles, setLocalState);
+          uploadMultipleFiles(acceptedFiles, setLocalState, fileType);
         }
       }
-
       setFiles(
         acceptedFiles.map((file) =>
           Object.assign(file, {
@@ -142,7 +159,8 @@ export default function IpfsUpload({
       <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
         {stepName}
       </h2>
-      {(!localState || localState.length === 0) && (
+      {(!localState || localState.length === 0) &&
+      !videoUploading(uploadProgress, fileType) ? (
         <div {...rootProps}>
           <input {...getInputProps()} />
           <div className="mt-8">
@@ -153,6 +171,7 @@ export default function IpfsUpload({
                 ) : (
                   <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
                 )}
+
                 <div className="flex text-sm text-gray-600">
                   <label
                     htmlFor="file-upload"
@@ -167,15 +186,33 @@ export default function IpfsUpload({
                     />
                   </label>
                   <p className="pl-1">
-                    or drag and drop {imageDescription.toLowerCase()}
+                    or drag and drop {fileDescription.toLowerCase()}
                   </p>
                 </div>
-                <p className="text-xs text-gray-500">{imageInstructions}</p>
+                <p className="text-xs text-gray-500">{fileInstructions}</p>
               </div>
             </div>
           </div>
         </div>
+      ) : (
+        <></>
+      )}
+      {videoUploading(uploadProgress, fileType) && (
+        <div className="grid my-2 justify-items-stretch">
+          <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
+            <ProgressBar
+              progress={uploadProgress}
+              progressColor={'bg-green-300'}
+            />
+          </span>
+        </div>
+      )}
+      {localState && fileType === 'video/*' ? (
+        <DisplayVideo localState={localState} />
+      ) : (
+        <> </>
       )}
     </div>
   );
-}
+};
+export default IpfsUpload;

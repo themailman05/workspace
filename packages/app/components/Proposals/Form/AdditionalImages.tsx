@@ -6,11 +6,11 @@ import { DisplayImages } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function AdditionalImages({
+const AdditionalImages: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
 
   function updateAdditionalImages(additionalImages) {
@@ -56,12 +56,13 @@ export default function AdditionalImages({
             (image) => image.image,
           )}
           setLocalState={updateAdditionalImages}
-          imageDescription={'Additional Images'}
-          imageInstructions={
+          fileDescription={'Additional Images'}
+          fileInstructions={
             'The ideal image size and aspect ratio are 1200px X 675px and 16:9, respectively.'
           }
           fileType={'image/*'}
           numMaxFiles={4}
+          maxFileSizeMB={5}
         />
         <DisplayImages
           localState={formData?.files?.additionalImages?.map(
@@ -93,4 +94,5 @@ export default function AdditionalImages({
       </>
     )
   );
-}
+};
+export default AdditionalImages;

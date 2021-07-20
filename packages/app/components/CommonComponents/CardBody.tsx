@@ -1,10 +1,17 @@
 import React from 'react';
 
-export default function CardBody({
+// TODO: Figure out the types here
+export interface CardBodyProps {
+  imgUrl: any;
+  name: any;
+  missionStatement: any;
+}
+
+const CardBody: React.FC<CardBodyProps> = ({
   imgUrl,
   name,
   missionStatement,
-}): JSX.Element {
+}) => {
   return (
     <React.Fragment>
       <div className="flex-shrink-0">
@@ -18,4 +25,5 @@ export default function CardBody({
       </div>
     </React.Fragment>
   );
-}
+};
+export default CardBody;

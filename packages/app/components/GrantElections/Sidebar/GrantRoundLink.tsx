@@ -7,15 +7,15 @@ export interface IGrantRound {
   year: number;
 }
 
-interface IGrantRoundLink {
+interface GrantRoundLinkProps {
   grantRound: IGrantRound;
   scrollToGrantRound: (grantId: number) => void;
 }
 
-export default function GrantRoundLink({
+const GrantRoundLink: React.FC<GrantRoundLinkProps> = ({
   grantRound,
   scrollToGrantRound,
-}: IGrantRoundLink): JSX.Element {
+}) => {
   return (
     <li
       id={`${grantRound.id}-GrantLink`}
@@ -28,4 +28,5 @@ export default function GrantRoundLink({
       <p className="text-base">{grantRound.name}</p>
     </li>
   );
-}
+};
+export default GrantRoundLink;

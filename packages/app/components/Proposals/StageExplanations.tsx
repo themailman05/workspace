@@ -1,4 +1,4 @@
-export function ProposalStageExplanations(): JSX.Element {
+export const ProposalStageExplanations: React.FC = () => {
   return (
     <div>
       <h2 className="text-lg leading-6 font-semibold text-indigo-900 uppercase tracking-wider my-4">
@@ -30,9 +30,9 @@ export function ProposalStageExplanations(): JSX.Element {
       </h2>
     </div>
   );
-}
+};
 
-export function TakedownStageExplanations(): JSX.Element {
+export const TakedownStageExplanations: React.FC = () => {
   return (
     <div>
       <h2 className="text-lg leading-6 font-semibold text-indigo-900 uppercase tracking-wider my-4">
@@ -66,4 +66,4 @@ export function TakedownStageExplanations(): JSX.Element {
       </h2>
     </div>
   );
-}
+};

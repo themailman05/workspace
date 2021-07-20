@@ -5,11 +5,11 @@ import { DisplayImages } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function HeaderImage({
+const HeaderImage: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps) {
+}) => {
   const [formData, setFormData] = form;
 
   function updateHeaderImage(headerImage: string): void {
@@ -58,12 +58,13 @@ export default function HeaderImage({
           stepName={`${navigation.currentStep} - UPLOAD HEADER IMAGE`}
           localState={formData?.files?.headerImage?.image}
           setLocalState={updateHeaderImage}
-          imageDescription={'a Header Image'}
-          imageInstructions={
+          fileDescription={'a Header Image'}
+          fileInstructions={
             'Ideal dimensions - 1500px x 500px and less than 5mb'
           }
           fileType={'image/*'}
           numMaxFiles={1}
+          maxFileSizeMB={5}
         />
         <DisplayImages localState={formData?.files?.headerImage?.image} />
         <div className="mt-8 w-80">
@@ -87,4 +88,5 @@ export default function HeaderImage({
       </>
     )
   );
-}
+};
+export default HeaderImage;

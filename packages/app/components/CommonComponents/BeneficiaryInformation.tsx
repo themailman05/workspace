@@ -2,9 +2,13 @@ import { PaperClipIcon } from '@heroicons/react/solid';
 import { BeneficiaryApplication } from '@popcorn/utils';
 import SocialMedia from '../CommonComponents/SocialMedia';
 
-export default function BeneficiaryInformation(
-  beneficiary: BeneficiaryApplication,
-): JSX.Element {
+export interface BeneficiaryInformationProps {
+  beneficiary: BeneficiaryApplication;
+}
+
+const BeneficiaryInformation: React.FC<BeneficiaryInformationProps> = ({
+  beneficiary,
+}) => {
   return (
     <div className="col-span-6">
       <div className="bg-white shadow overflow-hidden sm:rounded-lg my-4">
@@ -89,7 +93,7 @@ export default function BeneficiaryInformation(
                 Social Media, Website and Contact Email
               </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <SocialMedia {...beneficiary} />
+                <SocialMedia beneficiary={beneficiary} />
               </dd>
             </div>
           </dl>
@@ -97,4 +101,5 @@ export default function BeneficiaryInformation(
       </div>
     </div>
   );
-}
+};
+export default BeneficiaryInformation;

@@ -1,17 +1,16 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/solid';
 import ProgressBar from 'components/ProgressBar';
 import { Navigation } from 'pages/proposals/propose';
+
 interface NavigationButtonProps {
   navigation: Navigation;
 }
 
-export default function NavigationButtons({
-  navigation,
-}: NavigationButtonProps) {
-  const { currentStep, setCurrentStep, stepLimit } = navigation;
+const NavigationButtons: React.FC<NavigationButtonProps> = ({ navigation }) => {
+  const { currentStep, setCurrentStep, stepLimit, numSteps } = navigation;
   const progressPercentage =
-    currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / 10);
-  const canProceed = currentStep !== 10 && currentStep < stepLimit;
+    currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / numSteps);
+  const canProceed = currentStep !== numSteps && currentStep < stepLimit;
   return (
     <footer className="h-10 mb-4 mr-4">
       <div className="grid justify-items-stretch ...">
@@ -53,4 +52,5 @@ export default function NavigationButtons({
       </div>
     </footer>
   );
-}
+};
+export default NavigationButtons;

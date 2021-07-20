@@ -2,7 +2,6 @@ import { BeneficiaryApplication } from '@popcorn/utils';
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { useState } from 'react';
-import * as Icon from 'react-feather';
 import BeneficiaryCard from './BeneficiaryCard';
 
 interface BeneficiaryGridProps {
@@ -11,11 +10,11 @@ interface BeneficiaryGridProps {
   title: string;
 }
 
-export default function BeneficiaryGrid({
+const BeneficiaryGrid: React.FC<BeneficiaryGridProps> = ({
   beneficiaries,
   subtitle,
   title,
-}: BeneficiaryGridProps) {
+}: BeneficiaryGridProps) => {
   const [searchFilter, setSearchFilter] = useState<string>('');
 
   return (
@@ -44,12 +43,11 @@ export default function BeneficiaryGrid({
               .includes(searchFilter.toLowerCase());
           })
           .map((beneficiary) => (
-            <BeneficiaryCard
-              key={beneficiary.beneficiaryAddress}
-              beneficiary={beneficiary}
-            />
+            <BeneficiaryCard beneficiary={beneficiary} />
           ))}
       </ul>
     </div>
   );
-}
+};
+
+export default BeneficiaryGrid;

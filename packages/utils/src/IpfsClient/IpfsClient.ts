@@ -1,9 +1,20 @@
+import axios from 'axios';
 import { BeneficiaryApplication } from '../';
 import { getIpfsHashFromBytes32 } from '../ipfsHashManipulation';
 
 export interface IIpfsClient {
   get: (cid: string) => Promise<BeneficiaryApplication>;
   add: (beneficiaryApplication: BeneficiaryApplication) => Promise<string>;
+  upload: (
+    file: File,
+    setUploadProgress?: (progress: number) => void,
+  ) => Promise<UploadResult>;
+}
+
+export interface UploadResult {
+  status: number;
+  hash?: string;
+  errorDetails?: string;
 }
 
 export const IpfsClient = (): IIpfsClient => {
@@ -34,10 +45,49 @@ export const IpfsClient = (): IIpfsClient => {
           return JSON.parse(result).IpfsHash;
         })
         .catch((error) => {
-          console.log({ error });
           console.error(error);
         });
       return cid;
+    },
+
+    upload: async (
+      file: File,
+      setUploadProgress?: (progress: number) => void,
+    ): Promise<UploadResult> => {
+      var data = new FormData();
+      data.append('file', file, file.name);
+      const headers = {
+        'Content-Type': `multipart/form-data;`,
+        pinata_api_key: process.env.PINATA_API_KEY,
+        pinata_secret_api_key: process.env.PINATA_API_SECRET,
+      };
+      const config = setUploadProgress
+        ? {
+            headers,
+            onUploadProgress: (progressEvent) => {
+              var percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total,
+              );
+              setUploadProgress(percentCompleted);
+            },
+          }
+        : {
+            headers,
+          };
+      return await axios
+        .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
+        .then((result) => {
+          return { hash: result.data.IpfsHash, status: result.status };
+        })
+        .catch((error) => {
+          if (error.response) {
+            return {
+              status: error.response.status,
+              errorDetails: error.response.data.error.details,
+            };
+          }
+          return error;
+        });
     },
   };
 };

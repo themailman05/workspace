@@ -192,7 +192,15 @@ module.exports = {
       url: process.env.RPC_URL,
       accounts: [process.env.PRIVATE_KEY],
     },
-    hardhat: {},
+    hardhat: {
+      forking:
+        process.env.FORKING_ENABLED == "true"
+          ? {
+              url: process.env.FORKING_RPC_URL,
+              blockNumber: 12724811,
+            }
+          : undefined,
+    },
     rinkeby: {
       url: process.env.RPC_URL,
       accounts: [process.env.PRIVATE_KEY].concat(

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import DualActionWideModal from './DualActionWideModal';
 import { store } from '../../context/store';
+import DualActionWideModal from './DualActionWideModal';
 
 export const DualActionWideModalContainer: React.FC = () => {
   const {

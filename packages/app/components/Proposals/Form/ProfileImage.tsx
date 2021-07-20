@@ -6,11 +6,11 @@ import { DisplayImages } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function ProfileImage({
+const ProfileImage: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps) {
+}) => {
   const [formData, setFormData] = form;
 
   function updateProfileImage(profileImage: string): void {
@@ -59,12 +59,13 @@ export default function ProfileImage({
           stepName={`${navigation.currentStep} - UPLOAD PROFILE IMAGE`}
           localState={formData?.files?.profileImage?.image}
           setLocalState={updateProfileImage}
-          imageDescription={'a Profile Image'}
-          imageInstructions={
+          fileDescription={'a Profile Image'}
+          fileInstructions={
             'Upload a square image, ideally 150px x 150px and less than 5mb'
           }
           fileType={'image/*'}
           numMaxFiles={1}
+          maxFileSizeMB={5}
         />
         <DisplayImages localState={formData?.files?.profileImage?.image} />
         <div className="mt-8 w-80">
@@ -88,4 +89,5 @@ export default function ProfileImage({
       </>
     )
   );
-}
+};
+export default ProfileImage;

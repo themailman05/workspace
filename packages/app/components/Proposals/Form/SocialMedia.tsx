@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
-import { CheckIcon } from '@heroicons/react/solid';
-import SocialMediaTable from './SocialMediaTable';
 import { FormStepProps } from 'pages/proposals/propose';
+import React, { useState } from 'react';
 import ContinueButton from './ContinueButton';
+import SocialMediaTable from './SocialMediaTable';
 
-export default function SocialMedia({
+const SocialMedia: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
   const { currentStep, setCurrentStep, setStepLimit } = navigation;
   const [platform, setPlatform] = useState<string>('Facebook');
@@ -78,7 +77,7 @@ export default function SocialMedia({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide">
-        {navigation.currentStep} - Upload social media links
+          {navigation.currentStep} - Upload social media links
         </h2>
 
         <div className="grid justify-items-stretch ...">
@@ -138,9 +137,10 @@ export default function SocialMedia({
 
         <SocialMediaTable form={form} />
         <div className="row-auto my-2 justify-self-center">
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         </div>
       </div>
     )
   );
-}
+};
+export default SocialMedia;

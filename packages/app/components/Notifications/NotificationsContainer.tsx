@@ -1,10 +1,10 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useContext, useEffect } from 'react';
 import { Transition } from '@headlessui/react';
 import { CheckCircleIcon, ClockIcon } from '@heroicons/react/outline';
 import { XIcon } from '@heroicons/react/solid';
-import { store } from '../../context/store';
+import { Fragment, useContext, useEffect } from 'react';
 import { hideNotification, unsetNotification } from '../../context/actions';
+import { store } from '../../context/store';
 
 export interface Notification {
   id: number;
@@ -16,7 +16,7 @@ export interface Notification {
   backdrop?: boolean;
 }
 
-export default function Example() {
+const Example: React.FC = () => {
   const {
     dispatch,
     state: { notifications },
@@ -110,4 +110,5 @@ export default function Example() {
       </div>
     </>
   );
-}
+};
+export default Example;
