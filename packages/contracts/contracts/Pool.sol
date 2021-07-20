@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./lib/AffiliateToken.sol";
 import "./Defended.sol";
 
+
 interface IERC20Metadata is IERC20 {
   function name() external view returns (string memory);
 
@@ -92,6 +93,27 @@ contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
     uint256 shares = sharesAfter.sub(sharesBefore);
 
     emit Deposit(msg.sender, amount, shares);
+    _reportPoolTokenHWM();
+    return shares;
+  }
+
+  function depositFor(uint256 amount, address recipient)
+    public
+    defend
+    nonReentrant
+    whenNotPaused
+    blockLocked
+    returns (uint256)
+  {
+    require(amount <= token.balanceOf(msg.sender), "Insufficient balance");
+    _lockForBlock(msg.sender);
+    _takeFees();
+
+    uint256 deposited = _deposit(msg.sender, address(this), amount, true);
+    uint256 shares = _sharesForValue(deposited);
+    _mint(recipient, shares);
+
+    emit Deposit(recipient, amount, shares);
     _reportPoolTokenHWM();
     return shares;
   }
