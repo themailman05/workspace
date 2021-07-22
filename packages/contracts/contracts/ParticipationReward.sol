@@ -50,6 +50,11 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
   /* ========== VIEWS ========== */
 
+  /**
+   * @notice Checks if a beneficiary has a claim in the specified vault
+   * @param vaultId_ Bytes32
+   * @param beneficiary_ address of the beneficiary
+   */
   function hasClaim(bytes32 vaultId_, address beneficiary_)
     public
     view
@@ -61,6 +66,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
       vaults[vaultId_].claimed[beneficiary_] == false;
   }
 
+  /**
+   * @notice Returns the vault status
+   * @param vaultId_ Bytes32
+   */
   function getVaultStatus(bytes32 vaultId_)
     external
     view
@@ -69,6 +78,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     return vaults[vaultId_].status;
   }
 
+  /**
+   * @notice Returns all vaultIds which an account has/had claims in
+   * @param account address
+   */
   function getUserVaults(address account)
     external
     view
@@ -127,6 +140,13 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit VaultOpened(vaultId_);
   }
 
+  /**
+   * @notice Adds Shares of an account to the current vault
+   * @param vaultId_ Bytes32
+   * @param account_ address
+   * @param shares_ uint256
+   * @dev This will be called by contracts after an account has voted in order to add them to the vault of the specified election.
+   */
   function _addShares(
     bytes32 vaultId_,
     address account_,
@@ -144,6 +164,13 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit SharesAdded(vaultId_, account_, shares_);
   }
 
+  /**
+   * @notice Claim rewards of a vault
+   * @param index_ uint256
+   * @dev Uses the vaultId_ at the specified index of userVaults.
+   * @dev This function is used when a user only wants to claim a specific vault or if they decide the gas cost of claimRewards are to high for now.
+   * @dev (lower cost but also lower reward)
+   */
   function claimReward(uint256 index_) external nonReentrant {
     bytes32 vaultId_ = userVaults[msg.sender][index_];
     require(vaults[vaultId_].status == VaultStatus.Open, "vault is not open");
@@ -160,6 +187,13 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardsClaimed(msg.sender, reward);
   }
 
+  /**
+   * @notice Claim rewards of a a number of vaults
+   * @param indices_ uint256[]
+   * @dev Uses the vaultIds at the specified indices of userVaults.
+   * @dev This function is used when a user only wants to claim multiple vaults at once (probably most of the time)
+   * @dev The array of indices is limited to 19 as we want to prevent gas overflow of looping through too many vaults
+   */
   function claimRewards(uint256[] calldata indices_) external nonReentrant {
     require(indices_.length < 20, "claiming too many vaults");
     uint256 total;
@@ -185,6 +219,13 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardsClaimed(msg.sender, total);
   }
 
+  /**
+   * @notice Underlying function to calculate the rewards that a user gets and set the vault to claimed
+   * @param vaultId_ Bytes32
+   * @param index_ uint256
+   * @param account_ address
+   * @dev We dont want it to error when a vault is empty for the user as this would terminate the entire loop when used in claimRewards()
+   */
   function _claimVaultReward(
     bytes32 vaultId_,
     uint256 index_,
@@ -206,12 +247,22 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
+  /**
+   * @notice Sets the budget of rewards in POP per vault
+   * @param amount uint256 reward amount in POP per vault
+   * @dev When opening a vault this contract must have enough POP to fund the rewardBudget of the new vault
+   */
   function setRewardsBudget(uint256 amount) external onlyGovernance {
     require(amount > 0, "must be larger 0");
     rewardBudget = amount;
     emit RewardBudgetChanged(amount);
   }
 
+  /**
+   * @notice Transfer POP to the contract for vault rewards
+   * @param amount uint256 amount in POP to be used for vault rewards
+   * @dev Sufficient RewardsBalance will be checked when opening a new vault to see if enough POP exist to support the new Vault
+   */
   function contributeReward(uint256 amount) external {
     require(amount > 0, "must be larger 0");
     POP.safeTransferFrom(msg.sender, address(this), amount);
@@ -221,6 +272,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
   /* ========== MODIFIERS ========== */
 
+  /**
+   * @notice Modifier to check if a vault exists
+   * @param vaultId_ Bytes32
+   */
   modifier vaultExists(bytes32 vaultId_) {
     require(vaults[vaultId_].endTime > 0, "Uninitialized vault slot");
     _;
