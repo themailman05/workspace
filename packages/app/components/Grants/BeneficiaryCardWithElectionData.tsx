@@ -2,6 +2,7 @@ import { BeneficiaryApplication } from '@popcorn/utils';
 import { ElectionMetadata } from '@popcorn/utils/Contracts';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
+import truncate from 'utils/truncate';
 import GrantElectionAdapter from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
@@ -21,16 +22,6 @@ interface BeneficiaryCardWithElectionDataProps {
   electionProps: ElectionProps;
 }
 
-const truncate = (input: string): string => {
-  const maxLength = 180;
-  const trimmedInput = input.substr(0, maxLength);
-  const trimmedOnCompleteWord = trimmedInput.substr(
-    0,
-    Math.min(trimmedInput.length, trimmedInput.lastIndexOf(' ')),
-  );
-  return trimmedOnCompleteWord + ' ...';
-};
-
 const BeneficiaryCardWithElectionData: React.FC<BeneficiaryCardWithElectionDataProps> =
   ({ electionProps, beneficiary }) => {
     return (
@@ -43,7 +34,7 @@ const BeneficiaryCardWithElectionData: React.FC<BeneficiaryCardWithElectionDataP
                 src={`${process.env.IPFS_URL}${beneficiary?.files?.profileImage?.image}`}
                 alt=""
                 style={{ objectFit: 'cover', height: '140px' }}
-              />
+              ></img>
             </div>
           </a>
         </Link>
@@ -67,7 +58,7 @@ const BeneficiaryCardWithElectionData: React.FC<BeneficiaryCardWithElectionDataP
             >
               <a>
                 <p className="text-sm text-gray-700">
-                  {truncate(beneficiary?.missionStatement)}
+                  {truncate(beneficiary?.missionStatement, 180)}
                 </p>
               </a>
             </Link>
@@ -89,4 +80,5 @@ const BeneficiaryCardWithElectionData: React.FC<BeneficiaryCardWithElectionDataP
       </div>
     );
   };
+
 export default BeneficiaryCardWithElectionData;
