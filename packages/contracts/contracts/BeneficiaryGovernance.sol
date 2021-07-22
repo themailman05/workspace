@@ -59,7 +59,6 @@ contract BeneficiaryGovernance is ParticipationReward {
     bytes32 vaultId;
   }
 
-  IERC20 public immutable POP;
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
 
