@@ -3,12 +3,13 @@ import { FormStepProps } from 'pages/proposals/propose';
 import React, { useState } from 'react';
 import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
+import ControlledTextInput from './ControlledTextInput';
 
-export default function MissionStatement({
+const MissionStatement: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const [formData, setFormData] = form;
   return (
@@ -49,9 +50,10 @@ export default function MissionStatement({
         </div>
 
         {inputExists(formData?.missionStatement) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
   );
-}
+};
+export default MissionStatement;

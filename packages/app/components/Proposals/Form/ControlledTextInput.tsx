@@ -11,7 +11,7 @@ interface ControlledTextInputProps {
   inputIndex?: number;
 }
 
-export default function ControlledTextInput({
+const ControlledTextInput: React.FC<ControlledTextInputProps> = ({
   inputValue,
   id,
   placeholder,
@@ -19,7 +19,7 @@ export default function ControlledTextInput({
   isValid,
   updateInput,
   inputIndex,
-}: ControlledTextInputProps): JSX.Element {
+}) => {
   const [isDirty, setIsDirty] = useState<boolean>(false);
   return (
     <>
@@ -59,4 +59,5 @@ export default function ControlledTextInput({
       )}
     </>
   );
-}
+};
+export default ControlledTextInput;

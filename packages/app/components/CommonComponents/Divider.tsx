@@ -1,4 +1,4 @@
-export default function Divider(): JSX.Element {
+const Divider = () => {
   return (
     <div className="relative">
       <div className="absolute inset-0 flex items-center" aria-hidden="true">
@@ -6,4 +6,5 @@ export default function Divider(): JSX.Element {
       </div>
     </div>
   );
-}
+};
+export default Divider;

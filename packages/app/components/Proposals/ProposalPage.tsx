@@ -20,7 +20,8 @@ const getTitle = (proposal: Proposal): string => {
     proposal?.application?.organizationName
   }`;
 };
-export default function ProposalPage(): JSX.Element {
+
+const ProposalPage: React.FC = () => {
   const { contracts } = useContext(ContractsContext);
   const router = useRouter();
   const [proposal, setProposal] = useState<Proposal>();
@@ -48,10 +49,13 @@ export default function ProposalPage(): JSX.Element {
         <Voting {...proposal} />
         <div className="grid grid-cols-8 gap-4 space-x-12 mx-auto px-8">
           <div className="col-span-2 space-y-4">
-            <VideoSideBar {...proposal?.application} />
-            <PhotoSideBar {...proposal?.application} />
+            <VideoSideBar beneficiary={proposal?.application} />
+            <PhotoSideBar beneficiary={proposal?.application} />
           </div>
-          <BeneficiaryInformation {...proposal?.application} />
+          <BeneficiaryInformation
+            beneficiary={proposal?.application}
+            isProposalPreview={false}
+          />
         </div>
       </React.Fragment>
     ) : (
@@ -64,4 +68,5 @@ export default function ProposalPage(): JSX.Element {
       {getContent()}
     </div>
   );
-}
+};
+export default ProposalPage;

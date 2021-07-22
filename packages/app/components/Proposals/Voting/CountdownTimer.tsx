@@ -23,7 +23,7 @@ const getTimeLeft = (stageDeadline: Date): string => {
   return 'Voting has ended';
 };
 
-export default function CountdownTimer(proposal: Proposal) {
+const CountdownTimer: React.FC<Proposal> = (proposal) => {
   const [timeLeft, setTimeLeft] = useState<string>(
     getTimeLeft(proposal?.stageDeadline),
   );
@@ -37,11 +37,16 @@ export default function CountdownTimer(proposal: Proposal) {
   return (
     <div className="grid my-2 justify-items-stretch">
       <p
-        title={proposal?.stageDeadline.toLocaleDateString() + " " + proposal?.stageDeadline.toLocaleTimeString()}
+        title={
+          proposal?.stageDeadline.toLocaleDateString() +
+          ' ' +
+          proposal?.stageDeadline.toLocaleTimeString()
+        }
         className="justify-self-center mt-1 text-l text-gray-500"
       >
         {timeLeft}
       </p>
     </div>
   );
-}
+};
+export default CountdownTimer;

@@ -1,20 +1,38 @@
 import { PaperClipIcon } from '@heroicons/react/solid';
+import { BeneficiaryApplication } from '@popcorn/utils';
 import SocialMedia from '../CommonComponents/SocialMedia';
 
-export default function BeneficiaryInformation({
+export interface BeneficiaryInformationProps {
+  beneficiary: BeneficiaryApplication;
+  isProposalPreview: Boolean;
+}
+
+const BeneficiaryInformation: React.FC<BeneficiaryInformationProps> = ({
   beneficiary,
   isProposalPreview,
-}): JSX.Element {
+}) => {
   return (
     <div className="col-span-6">
       <div className="bg-white shadow overflow-hidden sm:rounded-lg my-4">
         <div className="px-4 py-5 sm:px-6">
           <h3 className="text-lg leading-6 font-medium text-gray-900">
-            {`${isProposalPreview ? 'Organization' : 'Beneficiary'} Information`}
+            {`${
+              isProposalPreview ? 'Organization' : 'Beneficiary'
+            } Information`}
           </h3>
         </div>
         <div className="border-t border-gray-200 px-4 py-5 sm:p-0">
           <dl className="sm:divide-y sm:divide-gray-200">
+            {beneficiary?.projectName! == '' && (
+              <div className="bg-gray-50 py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <dt className="text-sm font-medium text-gray-500">
+                  Project Name
+                </dt>
+                <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                  {beneficiary?.projectName}
+                </dd>
+              </div>
+            )}
             <div className="bg-gray-50 py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">
                 Mission Statement
@@ -25,7 +43,9 @@ export default function BeneficiaryInformation({
             </div>
             <div className="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
               <dt className="text-sm font-medium text-gray-500">
-                {`${isProposalPreview ? 'Organization' : 'Beneficiary'} Address`}
+                {`${
+                  isProposalPreview ? 'Organization' : 'Beneficiary'
+                } Address`}
               </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                 {beneficiary?.beneficiaryAddress}
@@ -79,7 +99,7 @@ export default function BeneficiaryInformation({
                 Social Media, Website and Contact Email
               </dt>
               <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                <SocialMedia {...beneficiary} />
+                <SocialMedia beneficiary={beneficiary} />
               </dd>
             </div>
           </dl>
@@ -87,4 +107,5 @@ export default function BeneficiaryInformation({
       </div>
     </div>
   );
-}
+};
+export default BeneficiaryInformation;

@@ -7,11 +7,11 @@ import { DisplayImages } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
-export default function AdditionalImages({
+const AdditionalImages: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
   const { setCurrentStep, currentStep, setStepLimit } = navigation;
   function updateAdditionalImages(additionalImages) {
@@ -106,4 +106,5 @@ export default function AdditionalImages({
       </>
     )
   );
-}
+};
+export default AdditionalImages;

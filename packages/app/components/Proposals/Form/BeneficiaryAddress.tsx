@@ -1,13 +1,13 @@
-import web3 from 'web3';
 import { FormStepProps } from 'pages/proposals/propose';
-import ControlledTextInput from './ControlledTextInput';
+import web3 from 'web3';
 import ContinueButton from './ContinueButton';
+import ControlledTextInput from './ControlledTextInput';
 
-export default function BeneficiaryAddress({
+const BeneficiaryAddress: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
   function updateEthereumAddress(beneficiaryAddress: string): void {
     setFormData({ ...formData, beneficiaryAddress });
@@ -28,9 +28,10 @@ export default function BeneficiaryAddress({
           isValid={web3.utils.isAddress}
         />
         {web3.utils.isAddress(formData?.beneficiaryAddress) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
   );
-}
+};
+export default BeneficiaryAddress;
