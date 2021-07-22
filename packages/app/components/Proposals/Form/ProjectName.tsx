@@ -30,7 +30,7 @@ export default function ProjectName({
           isValid={() => true}
         />
         {inputExists(formData.organizationName) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )

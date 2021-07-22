@@ -17,7 +17,7 @@ const OpenVoting: React.FC<Proposal> = (proposal) => {
   const vote = () => {
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
-      .vote(proposal.id, selected);
+      .vote(proposal.id, proposal.proposalType, selected);
     dispatch(setDualActionModal(false));
   };
 
