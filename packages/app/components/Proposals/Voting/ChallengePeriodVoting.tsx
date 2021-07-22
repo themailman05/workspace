@@ -16,7 +16,7 @@ const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
   const voteNo = async () => {
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
-      .vote(proposal.id, VoteOptions.Nay);
+      .vote(proposal.id, proposal.proposalType, VoteOptions.Nay);
     closeModal();
   };
 

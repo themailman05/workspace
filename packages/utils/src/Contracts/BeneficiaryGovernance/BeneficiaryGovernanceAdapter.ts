@@ -52,8 +52,9 @@ export const BeneficiaryGovernanceAdapter = (
     getAllProposals: async (
       proposalType: ProposalType,
     ): Promise<Proposal[]> => {
-      const numProposals = await contract.getNumberOfProposals();
-      const proposalIds = new Array(numProposals.toNumber()).fill(undefined);
+      const numNominations = await contract.getNumberOfProposals(ProposalType.Nomination);
+      const numTakedowns = await contract.getNumberOfProposals(ProposalType.Takedown);
+      const proposalIds = new Array(numNominations.add(numTakedowns).toNumber()).fill(undefined);
       const proposalData: { proposal: ProposalContract; id: number }[] =
         await Promise.all(
           proposalIds.map(async (x, i) => {
