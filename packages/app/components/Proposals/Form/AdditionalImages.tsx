@@ -1,8 +1,8 @@
+import { XIcon } from '@heroicons/react/solid';
 import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
 import inputExists from 'utils/isValidInput';
 import ControlledTextInput from './ControlledTextInput';
-import { DisplayImage } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
@@ -20,6 +20,18 @@ const AdditionalImages: React.FC<FormStepProps> = ({
         ...formData.files,
         additionalImages: additionalImages.map((image) => {
           return { image: image, description: '' };
+        }),
+      },
+    });
+  }
+
+  function removeImage(index) {
+    setFormData({
+      ...formData,
+      files: {
+        ...formData.files,
+        additionalImages: formData.files.additionalImages.filter((image, i) => {
+          return i !== index;
         }),
       },
     });
@@ -68,7 +80,18 @@ const AdditionalImages: React.FC<FormStepProps> = ({
         <div className="mt-8 mx-auto">
           {formData?.files?.additionalImages?.map((image, i) => (
             <div className="mb-4">
-              <DisplayImage localState={image.image} />
+              <div className="relative">
+                <img
+                  className="mx-auto w-full"
+                  src={'https://gateway.pinata.cloud/ipfs/' + image.image}
+                />
+                <button
+                  onClick={() => removeImage(i)}
+                  className="absolute top-0 m-2 px-2 py-2 border border-transparent text-sm font-medium rounded-full text-gray-700 bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                >
+                  <XIcon className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </div>
               <div className="mx-auto mt-2 w-80">
                 <p>Image {i + 1} Description</p>
                 <ControlledTextInput
