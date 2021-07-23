@@ -8,20 +8,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./MockERC20.sol";
 
 contract MockCurveMetapool {
-<<<<<<< HEAD
-  MockERC20 lpToken;
-  MockERC20 token;
-  MockERC20 threeCrv;
-  MockERC20 dai;
-  MockERC20 usdc;
-  MockERC20 usdt;
-
-=======
   using SafeERC20 for MockERC20;
 
   MockERC20 public lpToken;
   MockERC20 public threeCrv;
->>>>>>> Basic BatchSetInteraction + Tests done
+  MockERC20 token;
+  MockERC20 dai;
+  MockERC20 usdc;
+  MockERC20 usdt;
   uint256 virtualPrice = 1e18;
 
   uint256 withdrawalSlippageBps = 10;
@@ -64,7 +58,6 @@ contract MockCurveMetapool {
     external
     returns (uint256)
   {
-<<<<<<< HEAD
     uint256 lpTokens;
     for (uint8 i = 0; i < tokens.length; i++) {
       tokens[i].transferFrom(msg.sender, address(this), amounts[i]);
@@ -72,12 +65,6 @@ contract MockCurveMetapool {
       lpTokens += amounts[i];
     }
     return lpTokens;
-=======
-    threeCrv.transferFrom(msg.sender, address(this), amounts[1]);
-    require(amounts[1] > min_mint_amounts, "amount lower min");
-    lpToken.mint(msg.sender, amounts[1]);
-    return amounts[1];
->>>>>>> Basic BatchSetInteraction + Tests done
   }
 
   function remove_liquidity_one_coin(
