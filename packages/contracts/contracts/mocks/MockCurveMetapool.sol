@@ -82,7 +82,7 @@ contract MockCurveMetapool {
 
   function remove_liquidity_one_coin(
     uint256 amount,
-    int128 i,
+    int128 i, //index if the coin to withdraw
     uint256 min_underlying_amount
   ) external returns (uint256) {
     lpToken.transferFrom(msg.sender, address(this), amount);
