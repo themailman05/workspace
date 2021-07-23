@@ -67,7 +67,7 @@ const HeaderImage: React.FC<FormStepProps> = ({
           maxFileSizeMB={5}
         />
         <DisplayImages localState={formData?.files?.headerImage?.image} />
-        <div className="mt-8 w-80">
+        <div className="mx-auto mt-8 w-80">
           <p>Image Description</p>
           <ControlledTextInput
             inputValue={formData?.files?.headerImage?.description}

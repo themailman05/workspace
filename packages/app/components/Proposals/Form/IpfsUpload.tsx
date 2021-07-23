@@ -127,6 +127,7 @@ const IpfsUpload: React.FC<IpfsProps> = ({
     isDragReject,
   } = useDropzone({
     accept: fileType,
+    multiple: numMaxFiles > 1,
     maxFiles: numMaxFiles,
     validator: (file: File) => {
       return isValidFileSize(file, maxFileSizeMB);
