@@ -18,7 +18,13 @@ contract BatchSetInteraction is Owned {
   using SafeERC20 for ThreeCrv;
   using SafeERC20 for CrvLPToken;
   using SafeERC20 for YearnVault;
+  using SafeERC20 for ISetToken;
   using SafeERC20 for IERC20;
+
+  enum BatchType {
+    Mint,
+    Redeem
+  }
 
   struct UnderlyingToken {
     IERC20 crvToken;
@@ -27,7 +33,7 @@ contract BatchSetInteraction is Owned {
     CurveMetapool curveMetaPool;
   }
 
-  struct MintBatch {
+  struct Batch {
     uint256 unclaimedShares;
     uint256 suppliedToken;
     uint256 claimableToken;
@@ -35,25 +41,15 @@ contract BatchSetInteraction is Owned {
     uint8 claimable; //either 0 | 1
   }
 
-  struct RedeemBatch {
-    uint256 unclaimedShares;
-    uint256 suppliedToken;
-    uint256[] claimableToken;
-    mapping(address => uint256) shareBalance;
-    uint8 claimable;
-  }
-
   /* ========== STATE VARIABLES ========== */
 
   ThreeCrv public threeCrv;
-  CurveAddressProvider public curveAddressProvider;
   BasicIssuanceModule public setBasicIssuanceModule;
   ISetToken public setToken;
   UnderlyingToken[] public underlyingToken;
 
   mapping(address => bytes32[]) public batchesOfAccount;
-  mapping(bytes32 => MintBatch) public mintBatches;
-  mapping(bytes32 => RedeemBatch) public redeemBatches;
+  mapping(bytes32 => Batch) public batches;
 
   uint256 public lastMintedAt;
   uint256 public lastRedeemedAt;
@@ -105,11 +101,10 @@ contract BatchSetInteraction is Owned {
    * @notice deposits funds for batch set minting
    * @param  amount_ amount of 3crv to use for minting
    */
-  //TODO should it be possible to make multiple yearn tokenSets?
   function depositForMint(uint256 amount_) external {
     require(threeCrv.balanceOf(msg.sender) > 0, "insufficent balance");
     threeCrv.transferFrom(msg.sender, address(this), amount_);
-    _deposit(amount_, currentMintBatchId, 0);
+    _deposit(amount_, currentMintBatchId);
   }
 
   /**
@@ -119,61 +114,39 @@ contract BatchSetInteraction is Owned {
   function depositForRedeem(uint256 amount_) external {
     require(setToken.balanceOf(msg.sender) > 0, "insufficient balance");
     setToken.transferFrom(msg.sender, address(this), amount_);
-    _deposit(amount_, currentRedeemBatchId, 1);
+    _deposit(amount_, currentRedeemBatchId);
   }
 
   /**
    * @notice claims funds from batch
    * @param  batchId_ id of batch to claim from
    */
-  function claimMinted(bytes32 batchId_) external {
-    MintBatch storage batch = mintBatches[batchId_];
-    require(batch.claimable == 1, "not minted yet");
+  function claim(bytes32 batchId_, BatchType batchType_) external {
+    Batch storage batch = batches[batchId_];
+    require(batch.claimable == 1, "not yet claimable");
     uint256 shares = batch.shareBalance[msg.sender];
     require(shares <= batch.unclaimedShares, "claiming too many shares");
 
-    uint256 claimedToken = _claim(
-      shares,
-      batch.unclaimedShares,
-      batch.claimableToken,
-      setToken
+    uint256 claimedToken = batch.claimableToken.mul(shares).div(
+      batch.unclaimedShares
     );
-
     batch.claimableToken = batch.claimableToken.sub(claimedToken);
     batch.unclaimedShares = batch.unclaimedShares.sub(shares);
     batch.shareBalance[msg.sender] = 0;
 
-    emit Claimed(msg.sender, shares);
-  }
-
-  /**
-   * @notice claims funds from batch
-   * @param  batchId_ id of batch to claim from
-   */
-  function claimRedeemed(bytes32 batchId_) external {
-    RedeemBatch storage batch = redeemBatches[batchId_];
-    require(batch.claimable == 1, "not redeemed yet");
-    uint256 shares = batch.shareBalance[msg.sender];
-    require(shares <= batch.unclaimedShares, "claiming too many shares");
-
-    for (uint256 i; i < batch.claimableToken.length; i++) {
-      uint256 claimedToken = _claim(
-        shares,
-        batch.unclaimedShares,
-        batch.claimableToken[i],
-        underlyingToken[i].yToken
-      );
-      batch.claimableToken[i] = batch.claimableToken[i].sub(claimedToken);
+    if (batchType_ == BatchType.Mint) {
+      setToken.safeIncreaseAllowance(address(this), claimedToken);
+      setToken.safeTransferFrom(address(this), msg.sender, claimedToken);
+    } else {
+      threeCrv.safeIncreaseAllowance(address(this), claimedToken);
+      threeCrv.safeTransferFrom(address(this), msg.sender, claimedToken);
     }
-
-    batch.unclaimedShares = batch.unclaimedShares.sub(shares);
-    batch.shareBalance[msg.sender] = 0;
 
     emit Claimed(msg.sender, shares);
   }
 
   function batchMint(uint256 amount_) external {
-    MintBatch storage batch = mintBatches[currentMintBatchId];
+    Batch storage batch = batches[currentMintBatchId];
     require(
       (block.timestamp.sub(lastMintedAt) >= batchCooldown) ||
         (batch.suppliedToken >= mintThreshold),
@@ -199,7 +172,7 @@ contract BatchSetInteraction is Owned {
         underlyingToken[i].crvToken,
         underlyingToken[i].yToken
       );
-      underlyingToken[i].yToken.approve(
+      underlyingToken[i].yToken.safeIncreaseAllowance(
         address(setBasicIssuanceModule),
         underlyingToken[i].yToken.balanceOf(address(this))
       );
@@ -217,7 +190,7 @@ contract BatchSetInteraction is Owned {
   }
 
   function batchRedeem() external {
-    RedeemBatch storage batch = redeemBatches[currentRedeemBatchId];
+    Batch storage batch = batches[currentRedeemBatchId];
     require(
       (block.timestamp.sub(lastMintedAt) >= batchCooldown) ||
         (batch.suppliedToken >= redeemThreshold),
@@ -229,24 +202,29 @@ contract BatchSetInteraction is Owned {
       "insufficient balance"
     );
 
-    setToken.approve(address(setBasicIssuanceModule), batch.suppliedToken);
+    setToken.safeIncreaseAllowance(
+      address(setBasicIssuanceModule),
+      batch.suppliedToken
+    );
 
-    for (uint256 i; i < underlyingToken.length; i++) {
-      batch.claimableToken.push(
-        underlyingToken[i].yToken.balanceOf(address(this))
-      );
-    }
     setBasicIssuanceModule.redeem(setToken, batch.suppliedToken, address(this));
 
+    uint256 oldBalance = threeCrv.balanceOf(address(this));
     for (uint256 i; i < underlyingToken.length; i++) {
-      batch.claimableToken[i] = underlyingToken[i]
-      .yToken
-      .balanceOf(address(this))
-      .sub(batch.claimableToken[i]);
+      _withdrawFromYearn(
+        underlyingToken[i].yToken.balanceOf(address(this)),
+        underlyingToken[i].yToken
+      );
+      _withdrawFromCurve(
+        underlyingToken[i].crvToken.balanceOf(address(this)),
+        underlyingToken[i].crvToken,
+        underlyingToken[i].curveMetaPool
+      );
     }
 
     emit BatchRedeemed(batch.suppliedToken);
 
+    batch.claimableToken = threeCrv.balanceOf(address(this)); //.sub(oldBalance);
     batch.suppliedToken = 0;
     batch.claimable = 1;
 
@@ -256,26 +234,13 @@ contract BatchSetInteraction is Owned {
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
-  function _deposit(
-    uint256 amount_,
-    bytes32 currentBatchId,
-    uint8 batchType
-  ) internal {
-    if (batchType == 0) {
-      MintBatch storage batch = mintBatches[currentBatchId];
-      batch.suppliedToken = batch.suppliedToken.add(amount_);
-      batch.unclaimedShares = batch.unclaimedShares.add(amount_);
-      batch.shareBalance[msg.sender] = batch.shareBalance[msg.sender].add(
-        amount_
-      );
-    } else {
-      RedeemBatch storage batch = redeemBatches[currentBatchId];
-      batch.suppliedToken = batch.suppliedToken.add(amount_);
-      batch.unclaimedShares = batch.unclaimedShares.add(amount_);
-      batch.shareBalance[msg.sender] = batch.shareBalance[msg.sender].add(
-        amount_
-      );
-    }
+  function _deposit(uint256 amount_, bytes32 currentBatchId) internal {
+    Batch storage batch = batches[currentBatchId];
+    batch.suppliedToken = batch.suppliedToken.add(amount_);
+    batch.unclaimedShares = batch.unclaimedShares.add(amount_);
+    batch.shareBalance[msg.sender] = batch.shareBalance[msg.sender].add(
+      amount_
+    );
     batchesOfAccount[msg.sender].push(currentBatchId);
     emit Deposit(msg.sender, amount_);
   }
@@ -287,7 +252,7 @@ contract BatchSetInteraction is Owned {
     IERC20 token_
   ) internal returns (uint256) {
     uint256 claimableToken = batchBalance_.mul(shares_).div(unclaimedShares_);
-    token_.approve(address(this), claimableToken);
+    token_.safeIncreaseAllowance(address(this), claimableToken);
     token_.safeTransferFrom(address(this), msg.sender, claimableToken);
     return claimableToken;
   }
@@ -296,7 +261,7 @@ contract BatchSetInteraction is Owned {
     internal
     returns (uint256)
   {
-    threeCrv.approve(address(curveMetapool_), amount_);
+    threeCrv.safeIncreaseAllowance(address(curveMetapool_), amount_);
     uint256[2] memory curveDepositAmounts = [
       0, // USDX
       amount_ // 3Crv
@@ -304,14 +269,29 @@ contract BatchSetInteraction is Owned {
     return curveMetapool_.add_liquidity(curveDepositAmounts, 0);
   }
 
+  function _withdrawFromCurve(
+    uint256 amount_,
+    IERC20 lpToken_,
+    CurveMetapool curveMetapool_
+  ) internal returns (uint256) {
+    lpToken_.safeIncreaseAllowance(address(curveMetapool_), amount_);
+    return curveMetapool_.remove_liquidity_one_coin(amount_, 1, 0);
+  }
+
   function _sendToYearn(
     uint256 amount_,
     IERC20 yToken_,
     YearnVault yearnVault_
-  ) internal returns (uint256) {
+  ) internal {
     yToken_.safeIncreaseAllowance(address(yearnVault_), amount_);
     yearnVault_.deposit(amount_);
-    return amount_;
+  }
+
+  function _withdrawFromYearn(uint256 amount_, YearnVault yearnVault_)
+    internal
+  {
+    yearnVault_.safeIncreaseAllowance(address(yearnVault_), amount_);
+    yearnVault_.withdraw(amount_);
   }
 
   function _generateNextBatchId(bytes32 currentBatchId_)
