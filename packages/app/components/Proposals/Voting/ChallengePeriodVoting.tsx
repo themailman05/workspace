@@ -3,6 +3,7 @@ import { Proposal, ProposalType } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
+import { connectors } from 'context/Web3/connectors';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext } from 'react';
 import CountdownTimer from './CountdownTimer';
@@ -10,7 +11,7 @@ import CountdownTimer from './CountdownTimer';
 const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
-  const { library } = useWeb3React();
+  const { library, account, activate } = useWeb3React();
 
   const closeModal = () => dispatch(setDualActionModal(false));
   const voteNo = async () => {
@@ -58,24 +59,43 @@ const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
           className="my-4 justify-self-center inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           onClick={() => {
             dispatch(
-              setDualActionModal({
-                content: `Confirm your no vote for ${
-                  proposal.proposalType === ProposalType.Takedown
-                    ? 'the takedown of'
-                    : ''
-                } ${
-                  proposal.application.organizationName
-                }. You will not be able to cancel your vote once you confirm.`,
-                title: 'Confirm Vote',
-                onConfirm: {
-                  label: 'Confirm vote',
-                  onClick: voteNo,
-                },
-                onDismiss: {
-                  label: 'Cancel',
-                  onClick: closeModal,
-                },
-              }),
+              setDualActionModal(
+                account
+                  ? {
+                      content: `Confirm your no vote for ${
+                        proposal.proposalType === ProposalType.Takedown
+                          ? 'the takedown of'
+                          : ''
+                      } ${
+                        proposal.application.organizationName
+                      }. You will not be able to cancel your vote once you confirm.`,
+                      title: 'Confirm Vote',
+                      onConfirm: {
+                        label: 'Confirm vote',
+                        onClick: voteNo,
+                      },
+                      onDismiss: {
+                        label: 'Cancel',
+                        onClick: closeModal,
+                      },
+                    }
+                  : {
+                      content:
+                        'You must connect with MetaMask before you can vote.',
+                      title: 'Connect MetaMask',
+                      onConfirm: {
+                        label: 'Connect',
+                        onClick: () => {
+                          activate(connectors.Injected);
+                          dispatch(setDualActionModal(false));
+                        },
+                      },
+                      onDismiss: {
+                        label: 'Cancel',
+                        onClick: () => dispatch(setDualActionModal(false)),
+                      },
+                    },
+              ),
             );
           }}
         >

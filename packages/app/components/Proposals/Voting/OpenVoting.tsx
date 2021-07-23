@@ -4,6 +4,7 @@ import { Proposal, ProposalType } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
+import { connectors } from 'context/Web3/connectors';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext, useState } from 'react';
 import CountdownTimer from './CountdownTimer';
@@ -12,7 +13,7 @@ const OpenVoting: React.FC<Proposal> = (proposal) => {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
   const { contracts } = useContext(ContractsContext);
-  const { library } = useWeb3React();
+  const { library, account, activate } = useWeb3React();
 
   const vote = () => {
     contracts.beneficiaryGovernance
@@ -142,21 +143,40 @@ const OpenVoting: React.FC<Proposal> = (proposal) => {
           className="my-4 justify-self-center inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           onClick={() => {
             dispatch(
-              setDualActionModal({
-                content: `You are about to submit a vote to ${
-                  selected == VoteOptions.Yay ? 'accept' : 'reject'
-                } this proposal. You will not be able to vote again for this proposal after you submit your vote. \
+              setDualActionModal(
+                account
+                  ? {
+                      content: `You are about to submit a vote to ${
+                        selected == VoteOptions.Yay ? 'accept' : 'reject'
+                      } this proposal. You will not be able to vote again for this proposal after you submit your vote. \
                  Confirm to continue.`,
-                title: 'Confirm Vote',
-                onConfirm: {
-                  label: 'Confirm Vote',
-                  onClick: vote,
-                },
-                onDismiss: {
-                  label: 'Cancel',
-                  onClick: () => dispatch(setDualActionModal(false)),
-                },
-              }),
+                      title: 'Confirm Vote',
+                      onConfirm: {
+                        label: 'Confirm Vote',
+                        onClick: vote,
+                      },
+                      onDismiss: {
+                        label: 'Cancel',
+                        onClick: () => dispatch(setDualActionModal(false)),
+                      },
+                    }
+                  : {
+                      content:
+                        'You must connect with MetaMask before you can vote.',
+                      title: 'Connect MetaMask',
+                      onConfirm: {
+                        label: 'Connect',
+                        onClick: () => {
+                          activate(connectors.Injected);
+                          dispatch(setDualActionModal(false));
+                        },
+                      },
+                      onDismiss: {
+                        label: 'Cancel',
+                        onClick: () => dispatch(setDualActionModal(false)),
+                      },
+                    },
+              ),
             );
           }}
         >

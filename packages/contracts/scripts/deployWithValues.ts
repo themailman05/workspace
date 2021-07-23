@@ -4,6 +4,7 @@ import bluebird from "bluebird";
 import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { getBytes32FromIpfsHash } from "@popcorn/utils/src/ipfsHashManipulation";
+import { ProposalType } from "../../utils/src";
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 
@@ -15,6 +16,11 @@ interface Contracts {
   randomNumberConsumer: Contract;
   grantElections: Contract;
   beneficiaryGovernance: Contract;
+}
+
+enum Vote {
+  Yes,
+  No,
 }
 
 export default async function deploy(ethers): Promise<void> {
@@ -206,25 +212,37 @@ export default async function deploy(ethers): Promise<void> {
 
   const voteOnProposals = async (): Promise<void> => {
     console.log("vote on beneficiary proposals ...");
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(0, 0);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(1, 1);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(2, 1);
-    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(2, 0);
+    await contracts.beneficiaryGovernance
+      .connect(bennies[0])
+      .vote(0, ProposalType.Nomination, Vote.Yes);
+    await contracts.beneficiaryGovernance
+      .connect(bennies[0])
+      .vote(1, ProposalType.Nomination, Vote.No);
+    await contracts.beneficiaryGovernance
+      .connect(bennies[0])
+      .vote(2, ProposalType.Nomination, Vote.No);
+    await contracts.beneficiaryGovernance
+      .connect(bennies[1])
+      .vote(2, ProposalType.Nomination, Vote.Yes);
 
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(4, 1);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(5, 1);
+    await contracts.beneficiaryGovernance
+      .connect(bennies[0])
+      .vote(4, ProposalType.Nomination, Vote.No);
+    await contracts.beneficiaryGovernance
+      .connect(bennies[0])
+      .vote(5, ProposalType.Nomination, Vote.No);
 
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6);
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7);
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6, ProposalType.Nomination);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7, ProposalType.Nomination);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8, ProposalType.Nomination);
   };
 
   const voteOnTakedownProposals = async (): Promise<void> => {
     console.log("vote on beneficiary takedown proposals ...");
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(12, 0);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(11, 1);
-    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(11, 1);
-    await contracts.beneficiaryGovernance.connect(bennies[2]).vote(14, 0);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(11,  ProposalType.Takedown, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(13,  ProposalType.Takedown, Vote.No);
+    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(13,  ProposalType.Takedown, Vote.No);
+    await contracts.beneficiaryGovernance.connect(bennies[2]).vote(14,  ProposalType.Takedown, Vote.Yes);
 
     // await contracts.beneficiaryGovernance.connect(bennies[4]).finalize(11)
     // await contracts.beneficiaryGovernance.connect(bennies[5]).finalize(12)
