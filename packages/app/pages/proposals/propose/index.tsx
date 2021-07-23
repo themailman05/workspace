@@ -11,6 +11,7 @@ import Name from 'components/Proposals/Form/Name';
 import NavigationButtons from 'components/Proposals/Form/NavigationButtons';
 import Preview from 'components/Proposals/Form/Preview';
 import ProfileImage from 'components/Proposals/Form/ProfileImage';
+import ProjectName from 'components/Proposals/Form/ProjectName';
 import ProofOfOwnership from 'components/Proposals/Form/ProofOfOwnership';
 import SocialMedia from 'components/Proposals/Form/SocialMedia';
 import Video from 'components/Proposals/Form/Video';
@@ -38,6 +39,7 @@ export interface FormStepProps {
 
 export const defaultFormData: BeneficiaryApplication = {
   organizationName: '',
+  projectName: '',
   missionStatement: '',
   beneficiaryAddress: '',
   files: {
@@ -63,6 +65,7 @@ export const defaultFormData: BeneficiaryApplication = {
 const stepOrder: string[] = [
   'intro',
   'name',
+  'projectName',
   'beneficiary-address',
   'mission-statement',
   'proof-of-ownership',
@@ -94,10 +97,8 @@ export default function BeneficiaryProposal(): JSX.Element {
     const stepName = router.query.step as string;
     const stepIndex = stepOrder.indexOf(stepName);
     if (stepName && stepIndex !== -1) {
-      if (stepIndex && stepIndex !== currentStep && stepIndex < stepLimit)
+      if (stepIndex !== undefined && stepIndex !== currentStep)
         setCurrentStep(stepIndex);
-      if (stepIndex && stepIndex !== currentStep && stepIndex >= stepLimit)
-        setCurrentStep(stepLimit);
     }
   }, [router]);
 
@@ -138,6 +139,11 @@ export default function BeneficiaryProposal(): JSX.Element {
         form={[formData, setFormData]}
         navigation={navigation}
         visible={stepOrder[currentStep] === 'name'}
+      />
+      <ProjectName
+        form={[formData, setFormData]}
+        navigation={navigation}
+        visible={stepOrder[currentStep] === 'projectName'}
       />
       <BeneficiaryAddress
         form={[formData, setFormData]}

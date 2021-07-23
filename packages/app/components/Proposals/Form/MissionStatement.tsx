@@ -1,14 +1,14 @@
-import React from 'react';
 import { FormStepProps } from 'pages/proposals/propose';
-import ControlledTextInput from './ControlledTextInput';
+import React from 'react';
 import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
+import ControlledTextInput from './ControlledTextInput';
 
-export default function MissionStatement({
+const MissionStatement: React.FC<FormStepProps> = ({
   form,
   navigation,
   visible,
-}: FormStepProps): JSX.Element {
+}) => {
   const [formData, setFormData] = form;
   function updateMissionStatement(value: string): void {
     setFormData({ ...formData, missionStatement: value });
@@ -18,7 +18,8 @@ export default function MissionStatement({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          {navigation.currentStep} - Please share the organization's mission statement
+          {navigation.currentStep} - Please share the organization's mission
+          statement
         </h2>
         <ControlledTextInput
           inputValue={formData?.missionStatement}
@@ -29,9 +30,10 @@ export default function MissionStatement({
           isValid={inputExists}
         />
         {inputExists(formData?.missionStatement) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
   );
-}
+};
+export default MissionStatement;

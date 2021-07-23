@@ -1,4 +1,5 @@
-import axios from 'axios';
+import { IpfsClient } from '@popcorn/utils';
+import { UploadResult } from '@popcorn/utils/IpfsClient/IpfsClient';
 import ProgressBar from 'components/ProgressBar';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -6,111 +7,75 @@ import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
 import { DisplayVideo } from './DisplayFiles';
 
-const success = () => toast.success('Successful upload to IPFS');
+const success = (msg: string) => toast.success(msg);
 const loading = () => toast.loading('Uploading to IPFS...');
 const uploadError = (errMsg: string) => toast.error(errMsg);
 
-export const uploadImageToPinata = (
-  files: File[],
-  setProfileImage: (input: string) => void,
-) => {
-  var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  files.forEach((file) => {
-    var formdata = new FormData();
-    formdata.append('file', file, 'download.png'); // TODO: Source from filename
-    loading();
+const isSuccessfulUpload = (res: UploadResult): boolean => res.status === 200;
+const isFailedUpload = (res: UploadResult): boolean => res.status !== 200;
 
-    fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers: myHeaders,
-      body: formdata,
-      redirect: 'follow',
-    })
-      .then((response) => response.text())
-      .then((result) => {
-        const hash = JSON.parse(result).IpfsHash;
-        setProfileImage(hash);
-        toast.dismiss();
-        success();
-      })
-      .catch((error) => {
-        uploadError('Error uploading to IPFS');
-      });
-  });
-};
-
-export const uploadVideo = (
+export const uploadSingleFile = async (
   files: File[],
   setVideo: (input: string | string[]) => void,
-  setUploadProgress: React.Dispatch<React.SetStateAction<number>>,
+  setUploadProgress?: (progress: number) => void,
 ) => {
-  files.forEach((file) => {
-    var data = new FormData();
-    data.append('file', file, 'download.png'); // TODO: Source video name from file
-    loading();
-    var config = {
-      headers: {
-        'Content-Type': `multipart/form-data;`,
-        pinata_api_key: process.env.PINATA_API_KEY,
-        pinata_secret_api_key: process.env.PINATA_API_SECRET,
-      },
-      onUploadProgress: (progressEvent) => {
-        var percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total,
-        );
-        setUploadProgress(percentCompleted);
-      },
-    };
-
-    axios
-      .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
-      .then((result) => {
-        const hash = result.data.IpfsHash;
-        setVideo(hash);
-        toast.dismiss();
-        success();
-        setUploadProgress(0);
-      })
-      .catch((error) => {
-        console.log(error);
-        uploadError('Error uploading to IPFS');
-      });
-  });
+  loading();
+  const res = await IpfsClient().upload(files[0], setUploadProgress);
+  if (isSuccessfulUpload(res)) {
+    setVideo(res.hash);
+    toast.dismiss();
+    success('Successful upload to IPFS');
+  } else {
+    toast.dismiss();
+    uploadError(
+      `Upload was unsuccessful with status ${res.status}. ${res.errorDetails}`,
+    );
+  }
 };
 
-function uploadMultipleImagesToPinata(
+async function uploadMultipleFiles(
   files: File[],
   setLocalState: (input: string[]) => void,
+  fileType: string,
 ) {
-  toast.dismiss();
-  var myHeaders = new Headers();
-  myHeaders.append('pinata_api_key', process.env.PINATA_API_KEY);
-  myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
-  let newImageHashes: string[] = [];
-  files.forEach((file) => {
-    var formdata = new FormData();
-    formdata.append('file', file, 'download.png'); // TODO: Source from filenames
-    loading();
-    fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
-      method: 'POST',
-      headers: myHeaders,
-      body: formdata,
-      redirect: 'follow',
-    })
-      .then((response) => response.text())
-      .then((result) => {
-        const hash = JSON.parse(result).IpfsHash;
-        newImageHashes.push(hash);
-        setLocalState(newImageHashes);
-        toast.dismiss();
-        success();
-      })
-      .catch((error) => {
-        uploadError('Error uploading to IPFS');
-      });
-  });
+  loading();
+  const uploadResults = await Promise.all(
+    files.map((file) => {
+      return IpfsClient().upload(file);
+    }),
+  );
+  if (uploadResults.every(isSuccessfulUpload)) {
+    setLocalState(uploadResults.map((result) => result.hash));
+    toast.dismiss();
+    success(
+      `${
+        fileType === 'image/*' ? 'Images' : 'Files'
+      } successfully uploaded to IPFS`,
+    );
+  } else if (uploadResults.every(isFailedUpload)) {
+    toast.dismiss();
+    uploadError(
+      `Uploads were unsuccessful with status ${uploadResults[0].status}: 
+      ${uploadResults[0].errorDetails}`,
+    );
+  } else {
+    const successfulUploads = uploadResults.filter(isSuccessfulUpload);
+    const unsuccessfulUploads = uploadResults.filter(isFailedUpload);
+    setLocalState(successfulUploads.map((result) => result.hash));
+    success(
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were successfully upload to IPFS`,
+    );
+    uploadError(
+      `${successfulUploads.length} ${
+        fileType === 'image/*' ? 'images' : 'files'
+      } were unsuccessfully uploaded to IPFS 
+      with status ${unsuccessfulUploads[0].status}: ${
+        unsuccessfulUploads[0].errorDetails
+      }`,
+    );
+  }
 }
 
 interface IpfsProps {
@@ -148,7 +113,8 @@ const showUploadBox = (
   return localState.length < numMaxFiles;
 };
 
-export default function IpfsUpload({
+const IpfsUpload: React.FC<IpfsProps> = ({
+
   stepName,
   localState,
   fileDescription,
@@ -157,7 +123,7 @@ export default function IpfsUpload({
   numMaxFiles,
   maxFileSizeMB,
   setLocalState,
-}: IpfsProps) {
+}) => {
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const {
@@ -179,14 +145,13 @@ export default function IpfsUpload({
         toast.error(`Maximum number of files to be uploaded is ${numMaxFiles}`);
       } else {
         if (numMaxFiles === 1 && fileType === 'image/*') {
-          uploadImageToPinata(acceptedFiles, setLocalState);
+          uploadSingleFile(acceptedFiles, setLocalState);
         } else if (fileType === 'video/*') {
-          uploadVideo(acceptedFiles, setLocalState, setUploadProgress);
+          uploadSingleFile(acceptedFiles, setLocalState, setUploadProgress);
         } else {
-          uploadMultipleImagesToPinata(acceptedFiles, setLocalState);
+          uploadMultipleFiles(acceptedFiles, setLocalState, fileType);
         }
       }
-
       setFiles(
         acceptedFiles.map((file) =>
           Object.assign(file, {
@@ -258,4 +223,5 @@ export default function IpfsUpload({
       )}
     </div>
   );
-}
+};
+export default IpfsUpload;

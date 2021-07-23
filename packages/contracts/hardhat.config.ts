@@ -143,14 +143,14 @@ task("random", "gets a random number")
   });
 
 task("send-eth", "send eth to address")
-  .addPositionalParam('address')
-  .setAction(async (args, hre) =>{
+  .addPositionalParam("address")
+  .setAction(async (args, hre) => {
     const [signer] = await hre.ethers.getSigners();
     await signer.sendTransaction({
       to: args.address,
-      value: hre.ethers.utils.parseEther("2.0")
+      value: hre.ethers.utils.parseEther("2.0"),
     });
-  })
+  });
 
 task("hysi:deploy", "deploys set token")
   .addOptionalParam("debug", "display debug information")
@@ -193,10 +193,13 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY],
     },
     hardhat: {
-      forking: {
-        url: process.env.RPC_URL,
-        blockNumber: 12724811,
-      },
+      forking:
+        process.env.FORKING_ENABLED == "true"
+          ? {
+              url: process.env.FORKING_RPC_URL,
+              blockNumber: 12724811,
+            }
+          : undefined,
     },
     rinkeby: {
       url: process.env.RPC_URL,

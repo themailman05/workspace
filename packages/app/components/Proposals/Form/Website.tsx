@@ -4,11 +4,7 @@ import inputExists from 'utils/isValidInput';
 import ContinueButton from './ContinueButton';
 import ControlledTextInput from './ControlledTextInput';
 
-export default function Website({
-  form,
-  navigation,
-  visible,
-}: FormStepProps): JSX.Element {
+const Website: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
   const [formData, setFormData] = form;
 
   function isValid(website): boolean {
@@ -33,9 +29,10 @@ export default function Website({
           isValid={isValid}
         />
         {inputExists(formData.organizationName) && (
-          <ContinueButton {...navigation} />
+          <ContinueButton navigation={navigation} />
         )}
       </div>
     )
   );
-}
+};
+export default Website;

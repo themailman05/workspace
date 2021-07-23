@@ -1,19 +1,19 @@
-import { ElectionProps } from 'components/Beneficiaries/BeneficiaryCard';
 import { BeneficiaryApplication } from '@popcorn/utils';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';
+import { ElectionProps } from './BeneficiaryCardWithElectionData';
 
-interface VoteSlider {
+interface VoteSliderProps {
   beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;
 }
 
-export default function VoteSlider({
+const VoteSlider: React.FC<VoteSliderProps> = ({
   beneficiary,
   electionProps,
-}: VoteSlider): JSX.Element {
-  const [votesAssignedByuser, setVotesAssignedByUser] = useState(0);
+}) => {
+  const [votesAssignedByUser, setVotesAssignedByUser] = useState(0);
 
   const sliderSteps = [
     [0, '0%'],
@@ -28,10 +28,15 @@ export default function VoteSlider({
   });
 
   function handleSliderChange(value: number) {
-    if (electionProps.voiceCredits - electionProps.pendingVotes[electionProps.election.electionTerm].total <= 0) {
+    if (
+      electionProps.voiceCredits -
+        electionProps.pendingVotes[electionProps.election.electionTerm].total <=
+      0
+    ) {
       if (
-        electionProps.pendingVotes[electionProps.election.electionTerm].votes[beneficiary.beneficiaryAddress] >
-        value
+        electionProps.pendingVotes[electionProps.election.electionTerm].votes[
+          beneficiary.beneficiaryAddress
+        ] > value
       ) {
         setVotesAssignedByUser(value);
         electionProps.assignVotes(electionProps.election.electionTerm, {
@@ -58,7 +63,7 @@ export default function VoteSlider({
         <span className="text-base text-gray-700 flex flex-row">
           <p className="font-medium">{electionProps.totalVotes || 0}</p>
           <p className="mr-4">
-            {votesAssignedByuser > 0 && `+${votesAssignedByuser}`}
+            {votesAssignedByUser > 0 && `+${votesAssignedByUser}`}
           </p>
         </span>
       </span>
@@ -67,7 +72,7 @@ export default function VoteSlider({
           <Slider
             key={beneficiary?.beneficiaryAddress}
             className="mt-2"
-            value={votesAssignedByuser}
+            value={votesAssignedByUser}
             onChange={(value) => handleSliderChange(value)}
             min={0}
             max={electionProps.voiceCredits}
@@ -88,4 +93,5 @@ export default function VoteSlider({
       )}
     </>
   );
-}
+};
+export default VoteSlider;
