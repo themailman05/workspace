@@ -1,5 +1,3 @@
-import { DocumentReportIcon } from '@heroicons/react/outline';
-
 interface DisplayFilesProps {
   localState: string | string[];
 }
@@ -33,36 +31,5 @@ export const DisplayVideo: React.FC<DisplayFilesProps> = ({ localState }) => {
         </video>
       </div>
     )
-  );
-};
-
-export const DisplayPDFs: React.FC<DisplayFilesProps> = ({ localState }) => {
-  return (
-    <>
-      <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
-        {localState.length ? 'Document Preview' : ''}
-      </p>
-      {Array.isArray(localState) ? (
-        <div>
-          {localState.map((IpfsHash, i) => {
-            return (
-              <div key={IpfsHash} className="flex flex-row items-center">
-                <a
-                  className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1"
-                  href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}
-                >
-                  {'Impact Report/Audit ' + i + ': '}
-                  <DocumentReportIcon className="inline ml-2 h-5 w-5" />
-                </a>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div>
-          <p>None</p>
-        </div>
-      )}
-    </>
   );
 };
