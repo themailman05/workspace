@@ -2,7 +2,7 @@ import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
 import inputExists from 'utils/isValidInput';
 import ControlledTextInput from './ControlledTextInput';
-import { DisplayImages } from './DisplayFiles';
+import { DisplayImage } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
@@ -64,24 +64,23 @@ const AdditionalImages: React.FC<FormStepProps> = ({
           numMaxFiles={4}
           maxFileSizeMB={5}
         />
-        <DisplayImages
-          localState={formData?.files?.additionalImages?.map(
-            (image) => image.image,
-          )}
-        />
-        <div className="mt-8 w-80 mx-auto">
+
+        <div className="mt-8 mx-auto">
           {formData?.files?.additionalImages?.map((image, i) => (
             <div className="mb-4">
-              <p>Image {i + 1} Description</p>
-              <ControlledTextInput
-                inputValue={image.description}
-                id={`description ${i}`}
-                placeholder={`Description for Image ${i + 1}`}
-                errorMessage="Image description cannot be blank."
-                updateInput={updateImageDescription}
-                inputIndex={i}
-                isValid={inputExists}
-              />
+              <DisplayImage localState={image.image} />
+              <div className="mx-auto mt-2 w-80">
+                <p>Image {i + 1} Description</p>
+                <ControlledTextInput
+                  inputValue={image.description}
+                  id={`description ${i}`}
+                  placeholder={`Description for Image ${i + 1}`}
+                  errorMessage="Image description cannot be blank."
+                  updateInput={updateImageDescription}
+                  inputIndex={i}
+                  isValid={inputExists}
+                />
+              </div>
             </div>
           ))}
           {isFilled() && (
