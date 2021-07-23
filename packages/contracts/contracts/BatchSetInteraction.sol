@@ -38,7 +38,7 @@ contract BatchSetInteraction is Owned {
     uint256 suppliedToken;
     uint256 claimableToken;
     mapping(address => uint256) shareBalance;
-    uint8 claimable; //either 0 | 1
+    bool claimable;
   }
 
   /* ========== STATE VARIABLES ========== */
@@ -123,7 +123,7 @@ contract BatchSetInteraction is Owned {
    */
   function claim(bytes32 batchId_, BatchType batchType_) external {
     Batch storage batch = batches[batchId_];
-    require(batch.claimable == 1, "not yet claimable");
+    require(batch.claimable, "not yet claimable");
     uint256 shares = batch.shareBalance[msg.sender];
     require(shares <= batch.unclaimedShares, "claiming too many shares");
 
@@ -152,7 +152,7 @@ contract BatchSetInteraction is Owned {
         (batch.suppliedToken >= mintThreshold),
       "can not execute batch action yet"
     );
-    require(batch.claimable == 0, "already minted");
+    require(batch.claimable == false, "already minted");
     require(
       threeCrv.balanceOf(address(this)) >= batch.suppliedToken,
       "insufficient balance"
@@ -181,7 +181,7 @@ contract BatchSetInteraction is Owned {
     setBasicIssuanceModule.issue(setToken, amount_, address(this));
     batch.claimableToken = setToken.balanceOf(address(this)).sub(oldBalance);
     batch.suppliedToken = 0;
-    batch.claimable = 1;
+    batch.claimable = true;
 
     lastMintedAt = block.timestamp;
     currentMintBatchId = _generateNextBatchId(currentMintBatchId);
@@ -196,7 +196,7 @@ contract BatchSetInteraction is Owned {
         (batch.suppliedToken >= redeemThreshold),
       "can not execute batch action yet"
     );
-    require(batch.claimable == 0, "already minted");
+    require(batch.claimable == false, "already minted");
     require(
       setToken.balanceOf(address(this)) >= batch.suppliedToken,
       "insufficient balance"
@@ -224,9 +224,9 @@ contract BatchSetInteraction is Owned {
 
     emit BatchRedeemed(batch.suppliedToken);
 
-    batch.claimableToken = threeCrv.balanceOf(address(this)); //.sub(oldBalance);
+    batch.claimableToken = threeCrv.balanceOf(address(this)).sub(oldBalance);
     batch.suppliedToken = 0;
-    batch.claimable = 1;
+    batch.claimable = true;
 
     lastRedeemedAt = block.timestamp;
     currentRedeemBatchId = _generateNextBatchId(currentRedeemBatchId);
