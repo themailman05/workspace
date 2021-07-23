@@ -317,7 +317,7 @@ describe("BatchSetInteraction", function () {
           const previousBatch = await contracts.batchSetInteraction.batches(
             previousMintBatchId
           );
-          expect(previousBatch.claimable).to.equal(1);
+          expect(previousBatch.claimable).to.equal(true);
 
           const currentMintBatchId =
             await contracts.batchSetInteraction.currentMintBatchId();
@@ -589,7 +589,7 @@ describe("BatchSetInteraction", function () {
           const previousBatch = await contracts.batchSetInteraction.batches(
             previousRedeemBatchId
           );
-          expect(previousBatch.claimable).to.equal(1);
+          expect(previousBatch.claimable).to.equal(true);
 
           const currentRedeemBatchId =
             await contracts.batchSetInteraction.currentRedeemBatchId();
