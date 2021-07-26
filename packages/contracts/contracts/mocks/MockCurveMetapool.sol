@@ -68,14 +68,14 @@ contract MockCurveMetapool {
   }
 
   function remove_liquidity_one_coin(
-    uint256 amount,
-    int128 i, //index if the coin to withdraw
-    uint256 min_underlying_amount
+    uint256 _token_amount,
+    int128 i,
+    uint256 _min_amount
   ) external returns (uint256) {
-    lpToken.transferFrom(msg.sender, address(this), amount);
+    lpToken.transferFrom(msg.sender, address(this), _token_amount);
 
-    uint256 slippage = (amount * withdrawalSlippageBps) / 10000;
-    uint256 transferOut = amount - slippage;
+    uint256 slippage = (_token_amount * withdrawalSlippageBps) / 10000;
+    uint256 transferOut = _token_amount - slippage;
 
     uint256 i = uint256(i);
     tokens[i].approve(address(this), transferOut);

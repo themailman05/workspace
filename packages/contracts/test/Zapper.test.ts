@@ -1,21 +1,21 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {
   MockERC20,
-  MockCurveDepositZap,
-  MockCurveAddressProvider,
   MockCurveThreepool,
   MockCurveMetapool,
-  MockCurveRegistry,
   MockYearnV2Vault,
-  MockYearnRegistry,
   Pool,
   Zapper,
 } from "../typechain";
 import { expect } from "chai";
-import { waffle, ethers } from "hardhat";
-import { parseEther, getAddress } from "ethers/lib/utils";
+import { ethers } from "hardhat";
+import { parseEther } from "ethers/lib/utils";
+import { deployMockContract, MockContract } from "ethereum-waffle";
+import yearnRegistryABI from "../contracts/mocks/abis/yearnRegistry.json";
+import curveAddressProviderABI from "../contracts/mocks/abis/curveAddressProvider.json";
+import curveRegistryABI from "../contracts/mocks/abis/curveRegistry.json";
 
-const provider = waffle.provider;
+const { AddressZero } = ethers.constants;
 
 interface Contracts {
   mockToken: MockERC20;
@@ -26,15 +26,15 @@ interface Contracts {
   mockUSDT: MockERC20;
   mockCurveThreepool: MockCurveThreepool;
   mockCurveMetapool: MockCurveMetapool;
-  mockCurveRegistry: MockCurveRegistry;
-  mockCurveAddressProvider: MockCurveAddressProvider;
+  mockCurveRegistry: MockContract;
+  mockCurveAddressProvider: MockContract;
   mockYearnVault: MockYearnV2Vault;
-  mockYearnRegistry: MockYearnRegistry;
+  mockYearnRegistry: MockContract;
   pool: Pool;
   zapper: Zapper;
 }
 
-let depositor: SignerWithAddress, rewardsManager: SignerWithAddress;
+let owner: SignerWithAddress, depositor: SignerWithAddress, rewardsManager: SignerWithAddress;
 let contracts: Contracts;
 
 async function deployContracts(): Promise<Contracts> {
@@ -89,23 +89,40 @@ async function deployContracts(): Promise<Contracts> {
     )
   ).deployed();
 
-  const MockCurveRegistry = await ethers.getContractFactory(
-    "MockCurveRegistry"
-  );
-  const mockCurveRegistry = await (
-    await MockCurveRegistry.deploy(
-      mockCurveMetapool.address,
-      mockCurveThreepool.address,
-      mock3crv.address
-    )
-  ).deployed();
+  const mockCurveRegistry = await deployMockContract(owner, curveRegistryABI);
+  await mockCurveRegistry.mock.get_lp_token.withArgs(mockCurveMetapool.address).returns(mockLPToken.address);
+  await mockCurveRegistry.mock.get_pool_from_lp_token.withArgs(mockLPToken.address).returns(mockCurveMetapool.address);
 
-  const MockCurveAddressProvider = await ethers.getContractFactory(
-    "MockCurveAddressProvider"
+  await mockCurveRegistry.mock.get_lp_token.withArgs(mockCurveThreepool.address).returns(mock3crv.address);
+  await mockCurveRegistry.mock.get_pool_from_lp_token.withArgs(mock3crv.address).returns(mockCurveThreepool.address);
+
+  await mockCurveRegistry.mock.get_coins.returns(
+    [
+      mockToken.address,
+      mock3crv.address,
+      AddressZero,
+      AddressZero,
+      AddressZero,
+      AddressZero,
+      AddressZero,
+      AddressZero
+    ]
   );
-  const mockCurveAddressProvider = await (
-    await MockCurveAddressProvider.deploy(mockCurveRegistry.address)
-  ).deployed();
+  await mockCurveRegistry.mock.get_underlying_coins.returns(
+    [
+      mockToken.address,
+      mockDai.address,
+      mockUSDC.address,
+      mockUSDT.address,
+      AddressZero,
+      AddressZero,
+      AddressZero,
+      AddressZero
+    ]
+  );
+
+  const mockCurveAddressProvider = await deployMockContract(owner, curveAddressProviderABI);
+  await mockCurveAddressProvider.mock.get_registry.returns(mockCurveRegistry.address);
 
   const Zapper = await ethers.getContractFactory("Zapper");
   const zapper = await (
@@ -117,12 +134,10 @@ async function deployContracts(): Promise<Contracts> {
     await MockYearnV2Vault.deploy(mockLPToken.address)
   ).deployed();
 
-  const MockYearnRegistry = await ethers.getContractFactory(
-    "MockYearnRegistry"
-  );
-  const mockYearnRegistry = await (
-    await MockYearnRegistry.deploy(mockYearnVault.address)
-  ).deployed();
+  const mockYearnRegistry = await deployMockContract(owner, yearnRegistryABI);
+  await mockYearnRegistry.mock.latestVault.returns(mockYearnVault.address);
+  await mockYearnRegistry.mock.numVaults.returns(1);
+  await mockYearnRegistry.mock.vaults.returns(mockYearnVault.address);
 
   const Pool = await ethers.getContractFactory("Pool");
   const pool = await (
@@ -155,7 +170,7 @@ async function deployContracts(): Promise<Contracts> {
 
 describe("Zapper", function () {
   beforeEach(async function () {
-    [depositor, rewardsManager] = await ethers.getSigners();
+    [owner, depositor, rewardsManager] = await ethers.getSigners();
     contracts = await deployContracts();
   });
 

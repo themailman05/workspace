@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "./MockERC20.sol";
-import "hardhat/console.sol";
 
 contract MockYearnV2Vault is MockERC20 {
   using SafeMath for uint256;

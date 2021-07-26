@@ -41,7 +41,6 @@ contract MockCurveThreepool {
 
   function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amounts)
     external
-    returns (uint256)
   {
     uint256 lpTokens;
     for (uint8 i = 0; i < tokens.length; i++) {
@@ -49,18 +48,17 @@ contract MockCurveThreepool {
       lpToken.mint(msg.sender, amounts[i]);
       lpTokens += amounts[i];
     }
-    return lpTokens;
   }
 
   function remove_liquidity_one_coin(
-    uint256 amount,
+    uint256 _token_amount,
     int128 i,
-    uint256 min_underlying_amount
+    uint256 min_amount
   ) external {
-    lpToken.transferFrom(msg.sender, address(this), amount);
+    lpToken.transferFrom(msg.sender, address(this), _token_amount);
 
-    uint256 slippage = (amount * withdrawalSlippageBps) / 10000;
-    uint256 transferOut = amount - slippage;
+    uint256 slippage = (_token_amount * withdrawalSlippageBps) / 10000;
+    uint256 transferOut = _token_amount - slippage;
 
     uint256 i = uint256(i);
     tokens[i].approve(address(this), transferOut);
