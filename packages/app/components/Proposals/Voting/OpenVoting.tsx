@@ -1,14 +1,17 @@
 import { RadioGroup } from '@headlessui/react';
+import { CheckIcon } from '@heroicons/react/solid';
 import { VoteOptions } from '@popcorn/contracts/lib/BeneficiaryGovernance/constants';
-import { Proposal, ProposalType } from '@popcorn/utils';
+import { ProposalType } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext, useState } from 'react';
 import CountdownTimer from './CountdownTimer';
+import HasVoted from './HasVoted';
+import { VotingProps } from './Voting';
 
-const OpenVoting: React.FC<Proposal> = (proposal) => {
+const OpenVoting: React.FC<VotingProps> = ({ proposal, hasVoted = false }) => {
   const { dispatch } = useContext(store);
   const [selected, setSelected] = useState<VoteOptions>(VoteOptions.Yay);
   const { contracts } = useContext(ContractsContext);
@@ -21,7 +24,9 @@ const OpenVoting: React.FC<Proposal> = (proposal) => {
     dispatch(setDualActionModal(false));
   };
 
-  return (
+  return hasVoted ? (
+    <HasVoted/>
+  ) : (
     <div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">

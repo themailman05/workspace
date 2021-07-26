@@ -1,13 +1,18 @@
 import { VoteOptions } from '@popcorn/contracts/lib/BeneficiaryGovernance/constants';
-import { Proposal, ProposalType } from '@popcorn/utils';
+import { ProposalType } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext } from 'react';
 import CountdownTimer from './CountdownTimer';
+import HasVoted from './HasVoted';
+import { VotingProps } from './Voting';
 
-const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
+const ChallengePeriodVoting: React.FC<VotingProps> = ({
+  proposal,
+  hasVoted = false,
+}) => {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
   const { library } = useWeb3React();
@@ -20,7 +25,9 @@ const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
     closeModal();
   };
 
-  return (
+  return hasVoted ? (
+    <HasVoted />
+  ) : (
     <div>
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">

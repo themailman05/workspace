@@ -52,9 +52,15 @@ export const BeneficiaryGovernanceAdapter = (
     getAllProposals: async (
       proposalType: ProposalType,
     ): Promise<Proposal[]> => {
-      const numNominations = await contract.getNumberOfProposals(ProposalType.Nomination);
-      const numTakedowns = await contract.getNumberOfProposals(ProposalType.Takedown);
-      const proposalIds = new Array(numNominations.add(numTakedowns).toNumber()).fill(undefined);
+      const numNominations = await contract.getNumberOfProposals(
+        ProposalType.Nomination,
+      );
+      const numTakedowns = await contract.getNumberOfProposals(
+        ProposalType.Takedown,
+      );
+      const proposalIds = new Array(
+        numNominations.add(numTakedowns).toNumber(),
+      ).fill(undefined);
       const proposalData: { proposal: ProposalContract; id: number }[] =
         await Promise.all(
           proposalIds.map(async (x, i) => {
@@ -75,6 +81,13 @@ export const BeneficiaryGovernanceAdapter = (
             ),
         ),
       );
+    },
+    hasVoted: async (
+      id: string,
+      proposalType: ProposalType,
+      account: string,
+    ): Promise<boolean> => {
+      return await contract.hasVoted(id, proposalType, account);
     },
   };
 };
