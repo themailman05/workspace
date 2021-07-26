@@ -4,24 +4,26 @@ import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import CountdownTimer from './CountdownTimer';
 import HasVoted from './HasVoted';
 import { VotingProps } from './Voting';
 
 const ChallengePeriodVoting: React.FC<VotingProps> = ({
   proposal,
-  hasVoted = false,
+  hasVoted: hasVotedInitial = false,
 }) => {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
   const { library } = useWeb3React();
+  const [hasVoted, setHasVoted] = useState<Boolean>(hasVotedInitial);
 
   const closeModal = () => dispatch(setDualActionModal(false));
   const voteNo = async () => {
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
-      .vote(proposal.id, proposal.proposalType, VoteOptions.Nay);
+      .vote(proposal.id, proposal.proposalType, VoteOptions.Nay)
+      .then((res) => setHasVoted(true));
     closeModal();
   };
 
