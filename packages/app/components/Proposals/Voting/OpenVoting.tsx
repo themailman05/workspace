@@ -6,6 +6,7 @@ import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
 import { useContext, useState } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import CountdownTimer from './CountdownTimer';
 
 const OpenVoting: React.FC<Proposal> = (proposal) => {
@@ -15,14 +16,19 @@ const OpenVoting: React.FC<Proposal> = (proposal) => {
   const { library } = useWeb3React();
 
   const vote = () => {
+    toast.loading("Submitting vote...")
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
-      .vote(proposal.id, proposal.proposalType, selected);
+      .vote(proposal.id, proposal.proposalType, selected)
+      .then((res) => toast.success('Voted successfully!'))
+      .catch((err) => toast.error(err.data.message.split("'")[1]));
+
     dispatch(setDualActionModal(false));
   };
 
   return (
     <div>
+      <Toaster position="top-right" />
       <div className="grid my-2 justify-items-stretch">
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="mt-8 text-xl text-gray-500 leading-8">
