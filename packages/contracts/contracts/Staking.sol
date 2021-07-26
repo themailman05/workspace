@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "./lib/Owned.sol";
 import "./Interfaces/IStaking.sol";
-import "./Owned.sol";
 import "./Interfaces/IRewardsManager.sol";
 import "./Defended.sol";
 

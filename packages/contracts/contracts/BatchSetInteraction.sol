@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "./Owned.sol";
+import "./lib/Owned.sol";
 import "./Interfaces/Integrations/YearnVault.sol";
 import "./Interfaces/Integrations/CurveContracts.sol";
 import "./Interfaces/Integrations/BasicIssuanceModule.sol";

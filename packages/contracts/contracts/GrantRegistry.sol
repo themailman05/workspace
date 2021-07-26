@@ -3,7 +3,7 @@
 pragma solidity >=0.7.0 <0.8.0;
 
 import "./BeneficiaryRegistry.sol";
-import "./Owned.sol";
+import "./lib/Owned.sol";
 
 contract GrantRegistry is Governed, CouncilControlled {
   IBeneficiaryRegistry private beneficiaryRegistry;

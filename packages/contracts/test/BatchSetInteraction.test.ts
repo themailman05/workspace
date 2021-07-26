@@ -58,7 +58,28 @@ async function deployContracts(): Promise<Contracts> {
   const mockCrvUST = await (
     await MockERC20.deploy("crvUST", "crvUST", 18)
   ).deployed();
-  const mockSetToken = await await MockERC20.deploy("setToken", "setToken", 18);
+
+  const mockSetToken = await MockERC20.deploy("setToken", "setToken", 18);
+
+  const mockUSDX = await (
+    await MockERC20.deploy("Mock DAI", "DAI", 18)
+  ).deployed();
+
+  const mockUST = await (
+    await MockERC20.deploy("Mock DAI", "DAI", 18)
+  ).deployed();
+
+  const mockDai = await (
+    await MockERC20.deploy("Mock DAI", "DAI", 18)
+  ).deployed();
+
+  const mockUSDC = await (
+    await MockERC20.deploy("Mock USDC", "USDC", 6)
+  ).deployed();
+
+  const mockUSDT = await (
+    await MockERC20.deploy("Mock USDT", "USDT", 18)
+  ).deployed();
 
   const MockYearnV2Vault = await ethers.getContractFactory("MockYearnV2Vault");
   const mockYearnVaultUSDX = await (
@@ -72,10 +93,24 @@ async function deployContracts(): Promise<Contracts> {
     "MockCurveMetapool"
   );
   const mockCurveMetapoolUSDX = await (
-    await MockCurveMetapool.deploy(mockCrvUSDX.address, mock3Crv.address)
+    await MockCurveMetapool.deploy(
+      mockUSDX.address,
+      mockCrvUSDX.address,
+      mock3Crv.address,
+      mockDai.address,
+      mockUSDC.address,
+      mockUSDT.address
+    )
   ).deployed();
   const mockCurveMetapoolUST = await (
-    await MockCurveMetapool.deploy(mockCrvUST.address, mock3Crv.address)
+    await MockCurveMetapool.deploy(
+      mockUST.address,
+      mockCrvUST.address,
+      mock3Crv.address,
+      mockDai.address,
+      mockUSDC.address,
+      mockUSDT.address
+    )
   ).deployed();
 
   const mockBasicIssuanceModule = await (

@@ -2,10 +2,10 @@
 
 pragma solidity >=0.7.0 <=0.8.3;
 
-import "./Governed.sol";
-import "./CouncilControlled.sol";
-import "./Interfaces/IBeneficiaryRegistry.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "./Interfaces/IBeneficiaryRegistry.sol";
+import "./CouncilControlled.sol";
+import "./Governed.sol";
 
 contract BeneficiaryRegistry is
   IBeneficiaryRegistry,
