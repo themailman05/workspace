@@ -19,7 +19,6 @@ const ControlledTextInput: React.FC<ControlledTextInputProps> = ({
   updateInput,
   inputIndex,
 }) => {
-  console.log('inputIndex', inputIndex);
   return (
     <>
       <div className="mt-1 relative rounded-md shadow-sm">
