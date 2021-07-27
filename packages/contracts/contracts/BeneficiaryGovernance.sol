@@ -5,14 +5,14 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./Governed.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./ParticipationReward.sol";
 
 /**
  * @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
  */
-contract BeneficiaryGovernance is Governed {
+contract BeneficiaryGovernance is ParticipationReward {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -56,9 +56,9 @@ contract BeneficiaryGovernance is Governed {
     uint256 voterCount;
     ProposalType proposalType;
     ConfigurationOptions configurationOptions;
+    bytes32 vaultId;
   }
 
-  IERC20 public immutable POP;
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
 
@@ -102,11 +102,10 @@ contract BeneficiaryGovernance is Governed {
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
     IERC20 _pop,
-    address governance
-  ) Governed(governance) {
+    address _governance
+  ) ParticipationReward(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
-    POP = _pop;
     _setDefaults();
   }
 
@@ -172,6 +171,13 @@ contract BeneficiaryGovernance is Governed {
     proposal.startTime = block.timestamp;
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
+    (bool vaultCreated, bytes32 vaultId) = _initializeVault(
+      keccak256(abi.encodePacked(proposalId, block.timestamp)),
+      block.timestamp.add(DefaultConfigurations.votingPeriod)
+    );
+    if (vaultCreated) {
+      proposal.vaultId = vaultId;
+    }
 
     pendingBeneficiaries[_beneficiary] = true;
     beneficiaryProposals[_beneficiary] = proposals.length;
@@ -242,6 +248,10 @@ contract BeneficiaryGovernance is Governed {
       proposal.noCount = proposal.noCount.add(_voiceCredits);
     }
 
+    if (proposal.vaultId != "") {
+      _addShares(proposal.vaultId, msg.sender, _voiceCredits);
+    }
+
     emit Vote(proposalId, msg.sender, _voiceCredits);
   }
 
@@ -286,6 +296,10 @@ contract BeneficiaryGovernance is Governed {
     }
 
     _resetBeneficiaryPendingState(proposal.beneficiary);
+
+    if (proposal.vaultId != "") {
+      _openVault(proposal.vaultId);
+    }
 
     emit Finalize(proposalId);
   }

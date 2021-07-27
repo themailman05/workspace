@@ -1,9 +1,9 @@
 import { BeneficiaryApplication } from '@popcorn/utils';
-import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import { ElectionMetadata } from '@popcorn/contracts/adapters';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
 import truncate from 'utils/truncate';
-import GrantElectionAdapter from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
+import GrantElectionAdapter from '../../../contracts/adapters/GrantElection/GrantElectionAdapter';
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
 

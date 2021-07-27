@@ -9,7 +9,7 @@ const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json"
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
 
 import { getBytes32FromIpfsHash } from "@popcorn/utils/src/ipfsHashManipulation";
-import { ProposalType } from "../../utils/src";
+import { ProposalType } from "@popcorn/utils/src";
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 
