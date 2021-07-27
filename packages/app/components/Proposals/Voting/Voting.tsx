@@ -5,12 +5,20 @@ import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
 
-const Voting: React.FC<Proposal> = (proposal): JSX.Element => (
+export interface VotingProps {
+  proposal: Proposal;
+  hasVoted?: boolean;
+}
+
+const Voting: React.FC<VotingProps> = ({
+  proposal,
+  hasVoted = false,
+}): JSX.Element => (
   <div>
     {proposal?.status === Status.Open ? (
-      <OpenVoting {...proposal} />
+      <OpenVoting proposal={proposal} hasVoted={hasVoted} />
     ) : proposal?.status === Status.Challenge ? (
-      <ChallengePeriodVoting {...proposal} />
+      <ChallengePeriodVoting proposal={proposal} hasVoted={hasVoted} />
     ) : (
       <CompletedVoting {...proposal} />
     )}

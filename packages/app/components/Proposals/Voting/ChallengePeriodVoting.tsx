@@ -1,17 +1,23 @@
 import { VoteOptions } from '@popcorn/contracts/lib/BeneficiaryGovernance/constants';
-import { Proposal, ProposalType } from '@popcorn/utils';
+import { ProposalType } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import CountdownTimer from './CountdownTimer';
+import HasVoted from './HasVoted';
+import { VotingProps } from './Voting';
 
-const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
+const ChallengePeriodVoting: React.FC<VotingProps> = ({
+  proposal,
+  hasVoted: hasVotedInitial = false,
+}) => {
   const { dispatch } = useContext(store);
   const { contracts } = useContext(ContractsContext);
   const { library } = useWeb3React();
+  const [hasVoted, setHasVoted] = useState<Boolean>(hasVotedInitial);
 
   const closeModal = () => dispatch(setDualActionModal(false));
   const voteNo = async () => {
@@ -19,12 +25,17 @@ const ChallengePeriodVoting: React.FC<Proposal> = (proposal) => {
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
       .vote(proposal.id, proposal.proposalType, VoteOptions.Nay)
-      .then((res) => toast.success('Voted successfully!'))
+      .then((res) => {
+        toast.success('Voted successfully!');
+        setHasVoted(true);
+      })
       .catch((err) => toast.error(err.data.message.split("'")[1]));
     closeModal();
   };
 
-  return (
+  return hasVoted ? (
+    <HasVoted />
+  ) : (
     <div>
       <Toaster position="top-right" />
       <div className="grid my-2 justify-items-stretch">

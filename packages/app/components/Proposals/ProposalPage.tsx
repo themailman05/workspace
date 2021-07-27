@@ -1,9 +1,11 @@
+import { Web3Provider } from '@ethersproject/providers';
 import {
   BeneficiaryGovernanceAdapter,
   IpfsClient,
   Proposal,
   Status,
 } from '@popcorn/utils';
+import { useWeb3React } from '@web3-react/core';
 import BeneficiaryInformation from 'components/CommonComponents/BeneficiaryInformation';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import Loading from 'components/CommonComponents/Loading';
@@ -23,13 +25,17 @@ const getTitle = (proposal: Proposal): string => {
 
 const ProposalPage: React.FC = () => {
   const { contracts } = useContext(ContractsContext);
+  const { account } = useWeb3React<Web3Provider>();
   const router = useRouter();
   const [proposal, setProposal] = useState<Proposal>();
   const [proposalId, setProposalId] = useState<string>();
+  const [hasVoted, setHasVoted] = useState<boolean>(false);
+
   useEffect(() => {
     const { id } = router.query;
     if (id && id !== proposalId) setProposalId(id as string);
   }, [router, proposalId]);
+
   useEffect(() => {
     if (contracts?.beneficiaryGovernance && proposalId) {
       BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
@@ -37,6 +43,15 @@ const ProposalPage: React.FC = () => {
         .then((res) => setProposal(res));
     }
   }, [contracts, proposalId]);
+
+  useEffect(() => {
+    if (contracts?.beneficiaryGovernance && proposal && account) {
+      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+        .hasVoted(proposalId, proposal.proposalType, account)
+        .then((res) => setHasVoted(res));
+    }
+  }, [contracts, account, proposal]);
+
   function getContent() {
     return proposalId !== undefined &&
       proposal !== undefined &&
@@ -46,7 +61,7 @@ const ProposalPage: React.FC = () => {
           beneficiary={proposal?.application}
           title={getTitle(proposal)}
         />
-        <Voting {...proposal} />
+        <Voting proposal={proposal} hasVoted={hasVoted} />
         <div className="grid grid-cols-8 gap-4 space-x-12 mx-auto px-8">
           <div className="col-span-2 space-y-4">
             <VideoSideBar beneficiary={proposal?.application} />
