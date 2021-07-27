@@ -61,7 +61,7 @@ const ProfileImage: React.FC<FormStepProps> = ({
           setLocalState={updateProfileImage}
           fileDescription={'a Profile Image'}
           fileInstructions={
-            'Upload a square image, ideally 150px x 150px and less than 5mb'
+            'Image should be square (ideally 150px x 150px) and less than 5mb'
           }
           fileType={'image/*'}
           numMaxFiles={1}

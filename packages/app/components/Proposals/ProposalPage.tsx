@@ -52,7 +52,10 @@ const ProposalPage: React.FC = () => {
             <VideoSideBar beneficiary={proposal?.application} />
             <PhotoSideBar beneficiary={proposal?.application} />
           </div>
-          <BeneficiaryInformation beneficiary={proposal?.application} />
+          <BeneficiaryInformation
+            beneficiary={proposal?.application}
+            isProposalPreview={false}
+          />
         </div>
       </React.Fragment>
     ) : (

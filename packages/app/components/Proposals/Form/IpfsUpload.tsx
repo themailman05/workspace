@@ -6,7 +6,7 @@ import { useDropzone } from 'react-dropzone';
 import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
 import { DisplayVideo } from './DisplayFiles';
-import {Oval} from 'svg-loaders-react';
+import * as SVGLoaders from 'svg-loaders-react';
 
 const success = (msg: string) => toast.success(msg);
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -85,7 +85,7 @@ interface IpfsProps {
   fileDescription: string;
   fileInstructions: string;
   fileType: string;
-  maxFileSizeMB: number;
+  maxFileSizeMB?: number;
   numMaxFiles: number;
   setLocalState: (input: string | string[]) => void;
 }
@@ -107,9 +107,7 @@ const videoUploading = (uploadProgress: number, fileType: string): boolean => {
 };
 
 const Spinner = () => {
-  return (
-    <Oval stroke="#666666" className="mx-auto my-4 h-10 w-10"/>
-  );
+  return <SVGLoaders.Oval stroke="#666666" className="mx-auto my-4 h-10 w-10" />;
 };
 
 const IpfsUpload: React.FC<IpfsProps> = ({
@@ -142,7 +140,7 @@ const IpfsUpload: React.FC<IpfsProps> = ({
     multiple: numMaxFiles > 1,
     maxFiles: numMaxFiles,
     validator: (file: File) => {
-      return isValidFileSize(file, maxFileSizeMB);
+      return maxFileSizeMB ? isValidFileSize(file, maxFileSizeMB) : null;
     },
     onDrop: (acceptedFiles) => {
       if (fileRejections.length) {
@@ -168,9 +166,10 @@ const IpfsUpload: React.FC<IpfsProps> = ({
   const rootProps = getRootProps() as any;
   return (
     <div className="mx-auto">
-      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
+      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide">
         {stepName}
       </h2>
+
       {uploadProgress === 100 && (!localState || localState.length === 0) ? (
         <Spinner />
       ) : (
