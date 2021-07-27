@@ -19,7 +19,7 @@ export default function ProjectName({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide">
-          {navigation.currentStep} - Add a project name
+          {navigation.currentStep} - Add a project name (Optional)
         </h2>
         <ControlledTextInput
           inputValue={formData.projectName}
