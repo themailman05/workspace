@@ -1,11 +1,13 @@
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import {
-  BeneficiaryGovernanceAdapter,
   IpfsClient,
   Proposal,
   ProposalType,
   Status,
 } from '@popcorn/utils';
+import {
+  BeneficiaryGovernanceAdapter
+} from "@popcorn/contracts/adapters"
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
@@ -62,10 +64,9 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
               className="w-full border-white px-5 py-3 placeholder-warm-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cyan-700 focus:ring-white rounded-md"
               placeholder={
                 'Search ' +
-                `${
-                  proposalType === ProposalType.Nomination
-                    ? 'Eligible Beneficiaries'
-                    : 'Takedown Proposals'
+                `${proposalType === ProposalType.Nomination
+                  ? 'Eligible Beneficiaries'
+                  : 'Takedown Proposals'
                 }`
               }
               value={searchFilter}

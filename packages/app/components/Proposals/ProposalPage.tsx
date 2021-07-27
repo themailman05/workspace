@@ -1,10 +1,12 @@
 import { Web3Provider } from '@ethersproject/providers';
 import {
-  BeneficiaryGovernanceAdapter,
   IpfsClient,
   Proposal,
   Status,
 } from '@popcorn/utils';
+import {
+  BeneficiaryGovernanceAdapter
+} from "@popcorn/contracts/adapters";
 import { useWeb3React } from '@web3-react/core';
 import BeneficiaryInformation from 'components/CommonComponents/BeneficiaryInformation';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
@@ -18,9 +20,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import Voting from './Voting/Voting';
 
 const getTitle = (proposal: Proposal): string => {
-  return `${Status[proposal.status]} vote on ${
-    proposal?.application?.organizationName
-  }`;
+  return `${Status[proposal.status]} vote on ${proposal?.application?.organizationName
+    }`;
 };
 
 const ProposalPage: React.FC = () => {
