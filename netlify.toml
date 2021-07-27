@@ -8,6 +8,7 @@
 
 [context.deploy-preview]
   command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
+  publish = "packages/app/out"
   
 
   [context.deploy-preview.environment]
@@ -72,6 +73,7 @@
 
 [context.develop]
   command = "cd packages/contracts; yarn compile; cd ../../packages/app; yarn build;"
+  publish = "packages/app/out" 
 
   [context.develop.environment]
     # this is a random private key needed for hardhat compile to work
