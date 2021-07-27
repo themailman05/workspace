@@ -3,6 +3,11 @@ import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
 import bluebird from "bluebird";
 import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { deployContract } from "ethereum-waffle";
+const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
+const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
+const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
+
 import { getBytes32FromIpfsHash } from "@popcorn/utils/src/ipfsHashManipulation";
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
@@ -14,19 +19,32 @@ interface Contracts {
   staking: Contract;
   randomNumberConsumer: Contract;
   grantElections: Contract;
+  beneficiaryVaults: Contract;
+  rewardsManager: Contract;
+  mock3CRV: Contract;
+  uniswapFactory: Contract;
+  uniswapRouter: Contract;
+  uniswapPair: Contract;
   beneficiaryGovernance: Contract;
 }
 
 export default async function deploy(ethers): Promise<void> {
   const GrantTerm = { Month: 0, Quarter: 1, Year: 2 };
   const GrantTermMap = { 0: "Monthly", 1: "Quarterly", 2: "Yearly" };
+  const overrides = {
+    gasLimit: 9999999,
+  };
   let accounts: SignerWithAddress[];
-  let bennies;
+  let bennies: SignerWithAddress[];
   let contracts: Contracts;
+  let treasuryFund: SignerWithAddress;
+  let insuranceFund: SignerWithAddress;
 
   const setSigners = async (): Promise<void> => {
     accounts = await ethers.getSigners();
     bennies = accounts.slice(1, 20);
+    treasuryFund = accounts[18];
+    insuranceFund = accounts[19];
   };
 
   const deployContracts = async (): Promise<void> => {
@@ -48,9 +66,63 @@ export default async function deploy(ethers): Promise<void> {
       ).deploy("TestPOP", "TPOP", 18)
     ).deployed();
 
+    const mock3CRV = await (
+      await (
+        await ethers.getContractFactory("MockERC20")
+      ).deploy("3CURVE", "3CRV", 18)
+    ).deployed();
+
+    const WETH = (await (
+      await (await ethers.getContractFactory("WETH9")).deploy()
+    ).deployed())
+
     const staking = await (
       await (await ethers.getContractFactory("Staking")).deploy(mockPop.address)
     ).deployed();
+
+    const uniswapFactory = await deployContract(
+      accounts[0],
+      UniswapV2FactoryJSON,
+      [accounts[0].address]
+    );
+    const uniswapRouter = (await deployContract(
+      accounts[0],
+      UniswapV2Router02JSON,
+      [uniswapFactory.address, WETH.address],
+      overrides
+    ))
+
+    await uniswapFactory.createPair(mock3CRV.address, mockPop.address);
+    const uniswapPairAddress = await uniswapFactory.getPair(
+      mock3CRV.address,
+      mockPop.address
+    );
+    const uniswapPair = new Contract(
+      uniswapPairAddress,
+      JSON.stringify(UniswapV2PairJSON.abi),
+      accounts[0]
+    )
+
+    const beneficiaryVaults = await (
+      await (
+        await ethers.getContractFactory("BeneficiaryVaults")
+      ).deploy(mockPop.address, beneficiaryRegistry.address)
+    ).deployed();
+
+    const rewardsManager = await (
+      await (
+        await ethers.getContractFactory("RewardsManager")
+      ).deploy(
+        mockPop.address,
+        staking.address,
+        treasuryFund.address,
+        insuranceFund.address,
+        beneficiaryVaults.address,
+        uniswapRouter.address
+      )
+    ).deployed();
+
+    await staking.connect(accounts[0]).setRewardsManager(rewardsManager.address)
 
     const randomNumberConsumer = await (
       await (
@@ -93,9 +165,14 @@ export default async function deploy(ethers): Promise<void> {
       staking,
       randomNumberConsumer,
       grantElections,
+      beneficiaryVaults,
+      rewardsManager,
+      mock3CRV,
+      uniswapFactory,
+      uniswapRouter,
+      uniswapPair,
       beneficiaryGovernance,
     };
-    logResults();
   };
 
   const giveBeneficiariesETH = async (): Promise<void> => {
@@ -277,6 +354,42 @@ export default async function deploy(ethers): Promise<void> {
       },
       { concurrency: 1 }
     );
+  };
+
+  const prepareUniswap = async (): Promise<void> => {
+    console.log("Preparing Uniswap 3CRV-POP Pair...");
+    const currentBlock = await ethers.provider.getBlock("latest");
+    await contracts.mockPop.mint(accounts[0].address, parseEther("100000"));
+    await contracts.mock3CRV.mint(accounts[0].address, parseEther("100000"));
+    await contracts.mockPop
+      .connect(accounts[0])
+      .approve(contracts.uniswapRouter.address, parseEther("100000"));
+    await contracts.mock3CRV
+      .connect(accounts[0])
+      .approve(contracts.uniswapRouter.address, parseEther("100000"));
+
+    await contracts.uniswapRouter.addLiquidity(
+      contracts.mockPop.address,
+      contracts.mock3CRV.address,
+      parseEther("100000"),
+      parseEther("100000"),
+      parseEther("100000"),
+      parseEther("100000"),
+      accounts[0].address,
+      currentBlock.timestamp + 60
+    );
+  };
+
+  const fundRewardsManager = async (): Promise<void> => {
+    console.log("Funding RewardsManager...");
+    await contracts.mockPop.mint(accounts[0].address, parseEther("5000"));
+    await contracts.mock3CRV.mint(accounts[0].address, parseEther("10000"));
+    await contracts.mockPop
+      .connect(accounts[0])
+      .transfer(contracts.rewardsManager.address, parseEther("10000"));
+    await contracts.mock3CRV
+      .connect(accounts[0])
+      .transfer(contracts.rewardsManager.address, parseEther("5000"));
   };
 
   const initializeElectionWithFastVotingEnabled = async (
@@ -519,6 +632,10 @@ ADDR_RANDOM_NUMBER=${contracts.randomNumberConsumer.address}
 ADDR_BENEFICIARY_GOVERNANCE=${contracts.beneficiaryGovernance.address}
 ADDR_GOVERNANCE=${accounts[0].address}
 ADDR_GRANT_ELECTION=${contracts.grantElections.address}
+ADDR_BENEFICIARY_VAULT=${contracts.beneficiaryVaults.address}
+ADDR_REWARDS_MANAGER=${contracts.rewardsManager.address}
+ADDR_UNISWAP_ROUTER=${contracts.uniswapRouter.address}
+ADDR_3CRV=${contracts.mock3CRV.address}
     `);
   };
 
@@ -530,6 +647,8 @@ ADDR_GRANT_ELECTION=${contracts.grantElections.address}
   await addBeneficiaryProposals();
   await addBeneficiaryTakedownProposals();
   await approveForStaking();
+  await prepareUniswap();
+  await fundRewardsManager();
   await stakePOP();
   await voteOnProposals();
   await voteOnTakedownProposals();

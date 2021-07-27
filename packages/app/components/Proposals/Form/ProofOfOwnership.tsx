@@ -1,3 +1,4 @@
+import { InfoIconWithModal } from 'components/InfoIconWithModal';
 import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
 import inputExists from 'utils/isValidInput';
@@ -21,16 +22,19 @@ const ProofOfOwnership: React.FC<FormStepProps> = ({
   return (
     visible && (
       <div className="mx-auto content-center justify-items-center px-10">
-        <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
-          {navigation.currentStep} - Proof of ownership
-        </h2>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Input the Ethereum address shared in step 2 on the beneficiary's
-          website or a tweet on the beneficiary's official Twitter account.
-        </label>
+        <div className="flex justify-center space-x-2 md:order-2 items-center">
+          <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide ">
+            {navigation.currentStep} - Provide proof of ownership of the
+            organizations Ethereum Address
+          </h2>
+          <InfoIconWithModal
+            title={'Proof of ownership'}
+            content={`Please share a link to either a page on the organisation's
+            official website or a tweet from the organization'v verified Twitter
+            account that contains the Etherum address to which grants will
+            be distributed`}
+          />
+        </div>
         <ControlledTextInput
           inputValue={formData?.links?.proofOfOwnership}
           id="proofofownership"

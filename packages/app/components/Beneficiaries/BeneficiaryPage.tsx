@@ -26,7 +26,10 @@ const BeneficiaryPage: React.FC<BeneficiaryPageProps> = ({
           <VideoSideBar beneficiary={beneficiary} />
           <PhotoSideBar beneficiary={beneficiary} />
         </div>
-        <BeneficiaryInformation beneficiary={beneficiary} />
+        <BeneficiaryInformation
+          beneficiary={beneficiary}
+          isProposalPreview={isProposalPreview}
+        />
       </div>
       {!isProposalPreview && <TriggerTakedownProposal />}
     </div>

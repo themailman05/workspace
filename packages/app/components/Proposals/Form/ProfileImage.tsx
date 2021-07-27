@@ -2,7 +2,7 @@ import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
 import inputExists from 'utils/isValidInput';
 import ControlledTextInput from './ControlledTextInput';
-import { DisplayImages } from './DisplayFiles';
+import { DisplayImage } from './DisplayFiles';
 import IpfsUpload from './IpfsUpload';
 import ActionButtons from './IpfsUploadActionButtons';
 
@@ -61,14 +61,14 @@ const ProfileImage: React.FC<FormStepProps> = ({
           setLocalState={updateProfileImage}
           fileDescription={'a Profile Image'}
           fileInstructions={
-            'Upload a square image, ideally 150px x 150px and less than 5mb'
+            'Image should be square (ideally 150px x 150px) and less than 5mb'
           }
           fileType={'image/*'}
           numMaxFiles={1}
           maxFileSizeMB={5}
         />
-        <DisplayImages localState={formData?.files?.profileImage?.image} />
-        <div className="mt-8 w-80">
+        <DisplayImage localState={formData?.files?.profileImage?.image} />
+        <div className="mx-auto mt-8 w-80">
           <p>Image Description</p>
           <ControlledTextInput
             inputValue={formData?.files?.profileImage?.description}

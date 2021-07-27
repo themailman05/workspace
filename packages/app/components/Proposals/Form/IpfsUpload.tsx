@@ -1,10 +1,11 @@
 import { IpfsClient } from '@popcorn/utils';
 import { UploadResult } from '@popcorn/utils/IpfsClient/IpfsClient';
 import ProgressBar from 'components/ProgressBar';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
+import * as SVGLoaders from 'svg-loaders-react';
 import { DisplayVideo } from './DisplayFiles';
 
 const success = (msg: string) => toast.success(msg);
@@ -84,7 +85,7 @@ interface IpfsProps {
   fileDescription: string;
   fileInstructions: string;
   fileType: string;
-  maxFileSizeMB: number;
+  maxFileSizeMB?: number;
   numMaxFiles: number;
   setLocalState: (input: string | string[]) => void;
 }
@@ -113,8 +114,13 @@ const showUploadBox = (
   return localState.length < numMaxFiles;
 };
 
-const IpfsUpload: React.FC<IpfsProps> = ({
+const Spinner = () => {
+  return (
+    <SVGLoaders.Oval stroke="#666666" className="mx-auto my-4 h-10 w-10" />
+  );
+};
 
+const IpfsUpload: React.FC<IpfsProps> = ({
   stepName,
   localState,
   fileDescription,
@@ -126,6 +132,11 @@ const IpfsUpload: React.FC<IpfsProps> = ({
 }) => {
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  useEffect(() => {
+    if (localState || localState.length > 0) {
+      setUploadProgress(0);
+    }
+  }, [localState]);
   const {
     acceptedFiles,
     fileRejections,
@@ -136,9 +147,10 @@ const IpfsUpload: React.FC<IpfsProps> = ({
     isDragReject,
   } = useDropzone({
     accept: fileType,
-    maxFiles: numMaxFiles - localState.length,
+    multiple: numMaxFiles > 1,
+    maxFiles: numMaxFiles,
     validator: (file: File) => {
-      return isValidFileSize(file, maxFileSizeMB);
+      return maxFileSizeMB ? isValidFileSize(file, maxFileSizeMB) : null;
     },
     onDrop: (acceptedFiles) => {
       if (fileRejections.length) {
@@ -161,51 +173,53 @@ const IpfsUpload: React.FC<IpfsProps> = ({
       );
     },
   });
-
   const rootProps = getRootProps() as any;
   return (
     <div className="mx-auto">
-      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide uppercase">
+      <h2 className="text-center text-base text-indigo-600 font-semibold tracking-wide">
         {stepName}
       </h2>
-      {showUploadBox(numMaxFiles, localState) &&
-      !videoUploading(uploadProgress, fileType) ? (
-        <div {...rootProps}>
-          <input {...getInputProps()} />
-          <div className="mt-8">
-            <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-              <div className="space-y-1 text-center">
-                {fileType === 'image/*' ? (
-                  <Icon.Image className="mx-auto h-12 w-12 text-gray-400" />
-                ) : (
-                  <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
-                )}
 
-                <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                  >
-                    <span>Upload</span>
-                    <input
-                      id="file-upload"
-                      name="file-upload"
-                      type="file"
-                      className="sr-only"
-                    />
-                  </label>
-                  <p className="pl-1">
-                    or drag and drop {fileDescription.toLowerCase()}
-                  </p>
+      {uploadProgress === 100 && showUploadBox(numMaxFiles, localState) ? (
+        <Spinner />
+      ) : (
+        showUploadBox(numMaxFiles, localState) &&
+        !videoUploading(uploadProgress, fileType) && (
+          <div {...rootProps}>
+            <input {...getInputProps()} />
+            <div className="mt-8">
+              <div className="max-w-lg flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div className="space-y-1 text-center">
+                  {fileType === 'image/*' ? (
+                    <Icon.Image className="mx-auto h-12 w-12 text-gray-400" />
+                  ) : (
+                    <Icon.FilePlus className="mx-auto h-12 w-12 text-gray-400" />
+                  )}
+                  <div className="flex text-sm text-gray-600">
+                    <label
+                      htmlFor="file-upload"
+                      className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+                    >
+                      <span>Upload</span>
+                      <input
+                        id="file-upload"
+                        name="file-upload"
+                        type="file"
+                        className="sr-only"
+                      />
+                    </label>
+                    <p className="pl-1">
+                      or drag and drop {fileDescription.toLowerCase()}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500">{fileInstructions}</p>
                 </div>
-                <p className="text-xs text-gray-500">{fileInstructions}</p>
               </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <></>
+        )
       )}
+
       {videoUploading(uploadProgress, fileType) && (
         <div className="grid my-2 justify-items-stretch">
           <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
