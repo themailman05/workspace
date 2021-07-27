@@ -1,6 +1,6 @@
 import { BeneficiaryRegistry } from '@popcorn/contracts/typechain';
-import { BeneficiaryApplication } from '../../';
-import { IIpfsClient } from '../../IpfsClient/IpfsClient';
+import { BeneficiaryApplication } from '../../../utils/src';
+import { IIpfsClient } from '../../../utils/src/IpfsClient/IpfsClient';
 
 export const BeneficiaryRegistryAdapter = (
   contract: BeneficiaryRegistry,
@@ -27,7 +27,7 @@ export const BeneficiaryRegistryAdapter = (
       );
       const beneficiaryData = await (
         await Promise.all(
-          ipfsHashes.map(async (cid) => await IpfsClient().get(cid)),
+          ipfsHashes.map(async (cid: string) => await IpfsClient().get(cid)),
         )
       ).map((beneficiaryApplication) => {
         // TODO: Remove temporary address assignment
