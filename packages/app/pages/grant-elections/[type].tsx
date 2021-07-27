@@ -1,25 +1,25 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import Link from 'next/link';
-import { useWeb3React } from '@web3-react/core';
 import { Web3Provider } from '@ethersproject/providers';
-import { connectors } from '../../context/Web3/connectors';
-import ElectionSection from 'components/GrantElections/ElectionSection';
-import NavBar from '../../components/NavBar/NavBar';
-import { ContractsContext } from '../../context/Web3/contracts';
-
-import { BigNumber, utils } from 'ethers';
-import capitalize from '@popcorn/utils/capitalize';
-import GrantElectionAdapter, {
+import {
   ElectionTerm,
   ElectionTermIntToName,
-} from '@popcorn/utils/Contracts/GrantElection/GrantElectionAdapter';
-import { ElectionsContext } from '../../context/Web3/elections';
-import { store } from '../../context/store';
+  GrantElectionAdapter,
+} from '@popcorn/contracts/adapters';
+import capitalize from '@popcorn/utils/capitalize';
+import { useWeb3React } from '@web3-react/core';
+import ElectionSection from 'components/GrantElections/ElectionSection';
+import { BigNumber, utils } from 'ethers';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import React, { useContext, useEffect, useState } from 'react';
+import NavBar from '../../components/NavBar/NavBar';
 import {
   setDualActionModal,
   setSingleActionModal,
 } from '../../context/actions';
+import { store } from '../../context/store';
+import { connectors } from '../../context/Web3/connectors';
+import { ContractsContext } from '../../context/Web3/contracts';
+import { ElectionsContext } from '../../context/Web3/elections';
 
 export interface IGrantRoundFilter {
   active: boolean;
@@ -88,9 +88,8 @@ export default function AllGrants() {
   const { elections } = useContext(ElectionsContext);
   const { dispatch } = useContext(store);
 
-  const [pendingVotes, setPendingVotes] = useState<PendingVotes>(
-    defaultPendingVotes,
-  );
+  const [pendingVotes, setPendingVotes] =
+    useState<PendingVotes>(defaultPendingVotes);
   const [voiceCredits, setVoiceCredits] = useState(0);
   const [activeGrantRound, scrollToGrantRound] = useState<number>();
   const [grantRoundFilter, setGrantRoundFilter] = useState<IGrantRoundFilter>({

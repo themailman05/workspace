@@ -7,7 +7,7 @@ import { GrantElections } from '@popcorn/contracts/typechain';
 import {
   ElectionMetadata,
   GrantElectionAdapter,
-} from '@popcorn/utils/Contracts';
+} from '@popcorn/contracts/adapters';
 
 interface ElectionsContext {
   elections: ElectionMetadata[];

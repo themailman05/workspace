@@ -1,4 +1,4 @@
-import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import { ElectionMetadata } from '@popcorn/contracts/adapters';
 import Link from 'next/link';
 import { Check } from 'react-feather';
 import { PendingVotes } from '../../../pages/grant-elections/[type]';
