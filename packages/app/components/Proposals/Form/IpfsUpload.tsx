@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as Icon from 'react-feather';
 import toast from 'react-hot-toast';
-import { DisplayVideo } from './DisplayFiles';
 import * as SVGLoaders from 'svg-loaders-react';
+import { DisplayVideo } from './DisplayFiles';
 
 const success = (msg: string) => toast.success(msg);
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -106,8 +106,18 @@ const videoUploading = (uploadProgress: number, fileType: string): boolean => {
   return uploadProgress > 0 && uploadProgress < 100 && fileType === 'video/*';
 };
 
+const showUploadBox = (
+  numMaxFiles: number,
+  localState: string | string[],
+): boolean => {
+  if (typeof localState === 'string') return localState === '';
+  return localState.length < numMaxFiles;
+};
+
 const Spinner = () => {
-  return <SVGLoaders.Oval stroke="#666666" className="mx-auto my-4 h-10 w-10" />;
+  return (
+    <SVGLoaders.Oval stroke="#666666" className="mx-auto my-4 h-10 w-10" />
+  );
 };
 
 const IpfsUpload: React.FC<IpfsProps> = ({
@@ -170,10 +180,10 @@ const IpfsUpload: React.FC<IpfsProps> = ({
         {stepName}
       </h2>
 
-      {uploadProgress === 100 && (!localState || localState.length === 0) ? (
+      {uploadProgress === 100 && showUploadBox(numMaxFiles, localState) ? (
         <Spinner />
       ) : (
-        (!localState || localState.length === 0) &&
+        showUploadBox(numMaxFiles, localState) &&
         !videoUploading(uploadProgress, fileType) && (
           <div {...rootProps}>
             <input {...getInputProps()} />

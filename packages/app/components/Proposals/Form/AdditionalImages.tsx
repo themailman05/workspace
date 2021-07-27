@@ -19,9 +19,11 @@ const AdditionalImages: React.FC<FormStepProps> = ({
       ...formData,
       files: {
         ...formData.files,
-        additionalImages: additionalImages.map((image) => {
-          return { image: image, description: '' };
-        }),
+        additionalImages: formData.files.additionalImages.concat(
+          additionalImages.map((image) => {
+            return { image: image, description: '' };
+          }),
+        ),
       },
     });
   }

@@ -16,7 +16,7 @@ const HeaderImage: React.FC<FormStepProps> = ({
       ...formData,
       files: {
         ...formData.files,
-        impactReports: impactReports,
+        impactReports: formData.files.impactReports.concat(impactReports),
       },
     });
   }
