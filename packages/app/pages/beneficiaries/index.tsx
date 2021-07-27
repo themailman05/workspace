@@ -1,7 +1,13 @@
+import {
+  BeneficiaryApplication,
+  IpfsClient,
+} from '@popcorn/utils';
+import {
+  BeneficiaryRegistryAdapter
+} from "@popcorn/contracts/adapters";
 import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';
 import { useContext, useEffect, useState } from 'react';
 import { ContractsContext } from '../../context/Web3/contracts';
-import { BeneficiaryApplication, IpfsClient, BeneficiaryRegistryAdapter } from '@popcorn/utils';
 
 export default function BeneficiaryPage(): JSX.Element {
   const { contracts } = useContext(ContractsContext);
