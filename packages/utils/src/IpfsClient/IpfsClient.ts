@@ -65,7 +65,7 @@ export const IpfsClient = (): IIpfsClient => {
         ? {
             headers,
             onUploadProgress: (progressEvent) => {
-              var percentCompleted = Math.round(
+              const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total,
               );
               setUploadProgress(percentCompleted);

@@ -1,28 +1,23 @@
+import multer from '@koa/multer';
 import Router from '@koa/router';
 import { BeneficiaryApplication } from '@popcorn/utils';
 import axios from 'axios';
 import FormData from 'form-data';
-import fs from 'fs';
 import Koa from 'koa';
 import koaBody from 'koa-body';
 import logger from 'koa-logger';
 import fetch from 'node-fetch';
+
 const app = new Koa();
+const upload = multer();
 const router = new Router();
 app.use(koaBody({ multipart: true }));
 
-const KEY = '193289c4e4adb7101295';
-const SECRET =
-  '3396ef09a0b343c394e63b97a2c30216567110c049e6556c9bd86125dd9f0fe7';
-
-interface UploadResult {
-  status: number;
-  hash?: string;
-  errorDetails?: string;
-}
+const KEY = '';
+const SECRET = '';
 
 router
-  .get('/cid/:cid', async (ctx) => {
+  .get('/application/:cid', async (ctx) => {
     // TODO: Source ipfs url from .env
     const url = `https://gateway.pinata.cloud/ipfs/${ctx.params.cid}`;
     const beneficiaryApplication: BeneficiaryApplication = await fetch(
@@ -36,15 +31,13 @@ router
     ctx.status = 200;
     ctx.body = cid;
   })
-  .post('/upload', async (ctx) => {
-    const { size, path, name, type } = ctx.request.files.file;
-    console.log(ctx.request.files.file);
-    const reader = fs.createReadStream(`${path}/${name}`);
+  .post('/upload', upload.single('file'), async (ctx) => {
+    const file = ctx.request.files.file;
     var data = new FormData();
-    data.append('file', reader, name);
+    data.append('file', file.path, file.name);
     const config = {
       headers: {
-        'Content-Type': `multipart/form-data;`,
+        'Content-Type': 'multipart/form-data',
         pinata_api_key: KEY,
         pinata_secret_api_key: SECRET,
       },
@@ -52,12 +45,12 @@ router
     const res = await axios
       .post('https://api.pinata.cloud/pinning/pinFileToIPFS/', data, config)
       .then((result) => {
-        console.log('successful upload');
+        console.log('successfully uploaded file to ipfs');
         console.log(result.data.IpfsHash);
         return { hash: result.data.IpfsHash, status: result.status };
       })
       .catch((error) => {
-        console.log('error uploading');
+        console.log('error uploading file to ipfs');
         console.log({ error });
         if (error.response) {
           return {
@@ -67,9 +60,9 @@ router
         }
         return error;
       });
-    console.log({ res });
     ctx.body = res.hash;
     ctx.status = res.status;
+    ctx.body = 'done';
   });
 
 const getCid = async (
