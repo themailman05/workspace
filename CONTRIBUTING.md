@@ -12,6 +12,25 @@ If you elect to use VS Code, maintaining a consistent style is easy because of t
 
 Regardless, please ensure that you are using 2 space tabs.
 
+## Inclusive language: replacement terms
+
+In an effort to develop software with language free from  expressions or words that reflect prejudice the following terminology is recommended instead of blacklist/whitelist and master/slave:
+
+Replace blacklist/whitelist with:
+```
+blocklist  / allowlist
+exclude list / include list
+avoid list / prefer list
+```
+
+Replace master/slave with:
+```
+leading / subordinate
+source / replica
+```
+
+
+
 ## Recommended Tools:
 -  `vscode` - because we are using typescript this is very important to download. It makes the development experience much easier. free download available here: https://code.visualstudio.com/
    - recommended plugins:
