@@ -314,17 +314,6 @@ export default async function deploy(ethers): Promise<void> {
     await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8, ProposalType.Nomination);
   };
 
-  const voteOnTakedownProposals = async (): Promise<void> => {
-    console.log("vote on beneficiary takedown proposals ...");
-      // await contracts.beneficiaryGovernance.connect(bennies[0]).vote(11,  ProposalType.Takedown, Vote.Yes);
-      // await contracts.beneficiaryGovernance.connect(bennies[0]).vote(13,  ProposalType.Takedown, Vote.No);
-      // await contracts.beneficiaryGovernance.connect(bennies[1]).vote(13,  ProposalType.Takedown, Vote.No);
-      // await contracts.beneficiaryGovernance.connect(bennies[2]).vote(14,  ProposalType.Takedown, Vote.Yes);
-
-    // await contracts.beneficiaryGovernance.connect(bennies[4]).finalize(11)
-    // await contracts.beneficiaryGovernance.connect(bennies[5]).finalize(12)
-  };
-
   const addBeneficiariesToRegistry = async (): Promise<void> => {
     console.log("adding beneficiaries to registry ...");
     await bluebird.map(
@@ -669,7 +658,6 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await fundRewardsManager();
   await stakePOP();
   await voteOnProposals();
-  await voteOnTakedownProposals();
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
