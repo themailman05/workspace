@@ -1,7 +1,7 @@
-import { ethers } from "hardhat";
-import { expect } from "chai";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { BigNumber } from "@ethersproject/bignumber";
+import { expect } from "chai";
+import { MockContract } from "ethereum-waffle";
+import { ethers, waffle } from "hardhat";
 import { CouncilControlled, Region } from "../typechain";
 
 let owner: SignerWithAddress,
@@ -10,14 +10,26 @@ let owner: SignerWithAddress,
 
 let contract: CouncilControlled;
 let region: Region;
+let mockBeneficiaryVaults: MockContract
 const DEFAULT_REGION = "0x5757";
 const newRegion = "0x1111";
 
 describe("Council Controlled", function () {
   beforeEach(async function () {
     [owner, council, nonOwner] = await ethers.getSigners();
+
+    const BeneficiaryVaults = await ethers.getContractFactory(
+      "BeneficiaryVaults"
+    );
+    mockBeneficiaryVaults = await waffle.deployMockContract(
+      owner,
+      BeneficiaryVaults.interface.format() as any
+    );
+
     region = await (
-      await (await ethers.getContractFactory("Region")).deploy()
+      await (
+        await ethers.getContractFactory("Region")
+      ).deploy(mockBeneficiaryVaults.address)
     ).deployed();
     contract = await (
       await (
@@ -34,10 +46,16 @@ describe("Council Controlled", function () {
 
   context("nominating council", function () {
     it("nominates a new council", async function () {
-      expect(await contract.connect(owner).nominateNewCouncil(council.address, DEFAULT_REGION))
+      expect(
+        await contract
+          .connect(owner)
+          .nominateNewCouncil(council.address, DEFAULT_REGION)
+      )
         .to.emit(contract, "CouncilNominated")
         .withArgs(DEFAULT_REGION, council.address);
-      expect(await contract.nominatedCouncil(DEFAULT_REGION)).to.be.equal(council.address)
+      expect(await contract.nominatedCouncil(DEFAULT_REGION)).to.be.equal(
+        council.address
+      );
     });
 
     it("reverts when not called by region council", async function () {
@@ -51,27 +69,32 @@ describe("Council Controlled", function () {
 
   context("accepting council", function () {
     it("accepts a new council", async function () {
-      await contract.connect(owner).nominateNewCouncil(council.address, DEFAULT_REGION)
+      await contract
+        .connect(owner)
+        .nominateNewCouncil(council.address, DEFAULT_REGION);
       expect(await contract.connect(council).acceptCouncil(DEFAULT_REGION))
-      .to.emit(contract, "CouncilChanged")
-      .withArgs(DEFAULT_REGION, owner.address, council.address);
-    expect(await contract.nominatedCouncil(DEFAULT_REGION)).to.be.equal("0x0000000000000000000000000000000000000000")
-    expect(await contract.getCouncil(DEFAULT_REGION)).to.be.equal(council.address)
+        .to.emit(contract, "CouncilChanged")
+        .withArgs(DEFAULT_REGION, owner.address, council.address);
+      expect(await contract.nominatedCouncil(DEFAULT_REGION)).to.be.equal(
+        "0x0000000000000000000000000000000000000000"
+      );
+      expect(await contract.getCouncil(DEFAULT_REGION)).to.be.equal(
+        council.address
+      );
     });
 
     it("reverts when not nominated", async function () {
       await expect(
-        contract
-          .connect(nonOwner)
-          .acceptCouncil(DEFAULT_REGION)
-      ).to.be.revertedWith("You must be nominated before you can accept council");
-
+        contract.connect(nonOwner).acceptCouncil(DEFAULT_REGION)
+      ).to.be.revertedWith(
+        "You must be nominated before you can accept council"
+      );
     });
   });
 
   context("create a new region", function () {
     beforeEach(async function () {
-      await region.addRegion(newRegion);
+      await region.addRegion(newRegion, mockBeneficiaryVaults.address);
     });
     it("reverts when not called by council of default region", async function () {
       await expect(

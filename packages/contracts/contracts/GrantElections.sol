@@ -76,7 +76,6 @@ contract GrantElections is Governed {
   IRegion internal region;
   IStaking internal staking;
   IBeneficiaryRegistry internal beneficiaryRegistry;
-  IBeneficiaryVaults internal beneficiaryVaults;
   IRandomNumberConsumer internal randomNumberConsumer;
 
   Election[] public elections;
@@ -101,7 +100,6 @@ contract GrantElections is Governed {
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
-    IBeneficiaryVaults _beneficiaryVaults,
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     IRegion _region,
@@ -109,7 +107,6 @@ contract GrantElections is Governed {
   ) Governed(_governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
-    beneficiaryVaults = _beneficiaryVaults;
     randomNumberConsumer = _randomNumberConsumer;
     region = _region;
     POP = _pop;
@@ -215,8 +212,9 @@ contract GrantElections is Governed {
         );
       }
     }
-    if (beneficiaryVaults.vaultExists(_term, _region)) {
-      beneficiaryVaults.closeVault(_term, _region);
+    address beneficiaryVault = region.regionVaults(_region);
+    if (IBeneficiaryVaults(beneficiaryVault).vaultExists(_term)) {
+      IBeneficiaryVaults(beneficiaryVault).closeVault(_term);
     }
 
     uint256 electionId = elections.length;
@@ -426,10 +424,9 @@ contract GrantElections is Governed {
     );
     require(election.merkleRoot == _merkleRoot, "Incorrect root");
 
-    //TODO how to calculate vault endtime?
-    beneficiaryVaults.openVault(
+    address beneficiaryVault = region.regionVaults(election.region);
+    IBeneficiaryVaults(beneficiaryVault).openVault(
       uint8(election.electionTerm),
-      election.region,
       _merkleRoot
     );
     election.electionState = ElectionState.Finalized;

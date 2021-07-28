@@ -1,12 +1,17 @@
+import { MockContract } from "@ethereum-waffle/mock-contract";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { waffle, ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
+import { ethers, waffle } from "hardhat";
 import IUniswapV2Factory from "../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json";
 import IUniswapV2Router02 from "../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json";
-import { BeneficiaryVaults, MockERC20, RewardsManager, Staking } from "../typechain";
-import { Contract } from "@ethersproject/contracts";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { MockContract } from "@ethereum-waffle/mock-contract";
+import {
+  BeneficiaryVaults,
+  MockERC20,
+  Region,
+  RewardsManager,
+  Staking,
+} from "../typechain";
 
 interface Contracts {
   POP: MockERC20;
@@ -17,6 +22,7 @@ interface Contracts {
   Staking: Staking;
   mockUniswapV2Router: MockContract;
   RewardsManager: RewardsManager;
+  Region: Region;
 }
 
 const RewardSplits = {
@@ -70,19 +76,20 @@ async function deployContracts(): Promise<Contracts> {
     mockBeneficiaryRegistryFactory.interface.format() as any[]
   );
 
-  const region = await (
-    await (await ethers.getContractFactory("Region")).deploy()
-  ).deployed();
-
   const beneficiaryVaultsFactory = await ethers.getContractFactory(
     "BeneficiaryVaults"
   );
   const BeneficiaryVaults = await (
-    await beneficiaryVaultsFactory.deploy(
-      POP.address,
-      mockBeneficiaryRegistry.address,
-      region.address
-    )
+    await beneficiaryVaultsFactory.deploy(POP.address)
+  ).deployed();
+  await BeneficiaryVaults.connect(owner).setBeneficiaryRegistry(
+    mockBeneficiaryRegistry.address
+  );
+
+  const Region = await (
+    await (
+      await ethers.getContractFactory("Region")
+    ).deploy(BeneficiaryVaults.address)
   ).deployed();
 
   const mockUniswapV2Factory = await waffle.deployMockContract(
@@ -103,7 +110,7 @@ async function deployContracts(): Promise<Contracts> {
     Staking.address,
     Treasury.address,
     Insurance.address,
-    BeneficiaryVaults.address,
+    Region.address,
     mockUniswapV2Router.address
   );
   await RewardsManager.deployed();
@@ -117,6 +124,7 @@ async function deployContracts(): Promise<Contracts> {
     BeneficiaryVaults,
     mockUniswapV2Router,
     RewardsManager,
+    Region,
   };
 }
 
@@ -139,8 +147,8 @@ describe("RewardsManager", function () {
     expect(await contracts.RewardsManager.insurance()).to.equal(
       contracts.Insurance.address
     );
-    expect(await contracts.RewardsManager.beneficiaryVaults()).to.equal(
-      contracts.BeneficiaryVaults.address
+    expect(await contracts.RewardsManager.region()).to.equal(
+      contracts.Region.address
     );
     expect(await contracts.RewardsManager.uniswapV2Router()).to.equal(
       contracts.mockUniswapV2Router.address
@@ -263,12 +271,10 @@ describe("RewardsManager", function () {
     ).to.be.revertedWith("Same Insurance");
   });
 
-  it("should revert setting to same BeneficiaryVaults", async function () {
+  it("should revert setting to same Region", async function () {
     await expect(
-      contracts.RewardsManager.setBeneficiaryVaults(
-        contracts.BeneficiaryVaults.address
-      )
-    ).to.be.revertedWith("Same BeneficiaryVaults");
+      contracts.RewardsManager.setRegion(contracts.Region.address)
+    ).to.be.revertedWith("Same Region");
   });
 
   describe("sets new dependent contracts", function () {
@@ -317,23 +323,18 @@ describe("RewardsManager", function () {
         .withArgs(contracts.Treasury.address, newTreasury.address);
     });
 
-    it("sets new BeneficiaryVaults", async function () {
-      const newBeneficiaryVaults = await waffle.deployMockContract(
+    it("sets new Region", async function () {
+      const newRegion = await waffle.deployMockContract(
         owner,
-        contracts.BeneficiaryVaults.interface.format() as any[]
+        contracts.Region.interface.format() as any[]
       );
-      result = await contracts.RewardsManager.setBeneficiaryVaults(
-        newBeneficiaryVaults.address
-      );
-      expect(await contracts.RewardsManager.beneficiaryVaults()).to.equal(
-        newBeneficiaryVaults.address
+      result = await contracts.RewardsManager.setRegion(newRegion.address);
+      expect(await contracts.RewardsManager.region()).to.equal(
+        newRegion.address
       );
       expect(result)
-        .to.emit(contracts.RewardsManager, "BeneficiaryVaultsChanged")
-        .withArgs(
-          contracts.BeneficiaryVaults.address,
-          newBeneficiaryVaults.address
-        );
+        .to.emit(contracts.RewardsManager, "RegionChanged")
+        .withArgs(contracts.Region.address, newRegion.address);
     });
   });
 
@@ -383,10 +384,7 @@ describe("RewardsManager", function () {
           .withArgs(contracts.Insurance.address, insuranceReward);
         expect(result)
           .to.emit(contracts.RewardsManager, "BeneficiaryVaultsDeposited")
-          .withArgs(
-            contracts.BeneficiaryVaults.address,
-            beneficiaryVaultsReward
-          );
+          .withArgs(beneficiaryVaultsReward);
         expect(result)
           .to.emit(contracts.RewardsManager, "RewardsDistributed")
           .withArgs(firstReward);
@@ -467,7 +465,6 @@ describe("RewardsManager", function () {
             expect(result)
               .to.emit(contracts.RewardsManager, "BeneficiaryVaultsDeposited")
               .withArgs(
-                contracts.BeneficiaryVaults.address,
                 beneficiaryVaultsSecondReward
               );
             expect(result)

@@ -5,7 +5,11 @@ interface IRegion {
 
   function regionExists(bytes2 region) external view returns (bool);
 
+  function regionVaults(bytes2 region) external view returns (address);
+
   function getAllRegions() external view returns (bytes2[] memory);
 
-  function addRegion(bytes2 region) external;
+  function getAllVaults() external view returns (address[] memory);
+
+  function addRegion(bytes2 region, address beneficiaryVault) external;
 }

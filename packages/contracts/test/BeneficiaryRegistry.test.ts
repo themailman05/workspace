@@ -1,6 +1,6 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import { BeneficiaryRegistry } from "../typechain";
 
 let owner: SignerWithAddress,
@@ -12,8 +12,18 @@ const DEFAULT_REGION = "0x5757";
 describe("BeneficiaryRegistry", function () {
   beforeEach(async function () {
     [owner, unauthed, beneficiary] = await ethers.getSigners();
+    const BeneficiaryVaults = await ethers.getContractFactory(
+      "BeneficiaryVaults"
+    );
+    const mockBeneficiaryVaults = await waffle.deployMockContract(
+      owner,
+      BeneficiaryVaults.interface.format() as any
+    );
+
     const region = await (
-      await (await ethers.getContractFactory("Region")).deploy()
+      await (
+        await ethers.getContractFactory("Region")
+      ).deploy(mockBeneficiaryVaults.address)
     ).deployed();
     registry = await (
       await (

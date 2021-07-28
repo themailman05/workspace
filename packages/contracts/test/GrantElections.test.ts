@@ -3,7 +3,7 @@ import { parseEther } from "@ethersproject/units";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { waffle, ethers } from "hardhat";
+import { ethers, waffle } from "hardhat";
 import { ElectionMetadata, ShareType } from "../../utils/src/Contracts";
 import { calculateVaultShare, rankAwardees } from "../scripts/finalizeElection";
 import { GrantElectionAdapter } from "../scripts/helpers/GrantElectionAdapter";
@@ -11,7 +11,6 @@ import {
   BeneficiaryVaults,
   GrantElections,
   MockERC20,
-  RandomNumberConsumer,
   RandomNumberHelper,
 } from "../typechain";
 
@@ -90,14 +89,19 @@ async function deployContracts(): Promise<Contracts> {
     .connect(owner)
     .transfer(randomNumberHelper.address, parseEther("500"));
 
-  const region = await (
-    await (await ethers.getContractFactory("Region")).deploy()
-  ).deployed();
-
   const beneficiaryVaults = await (
     await (
       await ethers.getContractFactory("BeneficiaryVaults")
-    ).deploy(mockPop.address, mockBeneficiaryRegistry.address, region.address)
+    ).deploy(mockPop.address)
+  ).deployed();
+  await beneficiaryVaults
+    .connect(owner)
+    .setBeneficiaryRegistry(mockBeneficiaryRegistry.address);
+
+  const region = await (
+    await (
+      await ethers.getContractFactory("Region")
+    ).deploy(beneficiaryVaults.address)
   ).deployed();
 
   const grantElections = (await (
@@ -106,7 +110,6 @@ async function deployContracts(): Promise<Contracts> {
     ).deploy(
       mockStaking.address,
       mockBeneficiaryRegistry.address,
-      beneficiaryVaults.address,
       randomNumberHelper.address,
       mockPop.address,
       region.address,
@@ -131,7 +134,7 @@ async function prepareElection(
   grantTerm: number,
   electionId: number
 ): Promise<void> {
-  await contracts.grantElections.initialize(grantTerm,DEFAULT_REGION);
+  await contracts.grantElections.initialize(grantTerm, DEFAULT_REGION);
   await contracts.mockStaking.mock.getVoiceCredits.returns(100);
   await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
   await contracts.grantElections
@@ -318,7 +321,10 @@ describe("GrantElections", function () {
       await contracts.grantElections
         .connect(governance)
         .toggleRegistrationBondRequirement(GRANT_TERM.YEAR);
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR, DEFAULT_REGION);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await contracts.grantElections.registerForElection(
         beneficiary.address,
         electionId
@@ -335,7 +341,10 @@ describe("GrantElections", function () {
       await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
         true
       );
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR, DEFAULT_REGION);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await expect(
         contracts.grantElections
           .connect(beneficiary)
@@ -347,7 +356,10 @@ describe("GrantElections", function () {
       await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
         true
       );
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR,DEFAULT_REGION);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await contracts.mockPop.mint(beneficiary2.address, parseEther("1000"));
       await contracts.mockPop
         .connect(beneficiary2)
@@ -375,7 +387,10 @@ describe("GrantElections", function () {
       await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
         true
       );
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR,DEFAULT_REGION);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await contracts.mockPop.mint(beneficiary2.address, parseEther("1000"));
       await contracts.mockPop
         .connect(beneficiary2)
@@ -397,14 +412,23 @@ describe("GrantElections", function () {
       const currentBlockNumber = await ethers.provider.getBlockNumber();
       const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
 
-      await expect(contracts.grantElections.initialize(GRANT_TERM.QUARTER,DEFAULT_REGION))
+      await expect(
+        contracts.grantElections.initialize(GRANT_TERM.QUARTER, DEFAULT_REGION)
+      )
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, DEFAULT_REGION, currentBlock.timestamp + 1);
+        .withArgs(
+          GRANT_TERM.QUARTER,
+          DEFAULT_REGION,
+          currentBlock.timestamp + 1
+        );
     });
 
     it("should set correct election metadata", async function () {
-      const currentBlock = await waffle.provider.getBlock("latest")
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER,DEFAULT_REGION);
+      const currentBlock = await waffle.provider.getBlock("latest");
+      await contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
+      );
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
       ).getElectionMetadata(electionId);
@@ -431,9 +455,12 @@ describe("GrantElections", function () {
     });
 
     it("should prevent an election from initializing if it isn't finalized", async function () {
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER,DEFAULT_REGION);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
+      );
       await expect(
-        contracts.grantElections.initialize(GRANT_TERM.QUARTER,DEFAULT_REGION)
+        contracts.grantElections.initialize(GRANT_TERM.QUARTER, DEFAULT_REGION)
       ).to.be.revertedWith("election not yet finalized");
     });
     it("should allow to create a new election for a term when the old one is finalized", async function () {
@@ -468,10 +495,17 @@ describe("GrantElections", function () {
       );
       const currentBlockNumber = await ethers.provider.getBlockNumber();
       const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
-      const result = contracts.grantElections.initialize(GRANT_TERM.QUARTER,DEFAULT_REGION);
+      const result = contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
+      );
       await expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, DEFAULT_REGION, currentBlock.timestamp + 1);
+        .withArgs(
+          GRANT_TERM.QUARTER,
+          DEFAULT_REGION,
+          currentBlock.timestamp + 1
+        );
 
       await expect(result)
         .to.emit(contracts.beneficiaryVaults, "VaultClosed")
@@ -487,7 +521,10 @@ describe("GrantElections", function () {
 
   describe("voting", function () {
     beforeEach(async function () {
-      await contracts.grantElections.initialize(GRANT_TERM.MONTH,DEFAULT_REGION);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.MONTH,
+        DEFAULT_REGION
+      );
     });
     it("should require voice credits", async function () {
       await expect(
