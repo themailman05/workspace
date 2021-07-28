@@ -253,7 +253,7 @@ export default async function deployTestnet(ethers): Promise<void> {
     console.log("giving ETH to beneficiaries ...");
     await bluebird.map(
       bennies,
-      async (beneficiary) => {
+      async (beneficiary: SignerWithAddress) => {
         const balance = await ethers.provider.getBalance(beneficiary.address);
         if (balance.lt(parseEther(".01"))) {
           return accounts[0].sendTransaction({
@@ -270,7 +270,7 @@ export default async function deployTestnet(ethers): Promise<void> {
     console.log("adding beneficiaries to registry ...");
     await bluebird.map(
       bennies,
-      async (beneficiary) => {
+      async (beneficiary: SignerWithAddress) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
           ethers.utils.formatBytes32String("1234"),
@@ -336,7 +336,7 @@ export default async function deployTestnet(ethers): Promise<void> {
     );
     await bluebird.map(
       bennies,
-      async (beneficiary) => {
+      async (beneficiary: SignerWithAddress) => {
         console.log(`registering ${beneficiary.address}`);
         return contracts.grantElections.registerForElection(
           beneficiary.address,
@@ -369,7 +369,7 @@ export default async function deployTestnet(ethers): Promise<void> {
 
   const stakePOP = async (voters): Promise<void> => {
     console.log("voters are staking POP ...");
-    await bluebird.map(voters, async (voter) => {
+    await bluebird.map(voters, async (voter: SignerWithAddress) => {
       return contracts.staking
         .connect(voter)
         .stake(utils.parseEther("1000"), 604800 * 52 * 4);
@@ -403,7 +403,7 @@ export default async function deployTestnet(ethers): Promise<void> {
     );
     await bluebird.map(
       voters,
-      async (voter) => {
+      async (voter: SignerWithAddress) => {
         return contracts.grantElections.connect(voter).vote(
           beneficiaries.map((benny) => benny.address),
           [
@@ -504,12 +504,6 @@ export default async function deployTestnet(ethers): Promise<void> {
     await displayElectionMetadata(GrantTerm.Year);
   };
 
-  const setElectionContractAsGovernanceForGrantRegistry =
-    async (): Promise<void> => {
-      await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
-      await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
-    };
-
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");
     await bluebird.map(
@@ -528,7 +522,6 @@ export default async function deployTestnet(ethers): Promise<void> {
       eligibleButNotRegistered: bennies.slice(18, 20).map((bn) => bn.address),
       contracts: {
         beneficiaryRegistry: contracts.beneficiaryRegistry.address,
-        grantRegistry: contracts.grantRegistry.address,
         mockPop: contracts.mockPop.address,
         staking: contracts.staking.address,
         randomNumberConsumer: contracts.randomNumberConsumer.address,
@@ -539,7 +532,6 @@ export default async function deployTestnet(ethers): Promise<void> {
 Paste this into your .env file:
 
 ADDR_TESTNET_BENEFICIARY_REGISTRY=${contracts.beneficiaryRegistry.address}
-ADDR_TESTNET_GRANT_REGISTRY=${contracts.grantRegistry.address}
 ADDR_TESTNET_POP=${contracts.mockPop.address}
 ADDR_TESTNET_STAKING=${contracts.staking.address}
 ADDR_TESTNET_RANDOM_NUMBER=${contracts.randomNumberConsumer.address}
@@ -562,6 +554,5 @@ ADDR_TESTNET_GRANT_ELECTION=${contracts.grantElections.address}
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
-  await setElectionContractAsGovernanceForGrantRegistry();
   await logResults();
 }

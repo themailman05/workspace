@@ -8,10 +8,10 @@ import { utils } from "ethers";
 
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
-
-import {
-  GrantElectionAdapter,
-} from "./scripts/helpers/GrantElectionAdapter";
+import finalizeElection from "./scripts/finalizeElection";
+import { GrantElectionAdapter } from "./scripts/helpers/GrantElectionAdapter";
+import SetTokenManager from "./lib/SetToken/SetTokenManager";
+import { DefaultConfiguration } from "./lib/SetToken/Configuration";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
@@ -20,7 +20,6 @@ task("accounts", "Prints the list of accounts", async (args, hre) => {
     console.log(account.address);
   }
 });
-
 
 task("environment").setAction(async (args, hre) => {
   console.log(process.env.ENV);
@@ -33,6 +32,7 @@ task("dev:deploy").setAction(async (args, hre) => {
 task("dev:deployTestnet").setAction(async (args, hre) => {
   await deployTestnet(hre.ethers);
 });
+
 
 task("elections:getElectionMetadata")
   .addParam("term", "grant term (int)")
@@ -119,16 +119,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
 
 task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
-  .setAction(async (args, hre) => {
-    const [signer] = await hre.ethers.getSigners();
-    const { term } = args;
-    const GrantElections = new hre.ethers.Contract(
-      process.env.ADDR_GRANT_ELECTION,
-      require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
-      signer
-    );
-    await GrantElections.finalize(Number(term), { gasLimit: 10000000 });
-  });
+  .setAction(finalizeElection);
 
 task("random", "gets a random number")
   .addParam("seed", "the seed")
@@ -144,9 +135,16 @@ task("random", "gets a random number")
     console.log(`Random number ${await RandomNumberConsumer.randomResult()}`);
   });
 
-
-
-
+task("hysi:deploy", "deploys set token")
+  .addOptionalParam("debug", "display debug information")
+  .setAction(async (args, hre) => {
+    const [signer] = await hre.ethers.getSigners();
+    const manager = new SetTokenManager(
+      { ...DefaultConfiguration, manager: signer },
+      hre
+    );
+    await manager.createSet({ args });
+  });
 
 module.exports = {
   solidity: {
@@ -175,9 +173,16 @@ module.exports = {
     mainnet: {
       chainId: 1,
       url: process.env.RPC_URL,
-      accounts: [process.env.PRIVATE_KEY]
+      accounts: [process.env.PRIVATE_KEY],
     },
     hardhat: {
+      forking:
+        process.env.FORKING_ENABLED == "true"
+          ? {
+              url: process.env.FORKING_RPC_URL,
+              blockNumber: 12724811,
+            }
+          : undefined,
     },
     rinkeby: {
       url: process.env.RPC_URL,
