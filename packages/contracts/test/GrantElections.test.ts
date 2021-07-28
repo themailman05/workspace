@@ -468,9 +468,15 @@ describe("GrantElections", function () {
       );
       const currentBlockNumber = await ethers.provider.getBlockNumber();
       const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
-      await expect(contracts.grantElections.initialize(GRANT_TERM.QUARTER))
+      const result = contracts.grantElections.initialize(GRANT_TERM.QUARTER)
+      await expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
         .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+
+      await expect(result)
+        .to.emit(contracts.beneficiaryVaults, "VaultClosed")
+        .withArgs(GRANT_TERM.QUARTER);
+
       const activeElectionId = await contracts.grantElections.activeElections(GRANT_TERM.QUARTER);
       expect(activeElectionId).to.equal(electionId+1)
     });
