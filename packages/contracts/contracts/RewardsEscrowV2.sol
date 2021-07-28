@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./Governed.sol";
 
-contract ParticipationReward is Governed, ReentrancyGuard {
+contract RewardsEscrowV2 is Governed, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -22,14 +22,10 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   mapping(address => bytes32[]) public escrowIds;
 
   /* ========== EVENTS ========== */
-  event RewardBudgetChanged(uint256 amount);
-  event VaultInitialized(bytes32 vaultId);
-  event VaultOpened(bytes32 vaultId);
-  event VaultClosed(bytes32 vaultId);
+  event Locked(address account, uint256 amount);
   event RewardClaimed(bytes32 vaultId, address account_, uint256 amount);
   event RewardsClaimed(address account_, uint256 amount);
-  event SharesAdded(bytes32 vaultId_, address account_, uint256 shares_);
-  event RewardBalanceIncreased(address account, uint256 amount);
+  event EscrowOwnershipTransfered(address prevOwner, address newOwner, bytes32 escrowId)
 
   /* ========== CONSTRUCTOR ========== */
 
@@ -40,43 +36,25 @@ contract ParticipationReward is Governed, ReentrancyGuard {
   /* ========== VIEWS ========== */
 
   /**
-   * @notice Checks if a beneficiary has a claim in the specified vault
-   * @param vaultId_ Bytes32
-   * @param beneficiary_ address of the beneficiary
-   */
-  function hasClaim(bytes32 vaultId_, address beneficiary_)
-    public
-    view
-    vaultExists(vaultId_)
-    returns (bool)
-  {
-    return
-      vaults[vaultId_].shareBalances[beneficiary_] > 0 &&
-      vaults[vaultId_].claimed[beneficiary_] == false;
-  }
-
-  /**
    * @notice Returns the vault status
    * @param vaultId_ Bytes32
    */
-  function getVaultStatus(bytes32 vaultId_)
-    external
-    view
-    returns (VaultStatus)
-  {
-    return vaults[vaultId_].status;
+  function isClaimable(bytes32 escrowId_) external view returns (bool) {
+    return
+      escrows[escrowId_].start <= block.timestamp &&
+      escrows[escrowId_].start != 0;
   }
 
   /**
    * @notice Returns all vaultIds which an account has/had claims in
    * @param account address
    */
-  function getUserVaults(address account)
+  function getEscrowsByUser(address account)
     external
     view
     returns (bytes32[] memory)
   {
-    return userVaults[account];
+    return escrowIds[account];
   }
 
   /* ========== MUTATIVE FUNCTIONS ========== */
@@ -108,11 +86,7 @@ contract ParticipationReward is Governed, ReentrancyGuard {
    * @dev (lower cost but also lower reward)
    */
   function claimReward(uint256 index_) external nonReentrant {
-    bytes32 vaultId_ = userVaults[msg.sender][index_];
-    require(vaults[vaultId_].status == VaultStatus.Open, "vault is not open");
-    require(!vaults[vaultId_].claimed[msg.sender], "already claimed");
-
-    uint256 reward = _claimVaultReward(vaultId_, index_, msg.sender);
+    uint256 reward = _claimReward(msg.sender, index_);
     require(reward > 0, "no rewards");
 
     POP.safeTransfer(msg.sender, reward);
@@ -128,17 +102,11 @@ contract ParticipationReward is Governed, ReentrancyGuard {
    * @dev The array of indices is limited to 19 as we want to prevent gas overflow of looping through too many vaults
    */
   function claimRewards(uint256[] calldata indices_) external nonReentrant {
-    require(indices_.length < 5, "claiming too many vaults");
+    require(indices_.length <= 5, "claiming too many vaults");
     uint256 total;
 
     for (uint256 i = 0; i < indices_.length; i++) {
-      bytes32 escrowId = escrowIds[msg.sender][indices_[i]];
-      if (
-        escrows[escrowId].start ==  &&
-        !escrows[escrowId].claimed[msg.sender]
-      ) {
-        total = total.add(_claimVaultReward(vaultId_, indices_[i], msg.sender));
-      }
+      total = total.add(_claimReward(msg.sender, indices_[i]));
     }
     require(total > 0, "no rewards");
 
@@ -147,6 +115,16 @@ contract ParticipationReward is Governed, ReentrancyGuard {
     emit RewardsClaimed(msg.sender, total);
   }
 
+  //TODO Integrate struct to trustless sell escrows?
+  function transferEscrowOwnership(address recipient_, bytes32 index_) public {
+    bytes32 escrowId = escrowIds[msg.sender][index_];
+    escrowIds[recipient_].push(escrowId_);
+    delete escrowIds[account_][index_];
+    emit EscrowOwnershipTransfered(msg.sender, recipient_, escrowId)
+  }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
+
   /**
    * @notice Underlying function to calculate the rewards that a user gets and set the vault to claimed
    * @param vaultId_ Bytes32
@@ -154,47 +132,33 @@ contract ParticipationReward is Governed, ReentrancyGuard {
    * @param account_ address
    * @dev We dont want it to error when a vault is empty for the user as this would terminate the entire loop when used in claimRewards()
    */
-  function _claimVaultReward(
-    bytes32 vaultId_,
-    uint256 index_,
-    address account_
-  ) internal returns (uint256) {
-    uint256 userShares = vaults[vaultId_].shareBalances[account_];
-    if (userShares > 0) {
-      uint256 reward = vaults[vaultId_].tokenBalance.mul(userShares).div(
-        vaults[vaultId_].shares
-      );
-      vaults[vaultId_].tokenBalance = vaults[vaultId_].tokenBalance.sub(reward);
-      vaults[vaultId_].claimed[account_] = true;
-
-      delete userVaults[account_][index_];
-      return reward;
+  function _claimReward(address account_, uint256 index_)
+    internal
+    returns (uint256)
+  {
+    Escrow storage escrow = escrows[escrowIds[account_][index_]];
+    if (escrow.start <= block.timestamp) {
+      uint256 claimable = _getClaimableAmount(escrow);
+      if (claimable == escrow.balance) {
+        delete escrowIds[account_][index_];
+        delete escrow;
+      }
+      return claimable;
     }
     return 0;
   }
 
-  /* ========== RESTRICTED FUNCTIONS ========== */
-  /**
-   * @notice Sets the budget of rewards in POP per vault
-   * @param amount uint256 reward amount in POP per vault
-   * @dev When opening a vault this contract must have enough POP to fund the rewardBudget of the new vault
-   */
-  function setRewardsBudget(uint256 amount) external onlyGovernance {
-    require(amount > 0, "must be larger 0");
-    rewardBudget = amount;
-    emit RewardBudgetChanged(amount);
-  }
-
-  /**
-   * @notice Transfer POP to the contract for vault rewards
-   * @param amount uint256 amount in POP to be used for vault rewards
-   * @dev Sufficient RewardsBalance will be checked when opening a new vault to see if enough POP exist to support the new Vault
-   */
-  function contributeReward(uint256 amount) external {
-    require(amount > 0, "must be larger 0");
-    POP.safeTransferFrom(msg.sender, address(this), amount);
-    rewardBalance = rewardBalance.add(amount);
-    emit RewardBalanceIncreased(msg.sender, amount);
+  function _getClaimableAmount(Escrow memory escrow) internal {
+    if (escrow.start == 0 || escrow.end == 0) {
+      return 0;
+    }
+    return
+      Math.min(
+        (escrow.balance.mul(block.timestamp.sub(escrow.start))).div(
+          escrow.end.sub(escrow.start)
+        ),
+        escrow.balance
+      );
   }
 
   /* ========== MODIFIERS ========== */
@@ -203,8 +167,8 @@ contract ParticipationReward is Governed, ReentrancyGuard {
    * @notice Modifier to check if a vault exists
    * @param vaultId_ Bytes32
    */
-  modifier vaultExists(bytes32 vaultId_) {
-    require(vaults[vaultId_].endTime > 0, "Uninitialized vault slot");
+  modifier escrowExists(bytes32 escrowId) {
+    require(escrows[escrowId].end > 0, "Uninitialized Escrow slot");
     _;
   }
 }
