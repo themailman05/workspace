@@ -5,7 +5,7 @@ interface DisplayFilesProps {
 export const DisplayImage: React.FC<DisplayFilesProps> = ({ localState }) => {
   return (
     <div key={localState as string}>
-      {localState?.length && (
+      {localState?.length !== 0 && (
         <img
           className="mx-auto w-1/2"
           src={'https://gateway.pinata.cloud/ipfs/' + localState}
