@@ -11,7 +11,7 @@ const PhotoSideBar: React.FC<PhotoSideBarProps> = ({ beneficiary }) => {
       {beneficiary?.files?.additionalImages?.map((image) => {
         return (
           <img
-            className="w-full"
+            className="w-full my-1"
             src={`${process.env.IPFS_URL}${image?.image}`}
             alt={image?.description}
           />
