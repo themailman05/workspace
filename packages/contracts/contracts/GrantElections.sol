@@ -8,8 +8,9 @@ import "./IBeneficiaryRegistry.sol";
 import "./IRandomNumberConsumer.sol";
 import "./IBeneficiaryVaults.sol";
 import "./Governed.sol";
+import "./ParticipationReward.sol";
 
-contract GrantElections is Governed {
+contract GrantElections is ParticipationReward {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -98,12 +99,11 @@ contract GrantElections is Governed {
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
-  ) Governed(_governance) {
+  ) ParticipationReward(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     beneficiaryVaults = _beneficiaryVaults;
     randomNumberConsumer = _randomNumberConsumer;
-    POP = _pop;
     _setDefaults();
   }
 

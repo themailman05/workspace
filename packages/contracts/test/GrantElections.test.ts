@@ -386,7 +386,7 @@ describe("GrantElections", function () {
       const popBalanceForElection = await contracts.mockPop.balanceOf(
         contracts.grantElections.address
       );
-      expect(popBalanceForElection).to.equal(parseEther("1000"));
+      expect(popBalanceForElection).to.equal(parseEther("3000"));
     });
   });
 
@@ -479,6 +479,25 @@ describe("GrantElections", function () {
 
       const activeElectionId = await contracts.grantElections.activeElections(GRANT_TERM.QUARTER);
       expect(activeElectionId).to.equal(electionId+1)
+    });
+    it("should not initialize a vault even the neede budget is larger than rewardBudget", async function () {
+      await contracts.grantElections
+        .connect(governance)
+        .setRewardsBudget(parseEther("3000"));
+      const currentBlock = await waffle.provider.getBlock("latest");
+      const result = await contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER
+      );
+      expect(result)
+        .to.emit(contracts.grantElections, "ElectionInitialized")
+        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+      expect(result).to.not.emit(contracts.grantElections, "VaultInitialized");
+      const election = await contracts.grantElections.elections(
+        GRANT_TERM.QUARTER
+      );
+      expect(election.vaultId).to.equal(
+        "0x0000000000000000000000000000000000000000000000000000000000000000"
+      );
     });
   });
 
