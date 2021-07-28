@@ -23,8 +23,6 @@ import { Toaster } from 'react-hot-toast';
 export interface Navigation {
   currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
-  stepLimit: number;
-  setStepLimit: React.Dispatch<React.SetStateAction<number>>;
   numSteps: number;
 }
 
@@ -82,18 +80,16 @@ const stepOrder: string[] = [
 
 export default function BeneficiaryProposal(): JSX.Element {
   const [currentStep, setCurrentStep] = useState<number>(0);
-  const [stepLimit, setStepLimit] = useState<number>(1);
   const [formData, setFormData] =
     useState<BeneficiaryApplication>(defaultFormData);
   const router = useRouter();
   useEffect(() => {
     const formData = localStorage.getItem('beneficiaryNominationProposal');
-    const stepLimit = Number(localStorage.getItem('stepLimit'));
     if (formData !== null) setFormData(JSON.parse(formData));
-    if (stepLimit !== null) setStepLimit(stepLimit);
   }, []);
 
   useEffect(() => {
+    console.log(1);
     const stepName = router.query.step as string;
     const stepIndex = stepOrder.indexOf(stepName);
     if (stepName && stepIndex !== -1) {
@@ -103,6 +99,7 @@ export default function BeneficiaryProposal(): JSX.Element {
   }, [router]);
 
   useEffect(() => {
+    console.log(2);
     const stepName = stepOrder[currentStep];
     router.push(`/proposals/propose/?step=${stepName}`, undefined, {
       shallow: true,
@@ -116,15 +113,9 @@ export default function BeneficiaryProposal(): JSX.Element {
     );
   }, [formData]);
 
-  useEffect(() => {
-    localStorage.setItem('stepLimit', String(stepLimit));
-  }, [stepLimit]);
-
   const navigation: Navigation = {
     currentStep,
     setCurrentStep,
-    stepLimit,
-    setStepLimit,
     numSteps: stepOrder.length - 1,
   };
   return (
