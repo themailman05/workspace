@@ -34,7 +34,7 @@ export const IpfsClient = (): IIpfsClient => {
       myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
       myHeaders.append('Content-Type', 'application/json');
       var raw = JSON.stringify(beneficiaryApplication);
-      const cid = await fetch(process.env.IPFS_GATEWAY_PIN, {
+      const cid = await fetch(process.env.IPFS_GATEWAY_PIN_JSON, {
         method: 'POST',
         headers: myHeaders,
         body: raw,
