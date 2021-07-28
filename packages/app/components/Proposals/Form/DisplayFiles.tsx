@@ -7,7 +7,7 @@ export const DisplayImage: React.FC<DisplayFilesProps> = ({ localState }) => {
     <div key={localState as string}>
       {localState?.length !== 0 && (
         <img
-          className="mx-auto w-1/2"
+          className="mx-auto max-w-md"
           src={'https://gateway.pinata.cloud/ipfs/' + localState}
         />
       )}
@@ -22,7 +22,7 @@ export const DisplayVideo: React.FC<DisplayFilesProps> = ({ localState }) => {
         <p className="my-4 max-w-3xl mx-auto text-center text-xl text-gray-500 w-1/3 justify-self-center">
           Video Preview
         </p>
-        <video className="w-1/4 justify-self-center" controls>
+        <video className="max-w-md justify-self-center" controls>
           <source
             src={'https://gateway.pinata.cloud/ipfs/' + localState}
             type="video/mp4"

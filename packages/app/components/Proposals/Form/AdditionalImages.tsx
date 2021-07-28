@@ -1,4 +1,4 @@
-import { CheckIcon, XIcon } from '@heroicons/react/solid';
+import { XIcon } from '@heroicons/react/solid';
 import { FormStepProps } from 'pages/proposals/propose';
 import React from 'react';
 import inputExists from 'utils/isValidInput';
@@ -79,7 +79,7 @@ const AdditionalImages: React.FC<FormStepProps> = ({
           maxFileSizeMB={5}
         />
 
-        <div className="mt-8 mx-auto">
+        <div className="mt-8 max-w-sm mx-auto">
           {formData?.files?.additionalImages?.map((image, i) => (
             <div className="mb-4">
               <div className="relative">
@@ -115,15 +115,16 @@ const AdditionalImages: React.FC<FormStepProps> = ({
             navigation={navigation}
           />
         ) : (
-          <button
-            onClick={() => {
-              setCurrentStep(currentStep + 1);
-            }}
-            className="mx-auto justify-self-center inline-flex px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Continue
-            <CheckIcon className="ml-2 -mr-1 h-5 w-5" aria-hidden="true" />
-          </button>
+          <div className="flex justify-center">
+            <button
+              onClick={() => {
+                setCurrentStep(currentStep + 1);
+              }}
+              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Skip
+            </button>
+          </div>
         )}
       </>
     )
