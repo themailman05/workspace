@@ -1,15 +1,15 @@
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { ProposalType } from "@popcorn/utils/src";
+import { getBytes32FromIpfsHash } from "@popcorn/utils/src/ipfsHashManipulation";
+import bluebird from "bluebird";
+import { deployContract } from "ethereum-waffle";
+import { BigNumber, Contract, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
-import bluebird from "bluebird";
-import { BigNumber, Contract, utils } from "ethers";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { deployContract } from "ethereum-waffle";
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
 
-import { getBytes32FromIpfsHash } from "@popcorn/utils/src/ipfsHashManipulation";
-import { ProposalType } from "@popcorn/utils/src";
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
 
@@ -78,9 +78,9 @@ export default async function deploy(ethers): Promise<void> {
       ).deploy("3CURVE", "3CRV", 18)
     ).deployed();
 
-    const WETH = (await (
+    const WETH = await (
       await (await ethers.getContractFactory("WETH9")).deploy()
-    ).deployed())
+    ).deployed();
 
     const staking = await (
       await (await ethers.getContractFactory("Staking")).deploy(mockPop.address)
@@ -91,12 +91,12 @@ export default async function deploy(ethers): Promise<void> {
       UniswapV2FactoryJSON,
       [accounts[0].address]
     );
-    const uniswapRouter = (await deployContract(
+    const uniswapRouter = await deployContract(
       accounts[0],
       UniswapV2Router02JSON,
       [uniswapFactory.address, WETH.address],
       overrides
-    ))
+    );
 
     await uniswapFactory.createPair(mock3CRV.address, mockPop.address);
     const uniswapPairAddress = await uniswapFactory.getPair(
@@ -107,7 +107,7 @@ export default async function deploy(ethers): Promise<void> {
       uniswapPairAddress,
       JSON.stringify(UniswapV2PairJSON.abi),
       accounts[0]
-    )
+    );
 
     const beneficiaryVaults = await (
       await (
@@ -128,7 +128,9 @@ export default async function deploy(ethers): Promise<void> {
       )
     ).deployed();
 
-    await staking.connect(accounts[0]).setRewardsManager(rewardsManager.address)
+    await staking
+      .connect(accounts[0])
+      .setRewardsManager(rewardsManager.address);
 
     const randomNumberConsumer = await (
       await (
@@ -219,7 +221,8 @@ export default async function deploy(ethers): Promise<void> {
     console.log("reducing voting period to 0");
     await contracts.beneficiaryGovernance
       .connect(accounts[0])
-      .setConfiguration(0, 2 * 86400, parseEther("2000"));
+      .setConfiguration(10, 2 * 86400, parseEther("2000"));
+
     console.log("adding proposals in veto period");
     await bluebird.map(
       bennies.slice(3, 6),
@@ -237,11 +240,13 @@ export default async function deploy(ethers): Promise<void> {
       },
       { concurrency: 1 }
     );
+    ethers.provider.send("evm_increaseTime", [10]);
+    ethers.provider.send("evm_mine", []);
 
     console.log("reducing veto period to 0");
     await contracts.beneficiaryGovernance
       .connect(accounts[0])
-      .setConfiguration(0, 0, parseEther("2000"));
+      .setConfiguration(10, 0, parseEther("2000"));
 
     console.log("adding proposals in finalization period");
     await bluebird.map(
@@ -260,6 +265,8 @@ export default async function deploy(ethers): Promise<void> {
       },
       { concurrency: 1 }
     );
+    ethers.provider.send("evm_increaseTime", [10]);
+    ethers.provider.send("evm_mine", []);
   };
 
   const addBeneficiaryTakedownProposals = async (): Promise<void> => {
@@ -309,9 +316,15 @@ export default async function deploy(ethers): Promise<void> {
       .connect(bennies[0])
       .vote(5, ProposalType.Nomination, Vote.No);
 
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6, ProposalType.Nomination);
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7, ProposalType.Nomination);
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8, ProposalType.Nomination);
+    await contracts.beneficiaryGovernance
+      .connect(accounts[0])
+      .finalize(6, ProposalType.Nomination);
+    await contracts.beneficiaryGovernance
+      .connect(accounts[0])
+      .finalize(7, ProposalType.Nomination);
+    await contracts.beneficiaryGovernance
+      .connect(accounts[0])
+      .finalize(8, ProposalType.Nomination);
   };
 
   const addBeneficiariesToRegistry = async (): Promise<void> => {
