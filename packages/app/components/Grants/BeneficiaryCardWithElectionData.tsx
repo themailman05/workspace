@@ -6,17 +6,7 @@ import truncate from 'utils/truncate';
 import GrantElectionAdapter from '../../../contracts/adapters/GrantElection/GrantElectionAdapter';
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
-
-export interface ElectionProps {
-  election: ElectionMetadata;
-  votesAssignedByUser?: number;
-  pendingVotes: PendingVotes;
-  assignVotes?: (grantTerm: number, vote: Vote) => void;
-  maxVotes?: number;
-  voiceCredits?: number;
-  totalVotes: number;
-}
-
+import { ElectionProps } from './ElectionProps';
 interface BeneficiaryCardWithElectionDataProps {
   beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;

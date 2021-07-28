@@ -1,12 +1,10 @@
-import React from 'react';
-import { Link } from '@material-ui/core';
 import {
   SingleActionModalProps,
   DefaultSingleActionModalProps,
 } from 'components/Modal/SingleActionModal';
 import { DualActionModalProps } from 'components/Modal/DualActionModal';
 import { DefaultDualActionModalProps } from '../components/Modal/DualActionModal';
-import { Notification } from '../components/Notifications/NotificationsContainer';
+import { NotificationProps } from '../components/Notifications/NotificationProps';
 import {
   DefaultDualActionWideModalProps,
   DualActionWideModalProps,
@@ -31,14 +29,14 @@ export type AppActions =
 
 export interface PushNotificationAction {
   type: typeof PUSH_NOTIFICATION;
-  payload: Notification;
+  payload: NotificationProps;
 }
 export const pushNotification = (
   notification: Partial<Notification>,
 ): PushNotificationAction => {
   return {
     type: PUSH_NOTIFICATION,
-    payload: { ...notification, visible: true } as Notification,
+    payload: { ...notification, visible: true } as NotificationProps,
   };
 };
 
