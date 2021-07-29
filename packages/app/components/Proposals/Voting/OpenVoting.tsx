@@ -1,6 +1,6 @@
 import { RadioGroup } from '@headlessui/react';
 import { VoteOptions } from '@popcorn/contracts/lib/BeneficiaryGovernance/constants';
-import { ProposalType } from '@popcorn/utils';
+import { ProposalType } from '@popcorn/contracts/adapters';
 import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
@@ -25,7 +25,7 @@ const OpenVoting: React.FC<VotingProps> = ({
     toast.loading('Submitting vote...');
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
-      .vote(proposal.id, proposal.proposalType, selected)
+      .vote(proposal.id, selected)
       .then((res) => {
         toast.success('Voted successfully!');
         setHasVoted(true);
@@ -73,8 +73,8 @@ const OpenVoting: React.FC<VotingProps> = ({
                 <>
                   <span
                     className={`h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center ${checked
-                        ? 'bg-indigo-600 border-transparent'
-                        : 'bg-white border-gray-300'
+                      ? 'bg-indigo-600 border-transparent'
+                      : 'bg-white border-gray-300'
                       } ${active ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
                     aria-hidden="true"
                   >
@@ -113,8 +113,8 @@ const OpenVoting: React.FC<VotingProps> = ({
                 <>
                   <span
                     className={`h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center ${checked
-                        ? 'bg-indigo-600 border-transparent'
-                        : 'bg-white border-gray-300'
+                      ? 'bg-indigo-600 border-transparent'
+                      : 'bg-white border-gray-300'
                       } ${active ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
                     aria-hidden="true"
                   >

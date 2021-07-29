@@ -3,10 +3,10 @@ import { useRouter } from 'next/router';
 import React, { useContext, useEffect, useState } from 'react';
 import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage';
 import {
-  BeneficiaryApplication,
   IpfsClient,
 } from '@popcorn/utils';
 import {
+  BeneficiaryApplication,
   BeneficiaryRegistryAdapter
 } from "@popcorn/contracts/adapters";
 import Loading from 'components/CommonComponents/Loading';

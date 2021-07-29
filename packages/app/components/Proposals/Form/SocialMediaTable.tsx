@@ -1,7 +1,7 @@
 // Display table that contains platform, url and option to delete
 
 import { TrashIcon } from '@heroicons/react/solid';
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import Link from 'next/link';
 import React from 'react';
 

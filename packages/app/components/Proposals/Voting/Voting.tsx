@@ -1,4 +1,4 @@
-import { Status } from '@popcorn/utils';
+import { ProposalStatus } from '@popcorn/contracts/adapters';
 import React from 'react';
 import CurrentStandings from '../CurrentStandings';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
@@ -11,9 +11,9 @@ const Voting: React.FC<VotingProps> = ({
   hasVoted = false,
 }): JSX.Element => (
   <div>
-    {proposal?.status === Status.Open ? (
+    {proposal?.status === ProposalStatus.Open ? (
       <OpenVoting proposal={proposal} hasVoted={hasVoted} />
-    ) : proposal?.status === Status.Challenge ? (
+    ) : proposal?.status === ProposalStatus.Challenge ? (
       <ChallengePeriodVoting proposal={proposal} hasVoted={hasVoted} />
     ) : (
       <CompletedVoting {...proposal} />

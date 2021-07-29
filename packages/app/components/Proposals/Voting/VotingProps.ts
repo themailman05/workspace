@@ -1,4 +1,4 @@
-import { Proposal } from '@popcorn/utils';
+import { Proposal } from '@popcorn/contracts/adapters';
 
 export interface VotingProps {
   proposal: Proposal;

@@ -1,4 +1,4 @@
-import { Proposal } from '@popcorn/utils';
+import { Proposal } from '@popcorn/contracts/adapters';
 import { DateTime } from 'luxon';
 import { useEffect, useState } from 'react';
 

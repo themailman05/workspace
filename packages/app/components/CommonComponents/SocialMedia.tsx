@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import * as Icon from 'react-feather';
 
 interface GetSocialMediaIconProps {

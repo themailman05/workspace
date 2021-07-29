@@ -1,96 +1,110 @@
 import { BeneficiaryGovernance } from "@popcorn/contracts/typechain";
-import { BeneficiaryApplication, Proposal, ProposalType } from "@popcorn/utils";
-import { IIpfsClient } from "@popcorn/utils";
+import { formatAndRoundBigNumber, IIpfsClient } from "@popcorn/utils";
 
-// given a function type, return either the type of the resolved promise if
-// a promise is returned or the straight return type of the function.
-type AsyncReturnType<T extends (...args: any) => any> = T extends (
-  ...args: any
-) => Promise<infer U>
-  ? U
-  : T extends (...args: any) => infer U
-  ? U
-  : any;
+export enum ProposalStatus {
+  Open,
+  Challenge,
+  Completed,
+  Passed,
+  Failed,
+  All,
+}
 
-export const BeneficiaryGovernanceAdapter = (
-  contract: BeneficiaryGovernance,
-  IpfsClient: () => IIpfsClient
-) => {
-  type ProposalContract = AsyncReturnType<typeof contract.proposals>;
+export enum ProposalType {
+  Nomination,
+  Takedown,
+}
 
-  async function addIpfsDataToProposal(
-    IpfsClient: () => IIpfsClient,
-    proposal: ProposalContract,
-    proposalIndex: number
-  ): Promise<Proposal> {
-    const beneficiaryApplication: BeneficiaryApplication = await IpfsClient().get(
-      proposal.applicationCid
-    );
-    const deadline = new Date(
-      (Number(proposal.startTime.toString()) +
-        Number(proposal.configurationOptions.votingPeriod.toString()) +
-        Number(proposal.configurationOptions.vetoPeriod.toString())) *
-        1000
-    );
+export interface BeneficiaryImage {
+  image: string;
+  description: string;
+}
+export interface BeneficiaryApplication {
+  organizationName: string;
+  projectName?: string;
+  missionStatement: string;
+  beneficiaryAddress: string;
+  files: {
+    profileImage: BeneficiaryImage;
+    headerImage?: BeneficiaryImage;
+    impactReports?: string[];
+    additionalImages?: BeneficiaryImage[];
+    video: string;
+  };
+  links: {
+    twitterUrl?: string;
+    linkedinUrl?: string;
+    facebookUrl?: string;
+    instagramUrl?: string;
+    githubUrl?: string;
+    proofOfOwnership?: string;
+    contactEmail: string;
+    website: string;
+  };
+  version: string;
+}
+export interface Proposal {
+  application: BeneficiaryApplication;
+  id: string;
+  status: ProposalStatus;
+  stageDeadline: Date;
+  proposalType: ProposalType;
+  votes: {
+    for: string;
+    against: string;
+  };
+}
+export class BeneficiaryGovernanceAdapter {
+  constructor(
+    private contract: BeneficiaryGovernance,
+    private IpfsClient: IIpfsClient
+  ) {}
 
+  public async getProposal(id: number): Promise<Proposal> {
+    const proposal = await this.contract.proposals(id);
     return {
-      application: beneficiaryApplication,
-      id: proposalIndex.toString(),
+      application: await this.IpfsClient.get(proposal.applicationCid),
+      id: id.toString(),
       proposalType: proposal.proposalType,
       status: Number(proposal.status.toString()),
-      stageDeadline: deadline,
+      stageDeadline: new Date(
+        (Number(proposal.startTime.toString()) +
+          Number(proposal.configurationOptions.votingPeriod.toString()) +
+          Number(proposal.configurationOptions.vetoPeriod.toString())) *
+          1000
+      ),
       votes: {
-        for: proposal.yesCount,
-        against: proposal.noCount,
+        for: formatAndRoundBigNumber(proposal.yesCount),
+        against: formatAndRoundBigNumber(proposal.noCount),
       },
     };
   }
-  return {
-    getProposal: async (id: string): Promise<Proposal> => {
-      const proposal = await contract.proposals(Number(id));
-      return await addIpfsDataToProposal(IpfsClient, proposal, Number(id));
-    },
-    getAllProposals: async (
-      proposalType: ProposalType
-    ): Promise<Proposal[]> => {
-      const numNominations = await contract.getNumberOfProposals(
-        ProposalType.Nomination
-      );
-      const numTakedowns = await contract.getNumberOfProposals(
-        ProposalType.Takedown
-      );
-      const proposalIds = new Array(
-        numNominations.add(numTakedowns).toNumber()
-      ).fill(undefined);
-      const proposalData: {
-        proposal: ProposalContract;
-        id: number;
-      }[] = await Promise.all(
-        proposalIds.map(async (x, i) => {
-          const proposal = await contract.proposals(i);
-          return { proposal, id: i };
-        })
-      );
-      const filteredProposalData = proposalData.filter(
-        (proposalData) => proposalData.proposal.proposalType === proposalType
-      );
-      return await Promise.all(
-        filteredProposalData.map(
-          async (proposalData, index) =>
-            await addIpfsDataToProposal(
-              IpfsClient,
-              proposalData.proposal,
-              proposalData.id
-            )
-        )
-      );
-    },
-    hasVoted: async (
-      id: string,
-      proposalType: ProposalType,
-      account: string
-    ): Promise<boolean> => {
-      return await contract.hasVoted(id, proposalType, account);
-    },
-  };
-};
+
+  public async getAllProposals(
+    proposalType: ProposalType
+  ): Promise<Proposal[]> {
+    const proposalCount = await this.contract.getNumberOfProposals(
+      proposalType
+    );
+
+    const proposalTypeName =
+      proposalType === ProposalType.Nomination ? "nominations" : "takedowns";
+
+    const proposalIds = await Promise.all(
+      new Array(proposalCount).fill(undefined).map(async (x, i) => {
+        return await this.contract[proposalTypeName](i);
+      })
+    );
+
+    return Promise.all(
+      proposalIds.map(async (id) => {
+        return this.getProposal(id.toNumber());
+      })
+    );
+  }
+
+  public async hasVoted(proposalId: number, account: string): Promise<boolean> {
+    return await this.contract.hasVoted(proposalId, account);
+  }
+}
+export default BeneficiaryGovernanceAdapter;

@@ -1,5 +1,5 @@
 import { VoteOptions } from '@popcorn/contracts/lib/BeneficiaryGovernance/constants';
-import { ProposalType } from '@popcorn/utils';
+import { ProposalType } from '@popcorn/contracts';
 import { useWeb3React } from '@web3-react/core';
 import { setDualActionModal } from 'context/actions';
 import { store } from 'context/store';
@@ -24,7 +24,7 @@ const ChallengePeriodVoting: React.FC<VotingProps> = ({
     toast.loading('Submitting vote...');
     contracts.beneficiaryGovernance
       .connect(library.getSigner())
-      .vote(proposal.id, proposal.proposalType, VoteOptions.Nay)
+      .vote(proposal.id, VoteOptions.Nay)
       .then((res) => {
         toast.success('Voted successfully!');
         setHasVoted(true);
@@ -76,8 +76,8 @@ const ChallengePeriodVoting: React.FC<VotingProps> = ({
             dispatch(
               setDualActionModal({
                 content: `Confirm your no vote for ${proposal.proposalType === ProposalType.Takedown
-                    ? 'the takedown of'
-                    : ''
+                  ? 'the takedown of'
+                  : ''
                   } ${proposal.application.organizationName
                   }. You will not be able to cancel your vote once you confirm.`,
                 title: 'Confirm Vote',
