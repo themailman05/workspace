@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import { ElectionMetadata } from '@popcorn/contracts/adapters';
 import Link from 'next/link';
 import { PendingVotes, Vote } from 'pages/grant-elections/[type]';

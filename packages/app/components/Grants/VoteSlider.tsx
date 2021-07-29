@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';

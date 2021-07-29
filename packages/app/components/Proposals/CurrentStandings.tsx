@@ -1,10 +1,6 @@
-import { Proposal } from '@popcorn/utils';
-import {
-  bigNumberToNumber,
-  formatAndRoundBigNumber,
-} from '@popcorn/utils';
 import Divider from 'components/CommonComponents/Divider';
 import ProgressBar from 'components/ProgressBar';
+import { Proposal } from '@popcorn/contracts/adapters';
 
 const CurrentStandings: React.FC<Proposal> = (proposal) => {
   return (
@@ -20,7 +16,7 @@ const CurrentStandings: React.FC<Proposal> = (proposal) => {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="text-lg font-medium text-gray-700">Votes For</p>
           <span className="text-base text-gray-700 flex flex-row">
-            <p>{formatAndRoundBigNumber(proposal?.votes?.for)}</p>
+            <p>{proposal?.votes?.for}</p>
           </span>
         </span>
       </div>
@@ -29,12 +25,10 @@ const CurrentStandings: React.FC<Proposal> = (proposal) => {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between  pb-2">
           <ProgressBar
             progress={
-              bigNumberToNumber(proposal?.votes?.for) === 0
+              +proposal?.votes?.for === 0
                 ? 0
-                : (100 * bigNumberToNumber(proposal?.votes?.for)) /
-                bigNumberToNumber(
-                  proposal?.votes?.for.add(proposal?.votes?.against),
-                )
+                : (100 * +proposal?.votes?.for) /
+                +proposal?.votes?.for + +proposal?.votes?.against
             }
             progressColor={'bg-green-300'}
           />
@@ -44,7 +38,7 @@ const CurrentStandings: React.FC<Proposal> = (proposal) => {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between">
           <p className="text-lg font-medium text-gray-700">Votes Against</p>
           <span className="text-base text-gray-700 flex flex-row">
-            <p>{formatAndRoundBigNumber(proposal?.votes?.against)}</p>
+            <p>{proposal?.votes?.against}</p>
           </span>
         </span>
       </div>
@@ -53,12 +47,12 @@ const CurrentStandings: React.FC<Proposal> = (proposal) => {
         <span className="mx-4  w-1/2 justify-self-center flex flex-row justify-between border-b-2 pb-2">
           <ProgressBar
             progress={
-              bigNumberToNumber(proposal?.votes?.against) === 0
+              +proposal?.votes?.against === 0
                 ? 0
-                : (100 * bigNumberToNumber(proposal?.votes?.against)) /
-                bigNumberToNumber(
-                  proposal?.votes?.for.add(proposal?.votes?.against),
-                )
+                : (100 * +proposal?.votes?.against) /
+
+                +proposal?.votes?.for + +proposal?.votes?.against
+
             }
             progressColor={'bg-red-400'}
           />
@@ -70,9 +64,9 @@ const CurrentStandings: React.FC<Proposal> = (proposal) => {
           <p className="text-lg font-medium text-gray-700">Total Votes</p>
           <span className="text-base text-gray-700 flex flex-row">
             <p>
-              {formatAndRoundBigNumber(
-                proposal?.votes?.for.add(proposal?.votes?.against),
-              )}
+              {
+                +proposal?.votes?.for + +proposal?.votes?.against
+              }
             </p>
           </span>
         </span>

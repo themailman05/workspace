@@ -1,8 +1,8 @@
 import {
-  BeneficiaryApplication,
   IpfsClient,
 } from '@popcorn/utils';
 import {
+  BeneficiaryApplication,
   BeneficiaryRegistryAdapter
 } from "@popcorn/contracts/adapters";
 import BeneficiaryGrid from 'components/Beneficiaries/BeneficiaryGrid';

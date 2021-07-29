@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 
 export interface VideoSideBarProps {
   beneficiary: BeneficiaryApplication;

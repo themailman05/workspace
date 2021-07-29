@@ -1,9 +1,11 @@
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import {
-  IpfsClient,
   Proposal,
   ProposalType,
-  Status,
+  ProposalStatus,
+} from '@popcorn/contracts/adapters';
+import {
+  IpfsClient,
 } from '@popcorn/utils';
 import {
   BeneficiaryGovernanceAdapter
@@ -27,12 +29,12 @@ export interface ProposalGridProps {
 const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<Status>(Status.All);
+  const [statusFilter, setStatusFilter] = useState<ProposalStatus>(ProposalStatus.All);
   const { contracts } = useContext(ContractsContext);
   const [proposals, setProposals] = useState<Proposal[]>([]);
   useEffect(() => {
     if (contracts) {
-      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+      new BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
         .getAllProposals(proposalType)
         .then((res) => setProposals(res));
     }
@@ -113,15 +115,15 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
                 name="status"
                 className="appearance-none block w-full bg-none bg-white border border-gray-300 rounded-md pl-3 pr-10 py-2 text-base text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 defaultValue={'All'}
-                value={Status[statusFilter]}
+                value={ProposalStatus[statusFilter]}
                 onChange={(e) => {
                   const status = e.target.value;
-                  setStatusFilter(Status[status]);
+                  setStatusFilter(ProposalStatus[status]);
                 }}
               >
                 {new Array(6).fill(undefined).map((x, status) => {
                   return (
-                    <option value={Status[status]}>{Status[status]}</option>
+                    <option value={ProposalStatus[status]}>{ProposalStatus[status]}</option>
                   );
                 })}
               </select>
@@ -145,7 +147,7 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
           .filter((proposal) => {
             return (
               (proposal as Proposal)?.status === statusFilter ||
-              statusFilter === Status.All
+              statusFilter === ProposalStatus.All
             );
           })
           .map((proposal) => (
