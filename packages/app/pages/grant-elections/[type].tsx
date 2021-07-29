@@ -4,7 +4,7 @@ import {
   ElectionTermIntToName,
   GrantElectionAdapter,
 } from '@popcorn/contracts/adapters';
-import capitalize from '@popcorn/utils/capitalize';
+import { capitalize } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import ElectionSection from 'components/GrantElections/ElectionSection';
 import { BigNumber, utils } from 'ethers';

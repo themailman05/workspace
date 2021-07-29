@@ -1,5 +1,5 @@
 import { Proposal, Status } from '@popcorn/utils';
-import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
+import { formatAndRoundBigNumber } from '@popcorn/utils';
 interface VotingRowProps {
   name: string;
   value: string;

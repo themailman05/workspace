@@ -8,7 +8,7 @@ import { useContext, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import CountdownTimer from './CountdownTimer';
 import HasVoted from './HasVoted';
-import { VotingProps } from './Voting';
+import { VotingProps } from './VotingProps';
 
 const ChallengePeriodVoting: React.FC<VotingProps> = ({
   proposal,
@@ -75,13 +75,11 @@ const ChallengePeriodVoting: React.FC<VotingProps> = ({
           onClick={() => {
             dispatch(
               setDualActionModal({
-                content: `Confirm your no vote for ${
-                  proposal.proposalType === ProposalType.Takedown
+                content: `Confirm your no vote for ${proposal.proposalType === ProposalType.Takedown
                     ? 'the takedown of'
                     : ''
-                } ${
-                  proposal.application.organizationName
-                }. You will not be able to cancel your vote once you confirm.`,
+                  } ${proposal.application.organizationName
+                  }. You will not be able to cancel your vote once you confirm.`,
                 title: 'Confirm Vote',
                 onConfirm: {
                   label: 'Confirm vote',

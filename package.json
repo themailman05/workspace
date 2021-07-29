@@ -11,14 +11,13 @@
     "app:start": "yarn lerna run --scope @popcorn/app start",
     "start": "yarn lerna run --scope @popcorn/app start",
     "pretify": "prettier --write .",
-    "netlify-build": "lerna run --scope @popcorn/contracts compile; yarn next build packages/app"
+    "netlify-build": "lerna run --scope @popcorn/contracts compile; cd packages/app; yarn next build"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^3.3.1",
     "lerna": "3.22.1",
     "typescript": "^4.1.2",
-    "yarn": "^1.22.10",
-    "next": "latest"
+    "yarn": "^1.22.10"
   },
   "devDependencies": {
     "@babel/core": "^7.10.3",

@@ -9,7 +9,7 @@ import { useContext, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import CountdownTimer from './CountdownTimer';
 import HasVoted from './HasVoted';
-import { VotingProps } from './Voting';
+import { VotingProps } from './VotingProps';
 
 const OpenVoting: React.FC<VotingProps> = ({
   proposal,
@@ -65,19 +65,17 @@ const OpenVoting: React.FC<VotingProps> = ({
             <RadioGroup.Option
               value={VoteOptions.Yay}
               className={({ checked }) =>
-                `rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer focus:outline-none ${
-                  checked ? 'bg-indigo-50 border-indigo-200' : 'border-gray-200'
+                `rounded-tl-md rounded-tr-md relative border p-4 flex cursor-pointer focus:outline-none ${checked ? 'bg-indigo-50 border-indigo-200' : 'border-gray-200'
                 }`
               }
             >
               {({ active, checked }) => (
                 <>
                   <span
-                    className={`h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center ${
-                      checked
+                    className={`h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center ${checked
                         ? 'bg-indigo-600 border-transparent'
                         : 'bg-white border-gray-300'
-                    } ${active ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+                      } ${active ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
                     aria-hidden="true"
                   >
                     <span className="rounded-full bg-white w-1.5 h-1.5" />
@@ -85,17 +83,15 @@ const OpenVoting: React.FC<VotingProps> = ({
                   <div className="ml-3 flex flex-col">
                     <RadioGroup.Label
                       as="span"
-                      className={`block text-sm font-medium ${
-                        checked ? 'text-indigo-900' : 'text-gray-900'
-                      }`}
+                      className={`block text-sm font-medium ${checked ? 'text-indigo-900' : 'text-gray-900'
+                        }`}
                     >
                       Vote For Proposal
                     </RadioGroup.Label>
                     <RadioGroup.Description
                       as="span"
-                      className={`block text-sm ${
-                        checked ? 'text-indigo-700' : 'text-gray-500'
-                      }`}
+                      className={`block text-sm ${checked ? 'text-indigo-700' : 'text-gray-500'
+                        }`}
                     >
                       {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would become ineligible for grants'
@@ -109,19 +105,17 @@ const OpenVoting: React.FC<VotingProps> = ({
             <RadioGroup.Option
               value={VoteOptions.Nay}
               className={({ checked }) =>
-                `rounded-bl-md rounded-br-md relative border p-4 flex cursor-pointer focus:outline-none ${
-                  checked ? 'bg-indigo-50 border-indigo-200' : 'border-gray-200'
+                `rounded-bl-md rounded-br-md relative border p-4 flex cursor-pointer focus:outline-none ${checked ? 'bg-indigo-50 border-indigo-200' : 'border-gray-200'
                 }`
               }
             >
               {({ active, checked }) => (
                 <>
                   <span
-                    className={`h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center ${
-                      checked
+                    className={`h-4 w-4 mt-0.5 cursor-pointer rounded-full border flex items-center justify-center ${checked
                         ? 'bg-indigo-600 border-transparent'
                         : 'bg-white border-gray-300'
-                    } ${active ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+                      } ${active ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
                     aria-hidden="true"
                   >
                     <span className="rounded-full bg-white w-1.5 h-1.5" />
@@ -136,9 +130,8 @@ const OpenVoting: React.FC<VotingProps> = ({
                     </RadioGroup.Label>
                     <RadioGroup.Description
                       as="span"
-                      className={`block text-sm ${
-                        checked ? 'text-indigo-700' : 'text-gray-500'
-                      }`}
+                      className={`block text-sm ${checked ? 'text-indigo-700' : 'text-gray-500'
+                        }`}
                     >
                       {proposal.proposalType === ProposalType.Takedown
                         ? 'Beneficiary would remain eligible for grants'
@@ -160,9 +153,8 @@ const OpenVoting: React.FC<VotingProps> = ({
           onClick={() => {
             dispatch(
               setDualActionModal({
-                content: `You are about to submit a vote to ${
-                  selected == VoteOptions.Yay ? 'accept' : 'reject'
-                } this proposal. You will not be able to vote again for this proposal after you submit your vote. \
+                content: `You are about to submit a vote to ${selected == VoteOptions.Yay ? 'accept' : 'reject'
+                  } this proposal. You will not be able to vote again for this proposal after you submit your vote. \
                  Confirm to continue.`,
                 title: 'Confirm Vote',
                 onConfirm: {

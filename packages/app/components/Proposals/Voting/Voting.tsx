@@ -1,14 +1,10 @@
-import { Proposal, Status } from '@popcorn/utils';
+import { Status } from '@popcorn/utils';
 import React from 'react';
 import CurrentStandings from '../CurrentStandings';
 import ChallengePeriodVoting from './ChallengePeriodVoting';
 import CompletedVoting from './CompletedVoting';
 import OpenVoting from './OpenVoting';
-
-export interface VotingProps {
-  proposal: Proposal;
-  hasVoted?: boolean;
-}
+import { VotingProps } from './VotingProps';
 
 const Voting: React.FC<VotingProps> = ({
   proposal,

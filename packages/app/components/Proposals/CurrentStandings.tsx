@@ -2,7 +2,7 @@ import { Proposal } from '@popcorn/utils';
 import {
   bigNumberToNumber,
   formatAndRoundBigNumber,
-} from '@popcorn/utils/formatBigNumber';
+} from '@popcorn/utils';
 import Divider from 'components/CommonComponents/Divider';
 import ProgressBar from 'components/ProgressBar';
 
@@ -32,9 +32,9 @@ const CurrentStandings: React.FC<Proposal> = (proposal) => {
               bigNumberToNumber(proposal?.votes?.for) === 0
                 ? 0
                 : (100 * bigNumberToNumber(proposal?.votes?.for)) /
-                  bigNumberToNumber(
-                    proposal?.votes?.for.add(proposal?.votes?.against),
-                  )
+                bigNumberToNumber(
+                  proposal?.votes?.for.add(proposal?.votes?.against),
+                )
             }
             progressColor={'bg-green-300'}
           />
@@ -56,9 +56,9 @@ const CurrentStandings: React.FC<Proposal> = (proposal) => {
               bigNumberToNumber(proposal?.votes?.against) === 0
                 ? 0
                 : (100 * bigNumberToNumber(proposal?.votes?.against)) /
-                  bigNumberToNumber(
-                    proposal?.votes?.for.add(proposal?.votes?.against),
-                  )
+                bigNumberToNumber(
+                  proposal?.votes?.for.add(proposal?.votes?.against),
+                )
             }
             progressColor={'bg-red-400'}
           />

@@ -1,4 +1,3 @@
-import { Contract } from '@ethersproject/contracts';
 import React, { useContext, useEffect } from 'react';
 import { createContext, useState } from 'react';
 
