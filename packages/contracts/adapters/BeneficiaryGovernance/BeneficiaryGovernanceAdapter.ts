@@ -1,5 +1,5 @@
-import { BeneficiaryGovernance } from "@popcorn/contracts/typechain";
 import { formatAndRoundBigNumber, IIpfsClient } from "@popcorn/utils";
+import { Contract } from "ethers";
 
 export enum ProposalStatus {
   Open,
@@ -55,10 +55,7 @@ export interface Proposal {
   };
 }
 export class BeneficiaryGovernanceAdapter {
-  constructor(
-    private contract: BeneficiaryGovernance,
-    private IpfsClient: IIpfsClient
-  ) {}
+  constructor(private contract: Contract, private IpfsClient: IIpfsClient) {}
 
   public async getProposal(id: number): Promise<Proposal> {
     const proposal = await this.contract.proposals(id);

@@ -1,9 +1,8 @@
-import { BeneficiaryRegistry } from "@popcorn/contracts/typechain";
 import { IIpfsClient } from "@popcorn/utils";
 import { BeneficiaryApplication } from "../BeneficiaryGovernance/BeneficiaryGovernanceAdapter";
 
 export const BeneficiaryRegistryAdapter = (
-  contract: BeneficiaryRegistry,
+  contract: any,
   IpfsClient: IIpfsClient
 ) => {
   return {
