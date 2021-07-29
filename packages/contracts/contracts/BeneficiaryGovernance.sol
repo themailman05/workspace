@@ -371,36 +371,6 @@ contract BeneficiaryGovernance is ParticipationReward {
     }
   }
 
-  function getProposal(uint256 _proposalId, ProposalType _type)
-    external
-    view
-    returns (
-      ProposalStatus status_,
-      address beneficiary_,
-      bytes memory applicationCid_,
-      address proposer_,
-      uint256 startTime_,
-      uint256 yesCount_,
-      uint256 noCount_,
-      uint256 voterCount_,
-      ProposalType proposalType_,
-      ConfigurationOptions memory configurationOptions_
-    )
-  {
-    Proposal storage proposal = proposals[_proposalId];
-
-    status_ = proposal.status;
-    beneficiary_ = proposal.beneficiary;
-    applicationCid_ = proposal.applicationCid;
-    proposer_ = proposal.proposer;
-    startTime_ = proposal.startTime;
-    yesCount_ = proposal.yesCount;
-    noCount_ = proposal.noCount;
-    voterCount_ = proposal.voterCount;
-    proposalType_ = proposal.proposalType;
-    configurationOptions_ = proposal.configurationOptions;
-  }
-
   /**
    * @notice returns number of created proposals
    */
@@ -418,17 +388,13 @@ contract BeneficiaryGovernance is ParticipationReward {
   /**
    * @notice gets number of votes
    * @param  proposalId id of the proposal
-   * @param  _type the proposal type (nomination / takedown)
    * @return number of votes to a proposal
    */
-  function getNumberOfVoters(uint256 proposalId, ProposalType _type)
+  function getNumberOfVoters(uint256 proposalId)
     external
     view
     returns (uint256)
   {
-    if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return proposals[proposalId].voterCount;
-    }
     return proposals[proposalId].voterCount;
   }
 

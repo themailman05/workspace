@@ -172,19 +172,18 @@ describe("BeneficiaryGovernance", function () {
           )
         );
 
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
-      expect(proposal.beneficiary_).to.equal(beneficiary.address);
-      expect(proposal.applicationCid_).to.equal(
+      expect(proposal.beneficiary).to.equal(beneficiary.address);
+      expect(proposal.applicationCid).to.equal(
         ethers.utils.formatBytes32String("testCid")
       );
-      expect(proposal.proposer_).to.equal(proposer2.address);
-      expect(proposal.proposalType_).to.equal(ProposalType.BNP);
-      expect(proposal.voterCount_).to.equal(0);
-      expect(proposal.status_).to.equal(ProposalStatus.New);
+      expect(proposal.proposer).to.equal(proposer2.address);
+      expect(proposal.proposalType).to.equal(ProposalType.BNP);
+      expect(proposal.voterCount).to.equal(0);
+      expect(proposal.status).to.equal(ProposalStatus.New);
       expect(
         await contracts.beneficiaryGovernance.getNumberOfProposals(
           ProposalType.BNP
@@ -384,14 +383,13 @@ describe("BeneficiaryGovernance", function () {
       await contracts.beneficiaryGovernance
         .connect(voter1)
         .vote(PROPOSALID, Vote.Yes);
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
-      expect(proposal.noCount_).to.equal(0);
-      expect(proposal.voterCount_).to.equal(1);
-      expect(proposal.yesCount_).to.equal(voiceCredits);
+      expect(proposal.noCount).to.equal(0);
+      expect(proposal.voterCount).to.equal(1);
+      expect(proposal.yesCount).to.equal(voiceCredits);
       expect(
         await contracts.beneficiaryGovernance.hasVoted(
           PROPOSALID,
@@ -456,17 +454,16 @@ describe("BeneficiaryGovernance", function () {
         .vote(PROPOSALID, Vote.No);
 
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
       const noCount = 40 + 50 + 60;
       const yesCount = 20 + 30;
       const voterCount = 5;
-      expect(proposal.noCount_).to.equal(noCount);
-      expect(proposal.voterCount_).to.equal(voterCount);
-      expect(proposal.yesCount_).to.equal(yesCount);
+      expect(proposal.noCount).to.equal(noCount);
+      expect(proposal.voterCount).to.equal(voterCount);
+      expect(proposal.yesCount).to.equal(yesCount);
     });
     it("should finalize voting if at the end of the voting perid novotes be more than yesvotes", async function () {
       //one yes vote
@@ -494,12 +491,11 @@ describe("BeneficiaryGovernance", function () {
         .finalize(PROPOSALID);
 
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
-      expect(proposal.status_).to.equal(ProposalStatus.Failed);
+      expect(proposal.status).to.equal(ProposalStatus.Failed);
     });
     it("should prevent voting if the voting is finalized", async function () {
       //one yes vote
@@ -555,12 +551,11 @@ describe("BeneficiaryGovernance", function () {
         .vote(PROPOSALID, Vote.No);
 
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
-      expect(proposal.status_).to.equal(ProposalStatus.ChallengePeriod);
-      expect(proposal.voterCount_).to.equal(5);
+      expect(proposal.status).to.equal(ProposalStatus.ChallengePeriod);
+      expect(proposal.voterCount).to.equal(5);
     });
   });
   describe("finalize", function () {
@@ -630,11 +625,10 @@ describe("BeneficiaryGovernance", function () {
 
       await contracts.beneficiaryGovernance.connect(owner).finalize(PROPOSALID);
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
-      expect(proposal.status_).to.equal(ProposalStatus.Failed);
+      expect(proposal.status).to.equal(ProposalStatus.Failed);
     });
     it("should prevent finalizing  a finalized voting", async function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);

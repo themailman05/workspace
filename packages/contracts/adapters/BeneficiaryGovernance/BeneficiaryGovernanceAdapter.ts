@@ -92,7 +92,7 @@ export class BeneficiaryGovernanceAdapter {
 
     const proposalIds = await Promise.all(
       new Array(proposalCount).fill(undefined).map(async (x, i) => {
-        return await this.contract[proposalTypeName](i);
+        return this.contract[proposalTypeName](i);
       })
     );
 
