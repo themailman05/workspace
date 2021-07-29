@@ -8,12 +8,11 @@ import "./Interfaces/IBeneficiaryRegistry.sol";
 import "./Interfaces/IGrantRegistry.sol";
 import "./Interfaces/IRandomNumberConsumer.sol";
 import "./Governed.sol";
+import "./ParticipationReward.sol";
 
-contract GrantElections is Governed {
+contract GrantElections is ParticipationReward {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
-
-  IERC20 public immutable POP;
 
   struct Vote {
     address voter;
@@ -45,6 +44,7 @@ contract GrantElections is Governed {
     ElectionConfiguration electionConfiguration;
     uint256 startTime;
     bool exists;
+    bytes32 vaultId;
   }
 
   struct ElectionConfiguration {
@@ -93,12 +93,11 @@ contract GrantElections is Governed {
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
     address _governance
-  ) Governed(_governance) {
+  ) ParticipationReward(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     grantRegistry = _grantRegistry;
     randomNumberConsumer = _randomNumberConsumer;
-    POP = _pop;
     _setDefaults();
   }
 
@@ -128,6 +127,15 @@ contract GrantElections is Governed {
     e.electionTerm = _grantTerm;
     e.startTime = block.timestamp;
     e.exists = true;
+    (bool vaultCreated, bytes32 vaultId) = _initializeVault(
+      keccak256(abi.encodePacked(_term, block.timestamp)),
+      block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
+        electionDefaults[_term].votingPeriod
+      )
+    );
+    if (vaultCreated) {
+      e.vaultId = vaultId;
+    }
 
     emit ElectionInitialized(e.electionTerm, e.startTime);
   }
@@ -166,8 +174,8 @@ contract GrantElections is Governed {
     ];
     startTime_ = e.startTime;
     registrationBondRequired_ = e
-    .electionConfiguration
-    .registrationBondRequired;
+      .electionConfiguration
+      .registrationBondRequired;
     registrationBond_ = e.electionConfiguration.registrationBond;
   }
 
@@ -185,8 +193,7 @@ contract GrantElections is Governed {
   {
     electionDefaults[uint8(_term)].registrationBondRequired = !electionDefaults[
       uint8(_term)
-    ]
-    .registrationBondRequired;
+    ].registrationBondRequired;
   }
 
   function getCurrentRanking(ElectionTerm _term)
@@ -259,14 +266,18 @@ contract GrantElections is Governed {
       beneficiaryRegistry.beneficiaryExists(_beneficiary);
   }
 
+  function getVaultId(ElectionTerm _term) public view returns (bytes32) {
+    return elections[uint8(_term)].vaultId;
+  }
+
   function refreshElectionState(ElectionTerm _electionTerm) public {
     Election storage election = elections[uint8(_electionTerm)];
     if (
       block.timestamp >=
       election
-      .startTime
-      .add(election.electionConfiguration.registrationPeriod)
-      .add(election.electionConfiguration.votingPeriod)
+        .startTime
+        .add(election.electionConfiguration.registrationPeriod)
+        .add(election.electionConfiguration.votingPeriod)
     ) {
       election.electionState = ElectionState.Closed;
     } else if (
@@ -322,14 +333,16 @@ contract GrantElections is Governed {
       election.voters[msg.sender] = true;
       beneficiaryVotes[_electionTerm][_beneficiaries[i]] = beneficiaryVotes[
         _electionTerm
-      ][_beneficiaries[i]]
-      .add(_sqredVoiceCredits);
+      ][_beneficiaries[i]].add(_sqredVoiceCredits);
       _recalculateRanking(_electionTerm, _beneficiaries[i], _sqredVoiceCredits);
     }
     require(
       _usedVoiceCredits <= _stakedVoiceCredits,
       "Insufficient voice credits"
     );
+    if (election.vaultId != "") {
+      _addShares(election.vaultId, msg.sender, _usedVoiceCredits);
+    }
   }
 
   function _recalculateRanking(
