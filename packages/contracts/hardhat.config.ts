@@ -10,7 +10,7 @@ import { DefaultConfiguration } from "./lib/SetToken/Configuration";
 import SetTokenManager from "./lib/SetToken/SetTokenManager";
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
-import { GrantElectionAdapter } from "./scripts/helpers/GrantElectionAdapter";
+import { GrantElectionAdapter } from "./adapters/GrantElection/GrantElectionAdapter";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
   const accounts = await hre.ethers.getSigners();
