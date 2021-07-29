@@ -27,7 +27,7 @@ import {
   UniswapV2Router02,
   BeneficiaryGovernance,
   BeneficiaryGovernance__factory,
-} from '@popcorn/contracts/typechain';
+} from '../../../contracts/typechain';
 
 export interface Contracts {
   staking: Staking;
@@ -35,9 +35,9 @@ export interface Contracts {
   election: GrantElections;
   pop: ERC20;
   grant: GrantRegistry;
-  rewardsManager:RewardsManager;
-  uniswap:UniswapV2Router02;
-  threeCrv:ERC20;
+  rewardsManager: RewardsManager;
+  uniswap: UniswapV2Router02;
+  threeCrv: ERC20;
   beneficiaryGovernance: BeneficiaryGovernance;
 }
 
@@ -56,9 +56,8 @@ function getErrorMessage(error: Error) {
   if (error instanceof NoEthereumProviderError) {
     return 'No Ethereum browser extension detected, install MetaMask on desktop or visit from a dApp browser on mobile.';
   } else if (error instanceof UnsupportedChainIdError) {
-    return `You're connected to an unsupported network. Please connect to ${
-      networkMap[Number(process.env.CHAIN_ID)]
-    }.`;
+    return `You're connected to an unsupported network. Please connect to ${networkMap[Number(process.env.CHAIN_ID)]
+      }.`;
   } else if (error instanceof UserRejectedRequestErrorInjected) {
     return 'Please authorize this website to access your Ethereum account.';
   } else {
@@ -127,8 +126,8 @@ export default function ContractsWrapper({
         library,
       ),
       rewardsManager: RewardsManager__factory.connect(process.env.ADDR_REWARDS_MANAGER, library),
-      uniswap:UniswapV2Router02__factory.connect(process.env.ADDR_UNISWAP_ROUTER,library),
-      threeCrv:ERC20__factory.connect(process.env.ADDR_3CRV, library),
+      uniswap: UniswapV2Router02__factory.connect(process.env.ADDR_UNISWAP_ROUTER, library),
+      threeCrv: ERC20__factory.connect(process.env.ADDR_3CRV, library),
       beneficiaryGovernance: BeneficiaryGovernance__factory.connect(
         process.env.ADDR_BENEFICIARY_GOVERNANCE,
         library,

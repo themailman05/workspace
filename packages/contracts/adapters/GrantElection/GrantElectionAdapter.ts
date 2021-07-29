@@ -1,5 +1,3 @@
-import { utils } from 'ethers';
-
 export enum ElectionTerm {
   Monthly,
   Quarterly,
@@ -18,20 +16,20 @@ interface Vote {
 }
 
 export const ElectionTermIntToName = {
-  0: 'monthly',
-  1: 'quarterly',
-  2: 'yearly',
+  0: "monthly",
+  1: "quarterly",
+  2: "yearly",
 };
 
-type ElectionStateString = 'registration' | 'voting' | 'closed' | 'finalized';
+type ElectionStateString = "registration" | "voting" | "closed" | "finalized";
 interface ElectionStateMap {
   [key: number]: ElectionStateString;
 }
 const ElectionStateIntToName: ElectionStateMap = {
-  0: 'registration',
-  1: 'voting',
-  2: 'closed',
-  3: 'finalized',
+  0: "registration",
+  1: "voting",
+  2: "closed",
+  3: "finalized",
 };
 
 export interface ElectionMetadata {
@@ -56,7 +54,7 @@ export interface ElectionMetadata {
   registrationBond: object;
 }
 
-export type ElectionPeriod = 'voting' | 'registration' | 'closed' | 'finalized';
+export type ElectionPeriod = "voting" | "registration" | "closed" | "finalized";
 
 export const GrantElectionAdapter = function (contract?) {
   return {
@@ -76,22 +74,22 @@ export const GrantElectionAdapter = function (contract?) {
 
     getElectionStateStringLong: function (state: ElectionState): string {
       switch (ElectionStateIntToName[state]) {
-        case 'registration':
-          return 'open for registration';
-        case 'voting':
-          return 'open for voting';
-        case 'closed':
-        case 'finalized':
-          return 'closed';
+        case "registration":
+          return "open for registration";
+        case "voting":
+          return "open for voting";
+        case "closed":
+        case "finalized":
+          return "closed";
         default:
-          return '';
+          return "";
       }
     },
 
     getElectionMetadata: async function (grantTerm): Promise<ElectionMetadata> {
       const mapping = [
         [
-          'votes',
+          "votes",
           (value) =>
             value.reduce(
               (votes, v, i) => [
@@ -102,46 +100,46 @@ export const GrantElectionAdapter = function (contract?) {
                   weight: v[2],
                 },
               ],
-              [],
+              []
             ),
         ],
-        ['electionTerm', (value) => value],
-        ['registeredBeneficiaries', (value) => value],
-        ['electionState', (value) => value],
+        ["electionTerm", (value) => value],
+        ["registeredBeneficiaries", (value) => value],
+        ["electionState", (value) => value],
         [
-          'configuration',
+          "configuration",
           (value) => ({ awardees: value[0], ranking: value[1] }),
         ],
-        ['useChainlinkVRF', (value) => value],
+        ["useChainlinkVRF", (value) => value],
         [
-          'periods',
+          "periods",
           (value) => ({
             cooldownPeriod: value[0].toNumber(),
             registrationPeriod: value[1].toNumber(),
             votingPeriod: value[2].toNumber(),
           }),
         ],
-        ['startTime', (value) => value.toNumber()],
-        ['registrationBondRequired', (value) => value],
-        ['registrationBond', (value) => value],
+        ["startTime", (value) => value.toNumber()],
+        ["registrationBondRequired", (value) => value],
+        ["registrationBond", (value) => value],
       ];
       const metadata = (await contract.getElectionMetadata(grantTerm)).reduce(
         (metadata, value, i) => {
           metadata[mapping[i][0] as string] = (mapping[i][1] as any)(value);
           return metadata;
         },
-        {},
+        {}
       ) as ElectionMetadata;
       metadata.electionStateStringShort =
         ElectionStateIntToName[metadata.electionState];
       metadata.electionStateStringLong = this.getElectionStateStringLong(
-        metadata.electionState,
+        metadata.electionState
       );
       return metadata;
     },
     isActive: function (election: ElectionMetadata): boolean {
       return [ElectionState.Registration, ElectionState.Voting].includes(
-        election.electionState,
+        election.electionState
       );
     },
   };

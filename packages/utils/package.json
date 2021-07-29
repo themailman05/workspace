@@ -1,8 +1,7 @@
 {
   "name": "@popcorn/utils",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.js",
+  "main": "src/index",
   "scripts": {
     "build": "tsc"
   },

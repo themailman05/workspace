@@ -1,9 +1,8 @@
 import { Web3Provider } from '@ethersproject/providers';
 import { ArrowRightIcon } from '@heroicons/react/outline';
-import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
+import { formatAndRoundBigNumber } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import MainActionButton from 'components/MainActionButton';
-import { store } from 'context/store';
 import { ContractsContext } from 'context/Web3/contracts';
 import { BigNumber } from 'ethers';
 import { parseEther } from 'ethers/lib/utils';
@@ -17,7 +16,6 @@ export default function Register(): JSX.Element {
   const context = useWeb3React<Web3Provider>();
   const { library, account, activate } = context;
   const { contracts } = useContext(ContractsContext);
-  const { dispatch } = useContext(store);
   const [wait, setWait] = useState<boolean>(false);
   const [feeBalance, setFeeBalance] = useState<BigNumber>();
   const [popBalance, setPopBalance] = useState<BigNumber>();
@@ -53,8 +51,8 @@ export default function Register(): JSX.Element {
     return rewardSplits === undefined || popBalance === undefined
       ? '0'
       : formatAndRoundBigNumber(
-          rewardSplits[index].mul(popBalance).div(parseEther('100')),
-        );
+        rewardSplits[index].mul(popBalance).div(parseEther('100')),
+      );
   }
 
   async function swapToken(): Promise<void> {

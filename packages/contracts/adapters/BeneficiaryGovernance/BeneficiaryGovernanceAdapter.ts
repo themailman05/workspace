@@ -1,6 +1,6 @@
-import { BeneficiaryGovernance } from '@popcorn/contracts/typechain';
-import { BeneficiaryApplication, Proposal, ProposalType } from '../../../utils/src';
-import { IIpfsClient } from '../../../utils/src/IpfsClient/IpfsClient';
+import { BeneficiaryGovernance } from "@popcorn/contracts/typechain";
+import { BeneficiaryApplication, Proposal, ProposalType } from "@popcorn/utils";
+import { IIpfsClient } from "@popcorn/utils";
 
 // given a function type, return either the type of the resolved promise if
 // a promise is returned or the straight return type of the function.
@@ -14,22 +14,23 @@ type AsyncReturnType<T extends (...args: any) => any> = T extends (
 
 export const BeneficiaryGovernanceAdapter = (
   contract: BeneficiaryGovernance,
-  IpfsClient: () => IIpfsClient,
+  IpfsClient: () => IIpfsClient
 ) => {
   type ProposalContract = AsyncReturnType<typeof contract.proposals>;
 
   async function addIpfsDataToProposal(
     IpfsClient: () => IIpfsClient,
     proposal: ProposalContract,
-    proposalIndex: number,
+    proposalIndex: number
   ): Promise<Proposal> {
-    const beneficiaryApplication: BeneficiaryApplication =
-      await IpfsClient().get(proposal.applicationCid);
+    const beneficiaryApplication: BeneficiaryApplication = await IpfsClient().get(
+      proposal.applicationCid
+    );
     const deadline = new Date(
       (Number(proposal.startTime.toString()) +
         Number(proposal.configurationOptions.votingPeriod.toString()) +
         Number(proposal.configurationOptions.vetoPeriod.toString())) *
-        1000,
+        1000
     );
 
     return {
@@ -50,26 +51,28 @@ export const BeneficiaryGovernanceAdapter = (
       return await addIpfsDataToProposal(IpfsClient, proposal, Number(id));
     },
     getAllProposals: async (
-      proposalType: ProposalType,
+      proposalType: ProposalType
     ): Promise<Proposal[]> => {
       const numNominations = await contract.getNumberOfProposals(
-        ProposalType.Nomination,
+        ProposalType.Nomination
       );
       const numTakedowns = await contract.getNumberOfProposals(
-        ProposalType.Takedown,
+        ProposalType.Takedown
       );
       const proposalIds = new Array(
-        numNominations.add(numTakedowns).toNumber(),
+        numNominations.add(numTakedowns).toNumber()
       ).fill(undefined);
-      const proposalData: { proposal: ProposalContract; id: number }[] =
-        await Promise.all(
-          proposalIds.map(async (x, i) => {
-            const proposal = await contract.proposals(i);
-            return { proposal, id: i };
-          }),
-        );
+      const proposalData: {
+        proposal: ProposalContract;
+        id: number;
+      }[] = await Promise.all(
+        proposalIds.map(async (x, i) => {
+          const proposal = await contract.proposals(i);
+          return { proposal, id: i };
+        })
+      );
       const filteredProposalData = proposalData.filter(
-        (proposalData) => proposalData.proposal.proposalType === proposalType,
+        (proposalData) => proposalData.proposal.proposalType === proposalType
       );
       return await Promise.all(
         filteredProposalData.map(
@@ -77,15 +80,15 @@ export const BeneficiaryGovernanceAdapter = (
             await addIpfsDataToProposal(
               IpfsClient,
               proposalData.proposal,
-              proposalData.id,
-            ),
-        ),
+              proposalData.id
+            )
+        )
       );
     },
     hasVoted: async (
       id: string,
       proposalType: ProposalType,
-      account: string,
+      account: string
     ): Promise<boolean> => {
       return await contract.hasVoted(id, proposalType, account);
     },
