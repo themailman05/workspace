@@ -1,7 +1,7 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { useState } from 'react';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import BeneficiaryCard from './BeneficiaryCard';
 
 interface BeneficiaryGridProps {

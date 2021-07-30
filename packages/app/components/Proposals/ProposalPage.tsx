@@ -1,11 +1,9 @@
 import { Web3Provider } from '@ethersproject/providers';
 import {
   IpfsClient,
-  Proposal,
-  Status,
 } from '@popcorn/utils';
 import {
-  BeneficiaryGovernanceAdapter
+  BeneficiaryGovernanceAdapter, Proposal, ProposalStatus
 } from "@popcorn/contracts/adapters";
 import { useWeb3React } from '@web3-react/core';
 import BeneficiaryInformation from 'components/CommonComponents/BeneficiaryInformation';
@@ -20,7 +18,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import Voting from './Voting/Voting';
 
 const getTitle = (proposal: Proposal): string => {
-  return `${Status[proposal.status]} vote on ${proposal?.application?.organizationName
+  return `${ProposalStatus[proposal.status]} vote on ${proposal?.application?.organizationName
     }`;
 };
 
@@ -29,17 +27,17 @@ const ProposalPage: React.FC = () => {
   const { account } = useWeb3React<Web3Provider>();
   const router = useRouter();
   const [proposal, setProposal] = useState<Proposal>();
-  const [proposalId, setProposalId] = useState<string>();
+  const [proposalId, setProposalId] = useState<number>();
   const [hasVoted, setHasVoted] = useState<boolean>(false);
 
   useEffect(() => {
     const { id } = router.query;
-    if (id && id !== proposalId) setProposalId(id as string);
+    if (id && +id !== proposalId) setProposalId(+id);
   }, [router, proposalId]);
 
   useEffect(() => {
     if (contracts?.beneficiaryGovernance && proposalId) {
-      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+      new BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
         .getProposal(proposalId)
         .then((res) => setProposal(res));
     }
@@ -47,15 +45,15 @@ const ProposalPage: React.FC = () => {
 
   useEffect(() => {
     if (contracts?.beneficiaryGovernance && proposal && account) {
-      BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
-        .hasVoted(proposalId, proposal.proposalType, account)
+      new BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+        .hasVoted(proposalId, account)
         .then((res) => setHasVoted(res));
     }
   }, [contracts, account, proposal]);
 
   function getContent() {
-    return proposalId !== undefined &&
-      proposal !== undefined &&
+    return proposalId &&
+      proposal &&
       Object.keys(proposal).length > 0 ? (
       <React.Fragment>
         <ImageHeader

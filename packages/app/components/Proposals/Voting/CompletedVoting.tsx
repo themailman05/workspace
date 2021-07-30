@@ -1,4 +1,4 @@
-import { Proposal, ProposalType } from '@popcorn/utils';
+import { Proposal, ProposalType } from '@popcorn/contracts/adapters';
 
 const CompletedVoting: React.FC<Proposal> = (proposal) => (
   <div className="content-center mx-48">

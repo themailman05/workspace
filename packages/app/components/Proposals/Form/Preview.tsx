@@ -1,5 +1,5 @@
 import { Web3Provider } from '@ethersproject/providers';
-import { BeneficiaryApplication, IpfsClient } from '@popcorn/utils';
+import { IpfsClient } from '@popcorn/utils';
 import { formatAndRoundBigNumber } from '@popcorn/utils';
 import { getBytes32FromIpfsHash } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
@@ -13,6 +13,7 @@ import { useRouter } from 'next/router';
 import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -105,7 +106,7 @@ const Preview: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
       if (await checkPreConditions()) {
         console.log('precondition success');
         loading();
-        const cid = await IpfsClient().add(submissionData);
+        const cid = await IpfsClient.add(submissionData);
         toast.dismiss();
         await (
           await contracts.pop

@@ -1,4 +1,4 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import NavBar from 'components/NavBar/NavBar';
 import AdditionalImages from 'components/Proposals/Form/AdditionalImages';
 import BeneficiaryAddress from 'components/Proposals/Form/BeneficiaryAddress';

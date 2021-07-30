@@ -1,10 +1,10 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { getBytes32FromIpfsHash, ProposalType } from "@popcorn/utils";
+import { getBytes32FromIpfsHash } from "@popcorn/utils";
 import bluebird from "bluebird";
 import { deployContract } from "ethereum-waffle";
 import { BigNumber, Contract, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
-import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
+import { GrantElectionAdapter, ProposalType } from "../adapters";
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");

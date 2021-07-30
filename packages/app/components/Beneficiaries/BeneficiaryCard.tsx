@@ -1,6 +1,6 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
 import CardBody from 'components/CommonComponents/CardBody';
 import Link from 'next/link';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 
 interface BeneficiaryCardProps {
   beneficiary: BeneficiaryApplication;

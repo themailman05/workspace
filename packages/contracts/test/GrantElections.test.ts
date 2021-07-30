@@ -3,7 +3,7 @@ import { parseEther } from "@ethersproject/units";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers, waffle } from "hardhat";
-import { GrantElectionAdapter } from "../scripts/helpers/GrantElectionAdapter";
+import { GrantElectionAdapter } from "@popcorn/contracts/adapters";
 import { GrantElections, MockERC20 } from "../typechain";
 
 interface Contracts {
@@ -40,9 +40,11 @@ const registrationBondQuarter = parseEther("100");
 
 async function deployContracts(): Promise<Contracts> {
   const mockPop = await (
-    await (
-      await ethers.getContractFactory("MockERC20")
-    ).deploy("TestPOP", "TPOP", 18)
+    await (await ethers.getContractFactory("MockERC20")).deploy(
+      "TestPOP",
+      "TPOP",
+      18
+    )
   ).deployed();
   await mockPop.mint(owner.address, parseEther("2500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
@@ -80,9 +82,7 @@ async function deployContracts(): Promise<Contracts> {
   );
 
   const grantElections = (await (
-    await (
-      await ethers.getContractFactory("GrantElections")
-    ).deploy(
+    await (await ethers.getContractFactory("GrantElections")).deploy(
       mockStaking.address,
       mockBeneficiaryRegistry.address,
       mockGrantRegistry.address,

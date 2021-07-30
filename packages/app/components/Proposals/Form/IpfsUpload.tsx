@@ -21,7 +21,7 @@ export const uploadSingleFile = async (
   setUploadProgress?: (progress: number) => void,
 ) => {
   loading();
-  const res = await IpfsClient().upload(files[0], setUploadProgress);
+  const res = await IpfsClient.upload(files[0], setUploadProgress);
   if (isSuccessfulUpload(res)) {
     setVideo(res.hash);
     toast.dismiss();
@@ -42,7 +42,7 @@ async function uploadMultipleFiles(
   loading();
   const uploadResults = await Promise.all(
     files.map((file) => {
-      return IpfsClient().upload(file);
+      return IpfsClient.upload(file);
     }),
   );
   if (uploadResults.every(isSuccessfulUpload)) {
