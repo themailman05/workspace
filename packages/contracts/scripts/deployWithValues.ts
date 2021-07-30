@@ -291,7 +291,7 @@ export default async function deploy(ethers): Promise<void> {
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(0, Vote.Yes);
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(1, Vote.No);
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(2, Vote.No);
-    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(2, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(2, Vote.Yes);
 
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(4, Vote.No);
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(5, Vote.No);
