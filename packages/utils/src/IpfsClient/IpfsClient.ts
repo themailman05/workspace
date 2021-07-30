@@ -1,5 +1,5 @@
-import axios from 'axios';
 import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
+import axios from 'axios';
 import { getIpfsHashFromBytes32 } from '../ipfsHashManipulation';
 
 export interface IIpfsClient {
@@ -33,7 +33,7 @@ export const IpfsClient: IIpfsClient = {
     myHeaders.append('pinata_secret_api_key', process.env.PINATA_API_SECRET);
     myHeaders.append('Content-Type', 'application/json');
     var raw = JSON.stringify(beneficiaryApplication);
-    const cid = await fetch(process.env.IPFS_GATEWAY_PIN, {
+    const cid = await fetch(process.env.IPFS_GATEWAY_PIN_JSON, {
       method: 'POST',
       headers: myHeaders,
       body: raw,
@@ -74,7 +74,7 @@ export const IpfsClient: IIpfsClient = {
           headers,
         };
     return await axios
-      .post('https://api.pinata.cloud/pinning/pinFileToIPFS', data, config)
+      .post(process.env.IPFS_GATEWAY_PIN, data, config)
       .then((result) => {
         return { hash: result.data.IpfsHash, status: result.status };
       })
