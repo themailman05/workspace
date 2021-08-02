@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-
 interface Curve3Pool {
   function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amounts)
     external;
@@ -73,6 +72,9 @@ contract Zapper {
 
   CurveAddressProvider public curveAddressProvider;
   CurveRegistry public curveRegistry;
+
+  event ZapIn(address account, uint256 amount);
+  event ZapOut(address account, uint256 amount);
 
   constructor(address curveAddressProvider_) {
     curveAddressProvider = CurveAddressProvider(curveAddressProvider_);
@@ -152,9 +154,9 @@ contract Zapper {
         amount
       );
       lpTokens = CurveMetapool(curveMetapoolAddress(popcornPool)).add_liquidity(
-        [amount, 0],
-        0
-      );
+          [amount, 0],
+          0
+        );
     } else {
       IERC20(depositToken).safeIncreaseAllowance(
         curveBasepoolAddress(popcornPool),
@@ -174,12 +176,13 @@ contract Zapper {
         threeCrvLPTokens
       );
       lpTokens = CurveMetapool(curveMetapoolAddress(popcornPool)).add_liquidity(
-        [0, threeCrvLPTokens],
-        0
-      );
+          [0, threeCrvLPTokens],
+          0
+        );
     }
     IERC20(token(popcornPool)).safeIncreaseAllowance(popcornPool, lpTokens);
     uint256 shares = IPool(popcornPool).depositFor(lpTokens, msg.sender);
+    emit ZapIn(msg.sender, amount);
     return shares;
   }
 
@@ -200,7 +203,7 @@ contract Zapper {
     uint256 withdrawal;
     if (tokenIndex(popcornPool, withdrawalToken) == 0) {
       withdrawal = CurveMetapool(curveMetapoolAddress(popcornPool))
-      .remove_liquidity_one_coin(lpTokens, 0, 0);
+        .remove_liquidity_one_coin(lpTokens, 0, 0);
     } else {
       uint256 threeCrvWithdrawal = CurveMetapool(
         curveMetapoolAddress(popcornPool)
@@ -223,6 +226,7 @@ contract Zapper {
       withdrawal = balanceAfter.sub(balanceBefore);
     }
     IERC20(withdrawalToken).safeTransfer(msg.sender, withdrawal);
+    emit ZapOut(msg.sender, amount);
     return withdrawal;
   }
 }
