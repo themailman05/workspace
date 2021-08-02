@@ -1,4 +1,3 @@
-import { Contract } from '@ethersproject/contracts';
 import React, { useContext, useEffect } from 'react';
 import { createContext, useState } from 'react';
 
@@ -7,7 +6,7 @@ import { GrantElections } from '@popcorn/contracts/typechain';
 import {
   ElectionMetadata,
   GrantElectionAdapter,
-} from '@popcorn/utils/Contracts';
+} from '@popcorn/contracts/adapters';
 
 interface ElectionsContext {
   elections: ElectionMetadata[];

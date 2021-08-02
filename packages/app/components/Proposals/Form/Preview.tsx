@@ -1,7 +1,7 @@
 import { Web3Provider } from '@ethersproject/providers';
-import { BeneficiaryApplication, IpfsClient } from '@popcorn/utils';
-import { formatAndRoundBigNumber } from '@popcorn/utils/formatBigNumber';
-import { getBytes32FromIpfsHash } from '@popcorn/utils/ipfsHashManipulation';
+import { IpfsClient } from '@popcorn/utils';
+import { formatAndRoundBigNumber } from '@popcorn/utils';
+import { getBytes32FromIpfsHash } from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage';
 import { setSingleActionModal } from 'context/actions';
@@ -13,6 +13,7 @@ import { useRouter } from 'next/router';
 import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -80,30 +81,57 @@ const Preview: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
     return true;
   }
 
+  const checkFormComplete = (
+    submissionData: BeneficiaryApplication,
+  ): boolean => {
+    return (
+      submissionData.organizationName !== '' &&
+      submissionData.missionStatement !== '' &&
+      submissionData.beneficiaryAddress !== '' &&
+      submissionData.files.profileImage.image !== '' &&
+      submissionData.files.profileImage.description !== '' &&
+      submissionData.files.headerImage.image !== '' &&
+      submissionData.files.headerImage.description !== '' &&
+      submissionData.files.impactReports.length !== 0 &&
+      submissionData.files.video !== '' &&
+      submissionData.links.website !== '' &&
+      submissionData.links.contactEmail !== ''
+    );
+  };
+
   async function uploadJsonToIpfs(
     submissionData: BeneficiaryApplication,
   ): Promise<void> {
-    if (await checkPreConditions()) {
-      console.log('precondition success');
-      loading();
-      const cid = await IpfsClient().add(submissionData);
-      toast.dismiss();
-      await (
-        await contracts.pop
+    if (checkFormComplete(submissionData)) {
+      if (await checkPreConditions()) {
+        console.log('precondition success');
+        loading();
+        const cid = await IpfsClient.add(submissionData);
+        toast.dismiss();
+        await (
+          await contracts.pop
+            .connect(library.getSigner())
+            .approve(contracts.beneficiaryGovernance.address, proposalBond)
+        ).wait();
+        await contracts.beneficiaryGovernance
           .connect(library.getSigner())
-          .approve(contracts.beneficiaryGovernance.address, proposalBond)
-      ).wait();
-      await contracts.beneficiaryGovernance
-        .connect(library.getSigner())
-        .createProposal(
-          submissionData.beneficiaryAddress,
-          getBytes32FromIpfsHash(cid),
-          0,
-        );
+          .createProposal(
+            submissionData.beneficiaryAddress,
+            getBytes32FromIpfsHash(cid),
+            0,
+          );
 
-      success();
-      setTimeout(() => router.push(`/beneficiary-proposals/${account}`), 1000);
-      clearLocalStorage();
+        success();
+        setTimeout(
+          () => router.push(`/beneficiary-proposals/${account}`),
+          1000,
+        );
+        clearLocalStorage();
+      }
+    } else {
+      uploadError(
+        'Unable to submit proposal. Please ensure all mandatory fields have been completed',
+      );
     }
   }
 

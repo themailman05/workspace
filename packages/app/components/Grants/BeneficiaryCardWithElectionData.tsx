@@ -1,22 +1,9 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
-import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import { BeneficiaryApplication, GrantElectionAdapter } from '@popcorn/contracts/adapters';
 import Link from 'next/link';
-import { PendingVotes, Vote } from 'pages/grant-elections/[type]';
 import truncate from 'utils/truncate';
-import GrantElectionAdapter from '../../../utils/src/Contracts/GrantElection/GrantElectionAdapter';
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
-
-export interface ElectionProps {
-  election: ElectionMetadata;
-  votesAssignedByUser?: number;
-  pendingVotes: PendingVotes;
-  assignVotes?: (grantTerm: number, vote: Vote) => void;
-  maxVotes?: number;
-  voiceCredits?: number;
-  totalVotes: number;
-}
-
+import { ElectionProps } from './ElectionProps';
 interface BeneficiaryCardWithElectionDataProps {
   beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;

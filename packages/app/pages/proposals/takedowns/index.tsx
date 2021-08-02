@@ -1,4 +1,4 @@
-import { ProposalType } from '@popcorn/utils';
+import { ProposalType } from '@popcorn/contracts/adapters';
 import ProposalGrid from 'components/Proposals/ProposalGrid';
 
 export default function TakedownPage(): JSX.Element {

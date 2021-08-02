@@ -1,4 +1,4 @@
-import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import { ElectionMetadata } from '@popcorn/contracts/adapters';
 
 export default function createElectionName(election: ElectionMetadata): string {
   const grantTerm = ['Monthly', 'Quarterly', 'Yearly'];

@@ -1,10 +1,10 @@
 // Displays a beneficiary or a preview of a proposal
 
-import { BeneficiaryApplication } from '@popcorn/utils';
 import BeneficiaryInformation from 'components/CommonComponents/BeneficiaryInformation';
 import ImageHeader from 'components/CommonComponents/ImageHeader';
 import VideoSideBar from 'components/CommonComponents/VideoSideBar';
 import NavBar from 'components/NavBar/NavBar';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import PhotoSideBar from '../CommonComponents/PhotoSideBar';
 import TriggerTakedownProposal from '../CommonComponents/TriggerTakedownProposal';
 
@@ -26,7 +26,10 @@ const BeneficiaryPage: React.FC<BeneficiaryPageProps> = ({
           <VideoSideBar beneficiary={beneficiary} />
           <PhotoSideBar beneficiary={beneficiary} />
         </div>
-        <BeneficiaryInformation beneficiary={beneficiary} />
+        <BeneficiaryInformation
+          beneficiary={beneficiary}
+          isProposalPreview={isProposalPreview}
+        />
       </div>
       {!isProposalPreview && <TriggerTakedownProposal />}
     </div>

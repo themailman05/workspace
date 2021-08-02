@@ -1,8 +1,8 @@
-import { BeneficiaryApplication } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { useState } from 'react';
-import { ElectionProps } from './BeneficiaryCardWithElectionData';
+import { ElectionProps } from './ElectionProps';
 
 interface VoteSliderProps {
   beneficiary: BeneficiaryApplication;
@@ -30,12 +30,12 @@ const VoteSlider: React.FC<VoteSliderProps> = ({
   function handleSliderChange(value: number) {
     if (
       electionProps.voiceCredits -
-        electionProps.pendingVotes[electionProps.election.electionTerm].total <=
+      electionProps.pendingVotes[electionProps.election.electionTerm].total <=
       0
     ) {
       if (
         electionProps.pendingVotes[electionProps.election.electionTerm].votes[
-          beneficiary.beneficiaryAddress
+        beneficiary.beneficiaryAddress
         ] > value
       ) {
         setVotesAssignedByUser(value);
@@ -82,12 +82,12 @@ const VoteSlider: React.FC<VoteSliderProps> = ({
             activeDotStyle={{ backgroundColor: '#3B82F6', border: '#3B82F6' }}
             railStyle={{ backgroundColor: '#93C5FD', height: '4px' }}
             trackStyle={{ backgroundColor: '#3B82F6', height: '4px' }}
-            /* handleStyle={{
-              border: '#F29F05',
-              backgroundColor: '#fff',
-              height: '14px',
-              width: '14px',
-            }} */
+          /* handleStyle={{
+            border: '#F29F05',
+            backgroundColor: '#fff',
+            height: '14px',
+            width: '14px',
+          }} */
           />
         </div>
       )}

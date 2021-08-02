@@ -6,17 +6,8 @@ import { Fragment, useContext, useEffect } from 'react';
 import { hideNotification, unsetNotification } from '../../context/actions';
 import { store } from '../../context/store';
 
-export interface Notification {
-  id: number;
-  visible: boolean;
-  type: 'success' | 'error' | 'waiting';
-  title: string;
-  isFlash?: boolean;
-  content: string | React.ReactElement;
-  backdrop?: boolean;
-}
 
-const Example: React.FC = () => {
+const NotificationsContainer: React.FC = () => {
   const {
     dispatch,
     state: { notifications },
@@ -111,4 +102,4 @@ const Example: React.FC = () => {
     </>
   );
 };
-export default Example;
+export default NotificationsContainer;

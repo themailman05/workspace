@@ -1,4 +1,4 @@
-import { ElectionMetadata } from '@popcorn/utils/Contracts';
+import { ElectionMetadata } from '@popcorn/contracts/adapters';
 import { PendingVotes } from '../../../pages/grant-elections/[type]';
 
 interface VoteCounterProps {

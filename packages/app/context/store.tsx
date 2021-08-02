@@ -1,7 +1,6 @@
 import { DefaultSingleActionModalProps } from 'components/Modal/SingleActionModal';
 import React, { createContext, useReducer } from 'react';
 import { SingleActionModalProps } from '../components/Modal/SingleActionModal';
-import { Notification } from '../components/Notifications/NotificationsContainer';
 import {
   DefaultDualActionModalProps,
   DualActionModalProps,
@@ -20,9 +19,10 @@ import {
   DefaultDualActionWideModalProps,
   DualActionWideModalProps,
 } from 'components/Modal/DualActionWideModal';
+import { NotificationProps } from 'components/Notifications/NotificationProps';
 
 interface DefaultState {
-  notifications: Notification[];
+  notifications: NotificationProps[];
   singleActionModal: SingleActionModalProps;
   dualActionModal: DualActionModalProps;
   dualActionWideModal: DualActionWideModalProps;

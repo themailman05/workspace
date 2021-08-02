@@ -3,9 +3,7 @@ import { useWeb3React } from '@web3-react/core';
 import { ContractsContext } from '../../context/Web3/contracts';
 import Navbar from 'components/NavBar/NavBar';
 import { connectors } from '../../context/Web3/connectors';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import { useContext } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import SingleActionModal, {
   DefaultSingleActionModalProps,
 } from 'components/Modal/SingleActionModal';
