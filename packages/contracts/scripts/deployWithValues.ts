@@ -286,19 +286,35 @@ export default async function deploy(ethers): Promise<void> {
     );
   };
 
-  const voteOnProposals = async (): Promise<void> => {
-    console.log("vote on beneficiary proposals ...");
+  const voteOnNominationProposals = async (): Promise<void> => {
+    console.log("vote on beneficiary nomination proposals ...");
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(0, Vote.Yes);
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(1, Vote.No);
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(2, Vote.No);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(2, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(2, Vote.Yes);
 
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(4, Vote.No);
     await contracts.beneficiaryGovernance.connect(bennies[0]).vote(5, Vote.No);
 
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(5);
     await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6);
     await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7);
     await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8);
+  };
+
+  const voteOnTakedownProposals = async (): Promise<void> => {
+    console.log("vote on beneficiary takedown proposals ...");
+    await contracts.beneficiaryGovernance
+      .connect(bennies[0])
+      .vote(11, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(13, Vote.No);
+    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(13, Vote.No);
+    await contracts.beneficiaryGovernance
+      .connect(bennies[2])
+      .vote(14, Vote.Yes);
+
+    await contracts.beneficiaryGovernance.connect(bennies[0]).finalize(11);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).finalize(12);
   };
 
   const addBeneficiariesToRegistry = async (): Promise<void> => {
@@ -642,7 +658,8 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await prepareUniswap();
   await fundRewardsManager();
   await stakePOP();
-  await voteOnProposals();
+  await voteOnNominationProposals();
+  await voteOnTakedownProposals();
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
