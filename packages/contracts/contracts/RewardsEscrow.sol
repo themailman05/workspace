@@ -1,40 +1,35 @@
 pragma solidity >=0.7.0 <0.8.0;
 
-import "./IStaking.sol";
-import "./IRewardsEscrow.sol";
-import "./Owned.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/math/Math.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "./Owned.sol";
+import "./IStaking.sol";
+import "./IRewardsEscrow.sol";
 
-/**
- * @title Popcorn Rewards Escrow
- * @notice Vests Token from the Staking contract.
- */
 contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   /* ========== STATE VARIABLES ========== */
-
   struct Escrow {
     uint256 start;
     uint256 end;
-    uint256 amount;
+    uint256 balance;
   }
 
   IERC20 public immutable POP;
-  IStaking public Staking;
-  mapping(address => Escrow) public escrowedBalances;
-  mapping(address => uint256) public vested;
+  IStaking public staking;
+  mapping(bytes32 => Escrow) public escrows;
+  mapping(address => bytes32[]) public escrowIds;
   uint256 public escrowDuration = 90 days;
   uint256 public vestingCliff = 90 days;
 
   /* ========== EVENTS ========== */
-
-  event Claimed(address _address, uint256 claimable);
-  event Locked(address _address, uint256 claimable);
+  event Locked(address account, uint256 amount);
+  event RewardClaimed(bytes32 vaultId, address account_, uint256 amount);
+  event RewardsClaimed(address account_, uint256 amount);
   event StakingChanged(IStaking _staking);
   event EscrowDurationChanged(uint256 _escrowDuration);
   event VestingCliffChanged(uint256 _vestingCliff);
@@ -47,84 +42,132 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   /* ========== VIEWS ========== */
 
-  function getLocked(address _address) external view returns (uint256) {
-    return escrowedBalances[_address].amount;
+  /**
+   * @notice Returns the escrow status
+   * @param escrowId_ Bytes32
+   */
+  function isClaimable(bytes32 escrowId_) external view returns (bool) {
+    return
+      escrows[escrowId_].start <= block.timestamp &&
+      escrows[escrowId_].start != 0;
   }
 
-  function getVested(address _address) public view returns (uint256) {
-    uint256 _now = block.timestamp;
-    uint256 locked = escrowedBalances[_address].amount;
-    uint256 start = escrowedBalances[_address].start;
-    uint256 end = escrowedBalances[_address].end;
-    if (_now < start) {
-      return 0;
-    }
-    if (start == 0 || end == 0) {
-      return 0;
-    }
-    return Math.min((locked.mul(_now.sub(start))).div(end.sub(start)), locked);
+  /**
+   * @notice Returns all escrowIds which an account has/had claims in
+   * @param account address
+   */
+  function getEscrowsByUser(address account)
+    external
+    view
+    returns (bytes32[] memory)
+  {
+    return escrowIds[account];
   }
 
   /* ========== MUTATIVE FUNCTIONS ========== */
 
-  function lock(address _address, uint256 _amount)
+  /**
+   * @notice Locks funds for escrow
+   * @dev
+   */
+  function lock(address account_, uint256 amount_)
     external
     override
     nonReentrant
-    updateVested(_address)
   {
-    require(msg.sender == address(Staking), "you cant call this function");
-    require(_amount > 0, "amount must be greater than 0");
-    require(POP.balanceOf(msg.sender) >= _amount, "insufficient balance");
+    require(msg.sender == address(staking), "you cant call this function");
+    require(amount_ > 0, "amount must be greater than 0");
+    require(POP.balanceOf(msg.sender) >= amount_, "insufficient balance");
 
-    POP.safeTransferFrom(msg.sender, address(this), _amount);
+    uint256 _now = block.timestamp;
+    uint256 _start = _now.add(vestingCliff);
+    uint256 _end = _start.add(escrowDuration);
+    bytes32 id = keccak256(abi.encodePacked(account_, amount_, _now));
 
-    _lock(_address, _amount);
+    escrows[id] = Escrow({start: _start, end: _end, balance: amount_});
+    escrowIds[account_].push(id);
+
+    POP.safeTransferFrom(msg.sender, address(this), amount_);
+
+    emit Locked(account_, amount_);
   }
 
-  function claim() public nonReentrant updateVested(msg.sender) {
-    _claimFor(msg.sender);
+  /**
+   * @notice Claim vested funds in escrow
+   * @param index_ uint256
+   * @dev Uses the escrowId at the specified index of escrowIds.
+   * @dev This function is used when a user only wants to claim a specific escrowVault or if they decide the gas cost of claimRewards are to high for now.
+   * @dev (lower cost but also lower reward)
+   */
+  function claimReward(uint256 index_) external nonReentrant {
+    uint256 reward = _claimReward(msg.sender, index_);
+    require(reward > 0, "no rewards");
+
+    POP.safeTransfer(msg.sender, reward);
+
+    emit RewardsClaimed(msg.sender, reward);
+  }
+
+  /**
+   * @notice Claim rewards of a a number of escrows
+   * @param indices_ uint256[]
+   * @dev Uses the vaultIds at the specified indices of escrowIds.
+   * @dev This function is used when a user only wants to claim multiple escrowVaults at once (probably most of the time)
+   * @dev The array of indices is limited to 19 as we want to prevent gas overflow of looping through too many vaults
+   */
+  function claimRewards(uint256[] calldata indices_) external nonReentrant {
+    require(indices_.length <= 5, "claiming too many vaults");
+    uint256 total;
+
+    for (uint256 i = 0; i < indices_.length; i++) {
+      total = total.add(_claimReward(msg.sender, indices_[i]));
+    }
+    require(total > 0, "no rewards");
+
+    POP.safeTransfer(msg.sender, total);
+
+    emit RewardsClaimed(msg.sender, total);
   }
 
   /* ========== RESTRICTED FUNCTIONS ========== */
 
-  function _lock(address _address, uint256 _amount) internal {
-    uint256 _now = block.timestamp;
-    uint256 _start = _now.add(vestingCliff);
-    uint256 _end = _start.add(escrowDuration);
-
-    if (escrowedBalances[_address].end > _start) {
-      _start = escrowedBalances[_address].start;
+  /**
+   * @notice Underlying function to calculate the rewards that a user gets
+   * @param account_ address
+   * @param index_ uint256
+   * @dev We dont want it to error when a vault is empty for the user as this would terminate the entire loop when used in claimRewards()
+   * @dev It deletes the escrow and escrowId when all token in it are claimable
+   */
+  function _claimReward(address account_, uint256 index_)
+    internal
+    returns (uint256)
+  {
+    Escrow storage escrow = escrows[escrowIds[account_][index_]];
+    if (escrow.start <= block.timestamp) {
+      uint256 claimable = _getClaimableAmount(escrow);
+      if (claimable == escrow.balance) {
+        delete escrowIds[account_][index_];
+        delete escrows[escrowIds[account_][index_]];
+      }
+      return claimable;
     }
-    escrowedBalances[_address] = Escrow({
-      start: _start,
-      end: _end,
-      amount: escrowedBalances[_address].amount.add(_amount)
-    });
-
-    emit Locked(_address, _amount);
+    return 0;
   }
 
-  function _claimFor(address _address) internal {
-    uint256 claimable = vested[_address];
-    require(claimable > 0, "nothing to claim");
-    if (claimable == escrowedBalances[_address].amount) {
-      delete vested[_address];
-      delete escrowedBalances[_address];
-    } else {
-      vested[_address] = 0;
-      escrowedBalances[_address].amount = escrowedBalances[_address].amount.sub(
-        claimable
+  function _getClaimableAmount(Escrow memory escrow)
+    internal
+    returns (uint256)
+  {
+    if (escrow.start == 0 || escrow.end == 0) {
+      return 0;
+    }
+    return
+      Math.min(
+        (escrow.balance.mul(block.timestamp.sub(escrow.start))).div(
+          escrow.end.sub(escrow.start)
+        ),
+        escrow.balance
       );
-    }
-    POP.safeTransfer(_address, claimable);
-    emit Claimed(_address, claimable);
-  }
-
-  function setStaking(IStaking _staking) external onlyOwner {
-    require(Staking != _staking, "Same Staking");
-    Staking = _staking;
-    emit StakingChanged(_staking);
   }
 
   function updateEscrowDuration(uint256 _escrowDuration) external onlyOwner {
@@ -137,10 +180,20 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     emit VestingCliffChanged(_vestingCliff);
   }
 
+  function setStaking(IStaking _staking) external onlyOwner {
+    require(staking != _staking, "Same Staking");
+    staking = _staking;
+    emit StakingChanged(_staking);
+  }
+
   /* ========== MODIFIERS ========== */
 
-  modifier updateVested(address _address) {
-    vested[_address] = vested[_address].add(getVested(_address));
+  /**
+   * @notice Modifier to check if a vault exists
+   * @param escrowId Bytes32
+   */
+  modifier escrowExists(bytes32 escrowId) {
+    require(escrows[escrowId].end > 0, "Uninitialized Escrow slot");
     _;
   }
 }
