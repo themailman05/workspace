@@ -1,28 +1,35 @@
-import { ElectionMetadata } from '@popcorn/utils/Contracts';
-import { ContractsContext } from 'app/contracts';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import { useContext, useEffect, useState } from 'react';
 import { Check } from 'react-feather';
-import { BeneficiaryMetadata } from './BeneficiaryCard';
+import { ContractsContext } from '../../context/Web3/contracts';
+import { ElectionProps } from './ElectionProps';
 
-interface IGrantFunded {
-  beneficiary: BeneficiaryMetadata;
-  election: ElectionMetadata;
+interface GrantFundedProps {
+  beneficiary: BeneficiaryApplication;
+  electionProps: ElectionProps;
 }
 
-export default function GrantFunded({
-  election,
+const GrantFunded: React.FC<GrantFundedProps> = ({
   beneficiary,
-}: IGrantFunded): JSX.Element {
+  electionProps,
+}) => {
   const { contracts } = useContext(ContractsContext);
   const [awarded, setAwarded] = useState(false);
 
   const isBeneficiaryGrantRecipient = async () => {
-    //TODO how do check which beneficiary is awarded a grant?
-    setAwarded(true);
+    const awarded = (
+      await contracts.grant.getActiveAwardees(
+        electionProps.election.electionTerm,
+      )
+    ).map((a) => a.toLowerCase());
+    if (awarded.includes(beneficiary.beneficiaryAddress)) {
+      setAwarded(true);
+    }
   };
 
   useEffect(() => {
-    if (contracts) {
+    if (contracts?.grant) {
+      // FIXME: Promise being ignored
       isBeneficiaryGrantRecipient();
     }
   }, [contracts]);
@@ -37,9 +44,10 @@ export default function GrantFunded({
       <div>
         {awarded && <p className="text-lg text-gray-700 font-bold">Awarded</p>}
         <p className="text-gray-700 text-base">
-          {beneficiary?.totalVotes || 0} votes
+          {electionProps.totalVotes || 0} votes
         </p>
       </div>
     </span>
   );
-}
+};
+export default GrantFunded;

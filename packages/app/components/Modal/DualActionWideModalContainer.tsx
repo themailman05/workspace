@@ -1,10 +1,19 @@
 import React, { useContext } from 'react';
+import { store } from '../../context/store';
 import DualActionWideModal from './DualActionWideModal';
-import { store } from 'app/store';
 
 export const DualActionWideModalContainer: React.FC = () => {
   const {
-    state: { dualActionWideModal: { visible, title, content, progress, onDismiss, onConfirm } },
+    state: {
+      dualActionWideModal: {
+        visible,
+        title,
+        content,
+        progress,
+        onDismiss,
+        onConfirm,
+      },
+    },
   } = useContext(store);
   return (
     <DualActionWideModal
