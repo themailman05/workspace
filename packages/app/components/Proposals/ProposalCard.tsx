@@ -27,9 +27,9 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
       >
         <a>
           <CardBody
-            image={proposal.application.files.profileImage}
-            name={proposal?.application.organizationName}
-            missionStatement={proposal?.application.missionStatement}
+            image={proposal?.application?.files?.profileImage}
+            name={proposal?.application?.organizationName}
+            missionStatement={proposal?.application?.missionStatement}
           />
           <div className="relative">
             <div

@@ -9,14 +9,14 @@ interface BeneficiaryCardProps {
 const BeneficiaryCard: React.FC<BeneficiaryCardProps> = ({ beneficiary }) => {
   return (
     <div
-      key={beneficiary.beneficiaryAddress}
+      key={beneficiary?.beneficiaryAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white"
     >
-      <Link href={`/beneficiaries/${beneficiary.beneficiaryAddress}`} passHref>
+      <Link href={`/beneficiaries/${beneficiary?.beneficiaryAddress}`} passHref>
         <a>
           <CardBody
             image={beneficiary?.files.profileImage}
-            name={beneficiary.organizationName}
+            name={beneficiary?.organizationName}
             missionStatement={beneficiary?.missionStatement}
           />
         </a>
