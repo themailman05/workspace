@@ -1,7 +1,7 @@
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { useState } from 'react';
-import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import BeneficiaryCard from './BeneficiaryCard';
 
 interface BeneficiaryGridProps {
@@ -16,9 +16,13 @@ const BeneficiaryGrid: React.FC<BeneficiaryGridProps> = ({
   title,
 }: BeneficiaryGridProps) => {
   const [searchFilter, setSearchFilter] = useState<string>('');
-
+  const filteredBeneficiaries = beneficiaries?.filter((beneficiary) => {
+    return beneficiary.organizationName
+      .toLowerCase()
+      .includes(searchFilter.toLowerCase());
+  });
   return (
-    <div className="w-full bg-gray-900 pb-16">
+    <div className="w-full  bg-gray-900 pb-16">
       <Navbar />
       <CardGridHeader title={title} subtitle={subtitle} />
       <div className="grid grid-cols-2 gap-4 items-center justify-start ml-36 mr-64 my-4 h-1/2">
@@ -35,17 +39,20 @@ const BeneficiaryGrid: React.FC<BeneficiaryGridProps> = ({
           </form>
         </div>
       </div>
-      <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
-        {beneficiaries
-          ?.filter((beneficiary) => {
-            return beneficiary.organizationName
-              .toLowerCase()
-              .includes(searchFilter.toLowerCase());
-          })
-          .map((beneficiary) => (
+
+      {filteredBeneficiaries.length === 0 ? (
+        <div className="h-80">
+          <p className="mt-12 text-center text-xl text-white">
+            No beneficiaries containing your search terms were found.
+          </p>
+        </div>
+      ) : (
+        <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
+          {filteredBeneficiaries.map((beneficiary) => (
             <BeneficiaryCard beneficiary={beneficiary} />
           ))}
-      </ul>
+        </ul>
+      )}
     </div>
   );
 };
