@@ -1,9 +1,10 @@
-import { expect } from "chai";
-import { ethers } from "hardhat";
-import { parseEther } from "ethers/lib/utils";
-import { MockERC20, RewardsEscrow, Staking } from "../typechain";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "@ethersproject/bignumber";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
+import { parseEther } from "ethers/lib/utils";
+import { ethers, waffle } from "hardhat";
+import { MockERC20, Staking } from "../typechain";
+import { RewardsEscrow } from "../typechain/RewardsEscrow";
 
 interface Contracts {
   mockPop: MockERC20;
@@ -18,7 +19,7 @@ let owner: SignerWithAddress,
 let contracts: Contracts;
 let popBalance: BigNumber;
 const stakingFund = parseEther("10");
-const dayInSec = 86400
+const dayInSec = 86400;
 
 async function deployContracts(): Promise<Contracts> {
   const mockPop = (await (
@@ -41,8 +42,6 @@ async function deployContracts(): Promise<Contracts> {
     ).deploy(mockPop.address, rewardsEscrow.address)
   ).deployed()) as Staking;
 
-  
-
   await mockPop.transfer(staking.address, stakingFund);
   await mockPop.connect(owner).approve(staking.address, parseEther("100000"));
 
@@ -51,6 +50,12 @@ async function deployContracts(): Promise<Contracts> {
   await staking.connect(owner).stake(parseEther("1"), 604800);
 
   return { mockPop, staking, rewardsEscrow };
+}
+
+async function addEscrow(): Promise<void> {
+  ethers.provider.send("evm_increaseTime", [1 * dayInSec]);
+  ethers.provider.send("evm_mine", []);
+  await contracts.staking.connect(owner).getReward();
 }
 
 describe("RewardsEscrow", function () {
@@ -64,7 +69,7 @@ describe("RewardsEscrow", function () {
       await contracts.rewardsEscrow
         .connect(owner)
         .setStaking(contracts.staking.address);
-      expect(await contracts.rewardsEscrow.Staking()).to.equal(
+      expect(await contracts.rewardsEscrow.staking()).to.equal(
         contracts.staking.address
       );
     });
@@ -78,13 +83,13 @@ describe("RewardsEscrow", function () {
       await contracts.rewardsEscrow
         .connect(owner)
         .setStaking(contracts.staking.address);
-      expect(await contracts.rewardsEscrow.Staking()).to.equal(
+      expect(await contracts.rewardsEscrow.staking()).to.equal(
         contracts.staking.address
       );
       await contracts.rewardsEscrow
         .connect(owner)
         .setStaking(newStaking.address);
-      expect(await contracts.rewardsEscrow.Staking()).to.equal(
+      expect(await contracts.rewardsEscrow.staking()).to.equal(
         newStaking.address
       );
     });
@@ -124,142 +129,295 @@ describe("RewardsEscrow", function () {
           .lock(owner.address, parseEther("1"))
       ).to.be.revertedWith("you cant call this function");
     });
-    describe("locking funds before the first vesting period starts", function () {
-      it("should transfer funds, lock them and emit an event", async function () {
-        const currentBlockNumber = await ethers.provider.getBlockNumber();
-        const currentBlock = await ethers.provider._getBlock(
-          currentBlockNumber
-        );
-        const result = await contracts.staking.connect(owner).getReward();
-        const lockedAmount = parseEther("3.333355379188604788");
-        const escrowedBalance = await contracts.rewardsEscrow.escrowedBalances(
-          owner.address
-        );
-        expect(result)
-          .to.emit(contracts.rewardsEscrow, "Locked")
-          .withArgs(owner.address, lockedAmount);
-        expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
-          lockedAmount
-        );
-        expect(
-          await contracts.mockPop.balanceOf(contracts.rewardsEscrow.address)
-        ).to.equal(lockedAmount);
-        expect(
-          escrowedBalance.start >
-            BigNumber.from(currentBlock.timestamp + (90 * dayInSec))
-        ).to.equal(true);
-        expect(escrowedBalance.end).to.equal(
-          escrowedBalance.start.add(90 * dayInSec)
-        );
-      });
-      it("should add another escrow vault when locking again", async function () {
-        await contracts.staking.connect(owner).getReward();
-        ethers.provider.send("evm_increaseTime", [302400]);
-        ethers.provider.send("evm_mine", []);
-        await contracts.staking.connect(owner).getReward();
-        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
-          owner.address
-        );
-        console.log(await contracts.rewardsEscrow.escrows(escrowIds[0]))
-        console.log(await contracts.rewardsEscrow.escrows(escrowIds[1]))
-
-        expect(escrowIds.length).to.equal(2);
-      });
+    it("should transfer funds, lock them and emit an event", async function () {
+      const currentBlockNumber = await ethers.provider.getBlockNumber();
+      const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
+      const result = await contracts.staking.connect(owner).getReward();
+      const lockedAmount = parseEther("3.333355379188604788");
+      const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+        owner.address
+      );
+      const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+      expect(result)
+        .to.emit(contracts.rewardsEscrow, "Locked")
+        .withArgs(owner.address, lockedAmount);
+      expect(escrow.balance).to.equal(lockedAmount);
+      expect(
+        await contracts.mockPop.balanceOf(contracts.rewardsEscrow.address)
+      ).to.equal(lockedAmount);
+      expect(
+        escrow.start > BigNumber.from(currentBlock.timestamp + 90 * dayInSec)
+      ).to.equal(true);
+      expect(escrow.end).to.equal(escrow.start.add(90 * dayInSec));
     });
-    /*describe("locking additional funds after vesting already started", function () {
-      it("should update the vesting time and locked funds when locking again", async function () {
-        await contracts.staking.connect(owner).getReward();
-        const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
-          owner.address
-        );
-        ethers.provider.send("evm_increaseTime", [91 * dayInSec]);
-        ethers.provider.send("evm_mine", []);
-        await contracts.staking.connect(owner).getReward();
-        const lockedAmount = parseEther("6.666655643738761606");
-        const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(
-          owner.address
-        );
-        expect(await contracts.rewardsEscrow.getLocked(owner.address)).to.equal(
-          lockedAmount
-        );
-        expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true);
-        expect(escrowedBalance2.end).to.equal(
-          escrowedBalance2.start.add(90 * dayInSec)
-        );
-      });
-    });
+    it("should add another escrow vault when locking again", async function () {
+      await contracts.staking.connect(owner).getReward();
+      ethers.provider.send("evm_increaseTime", [302400]);
+      ethers.provider.send("evm_mine", []);
+      await contracts.staking.connect(owner).getReward();
+      const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
+        owner.address
+      );
 
-    describe("locking additional funds after all other funds have been vested", function () {
-      it("should update the vesting time and locked funds when locking again", async function () {
-        const lockedAmount = parseEther("3.333355379188604788");
-        const lockedAmount2 = parseEther("3.333300264550156818")
-        await contracts.staking.connect(owner).getReward();
-        const escrowedBalance1 = await contracts.rewardsEscrow.escrowedBalances(
-          owner.address
-        );
-        ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
-        ethers.provider.send("evm_mine", []);
-        const vested1 = await contracts.rewardsEscrow.getVested(owner.address);
-        expect(vested1).to.equal(lockedAmount);
-        await contracts.staking.connect(owner).getReward();
-        const escrowedBalance2 = await contracts.rewardsEscrow.escrowedBalances(
-          owner.address
-        );
-        const lockedBalance = await contracts.rewardsEscrow.getLocked(
-          owner.address
-        );
-        expect(lockedBalance).to.equal(lockedAmount2.add(lockedAmount));
-        expect(escrowedBalance1.start < escrowedBalance2.start).to.equal(true);
-        expect(escrowedBalance2.end).to.equal(
-          escrowedBalance2.start.add(90 * dayInSec)
-        );
-      });
+      expect(escrowIds.length).to.equal(2);
+
+      const escrow1 = await contracts.rewardsEscrow.escrows(escrowIds[0]);
+      const escrow2 = await contracts.rewardsEscrow.escrows(escrowIds[1]);
+      expect(escrow1.balance).to.be.equal(parseEther("3.333355379188604788"));
+      expect(escrow2.balance).to.be.equal(parseEther("3.333300264550156818"));
     });
   });
 
-  describe("claim", function () {
-    beforeEach(async function () {
-      await contracts.rewardsEscrow
-        .connect(owner)
-        .setStaking(contracts.staking.address);
-      ethers.provider.send("evm_increaseTime", [604800]);
-      ethers.provider.send("evm_mine", []);
+  describe("claim vested rewards", function () {
+    context("claim single escrow", function () {
+      beforeEach(async function () {
+        await contracts.rewardsEscrow
+          .connect(owner)
+          .setStaking(contracts.staking.address);
+        ethers.provider.send("evm_increaseTime", [304800]);
+        ethers.provider.send("evm_mine", []);
+        await contracts.staking.connect(owner).getReward();
+      });
+      it("reverts if there are no rewards to claim", async function () {
+        await expect(
+          contracts.rewardsEscrow.connect(owner).claimRewards([0])
+        ).to.be.revertedWith("no rewards");
+      });
+      it("claims full rewards successfully after vesting period", async function () {
+        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
+        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
+        const oldBalance = await contracts.mockPop.balanceOf(owner.address);
+
+        await expect(contracts.rewardsEscrow.connect(owner).claimReward(0))
+          .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
+          .withArgs(owner.address, escrow.balance);
+
+        const newBalance = await contracts.mockPop.balanceOf(owner.address);
+        expect(newBalance).to.equal(oldBalance.add(escrow.balance));
+
+        //Check if the escrowId got deleted
+        expect(
+          await contracts.rewardsEscrow.getEscrowsByUser(owner.address)
+        ).to.deep.equal([
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ]);
+      });
+      it("claims partial rewards successfully during the vesting period", async function () {
+        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
+        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+
+        ethers.provider.send("evm_increaseTime", [91 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
+
+        const oldBalance = await contracts.mockPop.balanceOf(owner.address);
+        const currentBlock = await waffle.provider.getBlock("latest");
+        const result = await contracts.rewardsEscrow
+          .connect(owner)
+          .claimReward(0);
+
+        const expectedReward = escrow.balance
+          .mul(
+            BigNumber.from(String(currentBlock.timestamp + 1)).sub(escrow.start)
+          )
+          .div(escrow.end.sub(escrow.start));
+
+        expect(result)
+          .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
+          .withArgs(owner.address, expectedReward);
+
+        const newBalance = await contracts.mockPop.balanceOf(owner.address);
+        expect(newBalance).to.equal(oldBalance.add(expectedReward));
+
+        //Check if the escrowId got deleted
+        expect(
+          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address)).length
+        ).to.equal(1);
+      });
+      it("should still claim when a lot of escrows got added", async function () {
+        await Promise.all(
+          new Array(50).fill(0).map(async (x, i) => await addEscrow())
+        );
+        ethers.provider.send("evm_increaseTime", [131 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
+        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
+        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        const oldBalance = await contracts.mockPop.balanceOf(owner.address);
+
+        await expect(contracts.rewardsEscrow.connect(owner).claimReward(0))
+          .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
+          .withArgs(owner.address, escrow.balance);
+
+        const newBalance = await contracts.mockPop.balanceOf(owner.address);
+        expect(newBalance).to.equal(oldBalance.add(escrow.balance));
+
+        //Check if the escrowId got deleted
+        expect(
+          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address))[0]
+        ).to.deep.equal(
+          "0x0000000000000000000000000000000000000000000000000000000000000000"
+        );
+      });
     });
-    it("should claim funds", async function () {
-      const rewardsEarned = await contracts.staking.earned(owner.address);
-      const payout = rewardsEarned.div(BigNumber.from("3"));
-      const lockedAmount = payout.mul(BigNumber.from("2"));
-      await contracts.staking.connect(owner).getReward();
-      popBalance = await contracts.mockPop.balanceOf(owner.address);
+    context("claim multiple escrows", function () {
+      beforeEach(async function () {
+        await contracts.rewardsEscrow
+          .connect(owner)
+          .setStaking(contracts.staking.address);
+        ethers.provider.send("evm_increaseTime", [304800]);
+        ethers.provider.send("evm_mine", []);
+        await contracts.staking.connect(owner).getReward();
+      });
+      it("reverts if there are no rewards to claim", async function () {
+        await expect(
+          contracts.rewardsEscrow.connect(owner).claimRewards([0])
+        ).to.be.revertedWith("no rewards");
+      });
+      it("reverts when trying to claim to many escrows", async function () {
+        await Promise.all(
+          new Array(10).fill(0).map(async (x, i) => await addEscrow())
+        );
+        ethers.provider.send("evm_increaseTime", [171 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
+        await expect(
+          contracts.rewardsEscrow
+            .connect(owner)
+            .claimRewards([0, 1, 2, 3, 4, 5])
+        ).to.be.revertedWith("claiming too many escrows");
+      });
+      it("claims full rewards successfully after vesting period", async function () {
+        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
+        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
+        const oldBalance = await contracts.mockPop.balanceOf(owner.address);
 
-      ethers.provider.send("evm_increaseTime", [120 * dayInSec]);
-      ethers.provider.send("evm_mine", []);
+        await expect(contracts.rewardsEscrow.connect(owner).claimRewards([0]))
+          .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
+          .withArgs(owner.address, escrow.balance);
 
-      await contracts.rewardsEscrow.connect(owner).claim();
-      expect(await contracts.mockPop.balanceOf(owner.address)).to.equal(
-        parseEther("494.555547227119704082")
-      );
+        const newBalance = await contracts.mockPop.balanceOf(owner.address);
+        expect(newBalance).to.equal(oldBalance.add(escrow.balance));
 
-      ethers.provider.send("evm_increaseTime", [60 * dayInSec]);
-      ethers.provider.send("evm_mine", []);
+        //Check if the escrowId got deleted
+        expect(
+          await contracts.rewardsEscrow.getEscrowsByUser(owner.address)
+        ).to.deep.equal([
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        ]);
+      });
+      it("claims partial rewards successfully during the vesting period", async function () {
+        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
+        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
 
-      const locked3 = await contracts.rewardsEscrow.getLocked(owner.address);
-      const vested3 = await contracts.rewardsEscrow.getVested(owner.address);
-      expect(locked3).to.equal(vested3);
-      await contracts.rewardsEscrow.connect(owner).claim();
-      const locked4 = await contracts.rewardsEscrow.getLocked(owner.address);
-      const vested4 = await contracts.rewardsEscrow.getVested(owner.address);
+        ethers.provider.send("evm_increaseTime", [91 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
 
-      expect(await contracts.mockPop.balanceOf(owner.address)).to.equal(
-        popBalance.add(lockedAmount)
-      );
-      expect(vested4).to.equal(0);
-      expect(locked4).to.equal(0);
+        const oldBalance = await contracts.mockPop.balanceOf(owner.address);
+        const currentBlock = await waffle.provider.getBlock("latest");
+        const result = await contracts.rewardsEscrow
+          .connect(owner)
+          .claimRewards([0]);
+
+        const expectedReward = escrow.balance
+          .mul(
+            BigNumber.from(String(currentBlock.timestamp + 1)).sub(escrow.start)
+          )
+          .div(escrow.end.sub(escrow.start));
+
+        expect(result)
+          .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
+          .withArgs(owner.address, expectedReward);
+
+        const newBalance = await contracts.mockPop.balanceOf(owner.address);
+        expect(newBalance).to.equal(oldBalance.add(expectedReward));
+
+        //Check if the escrowId got deleted
+        expect(
+          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address)).length
+        ).to.equal(1);
+      });
+      it("should still claim when a lot of escrows got added", async function () {
+        await Promise.all(
+          new Array(50).fill(0).map(async (x, i) => await addEscrow())
+        );
+        ethers.provider.send("evm_increaseTime", [131 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
+        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
+        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        const oldBalance = await contracts.mockPop.balanceOf(owner.address);
+
+        await expect(contracts.rewardsEscrow.connect(owner).claimReward(0))
+          .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
+          .withArgs(owner.address, escrow.balance);
+
+        const newBalance = await contracts.mockPop.balanceOf(owner.address);
+        expect(newBalance).to.equal(oldBalance.add(escrow.balance));
+
+        //Check if the escrowId got deleted
+        expect(
+          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address))[0]
+        ).to.deep.equal(
+          "0x0000000000000000000000000000000000000000000000000000000000000000"
+        );
+      });
+      it("should allow to claim one escrow balance fully while claiming another one partially", async function () {
+        await Promise.all(
+          new Array(50).fill(0).map(async (x, i) => await addEscrow())
+        );
+        ethers.provider.send("evm_increaseTime", [131 * dayInSec]);
+        ethers.provider.send("evm_mine", []);
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
+        const escrow1 = await contracts.rewardsEscrow.escrows(escrowIds[0]);
+        const escrow2 = await contracts.rewardsEscrow.escrows(escrowIds[1]);
+
+        const oldBalance = await contracts.mockPop.balanceOf(owner.address);
+        const currentBlock = await waffle.provider.getBlock("latest");
+        const result = await contracts.rewardsEscrow
+          .connect(owner)
+          .claimRewards([0,1]);
+
+        const escrow2ExpectedReward = escrow2.balance
+          .mul(
+            BigNumber.from(String(currentBlock.timestamp + 1)).sub(escrow2.start)
+          )
+          .div(escrow2.end.sub(escrow2.start));
+        const expectedReward = escrow2ExpectedReward.add(escrow1.balance)
+
+        expect(result)
+          .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
+          .withArgs(owner.address, expectedReward);
+
+
+        const newBalance = await contracts.mockPop.balanceOf(owner.address);
+        expect(newBalance).to.equal(oldBalance.add(expectedReward));
+
+        //Check if the escrowId got deleted
+        expect(
+          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address)).slice(
+            0,
+            2
+          )
+        ).to.deep.equal([
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+          escrowIds[1],
+        ]);
+      });
     });
-    it("reverts if there is nothing to claim", async function () {
-      await expect(
-        contracts.rewardsEscrow.connect(nonOwner).claim()
-      ).to.be.revertedWith("nothing to claim");
-    });
-  });*/
+  });
 });

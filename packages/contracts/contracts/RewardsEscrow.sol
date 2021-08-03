@@ -28,7 +28,6 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   /* ========== EVENTS ========== */
   event Locked(address account, uint256 amount);
-  event RewardClaimed(bytes32 vaultId, address account_, uint256 amount);
   event RewardsClaimed(address account_, uint256 amount);
   event StakingChanged(IStaking _staking);
   event EscrowDurationChanged(uint256 _escrowDuration);
@@ -116,7 +115,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
    * @dev The array of indices is limited to 19 as we want to prevent gas overflow of looping through too many vaults
    */
   function claimRewards(uint256[] calldata indices_) external nonReentrant {
-    require(indices_.length <= 5, "claiming too many vaults");
+    require(indices_.length <= 5, "claiming too many escrows");
     uint256 total;
 
     for (uint256 i = 0; i < indices_.length; i++) {
