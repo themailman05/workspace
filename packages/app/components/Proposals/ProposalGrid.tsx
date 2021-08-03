@@ -154,8 +154,8 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
         </span>
       </div>
       {filteredProposals.length === 0 ? (
-        <div className="h-screen">
-          <p className="mt-5 text-center text-xl text-white">
+        <div className="h-60">
+          <p className="mt-12 text-center text-xl text-white">
             No{' '}
             {proposalType === ProposalType.Nomination
               ? 'Beneficiary Nomination Proposals'

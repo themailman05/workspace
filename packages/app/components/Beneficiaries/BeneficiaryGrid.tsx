@@ -41,8 +41,8 @@ const BeneficiaryGrid: React.FC<BeneficiaryGridProps> = ({
       </div>
 
       {filteredBeneficiaries.length === 0 ? (
-        <div className="h-screen">
-          <p className="mt-5 text-center text-xl text-white">
+        <div className="h-80">
+          <p className="mt-12 text-center text-xl text-white">
             No beneficiaries containing your search terms were found.
           </p>
         </div>
