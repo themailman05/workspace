@@ -1,6 +1,6 @@
+import { Proposal, ProposalType } from '@popcorn/contracts/adapters';
 import CardBody from 'components/CommonComponents/CardBody';
 import Link from 'next/link';
-import { Proposal, ProposalType } from '@popcorn/contracts/adapters';
 import VotingInformation from './Voting/VotingInformation';
 
 export interface ProposalCardProps {
@@ -18,15 +18,16 @@ const ProposalCard: React.FC<ProposalCardProps> = ({
       className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white"
     >
       <Link
-        href={`${proposalType === ProposalType.Takedown
+        href={`${
+          proposalType === ProposalType.Takedown
             ? '/proposals/takedowns/'
             : '/proposals/nominations/'
-          }${proposal.id}`}
+        }${proposal.id}`}
         passHref
       >
         <a>
           <CardBody
-            imgUrl={`${process.env.IPFS_URL}${proposal.application.files.profileImage?.image}`}
+            image={proposal.application.files.profileImage}
             name={proposal?.application.organizationName}
             missionStatement={proposal?.application.missionStatement}
           />
