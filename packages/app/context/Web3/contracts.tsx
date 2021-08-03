@@ -14,7 +14,6 @@ import {
   ERC20__factory,
   GrantElections,
   GrantElections__factory,
-  GrantRegistry,
   RewardsManager,
   RewardsManager__factory,
   Staking,
@@ -30,7 +29,6 @@ export interface Contracts {
   staking: Staking;
   beneficiary: BeneficiaryRegistry;
   election: GrantElections;
-  grant: GrantRegistry;
   pop: ERC20;
   rewardsManager: RewardsManager;
   uniswap: UniswapV2Router02;
@@ -116,10 +114,6 @@ export default function ContractsWrapper({
       ),
       election: GrantElections__factory.connect(
         process.env.ADDR_GRANT_ELECTION,
-        library,
-      ),
-      grant: GrantRegistry__factory.connect(
-        process.env.ADDR_GRANT_REGISTRY,
         library,
       ),
       pop: ERC20__factory.connect(process.env.ADDR_POP, library),
