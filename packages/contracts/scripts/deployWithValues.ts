@@ -15,7 +15,6 @@ const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
 
 interface Contracts {
   beneficiaryRegistry: Contract;
-  grantRegistry: Contract;
   mockPop: Contract;
   staking: Contract;
   randomNumberConsumer: Contract;
@@ -58,12 +57,6 @@ export default async function deploy(ethers): Promise<void> {
 
     const beneficiaryRegistry = await (
       await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
-    ).deployed();
-
-    const grantRegistry = await (
-      await (
-        await ethers.getContractFactory("GrantRegistry")
-      ).deploy(beneficiaryRegistry.address)
     ).deployed();
 
     const mockPop = await (
@@ -148,7 +141,6 @@ export default async function deploy(ethers): Promise<void> {
       ).deploy(
         staking.address,
         beneficiaryRegistry.address,
-        grantRegistry.address,
         randomNumberConsumer.address,
         mockPop.address,
         accounts[0].address
@@ -168,7 +160,6 @@ export default async function deploy(ethers): Promise<void> {
 
     contracts = {
       beneficiaryRegistry,
-      grantRegistry,
       mockPop,
       staking,
       randomNumberConsumer,
@@ -597,12 +588,6 @@ export default async function deploy(ethers): Promise<void> {
     await registerBeneficiariesForElection(GrantTerm.Year, bennies.slice(18));
     await displayElectionMetadata(GrantTerm.Year);
   };
-
-  const setElectionContractAsGovernanceForGrantRegistry =
-    async (): Promise<void> => {
-      await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
-      await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
-    };
 
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");
