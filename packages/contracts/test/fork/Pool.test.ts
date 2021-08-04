@@ -3,7 +3,6 @@ import { MockERC20, Faucet, Zapper, Pool } from "../../typechain";
 import { expect } from "chai";
 import { waffle, ethers, network } from "hardhat";
 import { parseEther, parseUnits } from "ethers/lib/utils";
-import hardhatConfig from "../../hardhat.config";
 
 const provider = waffle.provider;
 
@@ -107,8 +106,8 @@ describe("Pool", function () {
       params: [
         {
           forking: {
-            jsonRpcUrl: hardhatConfig.networks.hardhat.forking.url,
-            blockNumber: hardhatConfig.networks.hardhat.forking.blockNumber,
+            jsonRpcUrl: process.env.FORKING_RPC_URL,
+            blockNumber: parseInt(process.env.FORKING_BLOCK_NUMBER),
           },
         },
       ],
