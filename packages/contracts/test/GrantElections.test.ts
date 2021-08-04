@@ -401,9 +401,7 @@ describe("GrantElections", function () {
     });
 
     it("should set correct election metadata", async function () {
-      const nextBlockTime = 1625097600;
-      await ethers.provider.send("evm_setNextBlockTimestamp", [nextBlockTime]);
-      await ethers.provider.send("evm_mine", []);
+      const currentBlock = await waffle.provider.getBlock("latest");
       await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
@@ -424,7 +422,7 @@ describe("GrantElections", function () {
           registrationPeriod: 14 * ONE_DAY, // 14 days
           votingPeriod: 14 * ONE_DAY, // 14 days
         },
-        startTime: nextBlockTime + 1,
+        startTime: currentBlock.timestamp + 1,
         randomNumber: 0,
         shareType: 0,
       });
@@ -439,21 +437,21 @@ describe("GrantElections", function () {
     it("should allow to create a new election for a term when the old one is finalized", async function () {
       const merkleRoot = ethers.utils.formatBytes32String("merkleRoot");
       await contracts.grantElections
-      .connect(governance)
-      .setConfiguration(
-        GRANT_TERM.QUARTER,
-        4,
-        2,
-        false,
-        1000,
-        20 * 86400,
-        100,
-        0,
-        false,
-        parseEther("2000"),
-        true,
-        0
-      );
+        .connect(governance)
+        .setConfiguration(
+          GRANT_TERM.QUARTER,
+          4,
+          2,
+          false,
+          1000,
+          20 * 86400,
+          100,
+          0,
+          false,
+          parseEther("2000"),
+          true,
+          0
+        );
       await prepareElection(GRANT_TERM.QUARTER, electionId);
       ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
@@ -468,7 +466,7 @@ describe("GrantElections", function () {
       );
       const currentBlockNumber = await ethers.provider.getBlockNumber();
       const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
-      const result = contracts.grantElections.initialize(GRANT_TERM.QUARTER)
+      const result = contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       await expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
         .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
@@ -477,8 +475,10 @@ describe("GrantElections", function () {
         .to.emit(contracts.beneficiaryVaults, "VaultClosed")
         .withArgs(GRANT_TERM.QUARTER);
 
-      const activeElectionId = await contracts.grantElections.activeElections(GRANT_TERM.QUARTER);
-      expect(activeElectionId).to.equal(electionId+1)
+      const activeElectionId = await contracts.grantElections.activeElections(
+        GRANT_TERM.QUARTER
+      );
+      expect(activeElectionId).to.equal(electionId + 1);
     });
   });
 
