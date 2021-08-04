@@ -1,30 +1,19 @@
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment, useContext, useEffect } from 'react';
 import { Transition } from '@headlessui/react';
 import { CheckCircleIcon, ClockIcon } from '@heroicons/react/outline';
 import { XIcon } from '@heroicons/react/solid';
-import { store } from 'app/store';
-import { hideNotification, unsetNotification } from '../../app/actions';
+import { Fragment, useContext, useEffect } from 'react';
+import { hideNotification, unsetNotification } from '../../context/actions';
+import { store } from '../../context/store';
 
-export interface Notification {
-  id: number;
-  visible: boolean;
-  type: 'success' | 'error' | 'waiting';
-  title: string;
-  isFlash?: boolean;
-  content: string | React.ReactElement;
-  backdrop?: boolean;
-}
 
-export default function Example() {
+const NotificationsContainer: React.FC = () => {
   const {
     dispatch,
     state: { notifications },
   } = useContext(store);
 
-
   useEffect(() => {
-
     const timeouts = [];
     const intId = setInterval(() => {
       notifications.map((notification) => {
@@ -34,17 +23,17 @@ export default function Example() {
           }, 7000);
           timeouts.push(id);
         }
-      })
+      });
     }, 1000);
 
     return () => {
       clearInterval(intId);
-      timeouts.map((timeout) => clearTimeout(timeout))
-    }
-  }, [notifications])
+      timeouts.map((timeout) => clearTimeout(timeout));
+    };
+  }, [notifications]);
 
   return (
-   <> 
+    <>
       {/* Global notification live region, render this permanently at the end of the document */}
       <div
         aria-live="assertive"
@@ -64,7 +53,9 @@ export default function Example() {
               leave="transition ease-in duration-300 transition"
               leaveFrom="opacity-100"
               leaveTo="opacity-0"
-              afterLeave={ () => { dispatch(unsetNotification(notification.id)) }}
+              afterLeave={() => {
+                dispatch(unsetNotification(notification.id));
+              }}
             >
               <div className="max-w-sm m-4 w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden block ">
                 <div className="p-4">
@@ -80,7 +71,7 @@ export default function Example() {
                         <ClockIcon
                           className="h6 w-6 text-yellow-400"
                           aria-hidden="true"
-                          />
+                        />
                       )}
                     </div>
                     <div className="ml-3 w-0 flex-1 pt-0.5">
@@ -108,6 +99,7 @@ export default function Example() {
             </Transition>
           ))}
       </div>
-      </>
+    </>
   );
-}
+};
+export default NotificationsContainer;
