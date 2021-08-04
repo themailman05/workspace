@@ -622,7 +622,6 @@ export default async function deploy(ethers): Promise<void> {
       eligibleButNotRegistered: bennies.slice(18, 20).map((bn) => bn.address),
       contracts: {
         beneficiaryRegistry: contracts.beneficiaryRegistry.address,
-        grantRegistry: contracts.grantRegistry.address,
         mockPop: contracts.mockPop.address,
         staking: contracts.staking.address,
         randomNumberConsumer: contracts.randomNumberConsumer.address,
@@ -633,7 +632,6 @@ export default async function deploy(ethers): Promise<void> {
 Paste this into your .env file:
 
 ADDR_BENEFICIARY_REGISTRY=${contracts.beneficiaryRegistry.address}
-ADDR_GRANT_REGISTRY=${contracts.grantRegistry.address}
 ADDR_POP=${contracts.mockPop.address}
 ADDR_STAKING=${contracts.staking.address}
 ADDR_RANDOM_NUMBER=${contracts.randomNumberConsumer.address}
@@ -663,6 +661,5 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
-  await setElectionContractAsGovernanceForGrantRegistry();
   await logResults();
 }

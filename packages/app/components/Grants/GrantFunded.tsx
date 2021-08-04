@@ -16,23 +16,23 @@ const GrantFunded: React.FC<GrantFundedProps> = ({
   const { contracts } = useContext(ContractsContext);
   const [awarded, setAwarded] = useState(false);
 
-  const isBeneficiaryGrantRecipient = async () => {
-    const awarded = (
-      await contracts.grant.getActiveAwardees(
-        electionProps.election.electionTerm,
-      )
-    ).map((a) => a.toLowerCase());
-    if (awarded.includes(beneficiary.beneficiaryAddress)) {
-      setAwarded(true);
-    }
-  };
+  // const isBeneficiaryGrantRecipient = async () => {
+  //   const awarded = (
+  //     await contracts.grant.getActiveAwardees(
+  //       electionProps.election.electionTerm,
+  //     )
+  //   ).map((a) => a.toLowerCase());
+  //   if (awarded.includes(beneficiary.beneficiaryAddress)) {
+  //     setAwarded(true);
+  //   }
+  // };
 
-  useEffect(() => {
-    if (contracts?.grant) {
-      // FIXME: Promise being ignored
-      isBeneficiaryGrantRecipient();
-    }
-  }, [contracts]);
+  // useEffect(() => {
+  //   if (contracts?.grant) {
+  //     // FIXME: Promise being ignored
+  //     isBeneficiaryGrantRecipient();
+  //   }
+  // }, [contracts]);
 
   return (
     <span className="flex flex-row">

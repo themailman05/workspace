@@ -1,15 +1,11 @@
 import { ChevronDownIcon, InformationCircleIcon } from '@heroicons/react/solid';
 import {
+  BeneficiaryGovernanceAdapter,
   Proposal,
-  ProposalType,
   ProposalStatus,
+  ProposalType,
 } from '@popcorn/contracts/adapters';
-import {
-  IpfsClient,
-} from '@popcorn/utils';
-import {
-  BeneficiaryGovernanceAdapter
-} from "@popcorn/contracts/adapters"
+import { IpfsClient } from '@popcorn/utils';
 import CardGridHeader from 'components/CardGridHeader';
 import Navbar from 'components/NavBar/NavBar';
 import { setSingleActionModal } from 'context/actions';
@@ -29,12 +25,29 @@ export interface ProposalGridProps {
 const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
   const { dispatch } = useContext(store);
   const [searchFilter, setSearchFilter] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<ProposalStatus>(ProposalStatus.All);
+  const [statusFilter, setStatusFilter] = useState<ProposalStatus>(
+    ProposalStatus.All,
+  );
   const { contracts } = useContext(ContractsContext);
   const [proposals, setProposals] = useState<Proposal[]>([]);
+  const filteredProposals = proposals
+    ?.filter((proposal) => {
+      return proposal.application.organizationName
+        .toLowerCase()
+        .includes(searchFilter.toLowerCase());
+    })
+    .filter((proposal) => {
+      return (
+        (proposal as Proposal)?.status === statusFilter ||
+        statusFilter === ProposalStatus.All
+      );
+    });
   useEffect(() => {
     if (contracts) {
-      new BeneficiaryGovernanceAdapter(contracts.beneficiaryGovernance, IpfsClient)
+      new BeneficiaryGovernanceAdapter(
+        contracts.beneficiaryGovernance,
+        IpfsClient,
+      )
         .getAllProposals(proposalType)
         .then((res) => setProposals(res));
     }
@@ -66,9 +79,10 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
               className="w-full border-white px-5 py-3 placeholder-warm-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-cyan-700 focus:ring-white rounded-md"
               placeholder={
                 'Search ' +
-                `${proposalType === ProposalType.Nomination
-                  ? 'Eligible Beneficiaries'
-                  : 'Takedown Proposals'
+                `${
+                  proposalType === ProposalType.Nomination
+                    ? 'Eligible Beneficiaries'
+                    : 'Takedown Proposals'
                 }`
               }
               value={searchFilter}
@@ -123,7 +137,9 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
               >
                 {new Array(6).fill(undefined).map((x, status) => {
                   return (
-                    <option value={ProposalStatus[status]}>{ProposalStatus[status]}</option>
+                    <option value={ProposalStatus[status]}>
+                      {ProposalStatus[status]}
+                    </option>
                   );
                 })}
               </select>
@@ -137,23 +153,23 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
           </div>
         </span>
       </div>
-      <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
-        {proposals
-          ?.filter((proposal) => {
-            return proposal.application.organizationName
-              .toLowerCase()
-              .includes(searchFilter.toLowerCase());
-          })
-          .filter((proposal) => {
-            return (
-              (proposal as Proposal)?.status === statusFilter ||
-              statusFilter === ProposalStatus.All
-            );
-          })
-          .map((proposal) => (
+      {filteredProposals.length === 0 ? (
+        <div className="h-60">
+          <p className="mt-12 text-center text-xl text-white">
+            No{' '}
+            {proposalType === ProposalType.Nomination
+              ? 'Beneficiary Nomination Proposals'
+              : 'Beneficiary Takedown Proposals'}{' '}
+            containing your search term were found.
+          </p>
+        </div>
+      ) : (
+        <ul className="sm:grid sm:grid-cols-2 gap-x-2 gap-y-12 lg:grid-cols-3 mx-36">
+          {filteredProposals.map((proposal) => (
             <ProposalCard proposal={proposal} proposalType={proposalType} />
           ))}
-      </ul>
+        </ul>
+      )}
     </div>
   );
 };
