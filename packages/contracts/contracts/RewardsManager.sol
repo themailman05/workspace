@@ -23,6 +23,15 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
+  enum RewardTargets {
+    Staking,
+    Treasury,
+    Insurance,
+    BeneficiaryVaults
+  }
+
+  /* ========== STATE VARIABLES ========== */
+
   uint256 public constant SWAP_TIMEOUT = 600;
 
   IERC20 public immutable POP;
@@ -35,12 +44,7 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   uint256[4] public rewardSplits;
   mapping(uint8 => uint256[2]) private rewardLimits;
 
-  enum RewardTargets {
-    Staking,
-    Treasury,
-    Insurance,
-    BeneficiaryVaults
-  }
+  /* ========== EVENTS ========== */
 
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
@@ -56,6 +60,8 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     IBeneficiaryVaults from,
     IBeneficiaryVaults to
   );
+
+  /* ========== CONSTRUCTOR ========== */
 
   constructor(
     IERC20 pop_,
@@ -78,11 +84,111 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     rewardSplits = [32e18, 32e18, 2e18, 34e18];
   }
 
-  receive() external payable {}
+  /* ========== VIEW FUNCTIONS ========== */
 
   function getRewardSplits() external view returns (uint256[4] memory) {
     return rewardSplits;
   }
+
+  /* ========== MUTATIVE FUNCTIONS ========== */
+
+  receive() external payable {}
+
+  /**
+   * @param path_ Uniswap path specification for source token to POP
+   * @param minAmountOut_ Minimum desired amount (>0) of POP tokens to be received from swap
+   * @dev Path specification requires at least source token as first in path and POP address as last
+   * @dev Token swap internals implemented as described at https://uniswap.org/docs/v2/smart-contracts/router02/#swapexacttokensfortokens
+   * @return swapped in/out amounts uint256 tuple
+   */
+  function swapTokenForRewards(address[] calldata path_, uint256 minAmountOut_)
+    public
+    nonReentrant
+    returns (uint256[] memory)
+  {
+    require(path_.length >= 2, "Invalid swap path");
+    require(minAmountOut_ > 0, "Invalid amount");
+    require(
+      path_[path_.length - 1] == address(POP),
+      "POP must be last in path"
+    );
+
+    IERC20 _token = IERC20(path_[0]);
+    uint256 _balance = _token.balanceOf(address(this));
+    require(_balance > 0, "No swappable balance");
+
+    _token.safeIncreaseAllowance(address(uniswapV2Router), _balance);
+    uint256[] memory _amounts = uniswapV2Router.swapExactTokensForTokens(
+      _balance,
+      minAmountOut_,
+      path_,
+      address(this),
+      block.timestamp.add(SWAP_TIMEOUT)
+    );
+
+    emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
+
+    return _amounts;
+  }
+
+  /**
+   * @notice Distribute POP rewards to dependent RewardTarget contracts
+   * @dev Contract must have POP balance in order to distribute according to rewardSplits ratio
+   */
+  function distributeRewards() public nonReentrant {
+    uint256 _availableReward = POP.balanceOf(address(this));
+    require(_availableReward > 0, "No POP balance");
+
+    //@todo check edge case precision overflow
+    uint256 _stakingAmount = _availableReward
+      .mul(rewardSplits[uint8(RewardTargets.Staking)])
+      .div(100e18);
+    uint256 _treasuryAmount = _availableReward
+      .mul(rewardSplits[uint8(RewardTargets.Treasury)])
+      .div(100e18);
+    uint256 _insuranceAmount = _availableReward
+      .mul(rewardSplits[uint8(RewardTargets.Insurance)])
+      .div(100e18);
+    uint256 _beneficiaryVaultsAmount = _availableReward
+      .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
+      .div(100e18);
+
+    _distributeToStaking(_stakingAmount);
+    _distributeToTreasury(_treasuryAmount);
+    _distributeToInsurance(_insuranceAmount);
+    _distributeToVaults(_beneficiaryVaultsAmount);
+
+    emit RewardsDistributed(_availableReward);
+  }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
+
+  function _distributeToStaking(uint256 amount_) internal {
+    if (amount_ == 0) return;
+    POP.transfer(address(staking), amount_);
+    staking.notifyRewardAmount(amount_);
+    emit StakingDeposited(address(staking), amount_);
+  }
+
+  function _distributeToTreasury(uint256 amount_) internal {
+    if (amount_ == 0) return;
+    POP.transfer(address(treasury), amount_);
+    emit TreasuryDeposited(address(treasury), amount_);
+  }
+
+  function _distributeToInsurance(uint256 amount_) internal {
+    if (amount_ == 0) return;
+    POP.transfer(address(insurance), amount_);
+    emit InsuranceDeposited(address(insurance), amount_);
+  }
+
+  function _distributeToVaults(uint256 amount_) internal {
+    if (amount_ == 0) return;
+    POP.transfer(address(beneficiaryVaults), amount_);
+    emit BeneficiaryVaultsDeposited(address(beneficiaryVaults), amount_);
+  }
+
+  /* ========== SETTER ========== */
 
   /**
    * @notice Overrides existing Staking contract
@@ -143,7 +249,6 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
    * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
    * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
    */
-
   function setRewardSplits(uint256[4] calldata splits_) public onlyOwner {
     uint256 _total = 0;
     for (uint8 i = 0; i < 4; i++) {
@@ -156,97 +261,5 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     require(_total == 100e18, "Invalid split total");
     rewardSplits = splits_;
     emit RewardSplitsUpdated(splits_);
-  }
-
-  /**
-   * @param path_ Uniswap path specification for source token to POP
-   * @param minAmountOut_ Minimum desired amount (>0) of POP tokens to be received from swap
-   * @dev Path specification requires at least source token as first in path and POP address as last
-   * @dev Token swap internals implemented as described at https://uniswap.org/docs/v2/smart-contracts/router02/#swapexacttokensfortokens
-   * @return swapped in/out amounts uint256 tuple
-   */
-  function swapTokenForRewards(address[] calldata path_, uint256 minAmountOut_)
-    public
-    nonReentrant
-    returns (uint256[] memory)
-  {
-    require(path_.length >= 2, "Invalid swap path");
-    require(minAmountOut_ > 0, "Invalid amount");
-    require(
-      path_[path_.length - 1] == address(POP),
-      "POP must be last in path"
-    );
-
-    IERC20 _token = IERC20(path_[0]);
-    uint256 _balance = _token.balanceOf(address(this));
-    require(_balance > 0, "No swappable balance");
-
-    _token.safeIncreaseAllowance(address(uniswapV2Router), _balance);
-    uint256[] memory _amounts = uniswapV2Router.swapExactTokensForTokens(
-      _balance,
-      minAmountOut_,
-      path_,
-      address(this),
-      block.timestamp.add(SWAP_TIMEOUT)
-    );
-
-    emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
-
-    return _amounts;
-  }
-
-  /**
-   * @notice Distribute POP rewards to dependent RewardTarget contracts
-   * @dev Contract must have POP balance in order to distribute according to rewardSplits ratio
-   */
-  function distributeRewards() public nonReentrant {
-    uint256 _availableReward = POP.balanceOf(address(this));
-    require(_availableReward > 0, "No POP balance");
-
-    //@todo check edge case precision overflow
-    uint256 _stakingAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Staking)])
-    .div(100e18);
-    uint256 _treasuryAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Treasury)])
-    .div(100e18);
-    uint256 _insuranceAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Insurance)])
-    .div(100e18);
-    uint256 _beneficiaryVaultsAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
-    .div(100e18);
-
-    _distributeToStaking(_stakingAmount);
-    _distributeToTreasury(_treasuryAmount);
-    _distributeToInsurance(_insuranceAmount);
-    _distributeToVaults(_beneficiaryVaultsAmount);
-
-    emit RewardsDistributed(_availableReward);
-  }
-
-  function _distributeToStaking(uint256 amount_) internal {
-    if (amount_ == 0) return;
-    POP.transfer(address(staking), amount_);
-    staking.notifyRewardAmount(amount_);
-    emit StakingDeposited(address(staking), amount_);
-  }
-
-  function _distributeToTreasury(uint256 amount_) internal {
-    if (amount_ == 0) return;
-    POP.transfer(address(treasury), amount_);
-    emit TreasuryDeposited(address(treasury), amount_);
-  }
-
-  function _distributeToInsurance(uint256 amount_) internal {
-    if (amount_ == 0) return;
-    POP.transfer(address(insurance), amount_);
-    emit InsuranceDeposited(address(insurance), amount_);
-  }
-
-  function _distributeToVaults(uint256 amount_) internal {
-    if (amount_ == 0) return;
-    POP.transfer(address(beneficiaryVaults), amount_);
-    emit BeneficiaryVaultsDeposited(address(beneficiaryVaults), amount_);
   }
 }
