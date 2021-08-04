@@ -340,6 +340,8 @@ describe("GrantElections", function () {
         registeredBeneficiaries: [],
         electionState: ElectionState.Registration,
         registrationBond: parseEther("100"),
+        electionStateStringLong: "open for registration",
+        electionStateStringShort: "registration",
         registrationBondRequired: true,
         configuration: {
           awardees: 2,
