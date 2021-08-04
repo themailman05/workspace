@@ -77,13 +77,13 @@ describe("BeneficiaryVaults", function () {
 
   it("reverts when trying to get uninitialized vault", async function () {
     await expect(contracts.beneficiaryVaults.getVault(0)).to.be.revertedWith(
-      "Uninitialized vault slot"
+      "vault must exist"
     );
   });
 
   it("reverts when trying to get invalid vault", async function () {
     await expect(contracts.beneficiaryVaults.getVault(4)).to.be.revertedWith(
-      "Invalid vault id"
+      "vault must exist"
     );
   });
 
