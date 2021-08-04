@@ -67,7 +67,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   /**
    * @notice Locks funds for escrow
-   * @dev
+   * @dev This creates a seperate escrow structure which can later be iterated upon to unlock the escrowed funds
    */
   function lock(address account_, uint256 amount_)
     external
