@@ -184,15 +184,4 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     staking = _staking;
     emit StakingChanged(_staking);
   }
-
-  /* ========== MODIFIERS ========== */
-
-  /**
-   * @notice Modifier to check if a vault exists
-   * @param escrowId Bytes32
-   */
-  modifier escrowExists(bytes32 escrowId) {
-    require(escrows[escrowId].end > 0, "Uninitialized Escrow slot");
-    _;
-  }
 }
