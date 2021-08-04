@@ -102,8 +102,10 @@ contract KeeperIncentive is Governed {
   function toggleWhitelisting(uint256 _incentiveId) external onlyGovernance {
     incentives[_incentiveId].openToEveryone = !incentives[_incentiveId]
       .openToEveryone;
-    emit AllowanceToggled(incentiveId, openToEveryone);
-    (_incentiveId, incentives[_incentiveId].openToEveryone);
+    emit AllowanceToggled(
+      _incentiveId,
+      incentives[_incentiveId].openToEveryone
+    );
   }
 
   function changeTargetDate(uint256 _incentiveId, uint256 _targetDate)
