@@ -259,9 +259,9 @@ contract GrantElections is Governed {
     if (
       block.timestamp >=
       election
-      .startTime
-      .add(election.electionConfiguration.registrationPeriod)
-      .add(election.electionConfiguration.votingPeriod)
+        .startTime
+        .add(election.electionConfiguration.registrationPeriod)
+        .add(election.electionConfiguration.votingPeriod)
     ) {
       election.electionState = ElectionState.Closed;
       if (election.electionConfiguration.useChainLinkVRF) {
@@ -328,7 +328,7 @@ contract GrantElections is Governed {
     emit UserVoted(msg.sender, election.electionTerm);
   }
 
-  function fundIncentive(uint256 _amount) public {
+  function fundKeeperIncentive(uint256 _amount) public {
     require(POP.balanceOf(msg.sender) >= _amount, "not enough pop");
     POP.safeTransferFrom(msg.sender, address(this), _amount);
     incentiveBudget = incentiveBudget.add(_amount);
@@ -370,8 +370,7 @@ contract GrantElections is Governed {
 
     uint256 finalizationIncentive = electionDefaults[
       uint8(_election.electionTerm)
-    ]
-    .finalizationIncentive;
+    ].finalizationIncentive;
 
     if (
       incentiveBudget >= finalizationIncentive &&
@@ -415,8 +414,8 @@ contract GrantElections is Governed {
     onlyGovernance
   {
     electionDefaults[uint8(_term)]
-    .bondRequirements
-    .required = !electionDefaults[uint8(_term)].bondRequirements.required;
+      .bondRequirements
+      .required = !electionDefaults[uint8(_term)].bondRequirements.required;
   }
 
   function _collectRegistrationBond(Election storage _election) internal {

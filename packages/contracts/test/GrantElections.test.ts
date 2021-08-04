@@ -300,7 +300,7 @@ describe("GrantElections", function () {
     it("should allow to fund incentives", async function () {
       await contracts.grantElections
         .connect(owner)
-        .fundIncentive(parseEther("4000"));
+        .fundKeeperIncentive(parseEther("4000"));
       const incentiveBudget = await contracts.grantElections.incentiveBudget();
       const balance = await contracts.mockPop.balanceOf(owner.address);
       expect(incentiveBudget).to.equal(parseEther("4000"));
@@ -668,7 +668,7 @@ describe("GrantElections", function () {
           it("doesnt pays out incentive if the incentiveBudget is too low", async function () {
             await contracts.grantElections
               .connect(owner)
-              .fundIncentive(parseEther("1000"));
+              .fundKeeperIncentive(parseEther("1000"));
             ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
             ethers.provider.send("evm_mine", []);
             await contracts.grantElections.refreshElectionState(electionId);
@@ -687,7 +687,7 @@ describe("GrantElections", function () {
           it("pays out incentive", async function () {
             await contracts.grantElections
               .connect(owner)
-              .fundIncentive(parseEther("2000"));
+              .fundKeeperIncentive(parseEther("2000"));
             ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
             ethers.provider.send("evm_mine", []);
             await contracts.grantElections.refreshElectionState(electionId);
@@ -707,7 +707,7 @@ describe("GrantElections", function () {
             //Enough pop to fund 2 incentives
             await contracts.grantElections
               .connect(owner)
-              .fundIncentive(parseEther("4000"));
+              .fundKeeperIncentive(parseEther("4000"));
             ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
             ethers.provider.send("evm_mine", []);
             await contracts.grantElections.refreshElectionState(electionId);
