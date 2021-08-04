@@ -282,14 +282,17 @@ describe("RewardsEscrow", function () {
       });
       it("reverts when trying to claim to many escrows", async function () {
         await Promise.all(
-          new Array(10).fill(0).map(async (x, i) => await addEscrow())
+          new Array(30).fill(0).map(async (x, i) => await addEscrow())
         );
-        ethers.provider.send("evm_increaseTime", [171 * dayInSec]);
+        ethers.provider.send("evm_increaseTime", [151 * dayInSec]);
         ethers.provider.send("evm_mine", []);
         await expect(
           contracts.rewardsEscrow
             .connect(owner)
-            .claimRewards([0, 1, 2, 3, 4, 5])
+            .claimRewards([
+              0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
+              19, 20,
+            ])
         ).to.be.revertedWith("claiming too many escrows");
       });
       it("claims full rewards successfully after vesting period", async function () {
@@ -390,19 +393,20 @@ describe("RewardsEscrow", function () {
         const currentBlock = await waffle.provider.getBlock("latest");
         const result = await contracts.rewardsEscrow
           .connect(owner)
-          .claimRewards([0,1]);
+          .claimRewards([0, 1]);
 
         const escrow2ExpectedReward = escrow2.balance
           .mul(
-            BigNumber.from(String(currentBlock.timestamp + 1)).sub(escrow2.start)
+            BigNumber.from(String(currentBlock.timestamp + 1)).sub(
+              escrow2.start
+            )
           )
           .div(escrow2.end.sub(escrow2.start));
-        const expectedReward = escrow2ExpectedReward.add(escrow1.balance)
+        const expectedReward = escrow2ExpectedReward.add(escrow1.balance);
 
         expect(result)
           .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
           .withArgs(owner.address, expectedReward);
-
 
         const newBalance = await contracts.mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance.add(expectedReward));

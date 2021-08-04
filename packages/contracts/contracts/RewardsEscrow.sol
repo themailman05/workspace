@@ -112,10 +112,11 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
    * @param indices_ uint256[]
    * @dev Uses the vaultIds at the specified indices of escrowIds.
    * @dev This function is used when a user only wants to claim multiple escrowVaults at once (probably most of the time)
-   * @dev The array of indices is limited to 19 as we want to prevent gas overflow of looping through too many vaults
+   * @dev The array of indices is limited to 20 as we want to prevent gas overflow of looping through too many vaults
+   * TODO the upper bound of indices that can be used should be calculated with a simulation
    */
   function claimRewards(uint256[] calldata indices_) external nonReentrant {
-    require(indices_.length <= 5, "claiming too many escrows");
+    require(indices_.length <= 20, "claiming too many escrows");
     uint256 total;
 
     for (uint256 i = 0; i < indices_.length; i++) {
