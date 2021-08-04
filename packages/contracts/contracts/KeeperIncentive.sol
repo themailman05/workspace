@@ -14,7 +14,7 @@ contract KeeperIncentive is Governed {
     uint256 interval; //time in seconds
     uint256 reward; //pop reward for calling the function
     bool enabled;
-    bool openToEveryone; //can everyone call the function to get the reward or only whitelisted?
+    bool openToEveryone; //can everyone call the function to get the reward or only allowed?
   }
 
   /* ========== STATE VARIABLES ========== */
@@ -22,16 +22,16 @@ contract KeeperIncentive is Governed {
   IERC20 public immutable POP;
   Incentive[] public incentives;
   uint256 public incentiveBudget;
-  mapping(address => bool) public whitelisted;
+  mapping(address => bool) public allowed;
 
   /* ========== EVENTS ========== */
 
   event IncentiveCreated(uint256 incentiveId);
   event IncentiveChanged(uint256 incentiveId);
   event IncentiveFunded(uint256 amount);
-  event Whitelisted(address account);
-  event RemovedWhitelisting(address account);
-  event WhitelistingToggled(uint256 incentiveId, bool openToEveryone);
+  event Allowed(address account);
+  event Blocked(address account);
+  event AllowanceToggled(uint256 incentiveId, bool openToEveryone);
   event IncentiveToggled(uint256 incentiveId, bool enabled);
   event TargetDateChanged(uint256 incentiveId, uint256 targetDate);
 
@@ -90,22 +90,20 @@ contract KeeperIncentive is Governed {
   }
 
   function whitelistAccount(address _account) external onlyGovernance {
-    whitelisted[_account] = true;
-    emit Whitelisted(_account);
+    allowed[_account] = true;
+    emit Allowed(_account);
   }
 
   function removeWhitelisting(address _account) external onlyGovernance {
-    whitelisted[_account] = false;
-    emit RemovedWhitelisting(_account);
+    allowed[_account] = false;
+    emit Blocked(_account);
   }
 
   function toggleWhitelisting(uint256 _incentiveId) external onlyGovernance {
     incentives[_incentiveId].openToEveryone = !incentives[_incentiveId]
-    .openToEveryone;
-    emit WhitelistingToggled(
-      _incentiveId,
-      incentives[_incentiveId].openToEveryone
-    );
+      .openToEveryone;
+    emit AllowanceToggled(incentiveId, openToEveryone);
+    (_incentiveId, incentives[_incentiveId].openToEveryone);
   }
 
   function changeTargetDate(uint256 _incentiveId, uint256 _targetDate)
@@ -142,8 +140,8 @@ contract KeeperIncentive is Governed {
 
       if (!incentive.openToEveryone) {
         require(
-          whitelisted[msg.sender] || msg.sender == governance,
-          "you are not whitelisted"
+          allowed[msg.sender] || msg.sender == governance,
+          "you are not allowed as a keeper"
         );
       }
       uint256 deadline = incentive.targetDate.add(incentive.incentiveWindow);

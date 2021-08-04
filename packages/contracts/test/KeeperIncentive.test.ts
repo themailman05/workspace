@@ -250,10 +250,10 @@ describe("Keeper incentives", function () {
             .connect(owner)
             .whitelistAccount(nonOwner.address)
         )
-          .to.emit(keeperIncentiveHelper, "Whitelisted")
+          .to.emit(keeperIncentiveHelper, "allowed")
           .withArgs(nonOwner.address);
         expect(
-          await keeperIncentiveHelper.whitelisted(nonOwner.address)
+          await keeperIncentiveHelper.allowed(nonOwner.address)
         ).to.equal(true);
       });
       it("should remove whitelisting", async function () {
@@ -268,7 +268,7 @@ describe("Keeper incentives", function () {
           .to.emit(keeperIncentiveHelper, "RemovedWhitelisting")
           .withArgs(nonOwner.address);
         expect(
-          await keeperIncentiveHelper.whitelisted(nonOwner.address)
+          await keeperIncentiveHelper.allowed(nonOwner.address)
         ).to.equal(false);
       });
       it("should toggle whitelisting", async function () {
@@ -343,12 +343,12 @@ describe("Keeper incentives", function () {
       expect(newBalance).to.equal(oldBalance);
     });
     context("whitelisting", function () {
-      it("should not be callable for non whitelisted addresses", async function () {
+      it("should not be callable for non allowed addresses", async function () {
         await expect(
           keeperIncentiveHelper.connect(nonOwner).defaultIncentivisedFunction()
-        ).to.revertedWith("you are not whitelisted");
+        ).to.revertedWith("you are not allowed as a keeper");
       });
-      it("should be callable for non whitelisted addresses if the incentive is open to everyone", async function () {
+      it("should be callable for non allowed addresses if the incentive is open to everyone", async function () {
         await keeperIncentiveHelper.connect(owner).toggleWhitelisting(0);
         await mockPop
           .connect(owner)
