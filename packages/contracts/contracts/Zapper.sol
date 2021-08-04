@@ -73,8 +73,18 @@ contract Zapper {
   CurveAddressProvider public curveAddressProvider;
   CurveRegistry public curveRegistry;
 
-  event ZapIn(address account, uint256 amount);
-  event ZapOut(address account, uint256 amount);
+  event ZapIn(
+    address account,
+    address depositToken,
+    uint256 depositAmount,
+    uint256 shares
+  );
+  event ZapOut(
+    address account,
+    address withdrawalShares,
+    uint256 shares,
+    uint256 withdrawalAmount
+  );
 
   constructor(address curveAddressProvider_) {
     curveAddressProvider = CurveAddressProvider(curveAddressProvider_);
@@ -182,7 +192,7 @@ contract Zapper {
     }
     IERC20(token(popcornPool)).safeIncreaseAllowance(popcornPool, lpTokens);
     uint256 shares = IPool(popcornPool).depositFor(lpTokens, msg.sender);
-    emit ZapIn(msg.sender, amount);
+    emit ZapIn(msg.sender, depositToken, amount, shares);
     return shares;
   }
 
@@ -226,7 +236,7 @@ contract Zapper {
       withdrawal = balanceAfter.sub(balanceBefore);
     }
     IERC20(withdrawalToken).safeTransfer(msg.sender, withdrawal);
-    emit ZapOut(msg.sender, amount);
+    emit ZapOut(msg.sender, withdrawalToken, amount, withdrawal);
     return withdrawal;
   }
 }
