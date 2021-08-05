@@ -48,8 +48,10 @@ const DEFAULT_REGION = "0x5757";
 
 async function deployContracts(): Promise<Contracts> {
   const MockERC20 = await ethers.getContractFactory("MockERC20");
-  const mockPop = await MockERC20.deploy("TestPOP", "TPOP", 18);
-  await mockPop.mint(owner.address, parseEther("50"));
+  const mockPop = await (
+    await MockERC20.deploy("TestPOP", "TPOP", 18)
+  ).deployed();
+  await mockPop.mint(owner.address, parseEther("2050"));
   await mockPop.mint(nonOwner.address, parseEther("50"));
   await mockPop.mint(beneficiary.address, parseEther("50"));
   await mockPop.mint(beneficiary2.address, parseEther("50"));
@@ -78,22 +80,30 @@ async function deployContracts(): Promise<Contracts> {
     BeneficiaryVaults.interface.format() as any
   );
 
-  const BeneficiaryGovernance = await ethers.getContractFactory(
-    "BeneficiaryGovernance"
-  );
-
   const region = await (
     await ethers.getContractFactory("Region")
   ).deploy(mockBeneficiaryVaults.address);
-  await region.deployed()
+  await region.deployed();
 
-  const beneficiaryGovernance = await BeneficiaryGovernance.deploy(
-    mockStaking.address,
-    mockBeneficiaryRegistry.address,
-    mockPop.address,
-    region.address,
-    owner.address
+  const BeneficiaryGovernance = await ethers.getContractFactory(
+    "BeneficiaryGovernance"
   );
+  const beneficiaryGovernance = await (
+    await BeneficiaryGovernance.deploy(
+      mockStaking.address,
+      mockBeneficiaryRegistry.address,
+      mockPop.address,
+      region.address,
+      owner.address
+    )
+  ).deployed();
+
+  await mockPop
+    .connect(owner)
+    .approve(beneficiaryGovernance.address, parseEther("100000"));
+  await beneficiaryGovernance
+    .connect(owner)
+    .contributeReward(parseEther("2000"));
 
   return {
     mockPop,
@@ -155,7 +165,9 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockPop
         .connect(proposer2)
         .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
-      await contracts.beneficiaryGovernance
+      const currentBlock = await waffle.provider.getBlock("latest");
+
+      const result = await contracts.beneficiaryGovernance
         .connect(proposer2)
         .createProposal(
           beneficiary.address,
@@ -163,19 +175,36 @@ describe("BeneficiaryGovernance", function () {
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BNP
         );
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+
+      expect(result)
+        .to.emit(contracts.beneficiaryGovernance, "ProposalCreated")
+        .withArgs(
+          PROPOSALID,
+          proposer2.address,
+          beneficiary.address,
+          ethers.utils.formatBytes32String("testCid")
+        );
+      expect(result)
+        .to.emit(contracts.beneficiaryGovernance, "VaultInitialized")
+        .withArgs(
+          ethers.utils.solidityKeccak256(
+            ["uint256", "uint256"],
+            [0, currentBlock.timestamp + 1]
+          )
+        );
+
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
-      expect(proposal.beneficiary_).to.equal(beneficiary.address);
-      expect(proposal.applicationCid_).to.equal(
+      expect(proposal.beneficiary).to.equal(beneficiary.address);
+      expect(proposal.applicationCid).to.equal(
         ethers.utils.formatBytes32String("testCid")
       );
-      expect(proposal.proposer_).to.equal(proposer2.address);
-      expect(proposal.proposalType_).to.equal(ProposalType.BNP);
-      expect(proposal.voterCount_).to.equal(0);
-      expect(proposal.status_).to.equal(ProposalStatus.New);
+      expect(proposal.proposer).to.equal(proposer2.address);
+      expect(proposal.proposalType).to.equal(ProposalType.BNP);
+      expect(proposal.voterCount).to.equal(0);
+      expect(proposal.status).to.equal(ProposalStatus.New);
       expect(
         await contracts.beneficiaryGovernance.getNumberOfProposals(
           ProposalType.BNP
@@ -201,6 +230,10 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockPop
         .connect(proposer3)
         .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        false
+      );
+
       await expect(
         contracts.beneficiaryGovernance
           .connect(proposer3)
@@ -247,6 +280,55 @@ describe("BeneficiaryGovernance", function () {
           )
       ).to.be.revertedWith(
         "Beneficiary proposal is pending or already exists!"
+      );
+    });
+    it("should prevent to create a BNP proposal for an address which has been registered before", async function () {
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        true
+      );
+      await contracts.mockPop.mint(proposer3.address, parseEther("3000"));
+      await contracts.mockPop
+        .connect(proposer3)
+        .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
+      await expect(
+        contracts.beneficiaryGovernance
+          .connect(proposer3)
+          .createProposal(
+            beneficiary2.address,
+            DEFAULT_REGION,
+            ethers.utils.formatBytes32String("testCid"),
+            ProposalType.BNP
+          )
+      ).to.be.revertedWith(
+        "Beneficiary proposal is pending or already exists!"
+      );
+    });
+    it("should not initialize a vault when the needed budget is larger than rewardBudget", async function () {
+      await contracts.beneficiaryGovernance
+        .connect(owner)
+        .setRewardsBudget(parseEther("3000"));
+      await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
+        false
+      );
+      await contracts.mockPop.mint(proposer3.address, parseEther("3000"));
+      await contracts.mockPop
+        .connect(proposer3)
+        .approve(contracts.beneficiaryGovernance.address, parseEther("3000"));
+      const result = await contracts.beneficiaryGovernance
+        .connect(proposer3)
+        .createProposal(
+          beneficiary2.address,
+          DEFAULT_REGION,
+          ethers.utils.formatBytes32String("testCid"),
+          ProposalType.BNP
+        );
+      expect(result).to.emit(
+        contracts.beneficiaryGovernance,
+        "ProposalCreated"
+      );
+      expect(result).to.not.emit(
+        contracts.beneficiaryGovernance,
+        "VaultInitialized"
       );
     });
   });
@@ -319,9 +401,10 @@ describe("BeneficiaryGovernance", function () {
       await expect(
         contracts.beneficiaryGovernance
           .connect(voter1)
-          .vote(PROPOSALID, ProposalType.BNP, Vote.Yes)
+          .vote(PROPOSALID, Vote.Yes)
       ).to.be.revertedWith("must have voice credits from staking");
     });
+
     it("should vote yes to a newly created proposal", async function () {
       const voiceCredits = 100;
       await contracts.mockPop.mint(voter1.address, parseEther("50"));
@@ -329,19 +412,17 @@ describe("BeneficiaryGovernance", function () {
 
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+        .vote(PROPOSALID, Vote.Yes);
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
-      expect(proposal.noCount_).to.equal(0);
-      expect(proposal.voterCount_).to.equal(1);
-      expect(proposal.yesCount_).to.equal(voiceCredits);
+      expect(proposal.noCount).to.equal(0);
+      expect(proposal.voterCount).to.equal(1);
+      expect(proposal.yesCount).to.equal(voiceCredits);
       expect(
         await contracts.beneficiaryGovernance.hasVoted(
           PROPOSALID,
-          ProposalType.BNP,
           voter1.address
         )
       ).to.equal(true);
@@ -350,11 +431,11 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(50);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await expect(
         contracts.beneficiaryGovernance
           .connect(voter1)
-          .vote(PROPOSALID, ProposalType.BNP, Vote.Yes)
+          .vote(PROPOSALID, Vote.Yes)
       ).to.be.revertedWith("address already voted for the proposal");
     });
     it("should prevent to vote yes during veto period", async function () {
@@ -364,7 +445,7 @@ describe("BeneficiaryGovernance", function () {
       await expect(
         contracts.beneficiaryGovernance
           .connect(voter1)
-          .vote(PROPOSALID, ProposalType.BNP, Vote.Yes)
+          .vote(PROPOSALID, Vote.Yes)
       ).to.be.revertedWith("Initial voting period has already finished!");
     });
     it("should prevent to vote after the end of the total voting period", async function () {
@@ -373,7 +454,7 @@ describe("BeneficiaryGovernance", function () {
       await expect(
         contracts.beneficiaryGovernance
           .connect(voter1)
-          .vote(PROPOSALID, ProposalType.BNP, Vote.No)
+          .vote(PROPOSALID, Vote.No)
       ).to.be.revertedWith("Proposal is no longer in voting period");
     });
     it("should update proposal correctly", async function () {
@@ -381,56 +462,55 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
 
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
 
       //three no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(50);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(60);
       await contracts.beneficiaryGovernance
         .connect(voter5)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
 
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
       const noCount = 40 + 50 + 60;
       const yesCount = 20 + 30;
       const voterCount = 5;
-      expect(proposal.noCount_).to.equal(noCount);
-      expect(proposal.voterCount_).to.equal(voterCount);
-      expect(proposal.yesCount_).to.equal(yesCount);
+      expect(proposal.noCount).to.equal(noCount);
+      expect(proposal.voterCount).to.equal(voterCount);
+      expect(proposal.yesCount).to.equal(yesCount);
     });
     it("should finalize voting if at the end of the voting perid novotes be more than yesvotes", async function () {
       //one yes vote
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
 
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(50);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
 
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
@@ -438,32 +518,31 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(60);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .finalize(PROPOSALID, ProposalType.BNP);
+        .finalize(PROPOSALID);
 
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
 
-      expect(proposal.status_).to.equal(ProposalStatus.Failed);
+      expect(proposal.status).to.equal(ProposalStatus.Failed);
     });
     it("should prevent voting if the voting is finalized", async function () {
       //one yes vote
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
 
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(50);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
 
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
@@ -472,7 +551,7 @@ describe("BeneficiaryGovernance", function () {
       await expect(
         contracts.beneficiaryGovernance
           .connect(voter5)
-          .vote(PROPOSALID, ProposalType.BNP, Vote.No)
+          .vote(PROPOSALID, Vote.No)
       ).to.be.revertedWith("Proposal is no longer in voting period");
     });
     it("should countinue voting if at the end of the initial voting yesvotes are more than novotes", async function () {
@@ -480,34 +559,33 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter5)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
 
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
-      expect(proposal.status_).to.equal(ProposalStatus.ChallengePeriod);
-      expect(proposal.voterCount_).to.equal(5);
+      expect(proposal.status).to.equal(ProposalStatus.ChallengePeriod);
+      expect(proposal.voterCount).to.equal(5);
     });
   });
   describe("finalize", function () {
@@ -565,51 +643,44 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(10);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
 
-      await contracts.beneficiaryGovernance
-        .connect(owner)
-        .finalize(PROPOSALID, ProposalType.BNP);
+      await contracts.beneficiaryGovernance.connect(owner).finalize(PROPOSALID);
       //get proposal info
-      const proposal = await contracts.beneficiaryGovernance.getProposal(
-        PROPOSALID,
-        ProposalType.BNP
+      const proposal = await contracts.beneficiaryGovernance.proposals(
+        PROPOSALID
       );
-      expect(proposal.status_).to.equal(ProposalStatus.Failed);
+      expect(proposal.status).to.equal(ProposalStatus.Failed);
     });
     it("should prevent finalizing  a finalized voting", async function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(10);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
 
-      await contracts.beneficiaryGovernance
-        .connect(owner)
-        .finalize(PROPOSALID, ProposalType.BNP);
+      await contracts.beneficiaryGovernance.connect(owner).finalize(PROPOSALID);
       await expect(
-        contracts.beneficiaryGovernance
-          .connect(owner)
-          .finalize(PROPOSALID, ProposalType.BNP)
+        contracts.beneficiaryGovernance.connect(owner).finalize(PROPOSALID)
       ).to.be.revertedWith("Finalization not allowed");
     });
 
@@ -618,31 +689,29 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter5)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
 
       await expect(
-        contracts.beneficiaryGovernance
-          .connect(owner)
-          .finalize(PROPOSALID, ProposalType.BNP)
+        contracts.beneficiaryGovernance.connect(owner).finalize(PROPOSALID)
       ).to.be.revertedWith("Finalization not allowed");
     });
     it("should prevent finalizing  before the initial voting is over yet and novotes is more than novotes", async function () {
@@ -650,20 +719,18 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
 
       await expect(
-        contracts.beneficiaryGovernance
-          .connect(owner)
-          .finalize(PROPOSALID, ProposalType.BNP)
+        contracts.beneficiaryGovernance.connect(owner).finalize(PROPOSALID)
       ).to.be.revertedWith("Finalization not allowed");
     });
     it("should register the beneficiary after a successful BNP voting", async function () {
@@ -675,33 +742,33 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter5)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
 
       //finalize
       await contracts.beneficiaryGovernance
         .connect(governance)
-        .finalize(PROPOSALID, ProposalType.BNP);
+        .finalize(PROPOSALID);
 
       expect(
         await contracts.beneficiaryRegistry.beneficiaryExists(
@@ -718,28 +785,29 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(80);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
 
       //finalize
       await contracts.beneficiaryGovernance
         .connect(governance)
-        .finalize(PROPOSALID, ProposalType.BNP);
+        .finalize(PROPOSALID);
 
       //await contracts.beneficiaryRegistryContract.approveOwner(contracts.beneficiaryGovernance.address);
 
+      const takedownProposal = 1;
       //create takedown proposal
       await contracts.mockPop
         .connect(proposer2)
@@ -757,33 +825,33 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BTP, Vote.Yes);
+        .vote(takedownProposal, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BTP, Vote.Yes);
+        .vote(takedownProposal, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BTP, Vote.Yes);
+        .vote(takedownProposal, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .vote(PROPOSALID, ProposalType.BTP, Vote.No);
+        .vote(takedownProposal, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter5)
-        .vote(PROPOSALID, ProposalType.BTP, Vote.No);
+        .vote(takedownProposal, Vote.No);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
 
       //finalize
       await contracts.beneficiaryGovernance
         .connect(governance)
-        .finalize(PROPOSALID, ProposalType.BTP);
+        .finalize(takedownProposal);
 
       expect(
         await contracts.beneficiaryRegistry.beneficiaryExists(
@@ -846,9 +914,7 @@ describe("BeneficiaryGovernance", function () {
     });
     it("should prevent claiming bond whith address other than the proposer address", async function () {
       await expect(
-        contracts.beneficiaryGovernance
-          .connect(owner)
-          .claimBond(PROPOSALID, ProposalType.BNP)
+        contracts.beneficiaryGovernance.connect(owner).claimBond(PROPOSALID)
       ).to.be.revertedWith("only the proposer may call this function");
     });
     it("should prevent claiming bond for a proposal which has not passed.", async function () {
@@ -856,17 +922,17 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, ProposalType.BNP);
 
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(50);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
 
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
@@ -874,12 +940,10 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(60);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .finalize(PROPOSALID, ProposalType.BNP);
+        .finalize(PROPOSALID);
 
       await expect(
-        contracts.beneficiaryGovernance
-          .connect(proposer1)
-          .claimBond(PROPOSALID, ProposalType.BNP)
+        contracts.beneficiaryGovernance.connect(proposer1).claimBond(PROPOSALID)
       ).to.be.revertedWith("Proposal failed or is processing!");
     });
     it("should be able to claim bond after a proposal passed.", async function () {
@@ -891,33 +955,33 @@ describe("BeneficiaryGovernance", function () {
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter1)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter2)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       await contracts.mockStaking.mock.getVoiceCredits.returns(40);
       await contracts.beneficiaryGovernance
         .connect(voter3)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.Yes);
+        .vote(PROPOSALID, Vote.Yes);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
       //two no votes
       await contracts.mockStaking.mock.getVoiceCredits.returns(30);
       await contracts.beneficiaryGovernance
         .connect(voter4)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       await contracts.mockStaking.mock.getVoiceCredits.returns(20);
       await contracts.beneficiaryGovernance
         .connect(voter5)
-        .vote(PROPOSALID, ProposalType.BNP, Vote.No);
+        .vote(PROPOSALID, Vote.No);
       ethers.provider.send("evm_increaseTime", [2 * ONE_DAY]);
       ethers.provider.send("evm_mine", []);
 
       //finalize
       await contracts.beneficiaryGovernance
         .connect(governance)
-        .finalize(PROPOSALID, ProposalType.BNP);
+        .finalize(PROPOSALID);
 
       //claim bond
       const amount = parseEther("2000");
@@ -925,7 +989,7 @@ describe("BeneficiaryGovernance", function () {
       expect(
         await contracts.beneficiaryGovernance
           .connect(proposer1)
-          .claimBond(PROPOSALID, ProposalType.BNP)
+          .claimBond(PROPOSALID)
       )
         .to.emit(contracts.beneficiaryGovernance, "BondWithdrawn")
         .withArgs(proposer1.address, amount);

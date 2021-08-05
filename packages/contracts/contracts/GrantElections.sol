@@ -9,8 +9,9 @@ import "./IRandomNumberConsumer.sol";
 import "./IBeneficiaryVaults.sol";
 import "./Governed.sol";
 import "./IRegion.sol";
+import "./ParticipationReward.sol";
 
-contract GrantElections is Governed {
+contract GrantElections is ParticipationReward {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
@@ -31,6 +32,7 @@ contract GrantElections is Governed {
     uint256 startTime;
     uint256 randomNumber;
     bytes32 merkleRoot;
+    bytes32 vaultId;
     bytes2 region;
   }
 
@@ -72,7 +74,6 @@ contract GrantElections is Governed {
 
   /* ========== STATE VARIABLES ========== */
 
-  IERC20 internal immutable POP;
   IRegion internal region;
   IStaking internal staking;
   IBeneficiaryRegistry internal beneficiaryRegistry;
@@ -104,12 +105,11 @@ contract GrantElections is Governed {
     IERC20 _pop,
     IRegion _region,
     address _governance
-  ) Governed(_governance) {
+  ) ParticipationReward(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
     randomNumberConsumer = _randomNumberConsumer;
     region = _region;
-    POP = _pop;
     _setDefaults();
   }
 
@@ -189,8 +189,7 @@ contract GrantElections is Governed {
   // todo: mint POP for caller to incentivize calling function
   // todo: use bonds to incentivize callers instead of minting
   function initialize(ElectionTerm _grantTerm, bytes2 _region) public {
-    //require(region.regionExists(_region), "region doesnt exist");
-
+    require(region.regionExists(_region), "region doesnt exist");
     uint8 _term = uint8(_grantTerm);
     if (elections.length != 0) {
       Election storage latestElection = elections[
@@ -222,12 +221,20 @@ contract GrantElections is Governed {
 
     elections.push();
     Election storage election = elections[electionId];
-
     election.electionConfiguration = electionDefaults[_term];
     election.electionState = ElectionState.Registration;
     election.electionTerm = _grantTerm;
     election.startTime = block.timestamp;
     election.region = _region;
+    (bool vaultCreated, bytes32 vaultId) = _initializeVault(
+      keccak256(abi.encodePacked(_term, block.timestamp)),
+      block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
+        electionDefaults[_term].votingPeriod
+      )
+    );
+    if (vaultCreated) {
+      election.vaultId = vaultId;
+    }
 
     emit ElectionInitialized(
       election.electionTerm,
@@ -275,9 +282,9 @@ contract GrantElections is Governed {
     if (
       block.timestamp >=
       election
-      .startTime
-      .add(election.electionConfiguration.registrationPeriod)
-      .add(election.electionConfiguration.votingPeriod)
+        .startTime
+        .add(election.electionConfiguration.registrationPeriod)
+        .add(election.electionConfiguration.votingPeriod)
     ) {
       election.electionState = ElectionState.Closed;
       if (election.electionConfiguration.useChainLinkVRF) {
@@ -346,10 +353,13 @@ contract GrantElections is Governed {
       _usedVoiceCredits <= _stakedVoiceCredits,
       "Insufficient voice credits"
     );
+    if (election.vaultId != "") {
+      _addShares(election.vaultId, msg.sender, _usedVoiceCredits);
+    }
     emit UserVoted(msg.sender, election.electionTerm);
   }
 
-  function fundIncentive(uint256 _amount) public {
+  function fundKeeperIncentive(uint256 _amount) public {
     require(POP.balanceOf(msg.sender) >= _amount, "not enough pop");
     POP.safeTransferFrom(msg.sender, address(this), _amount);
     incentiveBudget = incentiveBudget.add(_amount);
@@ -391,8 +401,7 @@ contract GrantElections is Governed {
 
     uint256 finalizationIncentive = electionDefaults[
       uint8(_election.electionTerm)
-    ]
-    .finalizationIncentive;
+    ].finalizationIncentive;
 
     if (
       incentiveBudget >= finalizationIncentive &&
@@ -429,6 +438,7 @@ contract GrantElections is Governed {
       uint8(election.electionTerm),
       _merkleRoot
     );
+    _openVault(election.vaultId);
     election.electionState = ElectionState.Finalized;
 
     emit ElectionFinalized(_electionId, _merkleRoot);
@@ -439,8 +449,8 @@ contract GrantElections is Governed {
     onlyGovernance
   {
     electionDefaults[uint8(_term)]
-    .bondRequirements
-    .required = !electionDefaults[uint8(_term)].bondRequirements.required;
+      .bondRequirements
+      .required = !electionDefaults[uint8(_term)].bondRequirements.required;
   }
 
   function _collectRegistrationBond(Election storage _election) internal {
