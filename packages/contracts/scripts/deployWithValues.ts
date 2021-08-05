@@ -11,6 +11,28 @@ const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
 
 // This script creates two beneficiaries and one quarterly grant that they are both eligible for. Run this
 // Run this instead of the normal deploy.js script
+const beneficiaryApplicationCids = [
+  "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6",
+  "Qmexe7BcyAvH5VwScqV6eruCU18G72rXAtNeq8hhMUTMJD",
+  "QmU2r3RodJ8DuiDvJAFxoXnqTeX2NJ5Ni5yU7reneYE8sE",
+  "QmUw919qE8y4hGH34XLPPScjmWSb4oAJd4VvvKh61HFxEr",
+  "QmPVt64krTxNqqdbZfhGgTMj72sHSfTY7Au1J7Qoqh9Hfz",
+  "QmPCrpLSwFJJw1YEaEpntd7ANufFKXRKdfX7Y66ik212ZU",
+  "QmWUDpdehrQazpVDLeLHkAHfNhFQiFXpvsMfN3hA93JhWV",
+  "QmdRE2228xTQ3WhcsxKFJr8AVRea5fVMxnES7srgFSe6rL",
+  "QmQVPiwbRES34kcgPc73DzkEjH6Vpbd5ZSmJ5jNUkgTW3f",
+  "QmRdGW8AsMNLZ21xpyqE9gmfH5KEc3y6jWD9XCbCY2rt7h",
+  "QmS7hWFX9vWxZxmjBjqZePkyUDfWFLNyLwBk1FrvdbgKye",
+  "QmXjgrr476d97EcBtgJZY9ZMkdJGHdh3ZoNDvG9Y925Sku",
+  "QmTkBonnx625VpdEwVBpusSYoGbWzWxSCPWDToRrk96K5",
+  "QmfR7pTMTkR5UMTmcxrU2LYu7bXLy252tFiXQb1q23rm7M",
+  "QmQ8WsW1u4tNWwp9b5GuQVpa2h7AEt271sAfGeXmSYSdoQ",
+  "QmSAjfr2vGNA6ndNdov9oxKZkZjrpzySjgCet7NkSHQFWn",
+  "QmeY6kurdvfgiBKRT7R4WSZigftctLfaaRzFkJ13os1vQ4",
+  "QmUz8hMjveD8u71aftChmYBupeTK8VyGyxZ9E6NEULiVUb",
+  "QmR8MLaN6WjqXWTaERbBrreQneQKHpsZnV4vwjQ386v1FQ",
+  "Qmdz9dhwW318kY2BJVqa2oZzP3nECqyZGM7LsfURBpV7B5",
+];
 
 interface Contracts {
   beneficiaryRegistry: Contract;
@@ -184,9 +206,8 @@ export default async function deploy(ethers): Promise<void> {
 
   const giveBeneficiariesETH = async (): Promise<void> => {
     console.log("giving ETH to beneficiaries ...");
-    await bluebird.map(
-      bennies,
-      async (beneficiary: SignerWithAddress) => {
+    await Promise.all(
+      bennies.map(async (beneficiary: SignerWithAddress) => {
         const balance = await ethers.provider.getBalance(beneficiary.address);
         if (balance.lt(parseEther(".01"))) {
           return accounts[0].sendTransaction({
@@ -194,8 +215,7 @@ export default async function deploy(ethers): Promise<void> {
             value: utils.parseEther(".02"),
           });
         }
-      },
-      { concurrency: 1 }
+      })
     );
   };
 
@@ -209,7 +229,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
+              "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
             0,
             { gasLimit: 3000000 }
@@ -231,7 +251,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
+              "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
             0,
             { gasLimit: 3000000 }
@@ -256,7 +276,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
+              "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
             0,
             { gasLimit: 3000000 }
@@ -283,7 +303,7 @@ export default async function deploy(ethers): Promise<void> {
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(
-              "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
+              "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
             1,
             { gasLimit: 3000000 }
@@ -331,7 +351,7 @@ export default async function deploy(ethers): Promise<void> {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
           getBytes32FromIpfsHash(
-            "QmVwWKBqPcfBmpj5fhq24H2zysPotJdi4k8zPcbhVz4uDy"
+            "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
           ),
           { gasLimit: 3000000 }
         );
@@ -605,7 +625,6 @@ export default async function deploy(ethers): Promise<void> {
     await registerBeneficiariesForElection(GrantTerm.Year, bennies.slice(18));
     await displayElectionMetadata(GrantTerm.Year);
   };
-
 
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");

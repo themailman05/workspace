@@ -29,7 +29,7 @@ const Preview: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
   const { library, account, activate, active } = context;
   const router = useRouter();
   const [formData, setFormData] = form;
-  const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  const { currentStep, setCurrentStep } = navigation;
   const [proposalBond, setProposalBond] = useState<BigNumber>();
 
   useEffect(() => {
@@ -141,7 +141,6 @@ const Preview: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
 
   function clearLocalStorage() {
     setCurrentStep(1);
-    setStepLimit(1);
     setFormData(defaultFormData);
   }
 

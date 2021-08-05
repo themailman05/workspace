@@ -25,6 +25,9 @@ module.exports = {
     PINATA_API_SECRET: process.env.PINATA_API_SECRET,
     PINATA_API_KEY: process.env.PINATA_API_KEY,
     IPFS_URL: process.env.IPFS_URL,
+    IPFS_GATEWAY_RETRIEVE: process.env.IPFS_GATEWAY_RETRIEVE,
+    IPFS_GATEWAY_PIN_JSON: process.env.IPFS_GATEWAY_PIN_JSON,
+    IPFS_GATEWAY_PIN: process.env.IPFS_GATEWAY_PIN,
   },
   poweredByHeader: false,
   webpack: (config, options) => {

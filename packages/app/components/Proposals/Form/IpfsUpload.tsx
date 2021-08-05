@@ -107,7 +107,7 @@ const showUploadBox = (
   localState: string | string[],
 ): boolean => {
   if (typeof localState === 'string') return localState === '';
-  return localState.length < numMaxFiles;
+  return localState.length < numMaxFiles || numMaxFiles === 0;
 };
 
 const Spinner = () => {
@@ -143,7 +143,7 @@ const IpfsUpload: React.FC<IpfsProps> = ({
     isDragReject,
   } = useDropzone({
     accept: fileType,
-    multiple: numMaxFiles > 1,
+    multiple: numMaxFiles !== 1,
     maxFiles: numMaxFiles,
     validator: (file: File) => {
       return maxFileSizeMB ? isValidFileSize(file, maxFileSizeMB) : null;

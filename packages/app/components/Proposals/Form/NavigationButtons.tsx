@@ -7,7 +7,7 @@ interface NavigationButtonProps {
 }
 
 const NavigationButtons: React.FC<NavigationButtonProps> = ({ navigation }) => {
-  const { currentStep, setCurrentStep, stepLimit, numSteps } = navigation;
+  const { currentStep, setCurrentStep, numSteps } = navigation;
   const progressPercentage =
     currentStep === 0 ? 0 : Math.round((100 * currentStep - 1) / numSteps);
 
