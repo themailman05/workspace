@@ -1,6 +1,6 @@
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 import CardBody from 'components/CommonComponents/CardBody';
 import Link from 'next/link';
-import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 
 interface BeneficiaryCardProps {
   beneficiary: BeneficiaryApplication;
@@ -9,14 +9,14 @@ interface BeneficiaryCardProps {
 const BeneficiaryCard: React.FC<BeneficiaryCardProps> = ({ beneficiary }) => {
   return (
     <div
-      key={beneficiary.beneficiaryAddress}
+      key={beneficiary?.beneficiaryAddress}
       className="flex flex-col rounded-lg shadow-lg overflow-hidden bg-white"
     >
-      <Link href={`/beneficiaries/${beneficiary.beneficiaryAddress}`} passHref>
+      <Link href={`/beneficiaries/${beneficiary?.beneficiaryAddress}`} passHref>
         <a>
           <CardBody
-            imgUrl={`${process.env.IPFS_URL}${beneficiary?.files.profileImage?.image}`}
-            name={beneficiary.organizationName}
+            image={beneficiary?.files.profileImage}
+            name={beneficiary?.organizationName}
             missionStatement={beneficiary?.missionStatement}
           />
         </a>
