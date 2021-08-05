@@ -1,7 +1,10 @@
 import { Web3Provider } from '@ethersproject/providers';
-import { IpfsClient } from '@popcorn/utils';
-import { formatAndRoundBigNumber } from '@popcorn/utils';
-import { getBytes32FromIpfsHash } from '@popcorn/utils';
+import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
+import {
+  formatAndRoundBigNumber,
+  getBytes32FromIpfsHash,
+  IpfsClient,
+} from '@popcorn/utils';
 import { useWeb3React } from '@web3-react/core';
 import BeneficiaryPage from 'components/Beneficiaries/BeneficiaryPage';
 import { setSingleActionModal } from 'context/actions';
@@ -13,7 +16,6 @@ import { useRouter } from 'next/router';
 import { defaultFormData, FormStepProps } from 'pages/proposals/propose';
 import { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { BeneficiaryApplication } from '@popcorn/contracts/adapters';
 
 const success = () => toast.success('Successful upload to IPFS');
 const loading = () => toast.loading('Uploading to IPFS...');
@@ -113,10 +115,12 @@ const Preview: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
             .connect(library.getSigner())
             .approve(contracts.beneficiaryGovernance.address, proposalBond)
         ).wait();
+        //TODO swap out default region with dynamic logic for the region
         await contracts.beneficiaryGovernance
           .connect(library.getSigner())
           .createProposal(
             submissionData.beneficiaryAddress,
+            '0x5757',
             getBytes32FromIpfsHash(cid),
             0,
           );
