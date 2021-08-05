@@ -20,7 +20,7 @@ const CardBody: React.FC<CardBodyProps> = ({
         <img
           className="h-48 w-full object-cover"
           src={`${process.env.IPFS_URL}${image?.image}`}
-          alt={image?.description}
+          alt={image?.description ? image.description : `Picture of ${name}`}
         />
       </div>
       <div className="flex-1 bg-white p-6 flex flex-col justify-between">
