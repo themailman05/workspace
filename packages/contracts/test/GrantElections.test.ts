@@ -78,6 +78,12 @@ async function deployContracts(): Promise<Contracts> {
     beneficiaryRegistryFactory.interface.format() as any[]
   );
 
+  const beneficiaryVaults = await (
+    await (
+      await ethers.getContractFactory("BeneficiaryVaults")
+    ).deploy(mockPop.address, mockBeneficiaryRegistry.address)
+  ).deployed();
+
   const randomNumberHelper = await (
     await (
       await ethers.getContractFactory("RandomNumberHelper")
@@ -623,12 +629,12 @@ describe("GrantElections", function () {
       );
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
-      ).getElectionMetadata(electionId);
-      expect(metadata["votes"][0]["voter"]).to.equal(owner.address);
-      expect(metadata["votes"][0]["beneficiary"]).to.equal(beneficiary.address);
-      expect(metadata["votes"][0]["weight"]).to.equal(
-        BigNumber.from(Math.round(Math.sqrt(5)))
-      );
+      ).getElectionMetadata(GRANT_TERM.MONTH);
+      expect(metadata["votes"][0]).to.deep.eq({
+        voter: owner.address,
+        beneficiary: beneficiary.address,
+        weight: BigNumber.from(Math.round(Math.sqrt(5))),
+      });
     });
 
     it("should not allow to vote twice for same address and grant term", async function () {

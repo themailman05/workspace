@@ -19,24 +19,54 @@ contract BeneficiaryRegistry is
     uint256 listPointer;
   }
 
+  /* ========== STATE VARIABLES ========== */
+
+  mapping(address => Beneficiary) private beneficiariesMap;
+  address[] private beneficiariesList;
+
+  /* ========== EVENTS ========== */
+
   event BeneficiaryAdded(
     address indexed _address,
     bytes indexed _applicationCid
   );
   event BeneficiaryRevoked(address indexed _address);
 
-  mapping(address => Beneficiary) private beneficiariesMap;
-  address[] private beneficiariesList;
-
-  modifier validAddress(address _address) {
-    require(_address == address(_address), "invalid address");
-    _;
-  }
+  /* ========== CONSTRUCTOR ========== */
 
   constructor(IRegion _region)
     Ownable()
     CouncilControlled(msg.sender, _region)
   {}
+
+  /* ========== VIEW FUNCTIONS ========== */
+
+  /**
+   * @notice check if beneficiary exists in the registry
+   */
+  function beneficiaryExists(address _address)
+    public
+    view
+    override
+    returns (bool)
+  {
+    if (beneficiariesList.length == 0) return false;
+    return
+      beneficiariesList[beneficiariesMap[_address].listPointer] == _address;
+  }
+
+  /**
+   * @notice get beneficiary's application cid from registry. this cid is the address to the beneficiary application that is included in the beneficiary nomination proposal.
+   */
+  function getBeneficiary(address _address) public view returns (bytes memory) {
+    return beneficiariesMap[_address].applicationCid;
+  }
+
+  function getBeneficiaryList() public view returns (address[] memory) {
+    return beneficiariesList;
+  }
+
+  /* ========== MUTATIVE FUNCTIONS ========== */
 
   /**
    * @notice add a beneficiary with their IPFS cid to the registry
@@ -76,28 +106,17 @@ contract BeneficiaryRegistry is
     emit BeneficiaryRevoked(_address);
   }
 
-  /**
-   * @notice check if beneficiary exists in the registry
-   */
-  function beneficiaryExists(address _address)
-    public
-    view
-    override
-    returns (bool)
-  {
-    if (beneficiariesList.length == 0) return false;
-    return
-      beneficiariesList[beneficiariesMap[_address].listPointer] == _address;
-  }
+  /* ========== MODIFIER ========== */
 
-  /**
-   * @notice get beneficiary's application cid from registry. this cid is the address to the beneficiary application that is included in the beneficiary nomination proposal.
-   */
-  function getBeneficiary(address _address) public view returns (bytes memory) {
-    return beneficiariesMap[_address].applicationCid;
+  modifier validAddress(address _address) {
+    require(_address == address(_address), "invalid address");
+    _;
   }
-
-  function getBeneficiaryList() public view returns (address[] memory) {
-    return beneficiariesList;
+  modifier onlyOwnerOrCouncil(address _address) {
+    require(
+      msg.sender == owner() || msg.sender == council,
+      "Only the owner or council may perform this action"
+    );
+    _;
   }
 }
