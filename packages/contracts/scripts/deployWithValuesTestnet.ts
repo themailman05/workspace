@@ -56,15 +56,14 @@ export default async function deployTestnet(ethers): Promise<void> {
     ).deploy(beneficiaryRegistry.address);
     await grantRegistry.deployTransaction.wait(2);
 
-    const mockPop = await (await ethers.getContractFactory("MockERC20")).deploy(
-      "TestPOP",
-      "TPOP"
-    );
+    const mockPop = await (
+      await ethers.getContractFactory("MockERC20")
+    ).deploy("TestPOP", "TPOP");
     await mockPop.deployTransaction.wait(2);
 
-    const staking = await (await ethers.getContractFactory("Staking")).deploy(
-      mockPop.address
-    );
+    const staking = await (
+      await ethers.getContractFactory("Staking")
+    ).deploy(mockPop.address);
     await staking.deployTransaction.wait(2);
 
     const randomNumberConsumer = await (
@@ -504,12 +503,11 @@ export default async function deployTestnet(ethers): Promise<void> {
     await displayElectionMetadata(GrantTerm.Year);
   };
 
-  const setElectionContractAsGovernanceForGrantRegistry = async (): Promise<
-    void
-  > => {
-    await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
-    await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
-  };
+  const setElectionContractAsGovernanceForGrantRegistry =
+    async (): Promise<void> => {
+      await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
+      await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
+    };
 
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");
@@ -529,7 +527,6 @@ export default async function deployTestnet(ethers): Promise<void> {
       eligibleButNotRegistered: bennies.slice(18, 20).map((bn) => bn.address),
       contracts: {
         beneficiaryRegistry: contracts.beneficiaryRegistry.address,
-        grantRegistry: contracts.grantRegistry.address,
         mockPop: contracts.mockPop.address,
         staking: contracts.staking.address,
         randomNumberConsumer: contracts.randomNumberConsumer.address,
@@ -540,7 +537,6 @@ export default async function deployTestnet(ethers): Promise<void> {
 Paste this into your .env file:
 
 ADDR_TESTNET_BENEFICIARY_REGISTRY=${contracts.beneficiaryRegistry.address}
-ADDR_TESTNET_GRANT_REGISTRY=${contracts.grantRegistry.address}
 ADDR_TESTNET_POP=${contracts.mockPop.address}
 ADDR_TESTNET_STAKING=${contracts.staking.address}
 ADDR_TESTNET_RANDOM_NUMBER=${contracts.randomNumberConsumer.address}
@@ -563,6 +559,5 @@ ADDR_TESTNET_GRANT_ELECTION=${contracts.grantElections.address}
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
-  await setElectionContractAsGovernanceForGrantRegistry();
   await logResults();
 }

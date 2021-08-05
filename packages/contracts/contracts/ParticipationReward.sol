@@ -50,6 +50,18 @@ contract ParticipationReward is Governed, ReentrancyGuard {
 
   /* ========== VIEWS ========== */
 
+  function isClaimable(bytes32 vaultId_, address beneficiary_)
+    public
+    view
+    vaultExists(vaultId_)
+    returns (bool)
+  {
+    return
+      vaults[vaultId_].status == VaultStatus.Open &&
+      vaults[vaultId_].shareBalances[beneficiary_] > 0 &&
+      vaults[vaultId_].claimed[beneficiary_] == false;
+  }
+
   /**
    * @notice Checks if a beneficiary has a claim in the specified vault
    * @param vaultId_ Bytes32

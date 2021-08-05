@@ -2,6 +2,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { parseEther } from "ethers/lib/utils";
 import { ethers } from "hardhat";
+import ParticipationRewardsAdapter from "../../utils/src/Contracts/ParticipationReward/ParticipationRewardsAdapter";
 import { MockERC20, ParticipationRewardHelper } from "../typechain";
 
 interface Contracts {
@@ -32,9 +33,13 @@ async function initVaultAndAddShares(index: number): Promise<string> {
   return id;
 }
 
-async function openVaultAndClaim(id: string, index: number): Promise<void> {
+async function openVaultAndClaim(
+  id: string,
+  index: number,
+  cutOff = 50
+): Promise<void> {
   await contracts.rewardParticipationHelper.openVault(id);
-  if (index >= 50) {
+  if (index >= cutOff) {
     await contracts.rewardParticipationHelper.connect(owner).claimReward(index);
   }
 }
@@ -672,6 +677,35 @@ describe("RewardParticipation", function () {
           .to.emit(contracts.rewardParticipationHelper, "RewardsClaimed")
           .withArgs(owner.address, parseEther("1"));
       });
+    });
+  });
+  describe("ParticipationRewardsAdapter", function () {
+    it("returns only claimable vaults", async function () {
+      await contracts.rewardParticipationHelper
+        .connect(governance)
+        .setRewardsBudget(parseEther("1"));
+      await contracts.rewardParticipationHelper
+        .connect(owner)
+        .contributeReward(parseEther("11"));
+
+      const vaultIds = await Promise.all(
+        new Array(10)
+          .fill(0)
+          .map(async (x, i) => await initVaultAndAddShares(i))
+      );
+      ethers.provider.send("evm_increaseTime", [1000]);
+      ethers.provider.send("evm_mine", []);
+      await Promise.all(
+        vaultIds.map(async (id, i) => {
+          await openVaultAndClaim(id, i, 5);
+        })
+      );
+      await initVaultAndAddShares(11);
+      expect(
+        await ParticipationRewardsAdapter(
+          contracts.rewardParticipationHelper
+        ).claimableVaultIds(owner.address)
+      ).to.deep.equal(vaultIds.slice(0, 5));
     });
   });
 });
