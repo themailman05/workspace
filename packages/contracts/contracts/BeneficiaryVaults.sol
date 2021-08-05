@@ -4,6 +4,7 @@ pragma solidity >=0.7.0 <0.8.0;
 
 import "./IBeneficiaryVaults.sol";
 import "./IBeneficiaryRegistry.sol";
+import "./IRegion.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
@@ -32,15 +33,14 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
 
   IERC20 public immutable pop;
   IBeneficiaryRegistry public beneficiaryRegistry;
-  uint256 public totalVaultedBalance = 0;
-  Vault[3] private vaults;
+  uint256 public totalDistributedBalance = 0;
+  Vault[3] public vaults;
 
   /* ========== EVENTS ========== */
 
   event VaultOpened(uint8 vaultId, bytes32 merkleRoot);
   event VaultClosed(uint8 vaultId);
-  event RewardsDistributed(uint256 amount);
-  event RewardAllocated(uint8 vaultId, uint256 amount);
+  event RewardsAllocated(uint256 amount);
   event RewardClaimed(uint8 vaultId, address beneficiary, uint256 amount);
   event BeneficiaryRegistryChanged(
     IBeneficiaryRegistry from,
@@ -49,9 +49,8 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
 
   /* ========== CONSTRUCTOR ========== */
 
-  constructor(IERC20 pop_, IBeneficiaryRegistry beneficiaryRegistry_) {
+  constructor(IERC20 pop_) {
     pop = pop_;
-    beneficiaryRegistry = beneficiaryRegistry_;
   }
 
   /* ========== VIEWS ========== */
@@ -68,11 +67,12 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
       VaultStatus status
     )
   {
-    totalAllocated = vaults[vaultId_].totalAllocated;
-    currentBalance = vaults[vaultId_].currentBalance;
-    unclaimedShare = vaults[vaultId_].unclaimedShare;
-    merkleRoot = vaults[vaultId_].merkleRoot;
-    status = vaults[vaultId_].status;
+    Vault storage vault = vaults[vaultId_];
+    totalAllocated = vault.totalAllocated;
+    currentBalance = vault.currentBalance;
+    unclaimedShare = vault.unclaimedShare;
+    merkleRoot = vault.merkleRoot;
+    status = vault.status;
   }
 
   function hasClaimed(uint8 vaultId_, address beneficiary_)
@@ -109,12 +109,12 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     );
 
     delete vaults[vaultId_];
-    Vault storage v = vaults[vaultId_];
-    v.totalAllocated = 0;
-    v.currentBalance = 0;
-    v.unclaimedShare = 100e18;
-    v.merkleRoot = merkleRoot_;
-    v.status = VaultStatus.Open;
+    Vault storage vault = vaults[vaultId_];
+    vault.totalAllocated = 0;
+    vault.currentBalance = 0;
+    vault.unclaimedShare = 100e18;
+    vault.merkleRoot = merkleRoot_;
+    vault.status = VaultStatus.Open;
 
     emit VaultOpened(vaultId_, merkleRoot_);
   }
@@ -130,17 +130,19 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     onlyOwner
     _vaultExists(vaultId_)
   {
-    require(vaults[vaultId_].status == VaultStatus.Open, "Vault must be open");
+    Vault storage vault = vaults[vaultId_];
+    require(vault.status == VaultStatus.Open, "Vault must be open");
 
-    uint256 _remainingBalance = vaults[vaultId_].currentBalance;
-    vaults[vaultId_].currentBalance = 0;
-    vaults[vaultId_].status = VaultStatus.Closed;
+    uint256 _remainingBalance = vault.currentBalance;
+    vault.currentBalance = 0;
+    vault.status = VaultStatus.Closed;
 
     if (_remainingBalance > 0) {
-      totalVaultedBalance = totalVaultedBalance.sub(_remainingBalance);
-      _allocateRewards(_remainingBalance);
+      totalDistributedBalance = totalDistributedBalance.sub(_remainingBalance);
+      if (_getOpenVaultCount() > 0) {
+        allocateRewards();
+      }
     }
-
     emit VaultClosed(vaultId_);
   }
 
@@ -193,21 +195,19 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
     );
     require(hasClaimed(vaultId_, beneficiary_) == false, "Already claimed");
 
-    uint256 _reward = vaults[vaultId_].currentBalance.mul(share_).div(
-      vaults[vaultId_].unclaimedShare
+    Vault storage vault = vaults[vaultId_];
+
+    uint256 _reward = (vault.currentBalance.mul(share_)).div(
+      vault.unclaimedShare
     );
 
     require(_reward > 0, "No reward");
 
-    totalVaultedBalance = totalVaultedBalance.sub(_reward);
-    vaults[vaultId_].currentBalance = vaults[vaultId_].currentBalance.sub(
-      _reward
-    );
-    vaults[vaultId_].unclaimedShare = vaults[vaultId_].unclaimedShare.sub(
-      share_
-    );
+    totalDistributedBalance = totalDistributedBalance.sub(_reward);
+    vault.currentBalance = vault.currentBalance.sub(_reward);
+    vault.unclaimedShare = vault.unclaimedShare.sub(share_);
 
-    vaults[vaultId_].claimed[beneficiary_] = true;
+    vault.claimed[beneficiary_] = true;
 
     pop.transfer(beneficiary_, _reward);
 
@@ -215,49 +215,42 @@ contract BeneficiaryVaults is IBeneficiaryVaults, Ownable, ReentrancyGuard {
   }
 
   /**
-   * @notice Distribute unallocated POP token balance to vaults
+   * @notice Allocates unallocated POP token balance to vaults
    * @dev Requires at least one open vault
    */
-  function distributeRewards() public nonReentrant {
-    uint8 _openVaultCount = _getOpenVaultCount();
-    require(_openVaultCount > 0, "No open vaults");
-
-    uint256 _availableReward = pop.balanceOf(address(this)).sub(
-      totalVaultedBalance
+  function allocateRewards() public override nonReentrant {
+    uint256 availableReward = pop.balanceOf(address(this)).sub(
+      totalDistributedBalance
     );
-    _allocateRewards(_availableReward);
-
-    emit RewardsDistributed(_availableReward);
-  }
-
-  /* ========== RESTRICTED FUNCTIONS ========== */
-
-  function _allocateRewards(uint256 amount_) internal {
-    require(amount_ > 0, "Invalid amount");
+    require(availableReward > 0, "no rewards available");
 
     uint8 _openVaultCount = _getOpenVaultCount();
-    if (_openVaultCount == 0) return;
+    require(_openVaultCount > 0, "no open vaults");
 
-    totalVaultedBalance = totalVaultedBalance.add(amount_);
     //@todo handle dust after div
-    uint256 _allocation = amount_.div(_openVaultCount);
-
+    uint256 _allocation = availableReward.div(_openVaultCount);
     for (uint8 _vaultId = 0; _vaultId < vaults.length; _vaultId++) {
-      if (vaults[_vaultId].status == VaultStatus.Open) {
+      if (
+        vaults[_vaultId].status == VaultStatus.Open &&
+        vaults[_vaultId].merkleRoot != ""
+      ) {
         vaults[_vaultId].totalAllocated = vaults[_vaultId].totalAllocated.add(
           _allocation
         );
         vaults[_vaultId].currentBalance = vaults[_vaultId].currentBalance.add(
           _allocation
         );
-        emit RewardAllocated(_vaultId, _allocation);
       }
     }
+    totalDistributedBalance = totalDistributedBalance.add(availableReward);
+    emit RewardsAllocated(availableReward);
   }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
 
   function _getOpenVaultCount() internal view returns (uint8) {
     uint8 _openVaultCount = 0;
-    for (uint8 i = 0; i < vaults.length; i++) {
+    for (uint8 i = 0; i < 3; i++) {
       if (vaults[i].merkleRoot != "" && vaults[i].status == VaultStatus.Open) {
         _openVaultCount++;
       }

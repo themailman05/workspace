@@ -1,9 +1,9 @@
-import { expect } from "chai";
-import { waffle, ethers } from "hardhat";
-import { parseEther } from "ethers/lib/utils";
-import { DefendedHelper, MockERC20, Staking } from "../typechain";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { BigNumber } from "@ethersproject/bignumber";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
+import { parseEther } from "ethers/lib/utils";
+import { ethers, waffle } from "hardhat";
+import { DefendedHelper, MockERC20, Staking } from "../typechain";
 import { RewardsEscrow } from "../typechain/RewardsEscrow";
 
 let stakingFund: BigNumber;
@@ -16,7 +16,7 @@ let mockERC20Factory;
 let mockPop: MockERC20;
 let staking: Staking;
 let defendedHelper: DefendedHelper;
-let rewardsEscrow: RewardsEscrow
+let rewardsEscrow: RewardsEscrow;
 
 describe("Staking", function () {
   beforeEach(async function () {
@@ -37,10 +37,13 @@ describe("Staking", function () {
     ).deployed()) as RewardsEscrow;
 
     const stakingFactory = await ethers.getContractFactory("Staking");
-    staking = await stakingFactory.deploy(mockPop.address, rewardsEscrow.address) as Staking;
+    staking = (await stakingFactory.deploy(
+      mockPop.address,
+      rewardsEscrow.address
+    )) as Staking;
     await staking.deployed();
     await staking.init(rewarder.address);
-    await rewardsEscrow.setStaking(staking.address)
+    await rewardsEscrow.setStaking(staking.address);
     stakingFund = parseEther("10");
     await mockPop.transfer(staking.address, stakingFund);
     await mockPop.connect(owner).approve(staking.address, parseEther("100000"));
@@ -59,7 +62,7 @@ describe("Staking", function () {
         mockPool.address
       )
     ).deployed();
-    await mockPop.mint(defendedHelper.address, parseEther("1000"))
+    await mockPop.mint(defendedHelper.address, parseEther("1000"));
   });
 
   describe("stake", function () {
@@ -88,13 +91,13 @@ describe("Staking", function () {
     });
 
     it("should not allow non-whitelisted contracts to stake", async function () {
-      await expect(
-        defendedHelper.stake(parseEther("1000"))
-      ).to.be.revertedWith("Access denied for caller");
+      await expect(defendedHelper.stake(parseEther("1000"))).to.be.revertedWith(
+        "Access denied for caller"
+      );
     });
 
     it("should allow whitelisted contracts to stake", async function () {
-      await staking.approveContractAccess(defendedHelper.address)
+      await staking.approveContractAccess(defendedHelper.address);
       await expect(defendedHelper.stake(parseEther("1000")))
         .to.emit(staking, "StakingDeposited")
         .withArgs(defendedHelper.address, parseEther("1000"));
@@ -156,9 +159,7 @@ describe("Staking", function () {
         .withArgs(owner.address, amount)
         .to.emit(staking, "RewardPaid")
         .withArgs(owner.address, payout);
-      expect(
-        await staking.getWithdrawableBalance(owner.address)
-      ).to.equal(0);
+      expect(await staking.getWithdrawableBalance(owner.address)).to.equal(0);
       expect(await staking.getVoiceCredits(owner.address)).to.equal(0);
       expect(await staking.earned(owner.address)).to.equal(0);
     });
@@ -178,10 +179,12 @@ describe("Staking", function () {
       expect(result)
         .to.emit(staking, "RewardPaid")
         .withArgs(owner.address, payout);
-      expect(await mockPop.balanceOf(owner.address)).to.equal(popBalance.add(payout));
-      expect(
-        await staking.getWithdrawableBalance(owner.address)
-      ).to.equal(parseEther("1"));
+      expect(await mockPop.balanceOf(owner.address)).to.equal(
+        popBalance.add(payout)
+      );
+      expect(await staking.getWithdrawableBalance(owner.address)).to.equal(
+        parseEther("1")
+      );
       expect(await staking.earned(owner.address)).to.equal(0);
     });
 
@@ -464,8 +467,9 @@ describe("Staking", function () {
   describe("updatePeriodFinish", function () {
     beforeEach(async function () {
       const Staking = await ethers.getContractFactory("Staking");
-      staking = await Staking.deploy(mockPop.address,rewardsEscrow.address);
+      staking = await Staking.deploy(mockPop.address, rewardsEscrow.address);
       await staking.deployed();
+      staking.init(rewarder.address);
       stakingFund = parseEther("10");
       await mockPop.transfer(staking.address, stakingFund);
       await staking.notifyRewardAmount(stakingFund);

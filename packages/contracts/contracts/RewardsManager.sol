@@ -7,6 +7,7 @@ import "./ITreasury.sol";
 import "./IInsurance.sol";
 import "./IBeneficiaryVaults.sol";
 import "./IRewardsManager.sol";
+import "./IRegion.sol";
 import "./Owned.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -23,18 +24,6 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
-  uint256 public constant SWAP_TIMEOUT = 600;
-
-  IERC20 public immutable POP;
-  IStaking public staking;
-  ITreasury public treasury;
-  IInsurance public insurance;
-  IBeneficiaryVaults public beneficiaryVaults;
-  IUniswapV2Router02 public immutable uniswapV2Router;
-
-  uint256[4] public rewardSplits;
-  mapping(uint8 => uint256[2]) private rewardLimits;
-
   enum RewardTargets {
     Staking,
     Treasury,
@@ -42,34 +31,49 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     BeneficiaryVaults
   }
 
+  /* ========== STATE VARIABLES ========== */
+
+  uint256 public constant SWAP_TIMEOUT = 600;
+
+  IERC20 public immutable POP;
+  IStaking public staking;
+  ITreasury public treasury;
+  IInsurance public insurance;
+  IRegion public region;
+  IUniswapV2Router02 public immutable uniswapV2Router;
+
+  uint256[4] public rewardSplits;
+  mapping(uint8 => uint256[2]) private rewardLimits;
+
+  /* ========== EVENTS ========== */
+
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
   event InsuranceDeposited(address to, uint256 amount);
-  event BeneficiaryVaultsDeposited(address to, uint256 amount);
+  event BeneficiaryVaultsDeposited(uint256 amount);
   event RewardsDistributed(uint256 amount);
   event RewardSplitsUpdated(uint256[4] splits);
   event TokenSwapped(address token, uint256 amountIn, uint256 amountOut);
   event StakingChanged(IStaking from, IStaking to);
   event TreasuryChanged(ITreasury from, ITreasury to);
   event InsuranceChanged(IInsurance from, IInsurance to);
-  event BeneficiaryVaultsChanged(
-    IBeneficiaryVaults from,
-    IBeneficiaryVaults to
-  );
+  event RegionChanged(IRegion from, IRegion to);
+
+  /* ========== CONSTRUCTOR ========== */
 
   constructor(
     IERC20 pop_,
     IStaking staking_,
     ITreasury treasury_,
     IInsurance insurance_,
-    IBeneficiaryVaults beneficiaryVaults_,
+    IRegion region_,
     IUniswapV2Router02 uniswapV2Router_
   ) Owned(msg.sender) {
     POP = pop_;
     staking = staking_;
     treasury = treasury_;
     insurance = insurance_;
-    beneficiaryVaults = beneficiaryVaults_;
+    region = region_;
     uniswapV2Router = uniswapV2Router_;
     rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
@@ -78,85 +82,15 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     rewardSplits = [32e18, 32e18, 2e18, 34e18];
   }
 
-  receive() external payable {}
+  /* ========== VIEW FUNCTIONS ========== */
 
   function getRewardSplits() external view returns (uint256[4] memory) {
     return rewardSplits;
   }
 
-  /**
-   * @notice Overrides existing Staking contract
-   * @param staking_ Address of new Staking contract
-   * @dev Must implement IStaking and cannot be same as existing
-   */
-  function setStaking(IStaking staking_) public onlyOwner {
-    require(staking != staking_, "Same Staking");
-    IStaking _previousStaking = staking;
-    staking = staking_;
-    emit StakingChanged(_previousStaking, staking);
-  }
+  /* ========== MUTATIVE FUNCTIONS ========== */
 
-  /**
-   * @notice Overrides existing Treasury contract
-   * @param treasury_ Address of new Treasury contract
-   * @dev Must implement ITreasury and cannot be same as existing
-   */
-  function setTreasury(ITreasury treasury_) public onlyOwner {
-    require(treasury != treasury_, "Same Treasury");
-    ITreasury _previousTreasury = treasury;
-    treasury = treasury_;
-    emit TreasuryChanged(_previousTreasury, treasury);
-  }
-
-  /**
-   * @notice Overrides existing Insurance contract
-   * @param insurance_ Address of new Insurance contract
-   * @dev Must implement IInsurance and cannot be same as existing
-   */
-  function setInsurance(IInsurance insurance_) public onlyOwner {
-    require(insurance != insurance_, "Same Insurance");
-    IInsurance _previousInsurance = insurance;
-    insurance = insurance_;
-    emit InsuranceChanged(_previousInsurance, insurance_);
-  }
-
-  /**
-   * @notice Overrides existing BeneficiaryVaults contract
-   * @param beneficiaryVaults_ Address of new BeneficiaryVaults contract
-   * @dev Must implement IeneficiaryVaults and cannot be same as existing
-   */
-  function setBeneficiaryVaults(IBeneficiaryVaults beneficiaryVaults_)
-    public
-    onlyOwner
-  {
-    require(beneficiaryVaults != beneficiaryVaults_, "Same BeneficiaryVaults");
-    IBeneficiaryVaults _previousBeneficiaryVaults = beneficiaryVaults;
-    beneficiaryVaults = beneficiaryVaults_;
-    emit BeneficiaryVaultsChanged(
-      _previousBeneficiaryVaults,
-      beneficiaryVaults_
-    );
-  }
-
-  /**
-   * @notice Set new reward distribution allocations
-   * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
-   * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
-   */
-
-  function setRewardSplits(uint256[4] calldata splits_) public onlyOwner {
-    uint256 _total = 0;
-    for (uint8 i = 0; i < 4; i++) {
-      require(
-        splits_[i] >= rewardLimits[i][0] && splits_[i] <= rewardLimits[i][1],
-        "Invalid split"
-      );
-      _total = _total.add(splits_[i]);
-    }
-    require(_total == 100e18, "Invalid split total");
-    rewardSplits = splits_;
-    emit RewardSplitsUpdated(splits_);
-  }
+  receive() external payable {}
 
   /**
    * @param path_ Uniswap path specification for source token to POP
@@ -205,17 +139,17 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Staking)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.Staking)])
+      .div(100e18);
     uint256 _treasuryAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Treasury)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.Treasury)])
+      .div(100e18);
     uint256 _insuranceAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Insurance)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.Insurance)])
+      .div(100e18);
     uint256 _beneficiaryVaultsAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
+      .div(100e18);
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);
@@ -224,6 +158,8 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
 
     emit RewardsDistributed(_availableReward);
   }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
 
   function _distributeToStaking(uint256 amount_) internal {
     if (amount_ == 0) return;
@@ -246,7 +182,81 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
 
   function _distributeToVaults(uint256 amount_) internal {
     if (amount_ == 0) return;
-    POP.transfer(address(beneficiaryVaults), amount_);
-    emit BeneficiaryVaultsDeposited(address(beneficiaryVaults), amount_);
+    //This might lead to a gas overflow since the region array is unbound
+    address[] memory regionVaults = region.getAllVaults();
+    uint256 split = amount_.div(regionVaults.length);
+    for (uint256 i; i < regionVaults.length; i++) {
+      POP.transfer(regionVaults[i], split);
+    }
+    emit BeneficiaryVaultsDeposited(amount_);
+  }
+
+  /* ========== SETTER ========== */
+
+  /**
+   * @notice Overrides existing Staking contract
+   * @param staking_ Address of new Staking contract
+   * @dev Must implement IStaking and cannot be same as existing
+   */
+  function setStaking(IStaking staking_) public onlyOwner {
+    require(staking != staking_, "Same Staking");
+    IStaking _previousStaking = staking;
+    staking = staking_;
+    emit StakingChanged(_previousStaking, staking);
+  }
+
+  /**
+   * @notice Overrides existing Treasury contract
+   * @param treasury_ Address of new Treasury contract
+   * @dev Must implement ITreasury and cannot be same as existing
+   */
+  function setTreasury(ITreasury treasury_) public onlyOwner {
+    require(treasury != treasury_, "Same Treasury");
+    ITreasury _previousTreasury = treasury;
+    treasury = treasury_;
+    emit TreasuryChanged(_previousTreasury, treasury);
+  }
+
+  /**
+   * @notice Overrides existing Insurance contract
+   * @param insurance_ Address of new Insurance contract
+   * @dev Must implement IInsurance and cannot be same as existing
+   */
+  function setInsurance(IInsurance insurance_) public onlyOwner {
+    require(insurance != insurance_, "Same Insurance");
+    IInsurance _previousInsurance = insurance;
+    insurance = insurance_;
+    emit InsuranceChanged(_previousInsurance, insurance_);
+  }
+
+  /**
+   * @notice Overrides existing Region contract
+   * @param region_ Address of new Region contract
+   * @dev Must implement IRegion and cannot be same as existing
+   */
+  function setRegion(IRegion region_) public onlyOwner {
+    require(region != region_, "Same Region");
+    IRegion _previousRegion = region;
+    region = region_;
+    emit RegionChanged(_previousRegion, region_);
+  }
+
+  /**
+   * @notice Set new reward distribution allocations
+   * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
+   * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision
+   */
+  function setRewardSplits(uint256[4] calldata splits_) public onlyOwner {
+    uint256 _total = 0;
+    for (uint8 i = 0; i < 4; i++) {
+      require(
+        splits_[i] >= rewardLimits[i][0] && splits_[i] <= rewardLimits[i][1],
+        "Invalid split"
+      );
+      _total = _total.add(splits_[i]);
+    }
+    require(_total == 100e18, "Invalid split total");
+    rewardSplits = splits_;
+    emit RewardSplitsUpdated(splits_);
   }
 }

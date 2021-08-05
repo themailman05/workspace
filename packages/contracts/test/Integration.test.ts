@@ -1,20 +1,21 @@
+import { Contract } from "@ethersproject/contracts";
+import { parseEther } from "@ethersproject/units";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
+import { deployContract } from "ethereum-waffle";
+import { ethers, waffle } from "hardhat";
 import {
   BeneficiaryRegistry,
   BeneficiaryVaults,
   IUniswapV2Pair,
   MockERC20,
+  Region,
   RewardsEscrow,
   RewardsManager,
   Staking,
   UniswapV2Router02,
   WETH9,
 } from "../typechain";
-import { Contract } from "@ethersproject/contracts";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { deployContract } from "ethereum-waffle";
-import { ethers, waffle } from "hardhat";
-import { parseEther } from "@ethersproject/units";
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
@@ -28,11 +29,13 @@ let owner: SignerWithAddress,
   nonOwner: SignerWithAddress;
 let contracts: Contracts;
 const provider = waffle.provider;
+const DEFAULT_REGION = "0x5757";
 
 interface Contracts {
   POP: MockERC20;
   TestERC20: MockERC20;
   WETH: WETH9;
+  Region: Region;
   Insurance: Contract;
   Treasury: Contract;
   BeneficiaryVaults: BeneficiaryVaults;
@@ -42,7 +45,7 @@ interface Contracts {
   UniswapRouter: UniswapV2Router02;
   WETHPair: IUniswapV2Pair;
   TestERC20Pair: IUniswapV2Pair;
-  RewardsEscrow:RewardsEscrow;
+  RewardsEscrow: RewardsEscrow;
 }
 
 async function deployContracts(): Promise<Contracts> {
@@ -70,24 +73,36 @@ async function deployContracts(): Promise<Contracts> {
     await (await ethers.getContractFactory("MockTreasury")).deploy()
   ).deployed();
 
-  const BeneficiaryRegistry = (await (
-    await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
-  ).deployed()) as BeneficiaryRegistry;
-
-  const BeneficiaryVaults = (await (
+  const BeneficiaryVaults = await (
     await (
       await ethers.getContractFactory("BeneficiaryVaults")
-    ).deploy(POP.address, BeneficiaryRegistry.address)
-  ).deployed()) as BeneficiaryVaults;
+    ).deploy(POP.address)
+  ).deployed();
+
+  const Region = await (
+    await (
+      await ethers.getContractFactory("Region")
+    ).deploy(BeneficiaryVaults.address)
+  ).deployed();
+
+  const BeneficiaryRegistry = await (
+    await (
+      await ethers.getContractFactory("BeneficiaryRegistry")
+    ).deploy(Region.address)
+  ).deployed();
+
+  await BeneficiaryVaults.connect(owner).setBeneficiaryRegistry(
+    BeneficiaryRegistry.address
+  );
 
   const RewardsEscrow = (await (
-    await (
-      await ethers.getContractFactory("RewardsEscrow")
-    ).deploy(POP.address)
+    await (await ethers.getContractFactory("RewardsEscrow")).deploy(POP.address)
   ).deployed()) as RewardsEscrow;
 
   const Staking = (await (
-    await (await ethers.getContractFactory("Staking")).deploy(POP.address, RewardsEscrow.address)
+    await (
+      await ethers.getContractFactory("Staking")
+    ).deploy(POP.address, RewardsEscrow.address)
   ).deployed()) as Staking;
 
   const factoryV2 = await deployContract(owner, UniswapV2FactoryJSON, [
@@ -109,7 +124,7 @@ async function deployContracts(): Promise<Contracts> {
       Staking.address,
       Treasury.address,
       Insurance.address,
-      BeneficiaryVaults.address,
+      Region.address,
       UniswapRouter.address
     )
   ).deployed()) as RewardsManager;
@@ -139,6 +154,7 @@ async function deployContracts(): Promise<Contracts> {
     POP,
     TestERC20,
     WETH,
+    Region,
     Insurance,
     Treasury,
     BeneficiaryVaults,
@@ -148,7 +164,7 @@ async function deployContracts(): Promise<Contracts> {
     UniswapRouter,
     WETHPair,
     TestERC20Pair,
-    RewardsEscrow
+    RewardsEscrow,
   };
 }
 
@@ -337,7 +353,7 @@ describe("Integration", function () {
           await ethers.getContractFactory("Staking")
         ).deploy(contracts.POP.address, contracts.RewardsEscrow.address)
       ).deployed();
-      await newStaking.setRewardsManager(contracts.RewardsManager.address);
+      await newStaking.init(contracts.RewardsManager.address);
 
       await contracts.RewardsManager.distributeRewards();
       expect(await contracts.POP.balanceOf(contracts.Staking.address)).to.equal(
@@ -372,8 +388,15 @@ describe("Integration", function () {
       const newBeneficiaryVaults = await (
         await (
           await ethers.getContractFactory("BeneficiaryVaults")
-        ).deploy(contracts.POP.address, contracts.BeneficiaryRegistry.address)
+        ).deploy(contracts.POP.address)
       ).deployed();
+      await newBeneficiaryVaults
+        .connect(owner)
+        .setBeneficiaryRegistry(contracts.BeneficiaryRegistry.address);
+      await contracts.Region.connect(owner).addRegion(
+        "0x5656",
+        newBeneficiaryVaults.address
+      );
 
       await contracts.RewardsManager.distributeRewards();
       expect(await contracts.POP.balanceOf(contracts.Staking.address)).to.equal(
@@ -387,23 +410,10 @@ describe("Integration", function () {
       ).to.equal(parseEther("2"));
       expect(
         await contracts.POP.balanceOf(contracts.BeneficiaryVaults.address)
-      ).to.equal(parseEther("34"));
-
-      await contracts.POP.mint(
-        contracts.RewardsManager.address,
-        parseEther("100")
-      );
-
-      await contracts.RewardsManager.setBeneficiaryVaults(
-        newBeneficiaryVaults.address
-      );
-      await contracts.RewardsManager.distributeRewards();
-      expect(
-        await contracts.POP.balanceOf(contracts.BeneficiaryVaults.address)
-      ).to.equal(parseEther("34"));
+      ).to.equal(parseEther("17"));
       expect(
         await contracts.POP.balanceOf(newBeneficiaryVaults.address)
-      ).to.equal(parseEther("34"));
+      ).to.equal(parseEther("17"));
     });
     it("distribute rewards to contracts", async function () {
       const result = await contracts.RewardsManager.distributeRewards();
