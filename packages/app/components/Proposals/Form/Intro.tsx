@@ -14,7 +14,7 @@ import { InfoIconWithModal } from './../../InfoIconWithModal';
 
 const Intro: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
   const [formData, setFormData] = form;
-  const { currentStep, setCurrentStep, stepLimit, setStepLimit } = navigation;
+  const { currentStep, setCurrentStep } = navigation;
 
   const requirements = [
     {
@@ -194,7 +194,6 @@ const Intro: React.FC<FormStepProps> = ({ form, navigation, visible }) => {
                   type="button"
                   onClick={() => {
                     setCurrentStep(1);
-                    setStepLimit(1);
                     setFormData(defaultFormData);
                   }}
                   className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-indigo-800 bg-indigo-50 hover:bg-indigo-100"

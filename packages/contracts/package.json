@@ -3,14 +3,14 @@
   "version": "1.0.0",
   "main": "index",
   "scripts": {
-    "build": "tsc",
+    "build": "yarn clean && hardhat compile",
     "dev": "yarn hardhat node",
     "dev:deploy": "yarn hardhat dev:deploy --network localhost",
     "dev:deployTestnet": "yarn hardhat dev:deployTestnet --network rinkeby",
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "clean": "rimraf ./cache & rimraf ./artifacts",
     "compile": "yarn clean && hardhat compile ",
-    "test": "mocha",
+    "test": "yarn hardhat test",
     "postinstall": "yarn compile"
   },
   "devDependencies": {
