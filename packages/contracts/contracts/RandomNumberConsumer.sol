@@ -9,6 +9,8 @@ import "./IRandomNumberConsumer.sol";
 contract RandomNumberConsumer is VRFConsumerBase {
   using SafeMath for uint256;
 
+  /* ========== STATE VARIABLES ========== */
+
   address public VRFCoordinator;
   // rinkeby: 0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B
   address public LinkToken;
@@ -18,6 +20,10 @@ contract RandomNumberConsumer is VRFConsumerBase {
 
   uint256[] public randomResult;
   mapping(bytes32 => uint256) requestToElection;
+
+  /* ========== EVENTS ========== */
+
+  /* ========== CONSTRUCTOR ========== */
 
   /**
    * Constructor inherits VRFConsumerBase
@@ -36,9 +42,15 @@ contract RandomNumberConsumer is VRFConsumerBase {
     fee = 0.1 * 10**18; // 0.1 LINK
   }
 
+  /* ========== VIEW FUNCTIONS ========== */
+
   function getRandomResult(uint256 electionId) public view returns (uint256) {
     return randomResult[electionId];
   }
+
+  /* ========== MUTATIVE FUNCTIONS ========== */
+
+  function deposit() public payable {}
 
   /**
    * Requests randomness from a user-provided seed
@@ -47,6 +59,8 @@ contract RandomNumberConsumer is VRFConsumerBase {
     require(LINK.balanceOf(address(this)) >= fee, "Not enough LINK");
     requestToElection[requestRandomness(keyHash, fee)] = electionId;
   }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
 
   /**
    * Callback function used by VRF Coordinator
@@ -59,6 +73,4 @@ contract RandomNumberConsumer is VRFConsumerBase {
     randomness = randomness.add(1);
     randomResult[requestToElection[requestId]] = randomness;
   }
-
-  function deposit() public payable {}
 }

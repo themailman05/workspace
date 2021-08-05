@@ -5,7 +5,7 @@
     "dev": "next",
     "build": "yarn next build",
     "export": "yarn next export",
-    "test": "jest",
+    "jest": "jest",
     "prettier": "prettier"
   },
   "dependencies": {
