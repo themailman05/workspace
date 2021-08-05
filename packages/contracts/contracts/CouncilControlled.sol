@@ -2,14 +2,25 @@ pragma solidity >=0.7.0 <0.8.0;
 
 // https://docs.synthetix.io/contracts/source/contracts/owned
 contract CouncilControlled {
-  address private council;
+  /* ========== STATE VARIABLES ========== */
+
+  address public council;
   address public nominatedCouncil;
+
+  /* ========== EVENTS ========== */
+
+  event CouncilNominated(address newCouncil);
+  event CouncilChanged(address oldCouncil, address newCouncil);
+
+  /* ========== CONSTRUCTOR ========== */
 
   constructor(address _council) public {
     require(_council != address(0), "Council address cannot be 0");
     council = _council;
     emit CouncilChanged(address(0), _council);
   }
+
+  /* ========== MUTATIVE FUNCTIONS ========== */
 
   function nominateNewCouncil(address _council) external onlyCouncil {
     nominatedCouncil = _council;
@@ -26,10 +37,7 @@ contract CouncilControlled {
     nominatedCouncil = address(0);
   }
 
-  modifier onlyCouncil {
-    _onlyCouncil();
-    _;
-  }
+  /* ========== RESTRICTED FUNCTIONS ========== */
 
   function _onlyCouncil() private view {
     require(
@@ -38,10 +46,10 @@ contract CouncilControlled {
     );
   }
 
-  function getCouncil() public view returns (address) {
-    return council;
-  }
+  /* ========== MODIFIER ========== */
 
-  event CouncilNominated(address newCouncil);
-  event CouncilChanged(address oldCouncil, address newCouncil);
+  modifier onlyCouncil() {
+    _onlyCouncil();
+    _;
+  }
 }

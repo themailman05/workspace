@@ -10,6 +10,7 @@ import { DefaultConfiguration } from "./lib/SetToken/Configuration";
 import SetTokenManager from "./lib/SetToken/SetTokenManager";
 import deploy from "./scripts/deployWithValues";
 import deployTestnet from "./scripts/deployWithValuesTestnet";
+import finalizeElection from "./scripts/finalizeElection";
 import { GrantElectionAdapter } from "./adapters/GrantElection/GrantElectionAdapter";
 
 task("accounts", "Prints the list of accounts", async (args, hre) => {
@@ -117,16 +118,7 @@ task("staking:getVoiceCredits", "get voice credit balance of address")
 
 task("elections:finalize", "finalize a grant election")
   .addParam("term", "election term to end")
-  .setAction(async (args, hre) => {
-    const [signer] = await hre.ethers.getSigners();
-    const { term } = args;
-    const GrantElections = new hre.ethers.Contract(
-      process.env.ADDR_GRANT_ELECTION,
-      require("./artifacts/contracts/GrantElections.sol/GrantElections.json").abi,
-      signer
-    );
-    await GrantElections.finalize(Number(term), { gasLimit: 10000000 });
-  });
+  .setAction(finalizeElection);
 
 task("random", "gets a random number")
   .addParam("seed", "the seed")
@@ -257,9 +249,9 @@ module.exports = {
     gasPrice: 100,
     enabled: false,
   },
-  contractSizer: {
+  /*contractSizer: {
     alphaSort: true,
     runOnCompile: true,
     disambiguatePaths: false,
-  },
+  },*/
 };

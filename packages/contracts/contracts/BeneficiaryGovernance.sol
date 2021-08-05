@@ -59,6 +59,8 @@ contract BeneficiaryGovernance is ParticipationReward {
     bytes32 vaultId;
   }
 
+  /* ========== STATE VARIABLES ========== */
+
   IStaking staking;
   IBeneficiaryRegistry beneficiaryRegistry;
 
@@ -70,33 +72,23 @@ contract BeneficiaryGovernance is ParticipationReward {
   uint256[] public takedowns;
   ConfigurationOptions public DefaultConfigurations;
 
+  /* ========== EVENTS ========== */
+
   event ProposalCreated(
     uint256 indexed proposalId,
     address indexed proposer,
     address indexed beneficiary,
     bytes applicationCid
   );
-
   event Vote(
     uint256 indexed proposalId,
     address indexed voter,
     uint256 indexed weight
   );
-
   event Finalize(uint256 indexed proposalId);
   event BondWithdrawn(address _address, uint256 amount);
 
-  modifier validAddress(address _address) {
-    require(_address == address(_address), "invalid address");
-    _;
-  }
-  modifier enoughBond(address _address) {
-    require(
-      POP.balanceOf(_address) >= DefaultConfigurations.proposalBond,
-      "proposal bond is not enough"
-    );
-    _;
-  }
+  /* ========== CONSTRUCTOR ========== */
 
   constructor(
     IStaking _staking,
@@ -109,21 +101,50 @@ contract BeneficiaryGovernance is ParticipationReward {
     _setDefaults();
   }
 
-  function _setDefaults() internal {
-    DefaultConfigurations.votingPeriod = 2 days;
-    DefaultConfigurations.vetoPeriod = 2 days;
-    DefaultConfigurations.proposalBond = 2000e18;
+  /* ========== VIEW FUNCTIONS ========== */
+
+  /**
+   * @notice returns number of created proposals
+   */
+  function getNumberOfProposals(ProposalType _type)
+    public
+    view
+    returns (uint256)
+  {
+    if (_type == ProposalType.BeneficiaryNominationProposal) {
+      return nominations.length;
+    }
+    return takedowns.length;
   }
 
-  function setConfiguration(
-    uint256 _votingPeriod,
-    uint256 _vetoPeriod,
-    uint256 _proposalBond
-  ) public onlyGovernance {
-    DefaultConfigurations.votingPeriod = _votingPeriod;
-    DefaultConfigurations.vetoPeriod = _vetoPeriod;
-    DefaultConfigurations.proposalBond = _proposalBond;
+  /**
+   * @notice gets number of votes
+   * @param  proposalId id of the proposal
+   * @return number of votes to a proposal
+   */
+  function getNumberOfVoters(uint256 proposalId)
+    external
+    view
+    returns (uint256)
+  {
+    return proposals[proposalId].voterCount;
   }
+
+  /**
+   * @notice checks if someone has voted to a specific proposal or not
+   * @param  proposalId id of the proposal
+   * @param  voter address opf voter
+   * @return true or false
+   */
+  function hasVoted(uint256 proposalId, address voter)
+    external
+    view
+    returns (bool)
+  {
+    return proposals[proposalId].voters[voter];
+  }
+
+  /* ========== MUTATIVE FUNCTIONS ========== */
 
   /**
    * @notice creates a beneficiary nomination proposal or a beneficiary takedown proposal
@@ -187,28 +208,6 @@ contract BeneficiaryGovernance is ParticipationReward {
   }
 
   /**
-   * @notice checks beneficiary exists or doesn't exist before creating beneficiary nomination proposal or takedown proposal
-   */
-  function _assertProposalPreconditions(
-    ProposalType _type,
-    address _beneficiary
-  ) internal view {
-    if (ProposalType.BeneficiaryTakedownProposal == _type) {
-      require(
-        beneficiaryRegistry.beneficiaryExists(_beneficiary),
-        "Beneficiary doesnt exist!"
-      );
-    }
-    if (ProposalType.BeneficiaryNominationProposal == _type) {
-      require(
-        !pendingBeneficiaries[_beneficiary] &&
-          !beneficiaryRegistry.beneficiaryExists(_beneficiary),
-        "Beneficiary proposal is pending or already exists!"
-      );
-    }
-  }
-
-  /**
    * @notice votes to a specific proposal during the initial voting process
    * @param  proposalId id of the proposal which you are going to vote
    */
@@ -251,22 +250,6 @@ contract BeneficiaryGovernance is ParticipationReward {
   }
 
   /**
-   * @notice gets the voice credits of an address using the staking contract
-   * @param  _address address of the voter
-   * @return _voiceCredits
-   */
-  function getVoiceCredits(address _address)
-    internal
-    view
-    returns (uint256 _voiceCredits)
-  {
-    _voiceCredits = staking.getVoiceCredits(_address);
-
-    require(_voiceCredits > 0, "must have voice credits from staking");
-    return _voiceCredits;
-  }
-
-  /**
    * @notice finalizes the voting process
    * @param  proposalId id of the proposal
    */
@@ -298,23 +281,6 @@ contract BeneficiaryGovernance is ParticipationReward {
     emit Finalize(proposalId);
   }
 
-  function _resetBeneficiaryPendingState(address _beneficiary) internal {
-    pendingBeneficiaries[_beneficiary] = false;
-  }
-
-  function _handleSuccessfulProposal(Proposal storage proposal) internal {
-    if (proposal.proposalType == ProposalType.BeneficiaryNominationProposal) {
-      beneficiaryRegistry.addBeneficiary(
-        proposal.beneficiary,
-        proposal.applicationCid
-      );
-    }
-
-    if (proposal.proposalType == ProposalType.BeneficiaryTakedownProposal) {
-      beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
-    }
-  }
-
   /**
    * @notice claims bond after a successful proposal voting
    * @param  proposalId id of the proposal
@@ -335,6 +301,63 @@ contract BeneficiaryGovernance is ParticipationReward {
     POP.safeTransferFrom(address(this), msg.sender, amount);
 
     emit BondWithdrawn(msg.sender, amount);
+  }
+
+  /* ========== RESTRICTED FUNCTIONS ========== */
+
+  /**
+   * @notice gets the voice credits of an address using the staking contract
+   * @param  _address address of the voter
+   * @return _voiceCredits
+   */
+  function getVoiceCredits(address _address)
+    internal
+    view
+    returns (uint256 _voiceCredits)
+  {
+    _voiceCredits = staking.getVoiceCredits(_address);
+
+    require(_voiceCredits > 0, "must have voice credits from staking");
+    return _voiceCredits;
+  }
+
+  /**
+   * @notice checks beneficiary exists or doesn't exist before creating beneficiary nomination proposal or takedown proposal
+   */
+  function _assertProposalPreconditions(
+    ProposalType _type,
+    address _beneficiary
+  ) internal view {
+    if (ProposalType.BeneficiaryTakedownProposal == _type) {
+      require(
+        beneficiaryRegistry.beneficiaryExists(_beneficiary),
+        "Beneficiary doesnt exist!"
+      );
+    }
+    if (ProposalType.BeneficiaryNominationProposal == _type) {
+      require(
+        !pendingBeneficiaries[_beneficiary] &&
+          !beneficiaryRegistry.beneficiaryExists(_beneficiary),
+        "Beneficiary proposal is pending or already exists!"
+      );
+    }
+  }
+
+  function _resetBeneficiaryPendingState(address _beneficiary) internal {
+    pendingBeneficiaries[_beneficiary] = false;
+  }
+
+  function _handleSuccessfulProposal(Proposal storage proposal) internal {
+    if (proposal.proposalType == ProposalType.BeneficiaryNominationProposal) {
+      beneficiaryRegistry.addBeneficiary(
+        proposal.beneficiary,
+        proposal.applicationCid
+      );
+    }
+
+    if (proposal.proposalType == ProposalType.BeneficiaryTakedownProposal) {
+      beneficiaryRegistry.revokeBeneficiary(proposal.beneficiary);
+    }
   }
 
   /**
@@ -371,44 +394,35 @@ contract BeneficiaryGovernance is ParticipationReward {
     }
   }
 
-  /**
-   * @notice returns number of created proposals
-   */
-  function getNumberOfProposals(ProposalType _type)
-    public
-    view
-    returns (uint256)
-  {
-    if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return nominations.length;
-    }
-    return takedowns.length;
+  function _setDefaults() internal {
+    DefaultConfigurations.votingPeriod = 2 days;
+    DefaultConfigurations.vetoPeriod = 2 days;
+    DefaultConfigurations.proposalBond = 2000e18;
   }
 
-  /**
-   * @notice gets number of votes
-   * @param  proposalId id of the proposal
-   * @return number of votes to a proposal
-   */
-  function getNumberOfVoters(uint256 proposalId)
-    external
-    view
-    returns (uint256)
-  {
-    return proposals[proposalId].voterCount;
+  /* ========== SETTER ========== */
+
+  function setConfiguration(
+    uint256 _votingPeriod,
+    uint256 _vetoPeriod,
+    uint256 _proposalBond
+  ) public onlyGovernance {
+    DefaultConfigurations.votingPeriod = _votingPeriod;
+    DefaultConfigurations.vetoPeriod = _vetoPeriod;
+    DefaultConfigurations.proposalBond = _proposalBond;
   }
 
-  /**
-   * @notice checks if someone has voted to a specific proposal or not
-   * @param  proposalId id of the proposal
-   * @param  voter address opf voter
-   * @return true or false
-   */
-  function hasVoted(uint256 proposalId, address voter)
-    external
-    view
-    returns (bool)
-  {
-    return proposals[proposalId].voters[voter];
+  /* ========== MODIFIER ========== */
+
+  modifier validAddress(address _address) {
+    require(_address == address(_address), "invalid address");
+    _;
+  }
+  modifier enoughBond(address _address) {
+    require(
+      POP.balanceOf(_address) >= DefaultConfigurations.proposalBond,
+      "proposal bond is not enough"
+    );
+    _;
   }
 }

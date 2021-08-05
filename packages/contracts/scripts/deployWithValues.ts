@@ -4,7 +4,7 @@ import bluebird from "bluebird";
 import { deployContract } from "ethereum-waffle";
 import { BigNumber, Contract, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
-import { GrantElectionAdapter, ProposalType } from "../adapters";
+import { GrantElectionAdapter } from "../adapters";
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
@@ -315,35 +315,32 @@ export default async function deploy(ethers): Promise<void> {
 
   const voteOnProposals = async (): Promise<void> => {
     console.log("vote on beneficiary proposals ...");
-    await contracts.beneficiaryGovernance
-      .connect(bennies[0])
-      .vote(0, ProposalType.Nomination, Vote.Yes);
-    await contracts.beneficiaryGovernance
-      .connect(bennies[0])
-      .vote(1, ProposalType.Nomination, Vote.No);
-    await contracts.beneficiaryGovernance
-      .connect(bennies[0])
-      .vote(2, ProposalType.Nomination, Vote.No);
-    await contracts.beneficiaryGovernance
-      .connect(bennies[1])
-      .vote(2, ProposalType.Nomination, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(0, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(1, Vote.No);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(2, Vote.No);
+    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(2, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(4, Vote.No);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(5, Vote.No);
 
-    await contracts.beneficiaryGovernance
-      .connect(bennies[0])
-      .vote(4, ProposalType.Nomination, Vote.No);
-    await contracts.beneficiaryGovernance
-      .connect(bennies[0])
-      .vote(5, ProposalType.Nomination, Vote.No);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8);
+  };
 
+  const voteOnTakedownProposals = async (): Promise<void> => {
+    console.log("vote on beneficiary takedown proposals ...");
     await contracts.beneficiaryGovernance
-      .connect(accounts[0])
-      .finalize(6, ProposalType.Nomination);
+      .connect(bennies[0])
+      .vote(11, Vote.Yes);
+    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(13, Vote.No);
+    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(13, Vote.No);
     await contracts.beneficiaryGovernance
-      .connect(accounts[0])
-      .finalize(7, ProposalType.Nomination);
-    await contracts.beneficiaryGovernance
-      .connect(accounts[0])
-      .finalize(8, ProposalType.Nomination);
+      .connect(bennies[2])
+      .vote(14, Vote.Yes);
+
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7);
+    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8);
   };
 
   const addBeneficiariesToRegistry = async (): Promise<void> => {
@@ -629,12 +626,6 @@ export default async function deploy(ethers): Promise<void> {
     await displayElectionMetadata(GrantTerm.Year);
   };
 
-  const setElectionContractAsGovernanceForGrantRegistry =
-    async (): Promise<void> => {
-      await contracts.grantRegistry.nominateNewGovernance(accounts[0].address);
-      await contracts.grantRegistry.connect(accounts[0]).acceptGovernance();
-    };
-
   const approveForStaking = async (): Promise<void> => {
     console.log("approving all accounts for staking ...");
     await bluebird.map(
@@ -653,7 +644,6 @@ export default async function deploy(ethers): Promise<void> {
       eligibleButNotRegistered: bennies.slice(18, 20).map((bn) => bn.address),
       contracts: {
         beneficiaryRegistry: contracts.beneficiaryRegistry.address,
-        grantRegistry: contracts.grantRegistry.address,
         mockPop: contracts.mockPop.address,
         staking: contracts.staking.address,
         randomNumberConsumer: contracts.randomNumberConsumer.address,
@@ -664,7 +654,6 @@ export default async function deploy(ethers): Promise<void> {
 Paste this into your .env file:
 
 ADDR_BENEFICIARY_REGISTRY=${contracts.beneficiaryRegistry.address}
-ADDR_GRANT_REGISTRY=${contracts.grantRegistry.address}
 ADDR_POP=${contracts.mockPop.address}
 ADDR_STAKING=${contracts.staking.address}
 ADDR_RANDOM_NUMBER=${contracts.randomNumberConsumer.address}
@@ -693,6 +682,5 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
-  await setElectionContractAsGovernanceForGrantRegistry();
   await logResults();
 }
