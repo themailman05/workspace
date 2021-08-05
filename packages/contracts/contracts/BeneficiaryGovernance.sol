@@ -63,6 +63,7 @@ contract BeneficiaryGovernance is ParticipationReward {
   IBeneficiaryRegistry beneficiaryRegistry;
 
   mapping(address => bool) pendingBeneficiaries;
+  mapping(address => uint256) beneficiaryProposals;
 
   Proposal[] public proposals;
   uint256[] public nominations;
@@ -143,11 +144,13 @@ contract BeneficiaryGovernance is ParticipationReward {
   {
     _assertProposalPreconditions(_type, _beneficiary);
 
-    POP.safeTransferFrom(
-      msg.sender,
-      address(this),
-      DefaultConfigurations.proposalBond
-    );
+    if (DefaultConfigurations.proposalBond > 0) {
+      POP.safeTransferFrom(
+        msg.sender,
+        address(this),
+        DefaultConfigurations.proposalBond
+      );
+    }
 
     uint256 proposalId = proposals.length;
     proposals.push();
@@ -177,7 +180,7 @@ contract BeneficiaryGovernance is ParticipationReward {
     }
 
     pendingBeneficiaries[_beneficiary] = true;
-
+    beneficiaryProposals[_beneficiary] = proposals.length;
     emit ProposalCreated(proposalId, msg.sender, _beneficiary, _applicationCid);
 
     return proposalId;
@@ -208,14 +211,9 @@ contract BeneficiaryGovernance is ParticipationReward {
   /**
    * @notice votes to a specific proposal during the initial voting process
    * @param  proposalId id of the proposal which you are going to vote
-   * @param  _type the proposal type (nomination / takedown)
    */
-  function vote(
-    uint256 proposalId,
-    ProposalType _type,
-    VoteOption _vote
-  ) external {
-    Proposal storage proposal = _getProposal(proposalId, _type);
+  function vote(uint256 proposalId, VoteOption _vote) external {
+    Proposal storage proposal = proposals[proposalId];
     _refreshState(proposal);
 
     require(
@@ -271,10 +269,9 @@ contract BeneficiaryGovernance is ParticipationReward {
   /**
    * @notice finalizes the voting process
    * @param  proposalId id of the proposal
-   * @param  _type the proposal type (nomination / takedown)
    */
-  function finalize(uint256 proposalId, ProposalType _type) public {
-    Proposal storage proposal = _getProposal(proposalId, _type);
+  function finalize(uint256 proposalId) public {
+    Proposal storage proposal = proposals[proposalId];
     _refreshState(proposal);
 
     require(
@@ -321,10 +318,9 @@ contract BeneficiaryGovernance is ParticipationReward {
   /**
    * @notice claims bond after a successful proposal voting
    * @param  proposalId id of the proposal
-   * @param  _type the proposal type (nomination / takedown)
    */
-  function claimBond(uint256 proposalId, ProposalType _type) public {
-    Proposal storage proposal = _getProposal(proposalId, _type);
+  function claimBond(uint256 proposalId) public {
+    Proposal storage proposal = proposals[proposalId];
     require(
       msg.sender == proposal.proposer,
       "only the proposer may call this function"
@@ -376,50 +372,6 @@ contract BeneficiaryGovernance is ParticipationReward {
   }
 
   /**
-   * @notice returns a proposal depending on the type
-   */
-  function _getProposal(uint256 _proposalId, ProposalType _type)
-    internal
-    view
-    returns (Proposal storage)
-  {
-    if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return proposals[nominations[_proposalId]];
-    }
-    return proposals[takedowns[_proposalId]];
-  }
-
-  function getProposal(uint256 _proposalId, ProposalType _type)
-    external
-    view
-    returns (
-      ProposalStatus status_,
-      address beneficiary_,
-      bytes memory applicationCid_,
-      address proposer_,
-      uint256 startTime_,
-      uint256 yesCount_,
-      uint256 noCount_,
-      uint256 voterCount_,
-      ProposalType proposalType_,
-      ConfigurationOptions memory configurationOptions_
-    )
-  {
-    Proposal storage proposal = _getProposal(_proposalId, _type);
-
-    status_ = proposal.status;
-    beneficiary_ = proposal.beneficiary;
-    applicationCid_ = proposal.applicationCid;
-    proposer_ = proposal.proposer;
-    startTime_ = proposal.startTime;
-    yesCount_ = proposal.yesCount;
-    noCount_ = proposal.noCount;
-    voterCount_ = proposal.voterCount;
-    proposalType_ = proposal.proposalType;
-    configurationOptions_ = proposal.configurationOptions;
-  }
-
-  /**
    * @notice returns number of created proposals
    */
   function getNumberOfProposals(ProposalType _type)
@@ -436,35 +388,27 @@ contract BeneficiaryGovernance is ParticipationReward {
   /**
    * @notice gets number of votes
    * @param  proposalId id of the proposal
-   * @param  _type the proposal type (nomination / takedown)
    * @return number of votes to a proposal
    */
-  function getNumberOfVoters(uint256 proposalId, ProposalType _type)
+  function getNumberOfVoters(uint256 proposalId)
     external
     view
     returns (uint256)
   {
-    if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return proposals[nominations[proposalId]].voterCount;
-    }
-    return proposals[takedowns[proposalId]].voterCount;
+    return proposals[proposalId].voterCount;
   }
 
   /**
    * @notice checks if someone has voted to a specific proposal or not
    * @param  proposalId id of the proposal
-   * @param  _type the proposal type (nomination / takedown)
-   * @param  voter IPFS content hash
+   * @param  voter address opf voter
    * @return true or false
    */
-  function hasVoted(
-    uint256 proposalId,
-    ProposalType _type,
-    address voter
-  ) external view returns (bool) {
-    if (_type == ProposalType.BeneficiaryNominationProposal) {
-      return proposals[nominations[proposalId]].voters[voter];
-    }
-    return proposals[takedowns[proposalId]].voters[voter];
+  function hasVoted(uint256 proposalId, address voter)
+    external
+    view
+    returns (bool)
+  {
+    return proposals[proposalId].voters[voter];
   }
 }

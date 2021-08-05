@@ -1,5 +1,5 @@
 import { parseEther } from "ethers/lib/utils";
-import { GrantElectionAdapter } from "./helpers/GrantElectionAdapter";
+import { GrantElectionAdapter } from "../adapters";
 import bluebird from "bluebird";
 import { BigNumber, Contract, utils } from "ethers";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
@@ -25,10 +25,10 @@ interface Contracts {
   staking: Contract;
   randomNumberConsumer: Contract;
   grantElections: Contract;
-  beneficiaryVaults:Contract,
-  treasury:Contract,
-  insurance:Contract,
-  rewardsManager:Contract;
+  beneficiaryVaults: Contract;
+  treasury: Contract;
+  insurance: Contract;
+  rewardsManager: Contract;
 }
 
 export default async function deployTestnet(ethers): Promise<void> {
@@ -56,9 +56,9 @@ export default async function deployTestnet(ethers): Promise<void> {
     ).deploy(beneficiaryRegistry.address);
     await grantRegistry.deployTransaction.wait(2);
 
-    const mockPop = (await (
+    const mockPop = await (
       await ethers.getContractFactory("MockERC20")
-    ).deploy("TestPOP", "TPOP"));
+    ).deploy("TestPOP", "TPOP");
     await mockPop.deployTransaction.wait(2);
 
     const staking = await (
@@ -100,22 +100,21 @@ export default async function deployTestnet(ethers): Promise<void> {
       await ethers.getContractFactory("BeneficiaryVaults")
     ).deploy(mockPop.address, beneficiaryRegistry.address);
     console.log("beneficiaryVaults address", beneficiaryVaults.address);
-    await beneficiaryVaults.deployTransaction.wait(2)
+    await beneficiaryVaults.deployTransaction.wait(2);
 
     console.log("treasury");
     const treasury = await (
       await ethers.getContractFactory("MockTreasury")
     ).deploy();
     console.log("treasury address", treasury.address);
-    await treasury.deployTransaction.wait(2)
-
+    await treasury.deployTransaction.wait(2);
 
     console.log("insurance");
     const insurance = await (
       await ethers.getContractFactory("MockInsurance")
     ).deploy();
     console.log("insurance address", insurance.address);
-    await insurance.deployTransaction.wait(2)
+    await insurance.deployTransaction.wait(2);
 
     console.log("rewardsManager");
     const rewardsManager = await (
@@ -129,7 +128,7 @@ export default async function deployTestnet(ethers): Promise<void> {
       uniswapRouter.address
     );
     console.log("rewardsManager address", rewardsManager.address);
-    await rewardsManager.deployTransaction.wait(2)
+    await rewardsManager.deployTransaction.wait(2);
     logResults();
 
     contracts = {
@@ -142,7 +141,7 @@ export default async function deployTestnet(ethers): Promise<void> {
       beneficiaryVaults,
       treasury,
       insurance,
-      rewardsManager
+      rewardsManager,
     };
     logResults();
   };
@@ -528,7 +527,6 @@ export default async function deployTestnet(ethers): Promise<void> {
       eligibleButNotRegistered: bennies.slice(18, 20).map((bn) => bn.address),
       contracts: {
         beneficiaryRegistry: contracts.beneficiaryRegistry.address,
-        grantRegistry: contracts.grantRegistry.address,
         mockPop: contracts.mockPop.address,
         staking: contracts.staking.address,
         randomNumberConsumer: contracts.randomNumberConsumer.address,
@@ -539,7 +537,6 @@ export default async function deployTestnet(ethers): Promise<void> {
 Paste this into your .env file:
 
 ADDR_TESTNET_BENEFICIARY_REGISTRY=${contracts.beneficiaryRegistry.address}
-ADDR_TESTNET_GRANT_REGISTRY=${contracts.grantRegistry.address}
 ADDR_TESTNET_POP=${contracts.mockPop.address}
 ADDR_TESTNET_STAKING=${contracts.staking.address}
 ADDR_TESTNET_RANDOM_NUMBER=${contracts.randomNumberConsumer.address}
@@ -562,6 +559,5 @@ ADDR_TESTNET_GRANT_ELECTION=${contracts.grantElections.address}
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
-  await setElectionContractAsGovernanceForGrantRegistry();
   await logResults();
 }

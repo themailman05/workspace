@@ -1,8 +1,7 @@
 {
   "name": "@popcorn/contracts",
   "version": "1.0.0",
-  "main": "dist/index.js",
-  "types": "dist/index.d.js",
+  "main": "index",
   "scripts": {
     "build": "tsc",
     "dev": "yarn hardhat node",
@@ -11,8 +10,8 @@
     "prettier": "prettier --write 'contracts/**/*.sol'",
     "clean": "rimraf ./cache & rimraf ./artifacts",
     "compile": "yarn clean && hardhat compile ",
-    "postinstall": "yarn compile",
-    "test": "mocha"
+    "test": "mocha",
+    "postinstall": "yarn compile"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-ethers": "^2.0.1",
