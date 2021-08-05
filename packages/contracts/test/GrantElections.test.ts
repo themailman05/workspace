@@ -1,26 +1,21 @@
 import { MockContract } from "@ethereum-waffle/mock-contract";
 import { parseEther } from "@ethersproject/units";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { GrantElectionAdapter } from "@popcorn/contracts/adapters";
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { waffle, ethers } from "hardhat";
-import {
-  calculateVaultShare,
-  countVotes,
-  rankAwardees,
-} from "../scripts/finalizeElection";
-import {
-  BeneficiaryVaults,
-  GrantElections,
-  MockERC20,
-  RandomNumberConsumer,
-  RandomNumberHelper,
-} from "../typechain";
-import { GrantElectionAdapter } from "@popcorn/contracts/adapters";
+import { ethers, waffle } from "hardhat";
 import {
   ElectionMetadata,
   ShareType,
 } from "../adapters/GrantElection/GrantElectionAdapter";
+import { calculateVaultShare, rankAwardees } from "../scripts/finalizeElection";
+import {
+  BeneficiaryVaults,
+  GrantElections,
+  MockERC20,
+  RandomNumberHelper,
+} from "../typechain";
 
 interface Contracts {
   mockPop: MockERC20;
@@ -50,6 +45,7 @@ let contracts: Contracts;
 
 const GRANT_TERM = { MONTH: 0, QUARTER: 1, YEAR: 2 };
 const ONE_DAY = 86400;
+const DEFAULT_REGION = "0x5757";
 const ElectionState = { Registration: 0, Voting: 1, Closed: 2 };
 const registrationBondMonth = parseEther("50");
 const registrationBondQuarter = parseEther("100");
@@ -57,11 +53,9 @@ const electionId = 0;
 
 async function deployContracts(): Promise<Contracts> {
   const mockPop = await (
-    await (await ethers.getContractFactory("MockERC20")).deploy(
-      "TestPOP",
-      "TPOP",
-      18
-    )
+    await (
+      await ethers.getContractFactory("MockERC20")
+    ).deploy("TestPOP", "TPOP", 18)
   ).deployed();
   await mockPop.mint(owner.address, parseEther("6500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
@@ -84,15 +78,10 @@ async function deployContracts(): Promise<Contracts> {
     beneficiaryRegistryFactory.interface.format() as any[]
   );
 
-  const beneficiaryVaults = await (
-    await (await ethers.getContractFactory("BeneficiaryVaults")).deploy(
-      mockPop.address,
-      mockBeneficiaryRegistry.address
-    )
-  ).deployed();
-
   const randomNumberHelper = await (
-    await (await ethers.getContractFactory("RandomNumberHelper")).deploy(
+    await (
+      await ethers.getContractFactory("RandomNumberHelper")
+    ).deploy(
       owner.address,
       mockPop.address,
       ethers.utils.formatBytes32String("secret")
@@ -103,13 +92,31 @@ async function deployContracts(): Promise<Contracts> {
     .connect(owner)
     .transfer(randomNumberHelper.address, parseEther("500"));
 
+  const beneficiaryVaults = await (
+    await (
+      await ethers.getContractFactory("BeneficiaryVaults")
+    ).deploy(mockPop.address)
+  ).deployed();
+
+  await beneficiaryVaults
+    .connect(owner)
+    .setBeneficiaryRegistry(mockBeneficiaryRegistry.address);
+
+  const region = await (
+    await (
+      await ethers.getContractFactory("Region")
+    ).deploy(beneficiaryVaults.address)
+  ).deployed();
+
   const grantElections = (await (
-    await (await ethers.getContractFactory("GrantElections")).deploy(
+    await (
+      await ethers.getContractFactory("GrantElections")
+    ).deploy(
       mockStaking.address,
       mockBeneficiaryRegistry.address,
-      beneficiaryVaults.address,
       randomNumberHelper.address,
       mockPop.address,
+      region.address,
       governance.address
     )
   ).deployed()) as GrantElections;
@@ -134,7 +141,7 @@ async function prepareElection(
   grantTerm: number,
   electionId: number
 ): Promise<void> {
-  await contracts.grantElections.initialize(grantTerm);
+  await contracts.grantElections.initialize(grantTerm, DEFAULT_REGION);
   await contracts.mockStaking.mock.getVoiceCredits.returns(100);
   await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(true);
   await contracts.grantElections
@@ -321,7 +328,10 @@ describe("GrantElections", function () {
       await contracts.grantElections
         .connect(governance)
         .toggleRegistrationBondRequirement(GRANT_TERM.YEAR);
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await contracts.grantElections.registerForElection(
         beneficiary.address,
         electionId
@@ -338,7 +348,10 @@ describe("GrantElections", function () {
       await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
         true
       );
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await expect(
         contracts.grantElections
           .connect(beneficiary)
@@ -350,7 +363,10 @@ describe("GrantElections", function () {
       await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
         true
       );
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await contracts.mockPop.mint(beneficiary2.address, parseEther("1000"));
       await contracts.mockPop
         .connect(beneficiary2)
@@ -378,7 +394,10 @@ describe("GrantElections", function () {
       await contracts.mockBeneficiaryRegistry.mock.beneficiaryExists.returns(
         true
       );
-      await contracts.grantElections.initialize(GRANT_TERM.YEAR);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.YEAR,
+        DEFAULT_REGION
+      );
       await contracts.mockPop.mint(beneficiary2.address, parseEther("1000"));
       await contracts.mockPop
         .connect(beneficiary2)
@@ -399,11 +418,16 @@ describe("GrantElections", function () {
     it("should successfully initialize an election if one hasn't already been created", async function () {
       const currentBlock = await waffle.provider.getBlock("latest");
       const result = await contracts.grantElections.initialize(
-        GRANT_TERM.QUARTER
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
       );
       expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+        .withArgs(
+          GRANT_TERM.QUARTER,
+          DEFAULT_REGION,
+          currentBlock.timestamp + 1
+        );
       expect(result)
         .to.emit(contracts.grantElections, "VaultInitialized")
         .withArgs(
@@ -416,7 +440,10 @@ describe("GrantElections", function () {
 
     it("should set correct election metadata", async function () {
       const currentBlock = await waffle.provider.getBlock("latest");
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
+      );
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
       ).getElectionMetadata(electionId);
@@ -445,9 +472,12 @@ describe("GrantElections", function () {
     });
 
     it("should prevent an election from initializing if it isn't finalized", async function () {
-      await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
+      );
       await expect(
-        contracts.grantElections.initialize(GRANT_TERM.QUARTER)
+        contracts.grantElections.initialize(GRANT_TERM.QUARTER, DEFAULT_REGION)
       ).to.be.revertedWith("election not yet finalized");
     });
     it("should allow to create a new election for a term when the old one is finalized", async function () {
@@ -482,16 +512,24 @@ describe("GrantElections", function () {
       );
       const currentBlockNumber = await ethers.provider.getBlockNumber();
       const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
-      const result = contracts.grantElections.initialize(GRANT_TERM.QUARTER);
+      const result = contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
+      );
       await expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+        .withArgs(
+          GRANT_TERM.QUARTER,
+          DEFAULT_REGION,
+          currentBlock.timestamp + 1
+        );
 
       await expect(result)
         .to.emit(contracts.beneficiaryVaults, "VaultClosed")
         .withArgs(GRANT_TERM.QUARTER);
 
       const activeElectionId = await contracts.grantElections.activeElections(
+        DEFAULT_REGION,
         GRANT_TERM.QUARTER
       );
       expect(activeElectionId).to.equal(electionId + 1);
@@ -502,11 +540,16 @@ describe("GrantElections", function () {
         .setRewardsBudget(parseEther("3000"));
       const currentBlock = await waffle.provider.getBlock("latest");
       const result = await contracts.grantElections.initialize(
-        GRANT_TERM.QUARTER
+        GRANT_TERM.QUARTER,
+        DEFAULT_REGION
       );
       expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
-        .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+        .withArgs(
+          GRANT_TERM.QUARTER,
+          DEFAULT_REGION,
+          currentBlock.timestamp + 1
+        );
       expect(result).to.not.emit(contracts.grantElections, "VaultInitialized");
       const election = await contracts.grantElections.elections(electionId);
       expect(election.vaultId).to.equal(
@@ -517,7 +560,10 @@ describe("GrantElections", function () {
 
   describe("voting", function () {
     beforeEach(async function () {
-      await contracts.grantElections.initialize(GRANT_TERM.MONTH);
+      await contracts.grantElections.initialize(
+        GRANT_TERM.MONTH,
+        DEFAULT_REGION
+      );
     });
     it("should require voice credits", async function () {
       await expect(
@@ -660,9 +706,8 @@ describe("GrantElections", function () {
         });
 
         it("overwrites merkleRoot when calling proposeFinalization twice", async function () {
-          const newMerkleRoot = ethers.utils.formatBytes32String(
-            "newMerkleRoot"
-          );
+          const newMerkleRoot =
+            ethers.utils.formatBytes32String("newMerkleRoot");
           ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
           ethers.provider.send("evm_mine", []);
           await contracts.grantElections.refreshElectionState(electionId);
@@ -711,7 +756,8 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance1).to.equal(parseEther("500"));
-            const incentiveBudget1 = await contracts.grantElections.incentiveBudget();
+            const incentiveBudget1 =
+              await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget1).to.equal(parseEther("1000"));
           });
 
@@ -729,7 +775,8 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance1).to.equal(parseEther("2500"));
-            const incentiveBudget1 = await contracts.grantElections.incentiveBudget();
+            const incentiveBudget1 =
+              await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget1).to.equal(0);
           });
 
@@ -748,7 +795,8 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance1).to.equal(parseEther("2500"));
-            const incentiveBudget1 = await contracts.grantElections.incentiveBudget();
+            const incentiveBudget1 =
+              await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget1).to.equal(parseEther("2000"));
 
             await contracts.grantElections
@@ -758,7 +806,8 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance2).to.equal(parseEther("2500"));
-            const incentiveBudget2 = await contracts.grantElections.incentiveBudget();
+            const incentiveBudget2 =
+              await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget2).to.equal(parseEther("2000"));
           });
         });

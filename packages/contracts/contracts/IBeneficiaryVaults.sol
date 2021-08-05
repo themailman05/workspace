@@ -8,4 +8,6 @@ interface IBeneficiaryVaults {
   function openVault(uint8 vaultId_, bytes32 merkleRoot_) external;
 
   function closeVault(uint8 vaultId_) external;
+
+  function allocateRewards() external;
 }

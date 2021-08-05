@@ -8,6 +8,7 @@ import "./IBeneficiaryRegistry.sol";
 import "./IRandomNumberConsumer.sol";
 import "./IBeneficiaryVaults.sol";
 import "./Governed.sol";
+import "./IRegion.sol";
 import "./ParticipationReward.sol";
 
 contract GrantElections is ParticipationReward {
@@ -32,6 +33,7 @@ contract GrantElections is ParticipationReward {
     uint256 randomNumber;
     bytes32 merkleRoot;
     bytes32 vaultId;
+    bytes2 region;
   }
 
   struct ElectionConfiguration {
@@ -72,13 +74,13 @@ contract GrantElections is ParticipationReward {
 
   /* ========== STATE VARIABLES ========== */
 
-  IStaking staking;
-  IBeneficiaryRegistry beneficiaryRegistry;
-  IBeneficiaryVaults beneficiaryVaults;
-  IRandomNumberConsumer randomNumberConsumer;
+  IRegion internal region;
+  IStaking internal staking;
+  IBeneficiaryRegistry internal beneficiaryRegistry;
+  IRandomNumberConsumer internal randomNumberConsumer;
 
   Election[] public elections;
-  uint256[3] public activeElections;
+  mapping(bytes2 => uint256[3]) public activeElections;
   ElectionConfiguration[3] public electionDefaults;
   uint256 public incentiveBudget;
 
@@ -86,7 +88,11 @@ contract GrantElections is ParticipationReward {
 
   event BeneficiaryRegistered(address _beneficiary, uint256 _electionId);
   event UserVoted(address _user, ElectionTerm _term);
-  event ElectionInitialized(ElectionTerm _term, uint256 _startTime);
+  event ElectionInitialized(
+    ElectionTerm _term,
+    bytes2 _region,
+    uint256 _startTime
+  );
   event FinalizationProposed(uint256 _electionId, bytes32 _merkleRoot);
   event ElectionFinalized(uint256 _electionId, bytes32 _merkleRoot);
 
@@ -95,15 +101,15 @@ contract GrantElections is ParticipationReward {
   constructor(
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
-    IBeneficiaryVaults _beneficiaryVaults,
     IRandomNumberConsumer _randomNumberConsumer,
     IERC20 _pop,
+    IRegion _region,
     address _governance
   ) ParticipationReward(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
-    beneficiaryVaults = _beneficiaryVaults;
     randomNumberConsumer = _randomNumberConsumer;
+    region = _region;
     _setDefaults();
   }
 
@@ -182,10 +188,13 @@ contract GrantElections is ParticipationReward {
 
   // todo: mint POP for caller to incentivize calling function
   // todo: use bonds to incentivize callers instead of minting
-  function initialize(ElectionTerm _grantTerm) public {
+  function initialize(ElectionTerm _grantTerm, bytes2 _region) public {
+    require(region.regionExists(_region), "region doesnt exist");
     uint8 _term = uint8(_grantTerm);
     if (elections.length != 0) {
-      Election storage latestElection = elections[activeElections[_term]];
+      Election storage latestElection = elections[
+        activeElections[_region][_term]
+      ];
 
       if (
         latestElection.electionTerm == _grantTerm &&
@@ -202,12 +211,13 @@ contract GrantElections is ParticipationReward {
         );
       }
     }
-    if (beneficiaryVaults.vaultExists(_term)) {
-      beneficiaryVaults.closeVault(_term);
+    address beneficiaryVault = region.regionVaults(_region);
+    if (IBeneficiaryVaults(beneficiaryVault).vaultExists(_term)) {
+      IBeneficiaryVaults(beneficiaryVault).closeVault(_term);
     }
 
     uint256 electionId = elections.length;
-    activeElections[_term] = electionId;
+    activeElections[_region][_term] = electionId;
 
     elections.push();
     Election storage election = elections[electionId];
@@ -215,6 +225,7 @@ contract GrantElections is ParticipationReward {
     election.electionState = ElectionState.Registration;
     election.electionTerm = _grantTerm;
     election.startTime = block.timestamp;
+    election.region = _region;
     (bool vaultCreated, bytes32 vaultId) = _initializeVault(
       keccak256(abi.encodePacked(_term, block.timestamp)),
       block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
@@ -225,7 +236,11 @@ contract GrantElections is ParticipationReward {
       election.vaultId = vaultId;
     }
 
-    emit ElectionInitialized(election.electionTerm, election.startTime);
+    emit ElectionInitialized(
+      election.electionTerm,
+      _region,
+      election.startTime
+    );
   }
 
   /**
@@ -273,7 +288,12 @@ contract GrantElections is ParticipationReward {
     ) {
       election.electionState = ElectionState.Closed;
       if (election.electionConfiguration.useChainLinkVRF) {
-        randomNumberConsumer.getRandomNumber(_electionId);
+        randomNumberConsumer.getRandomNumber(
+          _electionId,
+          uint256(
+            keccak256(abi.encode(block.timestamp, blockhash(block.number)))
+          )
+        );
       }
     } else if (
       block.timestamp >=
@@ -402,21 +422,24 @@ contract GrantElections is ParticipationReward {
   function approveFinalization(uint256 _electionId, bytes32 _merkleRoot)
     external
   {
-    Election storage _election = elections[_electionId];
+    Election storage election = elections[_electionId];
     require(
-      _election.electionState != ElectionState.Finalized,
+      election.electionState != ElectionState.Finalized,
       "election already finalized"
     );
     require(
-      _election.electionState == ElectionState.FinalizationProposed,
+      election.electionState == ElectionState.FinalizationProposed,
       "finalization not yet proposed"
     );
-    require(_election.merkleRoot == _merkleRoot, "Incorrect root");
+    require(election.merkleRoot == _merkleRoot, "Incorrect root");
 
-    //TODO how to calculate vault endtime?
-    beneficiaryVaults.openVault(uint8(_election.electionTerm), _merkleRoot);
-    _openVault(_election.vaultId);
-    _election.electionState = ElectionState.Finalized;
+    address beneficiaryVault = region.regionVaults(election.region);
+    IBeneficiaryVaults(beneficiaryVault).openVault(
+      uint8(election.electionTerm),
+      _merkleRoot
+    );
+    _openVault(election.vaultId);
+    election.electionState = ElectionState.Finalized;
 
     emit ElectionFinalized(_electionId, _merkleRoot);
   }
