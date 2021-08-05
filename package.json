@@ -10,7 +10,8 @@
     "app:build": "yarn lerna run --scope={@popcorn/utils,@popcorn/app} build",
     "app:start": "yarn lerna run --scope @popcorn/app start",
     "start": "yarn lerna run --scope @popcorn/app start",
-    "pretify": "prettier --write ."
+    "pretify": "prettier --write .",
+    "netlify-build": "lerna run --scope @popcorn/contracts compile; cd packages/app; yarn next build"
   },
   "dependencies": {
     "@netlify/plugin-nextjs": "^3.3.1",

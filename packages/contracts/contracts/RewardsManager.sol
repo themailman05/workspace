@@ -84,6 +84,10 @@ contract RewardsManager is
 
   receive() external payable {}
 
+  function getRewardSplits() external view returns (uint256[4] memory) {
+    return rewardSplits;
+  }
+
   /**
    * @notice Overrides existing Staking contract
    * @param staking_ Address of new Staking contract

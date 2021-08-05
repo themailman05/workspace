@@ -1,13 +1,12 @@
+import { MockContract } from "@ethereum-waffle/mock-contract";
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { waffle, ethers } from "hardhat";
+import { BigNumber } from "ethers";
 import { parseEther } from "ethers/lib/utils";
+import { ethers, waffle } from "hardhat";
 import IUniswapV2Factory from "../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json";
 import IUniswapV2Router02 from "../artifacts/@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol/IUniswapV2Router02.json";
 import { MockERC20, RewardsManager, Staking } from "../typechain";
-import { Contract } from "@ethersproject/contracts";
-import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { MockContract } from "@ethereum-waffle/mock-contract";
-import { BigNumber } from "ethers";
 
 interface Contracts {
   POP: MockERC20;
@@ -594,8 +593,13 @@ describe("RewardsManager", function () {
     it("pays out keeper incentives", async function () {
       //Test preparation
       await contracts.POP.mint(owner.address, parseEther("20.24"));
-      await contracts.POP.connect(owner).approve(contracts.RewardsManager.address, parseEther("20"));
-      await contracts.RewardsManager.connect(owner).fundIncentive(parseEther("20"));
+      await contracts.POP.connect(owner).approve(
+        contracts.RewardsManager.address,
+        parseEther("20")
+      );
+      await contracts.RewardsManager.connect(owner).fundIncentive(
+        parseEther("20")
+      );
       const swapReward = parseEther("0.24");
       const altAmount = parseEther("1");
       await contracts.MockAlt.transfer(
@@ -605,7 +609,7 @@ describe("RewardsManager", function () {
       await contracts.POP.transfer(
         contracts.RewardsManager.address,
         swapReward
-      ); 
+      );
 
       await contracts.mockUniswapV2Router.mock.swapExactTokensForTokens.returns(
         [altAmount, swapReward]
@@ -616,10 +620,14 @@ describe("RewardsManager", function () {
         [contracts.MockAlt.address, contracts.POP.address],
         swapReward
       );
-      expect(await contracts.POP.balanceOf(owner.address)).to.equal(parseEther("20"))
+      expect(await contracts.POP.balanceOf(owner.address)).to.equal(
+        parseEther("20")
+      );
 
       await contracts.RewardsManager.connect(owner).distributeRewards();
-      expect(await contracts.POP.balanceOf(owner.address)).to.equal(parseEther("30"))
+      expect(await contracts.POP.balanceOf(owner.address)).to.equal(
+        parseEther("30")
+      );
     });
   });
 });
