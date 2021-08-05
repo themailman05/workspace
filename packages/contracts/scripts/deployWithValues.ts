@@ -1,11 +1,12 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { ElectionTerm, ProposalType } from "@popcorn/contracts/adapters";
 import { getBytes32FromIpfsHash } from "@popcorn/utils";
 import bluebird from "bluebird";
 import { deployContract } from "ethereum-waffle";
-import { BigNumber, Contract, utils } from "ethers";
+import { Contract, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
-import { GrantElectionAdapter } from "../adapters";
-import addressCidMap from "./addressCidMap.json";
+import { ShareType } from "../adapters/GrantElection/GrantElectionAdapter";
+
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
@@ -33,9 +34,50 @@ enum Vote {
   No,
 }
 
+const SECONDS_IN_DAY = 24 * 60 * 60;
+
+const addressCidMap = {
+  "0x70997970C51812dc3A010C7d01b50e0d17dc79C8":
+    "QmSzq4gKUk9LhNNCFBVDbkkz26umqu63jx2dXNABBKcgJ9",
+  "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC":
+    "QmNY4QEKhnreDZHW3yiphXn765im5y8RCGrySKzRoXDPTB",
+  "0x90F79bf6EB2c4f870365E785982E1f101E93b906":
+    "QmZn2p7xrRxqVGhKAtqjMZSY1Z6pW7A6RD7DiK2xt4nYTB",
+  "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65":
+    "QmUW6peidPvHtbH4P7VNUpPdfaJqv7nmURbpgMcnzUbTtY",
+  "0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc":
+    "QmVAur87rJCyGh2ja1Pg4smAqD6MzXtuTXxWkeCkKYrf3n",
+  "0x976EA74026E726554dB657fA54763abd0C3a0aa9":
+    "QmNu5LeMyvMkP2sTBZhesXp352ihJUmGTPVeRp42Y9caXJ",
+  "0x14dC79964da2C08b23698B3D3cc7Ca32193d9955":
+    "QmQ3WQK41BozEznephMEh4cwGsRsFuXjFQRM6himtu5kHq",
+  "0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f":
+    "QmRnnDnHnF8uv1oour3oU9s1GmKNggzdEqMJueZViAvSAa",
+  "0xa0Ee7A142d267C1f36714E4a8F75612F20a79720":
+    "QmdoFZ6DL49SVmXDBv1zpkCngvr6bU7SUgxLbkh6ZM9L2V",
+  "0xBcd4042DE499D14e55001CcbB24a551F3b954096":
+    "QmchtjJsFDWNzLj93gPND1WhYUUGKeznNR6ATUeuaW71uq",
+  "0x71bE63f3384f5fb98995898A86B02Fb2426c5788":
+    "QmYJ8KGfKo5iG8EbxZxvNoWiNuEMM4Hx5ok4paZ1F27G1w",
+  "0xFABB0ac9d68B0B445fB7357272Ff202C5651694a":
+    "QmTf7c3MaHsBR5rdT5CN3m3yZCuf1XkGxhV81GhJKxempA",
+  "0x1CBd3b2770909D4e10f157cABC84C7264073C9Ec":
+    "QmfQ2Ffxw5P6NoKkQvkRoN31mAd65Dp2UBfPMdgzCDCDDx",
+  "0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097":
+    "QmVNQeMrLpvnizudP9kZquFSb28CmH9fHddEpdX7wyADxF",
+  "0xcd3B766CCDd6AE721141F452C550Ca635964ce71":
+    "QmTiSvXRwdGFvPMPtKMurh4FJnzq3bZzws63UuErirSMFq",
+  "0x2546BcD3c84621e976D8185a91A922aE77ECEc30":
+    "QmSLS4TKBM2M9tXv5CAdFqUQJ9wR8UjjyhtrUxtbRrXE9M",
+  "0xbDA5747bFD65F08deb54cb465eB87D40e51B197E":
+    "QmaisZuRUE1ndZGSzmvg4Uxr7nsi2ciQ1z9VoDCnpGRADt",
+  "0xdD2FD4581271e230360230F9337D5c0430Bf44C0":
+    "Qmc4qtSHikeYvy4WScJWXtUeX2g3Qf6fC4xoJaU3fugQwu",
+  "0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199":
+    "QmcCmaXA3E8nzcBrTejHHjT8svKh6cSTwhKbPNuRyM6uH5",
+};
+
 export default async function deploy(ethers): Promise<void> {
-  const GrantTerm = { Month: 0, Quarter: 1, Year: 2 };
-  const GrantTermMap = { 0: "Monthly", 1: "Quarterly", 2: "Yearly" };
   const overrides = {
     gasLimit: 9999999,
   };
@@ -141,6 +183,7 @@ export default async function deploy(ethers): Promise<void> {
       ).deploy(
         staking.address,
         beneficiaryRegistry.address,
+        beneficiaryVaults.address,
         randomNumberConsumer.address,
         mockPop.address,
         accounts[0].address
@@ -254,64 +297,181 @@ export default async function deploy(ethers): Promise<void> {
     ethers.provider.send("evm_mine", []);
   };
 
-  const addBeneficiaryTakedownProposals = async (): Promise<void> => {
-    console.log("reducing voting period to 0");
-    await contracts.beneficiaryGovernance
-      .connect(accounts[0])
-      .setConfiguration(2 * 60 * 60, 2 * 60 * 60, parseEther("2000"));
-    console.log("adding beneficiary takedown proposals...");
-
+  const addCompletedProposals = async (): Promise<void> => {
+    console.log("adding completed nomination proposals...");
     await bluebird.map(
-      bennies.slice(11),
+      bennies.slice(0, 6),
       async (beneficiary) => {
         return contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
-            1,
+            ProposalType.Nomination,
             { gasLimit: 3000000 }
           );
       },
       { concurrency: 1 }
     );
+    console.log("adding completed takedown proposals...");
+    await bluebird.map(
+      bennies.slice(6, 12),
+      async (beneficiary) => {
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
+            ProposalType.Takedown,
+            { gasLimit: 3000000 }
+          );
+      },
+      { concurrency: 1 }
+    );
+    console.log("voting on nomination proposals");
+    await bluebird.map(bennies.slice(0, 6), async (x, i) => {
+      await contracts.beneficiaryGovernance
+        .connect(bennies[0])
+        .vote(i, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[1])
+        .vote(i, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[2])
+        .vote(i, Vote.No);
+    });
+    console.log("voting on takedown proposals");
+    await bluebird.map(bennies.slice(6, 12), async (x, i) => {
+      await contracts.beneficiaryGovernance
+        .connect(bennies[0])
+        .vote(i + 6, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[1])
+        .vote(i + 6, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[2])
+        .vote(i + 6, Vote.No);
+    });
+    ethers.provider.send("evm_increaseTime", [4 * SECONDS_IN_DAY]);
+    ethers.provider.send("evm_mine", []);
+    console.log("finalise nomination/takedown proposals");
+    await bluebird.map(
+      bennies.slice(0, 12),
+      async (x, i) => {
+        await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(i);
+      },
+      { concurrency: 1 }
+    );
   };
 
-  const voteOnNominationProposals = async (): Promise<void> => {
-    console.log("vote on beneficiary nomination proposals ...");
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(0, Vote.Yes);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(1, Vote.No);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(2, Vote.No);
-    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(2, Vote.Yes);
+  const addVetoProposals = async (): Promise<void> => {
+    console.log("adding veto nomination proposals...");
+    await bluebird.map(
+      bennies.slice(12, 14),
+      async (beneficiary) => {
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
+            ProposalType.Nomination,
+            { gasLimit: 3000000 }
+          );
+      },
+      { concurrency: 1 }
+    );
+    console.log("adding veto takedown proposals...");
+    await bluebird.map(
+      bennies.slice(14, 16),
+      async (beneficiary) => {
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
+            ProposalType.Takedown,
+            { gasLimit: 3000000 }
+          );
+      },
+      { concurrency: 1 }
+    );
+    console.log("voting on nomination and takedown proposals");
+    await bluebird.map(bennies.slice(12, 16), async (x, i) => {
+      await contracts.beneficiaryGovernance
+        .connect(bennies[0])
+        .vote(i + 12, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[1])
+        .vote(i + 12, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[2])
+        .vote(i + 12, Vote.No);
+    });
 
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(4, Vote.No);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(5, Vote.No);
+    ethers.provider.send("evm_increaseTime", [2 * SECONDS_IN_DAY]);
+    ethers.provider.send("evm_mine", []);
 
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(5);
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(6);
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(7);
-    await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(8);
+    await bluebird.map(bennies.slice(12, 16), async (x, i) => {
+      await contracts.beneficiaryGovernance
+        .connect(bennies[3])
+        .vote(i + 12, Vote.No);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[4])
+        .vote(i + 12, Vote.No);
+    });
   };
 
-  const voteOnTakedownProposals = async (): Promise<void> => {
-    console.log("vote on beneficiary takedown proposals ...");
-    await contracts.beneficiaryGovernance
-      .connect(bennies[0])
-      .vote(11, Vote.Yes);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).vote(13, Vote.No);
-    await contracts.beneficiaryGovernance.connect(bennies[1]).vote(13, Vote.No);
-    await contracts.beneficiaryGovernance
-      .connect(bennies[2])
-      .vote(14, Vote.Yes);
-
-    await contracts.beneficiaryGovernance.connect(bennies[0]).finalize(11);
-    await contracts.beneficiaryGovernance.connect(bennies[0]).finalize(12);
+  const addOpenProposals = async (): Promise<void> => {
+    console.log("adding veto nomination proposals...");
+    await bluebird.map(
+      bennies.slice(16, 18),
+      async (beneficiary) => {
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
+            ProposalType.Nomination,
+            { gasLimit: 3000000 }
+          );
+      },
+      { concurrency: 1 }
+    );
+    console.log("adding veto takedown proposals...");
+    await bluebird.map(
+      bennies.slice(18),
+      async (beneficiary) => {
+        return contracts.beneficiaryGovernance
+          .connect(beneficiary)
+          .createProposal(
+            beneficiary.address,
+            getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
+            ProposalType.Takedown,
+            { gasLimit: 3000000 }
+          );
+      },
+      { concurrency: 1 }
+    );
+    console.log("voting on nomination and takedown proposals");
+    await bluebird.map(bennies.slice(16), async (x, i) => {
+      await contracts.beneficiaryGovernance
+        .connect(bennies[0])
+        .vote(i + 16, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[1])
+        .vote(i + 16, Vote.Yes);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[2])
+        .vote(i + 16, Vote.No);
+    });
   };
 
-  const addBeneficiariesToRegistry = async (): Promise<void> => {
+  const addBeneficiariesToRegistry = async (
+    bennies: SignerWithAddress[]
+  ): Promise<void> => {
     console.log("adding beneficiaries to registry ...");
     await bluebird.map(
-      bennies.slice(11),
+      bennies,
       async (beneficiary: SignerWithAddress) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
@@ -391,38 +551,13 @@ export default async function deploy(ethers): Promise<void> {
       .transfer(contracts.rewardsManager.address, parseEther("5000"));
   };
 
-  const initializeElectionWithFastVotingEnabled = async (
-    grantTerm: number
-  ): Promise<void> => {
-    console.log(
-      `initializing ${GrantTermMap[grantTerm]} election with fast voting enabled ...`
-    );
-    await contracts.grantElections.setConfiguration(
-      grantTerm,
-      10,
-      10,
-      true,
-      false,
-      0,
-      86400 * 30,
-      10,
-      100
-    );
-
-    await contracts.grantElections.initialize(grantTerm);
-    console.log(
-      await GrantElectionAdapter(contracts.grantElections).electionDefaults(
-        grantTerm
-      )
-    );
-  };
-
   const registerBeneficiariesForElection = async (
     grantTerm,
     bennies
   ): Promise<void> => {
-    console.log(
-      `registering beneficiaries for election (${GrantTermMap[grantTerm]}) ...`
+    console.log(`registering beneficiaries for election (${grantTerm}) ...`);
+    const electionId = await contracts.grantElections.activeElections(
+      grantTerm
     );
     await bluebird.map(
       bennies,
@@ -430,7 +565,7 @@ export default async function deploy(ethers): Promise<void> {
         console.log(`registering ${beneficiary.address}`);
         return contracts.grantElections.registerForElection(
           beneficiary.address,
-          grantTerm,
+          electionId,
           { gasLimit: 3000000 }
         );
       },
@@ -438,23 +573,12 @@ export default async function deploy(ethers): Promise<void> {
     );
   };
 
-  const displayElectionMetadata = async (grantTerm): Promise<void> => {
-    console.log(
-      `${GrantTermMap[grantTerm]} metadata: `,
-      await GrantElectionAdapter(contracts.grantElections).getElectionMetadata(
-        grantTerm
-      )
-    );
-  };
-
-  // voting active
-  const initializeMonthlyElection = async (): Promise<void> => {
-    await initializeElectionWithFastVotingEnabled(GrantTerm.Month);
-    await registerBeneficiariesForElection(
-      GrantTerm.Month,
-      bennies.slice(11, 14)
-    );
-    await displayElectionMetadata(GrantTerm.Month);
+  const initializeElection = async (
+    electionTerm: ElectionTerm,
+    beneficiaries: SignerWithAddress[]
+  ): Promise<void> => {
+    await contracts.grantElections.initialize(electionTerm);
+    await registerBeneficiariesForElection(electionTerm, beneficiaries);
   };
 
   const stakePOP = async (): Promise<void> => {
@@ -466,29 +590,12 @@ export default async function deploy(ethers): Promise<void> {
     });
   };
 
-  const voteForElection = async (
-    term,
-    voters,
-    beneficiaries
+  // TODO: Randomise voting
+  const voteInElection = async (
+    beneficiaries: SignerWithAddress[],
+    voters: SignerWithAddress[],
+    electionId: number
   ): Promise<void> => {
-    while (
-      (await contracts.staking.getVoiceCredits(
-        voters[voters.length - 1].address
-      )) === BigNumber.from("0")
-    ) {
-      await new Promise((r) => setTimeout(r, 1000));
-      console.log("waiting for vote credits to be ready ...");
-    }
-
-    console.log(`${voters.length} voting for ${beneficiaries.length} bennies`);
-    console.log("voters are voting in election ...");
-    await voters.forEach(async (voter) =>
-      console.log(
-        await (
-          await contracts.staking.getVoiceCredits(voter.address)
-        ).toString()
-      )
-    );
     await bluebird.map(
       voters,
       async (voter: SignerWithAddress) => {
@@ -500,93 +607,11 @@ export default async function deploy(ethers): Promise<void> {
             utils.parseEther("300"),
             utils.parseEther("350"),
           ],
-          term
+          electionId
         );
       },
       { concurrency: 1 }
     );
-  };
-
-  // voting completed: to be finalized
-  const initializeQuarterlyElection = async (): Promise<void> => {
-    // set configuration for fast registration & voting
-    // register
-    // stake POP to vote
-    // add some votes
-    // refresh election state
-    console.log(
-      "initializing quarterly election with fast forwarding to closed state ..."
-    );
-    await contracts.grantElections.setConfiguration(
-      GrantTerm.Quarter,
-      1, // 1 awardee
-      3, // 3 qualifying
-      true,
-      false,
-      0,
-      120, // secs for voting period
-      1, // secs for registration period
-      100
-    );
-    await contracts.grantElections.initialize(GrantTerm.Quarter);
-    console.log(
-      await GrantElectionAdapter(contracts.grantElections).electionDefaults(
-        GrantTerm.Quarter
-      )
-    );
-    await registerBeneficiariesForElection(
-      GrantTerm.Quarter,
-      bennies.slice(14, 17)
-    );
-
-    let electionMetadata = await GrantElectionAdapter(
-      contracts.grantElections
-    ).getElectionMetadata(GrantTerm.Quarter);
-
-    console.log("refreshing election state");
-    while (electionMetadata.electionState != 1) {
-      await new Promise((r) => setTimeout(r, 1000));
-      await contracts.grantElections.refreshElectionState(GrantTerm.Quarter);
-      electionMetadata = await GrantElectionAdapter(
-        contracts.grantElections
-      ).getElectionMetadata(GrantTerm.Quarter);
-      console.log("waiting for election to be ready for voting...");
-    }
-
-    await voteForElection(
-      GrantTerm.Quarter,
-      accounts.slice(5, 8),
-      bennies.slice(14, 17)
-    );
-
-    while (electionMetadata.votes.length < 4) {
-      await new Promise((r) => setTimeout(r, 1000));
-      electionMetadata = await GrantElectionAdapter(
-        contracts.grantElections
-      ).getElectionMetadata(GrantTerm.Quarter);
-      console.log("waiting for votes to confirm ...");
-    }
-
-    console.log("refreshing election state");
-    while (electionMetadata.electionState != 2) {
-      await contracts.grantElections.refreshElectionState(GrantTerm.Quarter);
-      electionMetadata = await GrantElectionAdapter(
-        contracts.grantElections
-      ).getElectionMetadata(GrantTerm.Quarter);
-      await new Promise((r) => setTimeout(r, 1000));
-      console.log("waiting for election to close...");
-    }
-
-    await displayElectionMetadata(GrantTerm.Quarter);
-  };
-
-  // registration period
-  const initializeYearlyElection = async (): Promise<void> => {
-    console.log("initializing yearly election ...");
-    await contracts.grantElections.initialize(GrantTerm.Year);
-    await new Promise((r) => setTimeout(r, 20000));
-    await registerBeneficiariesForElection(GrantTerm.Year, bennies.slice(18));
-    await displayElectionMetadata(GrantTerm.Year);
   };
 
   const approveForStaking = async (): Promise<void> => {
@@ -633,18 +658,59 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await setSigners();
   await giveBeneficiariesETH();
   await deployContracts();
-  await addBeneficiariesToRegistry();
+  await addBeneficiariesToRegistry(bennies.slice(6, 12));
+  await addBeneficiariesToRegistry(bennies.slice(14, 16));
+  await addBeneficiariesToRegistry(bennies.slice(18));
   await mintPOP();
-  await addBeneficiaryProposals();
-  await addBeneficiaryTakedownProposals();
   await approveForStaking();
-  await prepareUniswap();
-  await fundRewardsManager();
+  //await prepareUniswap();
+  //await fundRewardsManager();
   await stakePOP();
-  await voteOnNominationProposals();
-  await voteOnTakedownProposals();
-  await initializeMonthlyElection();
-  await initializeQuarterlyElection();
-  await initializeYearlyElection();
+  await contracts.beneficiaryRegistry.transferOwnership(
+    contracts.beneficiaryGovernance.address
+  );
+  await addCompletedProposals();
+  // Quarterly election completed
+  await contracts.grantElections.connect(accounts[0]).setConfiguration(
+    ElectionTerm.Quarterly,
+    2,
+    5,
+    false, // VRF
+    14 * SECONDS_IN_DAY,
+    14 * SECONDS_IN_DAY,
+    83 * SECONDS_IN_DAY,
+    parseEther("100"),
+    true,
+    parseEther("2000"),
+    true,
+    ShareType.EqualWeight
+  );
+  await initializeElection(ElectionTerm.Quarterly, bennies.slice(0, 6));
+  const electionId = await contracts.grantElections.activeElections(
+    ElectionTerm.Quarterly
+  );
+  ethers.provider.send("evm_increaseTime", [14 * SECONDS_IN_DAY]);
+  ethers.provider.send("evm_mine", []);
+  await contracts.grantElections.refreshElectionState(electionId);
+  await voteInElection(bennies.slice(0, 4), accounts.slice(0, 5), electionId);
+  // Yearly is in voting period
+  await initializeElection(ElectionTerm.Yearly, bennies.slice(0, 6));
+  const electionIdYearly = await contracts.grantElections.activeElections(
+    ElectionTerm.Yearly
+  );
+  ethers.provider.send("evm_increaseTime", [30 * SECONDS_IN_DAY]);
+  ethers.provider.send("evm_mine", []);
+  await contracts.grantElections.refreshElectionState(electionId);
+  await contracts.grantElections.refreshElectionState(electionIdYearly);
+  await voteInElection(
+    bennies.slice(0, 4),
+    accounts.slice(0, 5),
+    electionIdYearly
+  );
+  // Monthly in registration phase
+  await initializeElection(ElectionTerm.Monthly, bennies.slice(0, 6));
+  await addVetoProposals();
+  await addOpenProposals();
+
   await logResults();
 }
