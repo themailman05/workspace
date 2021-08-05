@@ -9,7 +9,7 @@ const SocialMedia: React.FC<FormStepProps> = ({
   visible,
 }) => {
   const [formData, setFormData] = form;
-  const { currentStep, setCurrentStep, setStepLimit } = navigation;
+  const { currentStep } = navigation;
   const [platform, setPlatform] = useState<string>('Facebook');
 
   function getUrl(platform) {
@@ -77,7 +77,7 @@ const SocialMedia: React.FC<FormStepProps> = ({
     visible && (
       <div className="mx-auto content-center justify-items-center">
         <h2 className="justify-self-center text-base text-indigo-600 font-semibold tracking-wide">
-          {navigation.currentStep} - Upload social media links
+          {currentStep} - Upload social media links
         </h2>
 
         <div className="grid justify-items-stretch ...">
