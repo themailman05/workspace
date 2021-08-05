@@ -9,9 +9,8 @@ contract KeeperIncentive is Governed {
   using SafeERC20 for IERC20;
 
   struct Incentive {
-    uint256 targetDate; //timestamp
-    uint256 incentiveWindow; //time in seconds
-    uint256 interval; //time in seconds
+    uint256 start; //timestamp
+    uint256 end; //time in seconds
     uint256 reward; //pop reward for calling the function
     bool enabled;
     bool openToEveryone; //can everyone call the function to get the reward or only approved?
@@ -33,31 +32,29 @@ contract KeeperIncentive is Governed {
   event RemovedApproval(address account);
   event ApprovalToggled(uint256 incentiveId, bool openToEveryone);
   event IncentiveToggled(uint256 incentiveId, bool enabled);
-  event TargetDateChanged(uint256 incentiveId, uint256 targetDate);
+  event StartUpdated(uint256 incentiveId, uint256 start);
 
   /* ========== CONSTRUCTOR ========== */
 
   constructor(address _governance, IERC20 _pop) public Governed(_governance) {
     POP = _pop;
-    createIncentive(block.timestamp, 1 days, 30 days, 10e18, true, false);
+    createIncentive(block.timestamp, 30 days, 10e18, true, false);
   }
 
   /* ========== SETTER ========== */
 
   function createIncentive(
-    uint256 _targetDate,
-    uint256 _incentiveWindow,
-    uint256 _interval,
+    uint256 _start,
+    uint256 _end,
     uint256 _reward,
     bool _enabled,
     bool _openToEveryone
   ) public onlyGovernance returns (uint256) {
-    require(_targetDate >= block.timestamp, "must be in the future");
+    require(_start >= block.timestamp, "must be in the future");
     incentives.push(
       Incentive({
-        targetDate: _targetDate,
-        incentiveWindow: _incentiveWindow,
-        interval: _interval,
+        start: _start,
+        end: _end,
         reward: _reward,
         enabled: _enabled,
         openToEveryone: _openToEveryone
@@ -71,18 +68,16 @@ contract KeeperIncentive is Governed {
 
   function updateIncentive(
     uint256 _incentiveId,
-    uint256 _targetDate,
-    uint256 _incentiveWindow,
-    uint256 _interval,
+    uint256 _start,
+    uint256 _end,
     uint256 _reward,
     bool _enabled,
     bool _openToEveryone
   ) external onlyGovernance {
-    require(_targetDate >= block.timestamp, "must be in the future");
+    require(_start >= block.timestamp, "must be in the future");
     incentives[_incentiveId] = Incentive({
-      targetDate: _targetDate,
-      incentiveWindow: _incentiveWindow,
-      interval: _interval,
+      start: _start,
+      end: _end,
       reward: _reward,
       enabled: _enabled,
       openToEveryone: _openToEveryone
@@ -106,19 +101,14 @@ contract KeeperIncentive is Governed {
     emit ApprovalToggled(_incentiveId, incentives[_incentiveId].openToEveryone);
   }
 
-  function changeTargetDate(uint256 _incentiveId, uint256 _targetDate)
-    external
-    onlyGovernance
-  {
-    _changeTargetDate(_incentiveId, _targetDate);
+  function updateStart(uint256 _incentiveId, uint256 _start) external {
+    _updateStart(_incentiveId, _start);
   }
 
-  function _changeTargetDate(uint256 _incentiveId, uint256 _targetDate)
-    internal
-  {
-    require(_targetDate >= block.timestamp, "must be in the future");
-    incentives[_incentiveId].targetDate = _targetDate;
-    emit TargetDateChanged(_incentiveId, _targetDate);
+  function _updateStart(uint256 _incentiveId, uint256 _start) internal {
+    require(_start >= block.timestamp, "must be in the future");
+    incentives[_incentiveId].start = _start;
+    emit StartUpdated(_incentiveId, _start);
   }
 
   function toggleIncentive(uint256 _incentiveId) external onlyGovernance {
@@ -144,18 +134,14 @@ contract KeeperIncentive is Governed {
           "you are not approved as a keeper"
         );
       }
-      uint256 deadline = incentive.targetDate.add(incentive.incentiveWindow);
       if (
-        block.timestamp >= incentive.targetDate && block.timestamp <= deadline
+        block.timestamp >= incentive.start &&
+        block.timestamp <= incentive.end &&
+        incentive.reward <= incentiveBudget
       ) {
-        uint256 newTargetDate = incentive.targetDate.add(incentive.interval);
-        _changeTargetDate(_incentiveId, newTargetDate);
-
-        if (incentive.reward <= incentiveBudget) {
-          incentiveBudget = incentiveBudget.sub(incentive.reward);
-          POP.approve(address(this), incentive.reward);
-          POP.safeTransferFrom(address(this), msg.sender, incentive.reward);
-        }
+        incentiveBudget = incentiveBudget.sub(incentive.reward);
+        POP.approve(address(this), incentive.reward);
+        POP.safeTransferFrom(address(this), msg.sender, incentive.reward);
       }
     }
     _;

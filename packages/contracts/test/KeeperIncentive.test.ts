@@ -32,7 +32,6 @@ describe("Keeper incentives", function () {
   it("should create incentives with the correct parameters", async function () {
     expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
       BigNumber.from(deployTimestamp),
-      BigNumber.from(dayInSec),
       BigNumber.from(30 * dayInSec),
       incentive,
       true,
@@ -40,7 +39,6 @@ describe("Keeper incentives", function () {
     ]);
     await keeperIncentiveHelper.createIncentive(
       deployTimestamp + 100,
-      dayInSec,
       30 * dayInSec,
       incentive,
       true,
@@ -48,7 +46,6 @@ describe("Keeper incentives", function () {
     );
     expect(await keeperIncentiveHelper.incentives(1)).to.deep.equal([
       BigNumber.from(deployTimestamp + 100),
-      BigNumber.from(dayInSec),
       BigNumber.from(30 * dayInSec),
       incentive,
       true,
@@ -60,14 +57,7 @@ describe("Keeper incentives", function () {
     await expect(
       keeperIncentiveHelper
         .connect(nonOwner)
-        .createIncentive(
-          timestamp + 10,
-          dayInSec,
-          30 * dayInSec,
-          incentive,
-          true,
-          false
-        )
+        .createIncentive(timestamp + 10, 30 * dayInSec, incentive, true, false)
     ).to.be.revertedWith(
       "Only the contract governance may perform this action"
     );
@@ -77,7 +67,6 @@ describe("Keeper incentives", function () {
         .updateIncentive(
           0,
           timestamp + 100,
-          dayInSec,
           30 * dayInSec,
           incentive,
           true,
@@ -102,13 +91,6 @@ describe("Keeper incentives", function () {
       "Only the contract governance may perform this action"
     );
     await expect(
-      keeperIncentiveHelper
-        .connect(nonOwner)
-        .changeTargetDate(0, timestamp + 1000)
-    ).to.be.revertedWith(
-      "Only the contract governance may perform this action"
-    );
-    await expect(
       keeperIncentiveHelper.connect(nonOwner).toggleIncentive(0)
     ).to.be.revertedWith(
       "Only the contract governance may perform this action"
@@ -122,7 +104,6 @@ describe("Keeper incentives", function () {
         .updateIncentive(
           0,
           timestamp + 100,
-          2 * dayInSec,
           10 * dayInSec,
           parseEther("100"),
           false,
@@ -133,7 +114,6 @@ describe("Keeper incentives", function () {
         .withArgs(0);
       expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
         BigNumber.from(timestamp + 100),
-        BigNumber.from(2 * dayInSec),
         BigNumber.from(10 * dayInSec),
         parseEther("100"),
         false,
@@ -144,13 +124,12 @@ describe("Keeper incentives", function () {
       const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
       const result = await keeperIncentiveHelper
         .connect(owner)
-        .changeTargetDate(0, timestamp + 1000);
+        .updateStart(0, timestamp + 1000);
       expect(result)
-        .to.emit(keeperIncentiveHelper, "TargetDateChanged")
+        .to.emit(keeperIncentiveHelper, "StartUpdated")
         .withArgs(0, timestamp + 1000);
       expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
         BigNumber.from(timestamp + 1000),
-        BigNumber.from(dayInSec),
         BigNumber.from(30 * dayInSec),
         incentive,
         true,
@@ -166,7 +145,6 @@ describe("Keeper incentives", function () {
         .withArgs(0, false);
       expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
         BigNumber.from(deployTimestamp),
-        BigNumber.from(dayInSec),
         BigNumber.from(30 * dayInSec),
         incentive,
         false,
@@ -180,7 +158,6 @@ describe("Keeper incentives", function () {
         .withArgs(0, true);
       expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
         BigNumber.from(deployTimestamp),
-        BigNumber.from(dayInSec),
         BigNumber.from(30 * dayInSec),
         incentive,
         true,
@@ -210,7 +187,6 @@ describe("Keeper incentives", function () {
             .connect(owner)
             .createIncentive(
               timestamp - 1,
-              dayInSec,
               30 * dayInSec,
               incentive,
               false,
@@ -226,7 +202,6 @@ describe("Keeper incentives", function () {
             .updateIncentive(
               0,
               timestamp - 1,
-              dayInSec,
               30 * dayInSec,
               incentive,
               false,
@@ -237,9 +212,7 @@ describe("Keeper incentives", function () {
       it("should not allow to change target date in the past", async function () {
         const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
         await expect(
-          keeperIncentiveHelper
-            .connect(owner)
-            .changeTargetDate(0, timestamp - 1)
+          keeperIncentiveHelper.connect(owner).updateStart(0, timestamp - 1)
         ).to.revertedWith("must be in the future");
       });
     });
@@ -277,7 +250,6 @@ describe("Keeper incentives", function () {
           .withArgs(0, true);
         expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
           BigNumber.from(deployTimestamp),
-          BigNumber.from(dayInSec),
           BigNumber.from(30 * dayInSec),
           incentive,
           true,
@@ -288,7 +260,6 @@ describe("Keeper incentives", function () {
           .withArgs(0, false);
         expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
           BigNumber.from(deployTimestamp),
-          BigNumber.from(dayInSec),
           BigNumber.from(30 * dayInSec),
           incentive,
           true,
@@ -314,31 +285,11 @@ describe("Keeper incentives", function () {
       const newBalance = await mockPop.balanceOf(owner.address);
       expect(newBalance).to.deep.equal(oldBalance.add(incentive));
     });
-    it("should advance the targetDate by its interval", async function () {
-      const result = await keeperIncentiveHelper
-        .connect(owner)
-        .defaultIncentivisedFunction();
-      expect(result)
-        .to.emit(keeperIncentiveHelper, "TargetDateChanged")
-        .withArgs(0, deployTimestamp + 30 * dayInSec);
-
-      expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-        BigNumber.from(deployTimestamp + 30 * dayInSec),
-        BigNumber.from(dayInSec),
-        BigNumber.from(30 * dayInSec),
-        incentive,
-        true,
-        false,
-      ]);
-    });
     it("should not pay out rewards if the incentive budget is not high enough", async function () {
       const oldBalance = await mockPop.balanceOf(owner.address);
       const result = await keeperIncentiveHelper
         .connect(owner)
         .defaultIncentivisedFunction();
-      expect(result)
-        .to.emit(keeperIncentiveHelper, "TargetDateChanged")
-        .withArgs(0, deployTimestamp + 30 * dayInSec);
       const newBalance = await mockPop.balanceOf(owner.address);
       expect(newBalance).to.equal(oldBalance);
     });
@@ -363,21 +314,8 @@ describe("Keeper incentives", function () {
           .defaultIncentivisedFunction();
 
         expect(result)
-          .to.emit(keeperIncentiveHelper, "TargetDateChanged")
-          .withArgs(0, deployTimestamp + 30 * dayInSec);
-        expect(result)
           .to.emit(keeperIncentiveHelper, "FunctionCalled")
           .withArgs(nonOwner.address);
-
-        expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-          BigNumber.from(deployTimestamp + 30 * dayInSec),
-          BigNumber.from(dayInSec),
-          BigNumber.from(30 * dayInSec),
-          incentive,
-          true,
-          true,
-        ]);
-
         const newbalance = await mockPop.balanceOf(nonOwner.address);
         expect(newbalance).to.equal(oldBalance.add(incentive));
       });
@@ -404,7 +342,7 @@ describe("Keeper incentives", function () {
           (await waffle.provider.getBlock("latest")).timestamp + 1;
         await keeperIncentiveHelper
           .connect(owner)
-          .changeTargetDate(0, currentTime + 10 * dayInSec);
+          .updateStart(0, currentTime + 10 * dayInSec);
 
         const oldBalance = await mockPop.balanceOf(owner.address);
         const result = await keeperIncentiveHelper
@@ -413,7 +351,6 @@ describe("Keeper incentives", function () {
         expect(result)
           .to.emit(keeperIncentiveHelper, "FunctionCalled")
           .withArgs(owner.address);
-        expect(result).to.not.emit(keeperIncentiveHelper, "TargetDateChanged");
 
         const newBalance = await mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance);
@@ -429,7 +366,6 @@ describe("Keeper incentives", function () {
         expect(result)
           .to.emit(keeperIncentiveHelper, "FunctionCalled")
           .withArgs(owner.address);
-        expect(result).to.not.emit(keeperIncentiveHelper, "TargetDateChanged");
 
         const newBalance = await mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance);
