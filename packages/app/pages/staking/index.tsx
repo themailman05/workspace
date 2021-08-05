@@ -70,7 +70,9 @@ export default function LockPop() {
     if (stakeStatus === 'success') {
       dispatch(
         setSingleActionModal({
-          content: `You now have ${voiceCredits.toFixed(2)} voice Credits to vote with.`,
+          content: `You now have ${voiceCredits.toFixed(
+            2,
+          )} voice Credits to vote with.`,
           title: 'Success',
           visible: true,
           type: 'info',
@@ -105,18 +107,22 @@ export default function LockPop() {
 
   async function lockPop(): Promise<void> {
     setWait(true);
+    toast.loading('Submitting vote...');
     const lockedPopInEth = utils.parseEther(popToLock.toString());
     const signer = library.getSigner();
     const connectedStaking = await contracts.staking.connect(signer);
     await connectedStaking
       .stake(lockedPopInEth, lockDuration)
       .then((res) => {
+        toast.success('Voted successfully!');
         setStakeStatus('success');
       })
       .catch((err) => {
+        toast.error(err.data.message.split("'")[1]);
         setStakeStatus('error');
       });
     setWait(false);
+    dispatch(setDualActionModal(false));
   }
 
   async function approve(): Promise<void> {
