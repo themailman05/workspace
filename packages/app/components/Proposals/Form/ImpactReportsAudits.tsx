@@ -61,10 +61,10 @@ const HeaderImage: React.FC<FormStepProps> = ({
             return (
               <div key={IpfsHash} className="flex flex-row items-center">
                 <a
-                  className="mx-2 justify-self-center mt-4 inline-flex px-4 py-1"
+                  className="justify-self-center mx-auto mt-4 inline-flex py-1"
                   href={'https://gateway.pinata.cloud/ipfs/' + IpfsHash}
                 >
-                  {'Impact Report/Audit ' + i + ': '}
+                  {`Impact Report/Audit ${i + 1}: `}
                   <DocumentReportIcon className="ml-2 h-5 w-5" />
                 </a>
                 <button

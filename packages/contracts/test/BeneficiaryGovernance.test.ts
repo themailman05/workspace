@@ -7,12 +7,14 @@ import {
   BeneficiaryGovernance,
   BeneficiaryRegistry,
   MockERC20,
+  Region,
 } from "../typechain";
 
 interface Contracts {
   mockPop: MockERC20;
   mockStaking: MockContract;
   mockBeneficiaryRegistry: MockContract;
+  region: Region;
   beneficiaryGovernance: BeneficiaryGovernance;
   beneficiaryRegistry?: BeneficiaryRegistry;
 }
@@ -42,6 +44,7 @@ const ProposalStatus = {
   Failed: 4,
 };
 const ONE_DAY = 86400;
+const DEFAULT_REGION = "0x5757";
 
 async function deployContracts(): Promise<Contracts> {
   const MockERC20 = await ethers.getContractFactory("MockERC20");
@@ -69,6 +72,19 @@ async function deployContracts(): Promise<Contracts> {
     BeneficiaryRegistry.interface.format() as any
   );
 
+  const BeneficiaryVaults = await ethers.getContractFactory(
+    "BeneficiaryVaults"
+  );
+  const mockBeneficiaryVaults = await waffle.deployMockContract(
+    owner,
+    BeneficiaryVaults.interface.format() as any
+  );
+
+  const region = await (
+    await ethers.getContractFactory("Region")
+  ).deploy(mockBeneficiaryVaults.address);
+  await region.deployed();
+
   const BeneficiaryGovernance = await ethers.getContractFactory(
     "BeneficiaryGovernance"
   );
@@ -77,6 +93,7 @@ async function deployContracts(): Promise<Contracts> {
       mockStaking.address,
       mockBeneficiaryRegistry.address,
       mockPop.address,
+      region.address,
       owner.address
     )
   ).deployed();
@@ -92,6 +109,7 @@ async function deployContracts(): Promise<Contracts> {
     mockPop,
     mockStaking,
     mockBeneficiaryRegistry,
+    region,
     beneficiaryGovernance,
   };
 }
@@ -118,7 +136,8 @@ describe("BeneficiaryGovernance", function () {
   });
   describe("defaults", function () {
     it("should set correct proposal defaults", async function () {
-      const defConfig = await contracts.beneficiaryGovernance.DefaultConfigurations();
+      const defConfig =
+        await contracts.beneficiaryGovernance.DefaultConfigurations();
 
       expect(defConfig.votingPeriod).to.equal(2 * ONE_DAY);
       expect(defConfig.vetoPeriod).to.equal(2 * ONE_DAY);
@@ -128,7 +147,8 @@ describe("BeneficiaryGovernance", function () {
       await contracts.beneficiaryGovernance
         .connect(owner)
         .setConfiguration(10 * ONE_DAY, 10 * ONE_DAY, parseEther("3000"));
-      const defConfig = await contracts.beneficiaryGovernance.DefaultConfigurations();
+      const defConfig =
+        await contracts.beneficiaryGovernance.DefaultConfigurations();
 
       expect(defConfig.votingPeriod).to.equal(10 * ONE_DAY);
       expect(defConfig.vetoPeriod).to.equal(10 * ONE_DAY);
@@ -151,6 +171,7 @@ describe("BeneficiaryGovernance", function () {
         .connect(proposer2)
         .createProposal(
           beneficiary.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BNP
         );
@@ -199,6 +220,7 @@ describe("BeneficiaryGovernance", function () {
           .connect(proposer1)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             ethers.utils.formatBytes32String("testCid"),
             ProposalType.BNP
           )
@@ -217,6 +239,7 @@ describe("BeneficiaryGovernance", function () {
           .connect(proposer3)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             ethers.utils.formatBytes32String("testCid"),
             ProposalType.BNP
           )
@@ -233,6 +256,7 @@ describe("BeneficiaryGovernance", function () {
           .connect(proposer3)
           .createProposal(
             beneficiary2.address,
+            DEFAULT_REGION,
             ethers.utils.formatBytes32String("testCid"),
             ProposalType.BTP
           )
@@ -250,6 +274,7 @@ describe("BeneficiaryGovernance", function () {
           .connect(proposer3)
           .createProposal(
             beneficiary2.address,
+            DEFAULT_REGION,
             ethers.utils.formatBytes32String("testCid"),
             ProposalType.BNP
           )
@@ -270,6 +295,7 @@ describe("BeneficiaryGovernance", function () {
           .connect(proposer3)
           .createProposal(
             beneficiary2.address,
+            DEFAULT_REGION,
             ethers.utils.formatBytes32String("testCid"),
             ProposalType.BNP
           )
@@ -292,6 +318,7 @@ describe("BeneficiaryGovernance", function () {
         .connect(proposer3)
         .createProposal(
           beneficiary2.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BNP
         );
@@ -334,6 +361,7 @@ describe("BeneficiaryGovernance", function () {
         contracts.mockStaking.address,
         contracts.mockBeneficiaryRegistry.address,
         contracts.mockPop.address,
+        contracts.region.address,
         owner.address
       );
       await contracts.beneficiaryGovernance.deployed();
@@ -348,6 +376,7 @@ describe("BeneficiaryGovernance", function () {
         .connect(proposer1)
         .createProposal(
           beneficiary.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BNP
         );
@@ -362,6 +391,7 @@ describe("BeneficiaryGovernance", function () {
         .connect(proposer2)
         .createProposal(
           beneficiary.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BTP
         );
@@ -578,7 +608,7 @@ describe("BeneficiaryGovernance", function () {
         "BeneficiaryRegistry"
       );
       contracts.beneficiaryRegistry = await (
-        await BeneficiaryRegistry.deploy()
+        await BeneficiaryRegistry.deploy(contracts.region.address)
       ).deployed();
 
       const BeneficiaryNomination = await ethers.getContractFactory(
@@ -589,6 +619,7 @@ describe("BeneficiaryGovernance", function () {
           contracts.mockStaking.address,
           contracts.beneficiaryRegistry.address,
           contracts.mockPop.address,
+          contracts.region.address,
           governance.address
         )
       ).deployed();
@@ -603,6 +634,7 @@ describe("BeneficiaryGovernance", function () {
         .connect(proposer1)
         .createProposal(
           beneficiary.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BNP
         );
@@ -784,6 +816,7 @@ describe("BeneficiaryGovernance", function () {
         .connect(proposer2)
         .createProposal(
           beneficiary.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BTP
         );
@@ -848,7 +881,7 @@ describe("BeneficiaryGovernance", function () {
         "BeneficiaryRegistry"
       );
       contracts.beneficiaryRegistry = await (
-        await BeneficiaryRegistry.deploy()
+        await BeneficiaryRegistry.deploy(contracts.region.address)
       ).deployed();
 
       const BeneficiaryNomination = await ethers.getContractFactory(
@@ -859,6 +892,7 @@ describe("BeneficiaryGovernance", function () {
           contracts.mockStaking.address,
           contracts.beneficiaryRegistry.address,
           contracts.mockPop.address,
+          contracts.region.address,
           governance.address
         )
       ).deployed();
@@ -873,6 +907,7 @@ describe("BeneficiaryGovernance", function () {
         .connect(proposer1)
         .createProposal(
           beneficiary.address,
+          DEFAULT_REGION,
           ethers.utils.formatBytes32String("testCid"),
           ProposalType.BNP
         );
