@@ -137,9 +137,13 @@ export const GrantElectionAdapter = function (contract?) {
             votingPeriod: Number(value[2].toString()),
           }),
         ],
-        ["startTime", (value) => value.toNumber()],
-        ["registrationBondRequired", (value) => value],
-        ["registrationBond", (value) => value],
+        ["startTime", (value) => Number(value.toString())],
+        [
+          "bondRequirements",
+          (value) => ({ required: value[0], amount: value[1] }),
+        ],
+        ["shareType", (value) => value],
+        ["randomNumber", (value) => Number(value.toString())],
       ];
       const metadata = (await contract.getElectionMetadata(grantTerm)).reduce(
         (metadata, value, i) => {

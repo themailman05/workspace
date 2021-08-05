@@ -31,6 +31,7 @@ contract GrantElections is ParticipationReward {
     uint256 startTime;
     uint256 randomNumber;
     bytes32 merkleRoot;
+    bytes32 vaultId;
   }
 
   struct ElectionConfiguration {
@@ -210,11 +211,19 @@ contract GrantElections is ParticipationReward {
 
     elections.push();
     Election storage election = elections[electionId];
-
     election.electionConfiguration = electionDefaults[_term];
     election.electionState = ElectionState.Registration;
     election.electionTerm = _grantTerm;
     election.startTime = block.timestamp;
+    (bool vaultCreated, bytes32 vaultId) = _initializeVault(
+      keccak256(abi.encodePacked(_term, block.timestamp)),
+      block.timestamp.add(electionDefaults[_term].registrationPeriod).add(
+        electionDefaults[_term].votingPeriod
+      )
+    );
+    if (vaultCreated) {
+      election.vaultId = vaultId;
+    }
 
     emit ElectionInitialized(election.electionTerm, election.startTime);
   }
@@ -258,9 +267,9 @@ contract GrantElections is ParticipationReward {
     if (
       block.timestamp >=
       election
-      .startTime
-      .add(election.electionConfiguration.registrationPeriod)
-      .add(election.electionConfiguration.votingPeriod)
+        .startTime
+        .add(election.electionConfiguration.registrationPeriod)
+        .add(election.electionConfiguration.votingPeriod)
     ) {
       election.electionState = ElectionState.Closed;
       if (election.electionConfiguration.useChainLinkVRF) {
@@ -324,10 +333,13 @@ contract GrantElections is ParticipationReward {
       _usedVoiceCredits <= _stakedVoiceCredits,
       "Insufficient voice credits"
     );
+    if (election.vaultId != "") {
+      _addShares(election.vaultId, msg.sender, _usedVoiceCredits);
+    }
     emit UserVoted(msg.sender, election.electionTerm);
   }
 
-  function fundIncentive(uint256 _amount) public {
+  function fundKeeperIncentive(uint256 _amount) public {
     require(POP.balanceOf(msg.sender) >= _amount, "not enough pop");
     POP.safeTransferFrom(msg.sender, address(this), _amount);
     incentiveBudget = incentiveBudget.add(_amount);
@@ -369,8 +381,7 @@ contract GrantElections is ParticipationReward {
 
     uint256 finalizationIncentive = electionDefaults[
       uint8(_election.electionTerm)
-    ]
-    .finalizationIncentive;
+    ].finalizationIncentive;
 
     if (
       incentiveBudget >= finalizationIncentive &&
@@ -404,6 +415,7 @@ contract GrantElections is ParticipationReward {
 
     //TODO how to calculate vault endtime?
     beneficiaryVaults.openVault(uint8(_election.electionTerm), _merkleRoot);
+    _openVault(_election.vaultId);
     _election.electionState = ElectionState.Finalized;
 
     emit ElectionFinalized(_electionId, _merkleRoot);
@@ -414,8 +426,8 @@ contract GrantElections is ParticipationReward {
     onlyGovernance
   {
     electionDefaults[uint8(_term)]
-    .bondRequirements
-    .required = !electionDefaults[uint8(_term)].bondRequirements.required;
+      .bondRequirements
+      .required = !electionDefaults[uint8(_term)].bondRequirements.required;
   }
 
   function _collectRegistrationBond(Election storage _election) internal {

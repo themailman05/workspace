@@ -4,15 +4,22 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { GrantElectionAdapter } from "@popcorn/contracts/adapters";
 import { expect } from "chai";
 import { BigNumber } from "ethers";
-import { ethers, waffle } from "hardhat";
-import { ElectionMetadata, ShareType } from "../../utils/src/Contracts";
-import { calculateVaultShare, rankAwardees } from "../scripts/finalizeElection";
+import { waffle, ethers } from "hardhat";
+import {
+  calculateVaultShare,
+  countVotes,
+  rankAwardees,
+} from "../scripts/finalizeElection";
 import {
   BeneficiaryVaults,
   GrantElections,
   MockERC20,
   RandomNumberHelper,
 } from "../typechain";
+import {
+  ElectionMetadata,
+  ShareType,
+} from "../adapters/GrantElection/GrantElectionAdapter";
 
 interface Contracts {
   mockPop: MockERC20;
@@ -53,7 +60,7 @@ async function deployContracts(): Promise<Contracts> {
       await ethers.getContractFactory("MockERC20")
     ).deploy("TestPOP", "TPOP", 18)
   ).deployed();
-  await mockPop.mint(owner.address, parseEther("4500"));
+  await mockPop.mint(owner.address, parseEther("6500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
   await mockPop.mint(beneficiary2.address, parseEther("500"));
   await mockPop.mint(beneficiary3.address, parseEther("500"));
@@ -107,7 +114,10 @@ async function deployContracts(): Promise<Contracts> {
     )
   ).deployed()) as GrantElections;
 
-  await mockPop.approve(grantElections.address, parseEther("1000000"));
+  await mockPop
+    .connect(owner)
+    .approve(grantElections.address, parseEther("100000"));
+  await grantElections.connect(owner).contributeReward(parseEther("2000"));
   await beneficiaryVaults.transferOwnership(grantElections.address);
 
   return {
@@ -295,7 +305,7 @@ describe("GrantElections", function () {
     it("should allow to fund incentives", async function () {
       await contracts.grantElections
         .connect(owner)
-        .fundIncentive(parseEther("4000"));
+        .fundKeeperIncentive(parseEther("4000"));
       const incentiveBudget = await contracts.grantElections.incentiveBudget();
       const balance = await contracts.mockPop.balanceOf(owner.address);
       expect(incentiveBudget).to.equal(parseEther("4000"));
@@ -387,18 +397,25 @@ describe("GrantElections", function () {
 
   describe("initialization", function () {
     it("should successfully initialize an election if one hasn't already been created", async function () {
-      const currentBlockNumber = await ethers.provider.getBlockNumber();
-      const currentBlock = await ethers.provider._getBlock(currentBlockNumber);
-
-      await expect(contracts.grantElections.initialize(GRANT_TERM.QUARTER))
+      const currentBlock = await waffle.provider.getBlock("latest");
+      const result = await contracts.grantElections.initialize(
+        GRANT_TERM.QUARTER
+      );
+      expect(result)
         .to.emit(contracts.grantElections, "ElectionInitialized")
         .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
+      expect(result)
+        .to.emit(contracts.grantElections, "VaultInitialized")
+        .withArgs(
+          ethers.utils.solidityKeccak256(
+            ["uint8", "uint256"],
+            [GRANT_TERM.QUARTER, currentBlock.timestamp + 1]
+          )
+        );
     });
 
     it("should set correct election metadata", async function () {
-      const nextBlockTime = 1625097600;
-      await ethers.provider.send("evm_setNextBlockTimestamp", [nextBlockTime]);
-      await ethers.provider.send("evm_mine", []);
+      const currentBlock = await waffle.provider.getBlock("latest");
       await contracts.grantElections.initialize(GRANT_TERM.QUARTER);
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
@@ -408,6 +425,8 @@ describe("GrantElections", function () {
         electionTerm: GRANT_TERM.QUARTER,
         registeredBeneficiaries: [],
         electionState: ElectionState.Registration,
+        electionStateStringLong: "open for registration",
+        electionStateStringShort: "registration",
         bondRequirements: { required: true, amount: parseEther("100") },
         configuration: {
           awardees: 2,
@@ -419,7 +438,7 @@ describe("GrantElections", function () {
           registrationPeriod: 14 * ONE_DAY, // 14 days
           votingPeriod: 14 * ONE_DAY, // 14 days
         },
-        startTime: nextBlockTime + 1,
+        startTime: currentBlock.timestamp + 1,
         randomNumber: 0,
         shareType: 0,
       });
@@ -477,7 +496,7 @@ describe("GrantElections", function () {
       );
       expect(activeElectionId).to.equal(electionId + 1);
     });
-    it("should not initialize a vault even the neede budget is larger than rewardBudget", async function () {
+    it("should not initialize a vault even the needed budget is larger than rewardBudget", async function () {
       await contracts.grantElections
         .connect(governance)
         .setRewardsBudget(parseEther("3000"));
@@ -489,9 +508,7 @@ describe("GrantElections", function () {
         .to.emit(contracts.grantElections, "ElectionInitialized")
         .withArgs(GRANT_TERM.QUARTER, currentBlock.timestamp + 1);
       expect(result).to.not.emit(contracts.grantElections, "VaultInitialized");
-      const election = await contracts.grantElections.elections(
-        GRANT_TERM.QUARTER
-      );
+      const election = await contracts.grantElections.elections(electionId);
       expect(election.vaultId).to.equal(
         "0x0000000000000000000000000000000000000000000000000000000000000000"
       );
@@ -684,7 +701,7 @@ describe("GrantElections", function () {
           it("doesnt pays out incentive if the incentiveBudget is too low", async function () {
             await contracts.grantElections
               .connect(owner)
-              .fundIncentive(parseEther("1000"));
+              .fundKeeperIncentive(parseEther("1000"));
             ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
             ethers.provider.send("evm_mine", []);
             await contracts.grantElections.refreshElectionState(electionId);
@@ -703,7 +720,7 @@ describe("GrantElections", function () {
           it("pays out incentive", async function () {
             await contracts.grantElections
               .connect(owner)
-              .fundIncentive(parseEther("2000"));
+              .fundKeeperIncentive(parseEther("2000"));
             ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
             ethers.provider.send("evm_mine", []);
             await contracts.grantElections.refreshElectionState(electionId);
@@ -723,7 +740,7 @@ describe("GrantElections", function () {
             //Enough pop to fund 2 incentives
             await contracts.grantElections
               .connect(owner)
-              .fundIncentive(parseEther("4000"));
+              .fundKeeperIncentive(parseEther("4000"));
             ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
             ethers.provider.send("evm_mine", []);
             await contracts.grantElections.refreshElectionState(electionId);

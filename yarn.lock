@@ -2177,9 +2177,15 @@
     ethereumjs-util "^7.1.0"
 
 "@ethereumjs/vm@^5.5.0":
+<<<<<<< HEAD
   version "5.5.1"
   resolved "https://registry.yarnpkg.com/@ethereumjs/vm/-/vm-5.5.1.tgz#77e64a0b3fa2b25139388410fea2c038dddb32eb"
   integrity sha512-Qo4jiDQFKRUN4ATtZV5DucMtAvBmEF0PWMABT9M021JA43Ni1yf9gdb4y1Wa+LZHASZjZR203xH0y2VIUwJCFA==
+=======
+  version "5.5.2"
+  resolved "https://registry.yarnpkg.com/@ethereumjs/vm/-/vm-5.5.2.tgz#918a2c1000aaa9fdbe6007a4fdc2c62833122adf"
+  integrity sha512-AydZ4wfvZAsBuFzs3xVSA2iU0hxhL8anXco3UW3oh9maVC34kTEytOfjHf06LTEfN0MF9LDQ4ciLa7If6ZN/sg==
+>>>>>>> develop
   dependencies:
     "@ethereumjs/block" "^3.4.0"
     "@ethereumjs/blockchain" "^5.4.0"
@@ -3963,10 +3969,17 @@
     is-plain-object "^5.0.0"
     universal-user-agent "^6.0.0"
 
+<<<<<<< HEAD
 "@octokit/openapi-types@^9.3.0":
   version "9.3.0"
   resolved "https://registry.yarnpkg.com/@octokit/openapi-types/-/openapi-types-9.3.0.tgz#160347858d727527901c6aae7f7d5c2414cc1f2e"
   integrity sha512-oz60hhL+mDsiOWhEwrj5aWXTOMVtQgcvP+sRzX4C3cH7WOK9QSAoEtjWh0HdOf6V3qpdgAmUMxnQPluzDWR7Fw==
+=======
+"@octokit/openapi-types@^9.4.0":
+  version "9.4.0"
+  resolved "https://registry.yarnpkg.com/@octokit/openapi-types/-/openapi-types-9.4.0.tgz#31a76fb4c0f2e15af300edd880cedf4f75be212b"
+  integrity sha512-rKRkXikOJgDNImPl49IJuECLVXjj+t4qOXHhl8SBjMQCGGp1w4m5Ud/0kfdUx+zCpTvBN8vaOUDF4nnboZoOtQ==
+>>>>>>> develop
 
 "@octokit/plugin-enterprise-rest@^6.0.1":
   version "6.0.1"
@@ -4053,11 +4066,19 @@
     "@types/node" ">= 8"
 
 "@octokit/types@^6.0.3", "@octokit/types@^6.16.1":
+<<<<<<< HEAD
   version "6.23.0"
   resolved "https://registry.yarnpkg.com/@octokit/types/-/types-6.23.0.tgz#b39f242b20036e89fa8f34f7962b4e9b7ff8f65b"
   integrity sha512-eG3clC31GSS7K3oBK6C6o7wyXPrkP+mu++eus8CSZdpRytJ5PNszYxudOQ0spWZQ3S9KAtoTG6v1WK5prJcJrA==
   dependencies:
     "@octokit/openapi-types" "^9.3.0"
+=======
+  version "6.24.0"
+  resolved "https://registry.yarnpkg.com/@octokit/types/-/types-6.24.0.tgz#d7858ceae8ac29256da85dcfcb9acbae28e6ba22"
+  integrity sha512-MfEimJeQ8AV1T2nI5kOfHqsqPHaAnG0Dw3MVoHSEsEq6iLKx2N91o+k2uAgXhPYeSE76LVBqjgTShnFFgNwe0A==
+  dependencies:
+    "@octokit/openapi-types" "^9.4.0"
+>>>>>>> develop
 
 "@opentelemetry/api@0.14.0":
   version "0.14.0"
@@ -4089,9 +4110,9 @@
     source-map "^0.7.3"
 
 "@popperjs/core@^2.5.4", "@popperjs/core@^2.6.0":
-  version "2.9.2"
-  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.9.2.tgz#adea7b6953cbb34651766b0548468e743c6a2353"
-  integrity sha512-VZMYa7+fXHdwIq1TDhSXoVmSPEGM/aa+6Aiq3nVVJ9bXr24zScr+NlKFKC3iPljA7ho/GAZr+d2jOf5GIRC30Q==
+  version "2.9.3"
+  resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.9.3.tgz#8b68da1ebd7fc603999cf6ebee34a4899a14b88e"
+  integrity sha512-xDu17cEfh7Kid/d95kB6tZsLOmSWKCZKtprnhVepjsSaCij+lM3mItSJDuuHDMbCWTh8Ejmebwb+KONcCJ0eXQ==
 
 "@reach/router@^1.3.4":
   version "1.3.4"
@@ -5405,9 +5426,9 @@
     pretty-format "^26.0.0"
 
 "@types/json-schema@^7.0.4", "@types/json-schema@^7.0.5", "@types/json-schema@^7.0.8":
-  version "7.0.8"
-  resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.8.tgz#edf1bf1dbf4e04413ca8e5b17b3b7d7d54b59818"
-  integrity sha512-YSBPTLTVm2e2OoQIDYx8HaeWJ5tTToLH67kXR7zYNGupXMEHa2++G8k+DczX2cFVgalypqtyZIcU19AFcmOpmg==
+  version "7.0.9"
+  resolved "https://registry.yarnpkg.com/@types/json-schema/-/json-schema-7.0.9.tgz#97edc9037ea0c38585320b28964dde3b39e4660d"
+  integrity sha512-qcUXuemtEu+E5wZSJHNxUXeCZhAfXKQ41D+duX+VYPde7xyEVZci+/oXKJL13tnRs9lR2pr4fod59GT6/X1/yQ==
 
 "@types/json5@^0.0.29":
   version "0.0.29"
@@ -10449,14 +10470,20 @@ ee-first@1.1.1:
   integrity sha1-WQxhFWsK4vTwJVcyoViyZrxWsh0=
 
 electron-to-chromium@^1.3.47, electron-to-chromium@^1.3.564, electron-to-chromium@^1.3.723, electron-to-chromium@^1.3.793:
+<<<<<<< HEAD
   version "1.3.793"
   resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.793.tgz#c10dff5f3126238004de344db458f1da3641d554"
   integrity sha512-l9NrGV6Mr4ov5mayYPvIWcwklNw5ROmy6rllzz9dCACw9nKE5y+s5uQk+CBJMetxrWZ6QJFsvEfG6WDcH2IGUg==
+=======
+  version "1.3.795"
+  resolved "https://registry.yarnpkg.com/electron-to-chromium/-/electron-to-chromium-1.3.795.tgz#91f09b4c77f8dab562dd592ce929b009201c24ff"
+  integrity sha512-4TPxrLf9Fzsi4rVgTlDm+ubxoXm3/TN67/LGHx/a4UkVubKILa6L26O6eTnHewixG/knzU9L3lLmfL39eElwlQ==
+>>>>>>> develop
 
 electron@^13.1.5:
-  version "13.1.7"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-13.1.7.tgz#7e17f5c93a8d182a2a486884fed3dc34ab101be9"
-  integrity sha512-sVfpP/0s6a82FK32LMuEe9L+aWZw15u3uYn9xUJArPjy4OZHteE6yM5871YCNXNiDnoCLQ5eqQWipiVgHsf8nQ==
+  version "13.1.8"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-13.1.8.tgz#a6def6eca7cafc7b068a8f71a069e521ba803182"
+  integrity sha512-ei2ZyyG81zUOlvm5Zxri668TdH5GNLY0wF+XrC2FRCqa8AABAPjJIWTRkhFEr/H6PDVPNZjMPvSs3XhHyVVk2g==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^14.6.2"
@@ -21815,9 +21842,15 @@ tar@^4, tar@^4.0.2, tar@^4.4.10, tar@^4.4.12, tar@^4.4.8:
     yallist "^3.0.3"
 
 tar@^6.0.2:
+<<<<<<< HEAD
   version "6.1.3"
   resolved "https://registry.yarnpkg.com/tar/-/tar-6.1.3.tgz#e44b97ee7d6cc7a4c574e8b01174614538291825"
   integrity sha512-3rUqwucgVZXTeyJyL2jqtUau8/8r54SioM1xj3AmTX3HnWQdj2AydfJ2qYYayPyIIznSplcvU9mhBb7dR2XF3w==
+=======
+  version "6.1.6"
+  resolved "https://registry.yarnpkg.com/tar/-/tar-6.1.6.tgz#c23d797b0a1efe5d479b1490805c5443f3560c5d"
+  integrity sha512-oaWyu5dQbHaYcyZCTfyPpC+VmI62/OM2RTUYavTk1MDr1cwW5Boi3baeYQKiZbY2uSQJGr+iMOzb/JFxLrft+g==
+>>>>>>> develop
   dependencies:
     chownr "^2.0.0"
     fs-minipass "^2.0.0"
