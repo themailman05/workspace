@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./IStaking.sol";
 import "./IBeneficiaryRegistry.sol";
 import "./ParticipationReward.sol";
+import "./IRegion.sol";
 
 /**
  * @notice This contract is for submitting beneficiary nomination proposals and beneficiary takedown proposals
@@ -51,6 +52,7 @@ contract BeneficiaryGovernance is ParticipationReward {
     bytes applicationCid;
     address proposer;
     uint256 startTime;
+    bytes2 region;
     uint256 yesCount;
     uint256 noCount;
     uint256 voterCount;
@@ -61,8 +63,9 @@ contract BeneficiaryGovernance is ParticipationReward {
 
   /* ========== STATE VARIABLES ========== */
 
-  IStaking staking;
-  IBeneficiaryRegistry beneficiaryRegistry;
+  IRegion internal region;
+  IStaking public staking;
+  IBeneficiaryRegistry public beneficiaryRegistry;
 
   mapping(address => bool) pendingBeneficiaries;
   mapping(address => uint256) beneficiaryProposals;
@@ -94,10 +97,12 @@ contract BeneficiaryGovernance is ParticipationReward {
     IStaking _staking,
     IBeneficiaryRegistry _beneficiaryRegistry,
     IERC20 _pop,
+    IRegion _region,
     address _governance
   ) ParticipationReward(_pop, _governance) {
     staking = _staking;
     beneficiaryRegistry = _beneficiaryRegistry;
+    region = _region;
     _setDefaults();
   }
 
@@ -155,7 +160,8 @@ contract BeneficiaryGovernance is ParticipationReward {
    */
   function createProposal(
     address _beneficiary,
-    bytes memory _applicationCid,
+    bytes2 _region,
+    bytes calldata _applicationCid,
     ProposalType _type
   )
     external
@@ -163,6 +169,7 @@ contract BeneficiaryGovernance is ParticipationReward {
     enoughBond(msg.sender)
     returns (uint256)
   {
+    //require(region.regionExists(_region), "region doesnt exist");
     _assertProposalPreconditions(_type, _beneficiary);
 
     if (DefaultConfigurations.proposalBond > 0) {
@@ -190,6 +197,7 @@ contract BeneficiaryGovernance is ParticipationReward {
     proposal.applicationCid = _applicationCid;
     proposal.proposer = msg.sender;
     proposal.startTime = block.timestamp;
+    proposal.region = _region;
     proposal.proposalType = _type;
     proposal.configurationOptions = DefaultConfigurations;
     (bool vaultCreated, bytes32 vaultId) = _initializeVault(
@@ -351,6 +359,7 @@ contract BeneficiaryGovernance is ParticipationReward {
     if (proposal.proposalType == ProposalType.BeneficiaryNominationProposal) {
       beneficiaryRegistry.addBeneficiary(
         proposal.beneficiary,
+        proposal.region,
         proposal.applicationCid
       );
     }

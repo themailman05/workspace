@@ -7,6 +7,7 @@ import "./ITreasury.sol";
 import "./IInsurance.sol";
 import "./IBeneficiaryVaults.sol";
 import "./IRewardsManager.sol";
+import "./IRegion.sol";
 import "./Owned.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -38,7 +39,7 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   IStaking public staking;
   ITreasury public treasury;
   IInsurance public insurance;
-  IBeneficiaryVaults public beneficiaryVaults;
+  IRegion public region;
   IUniswapV2Router02 public immutable uniswapV2Router;
 
   uint256[4] public rewardSplits;
@@ -49,17 +50,14 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   event StakingDeposited(address to, uint256 amount);
   event TreasuryDeposited(address to, uint256 amount);
   event InsuranceDeposited(address to, uint256 amount);
-  event BeneficiaryVaultsDeposited(address to, uint256 amount);
+  event BeneficiaryVaultsDeposited(uint256 amount);
   event RewardsDistributed(uint256 amount);
   event RewardSplitsUpdated(uint256[4] splits);
   event TokenSwapped(address token, uint256 amountIn, uint256 amountOut);
   event StakingChanged(IStaking from, IStaking to);
   event TreasuryChanged(ITreasury from, ITreasury to);
   event InsuranceChanged(IInsurance from, IInsurance to);
-  event BeneficiaryVaultsChanged(
-    IBeneficiaryVaults from,
-    IBeneficiaryVaults to
-  );
+  event RegionChanged(IRegion from, IRegion to);
 
   /* ========== CONSTRUCTOR ========== */
 
@@ -68,14 +66,14 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
     IStaking staking_,
     ITreasury treasury_,
     IInsurance insurance_,
-    IBeneficiaryVaults beneficiaryVaults_,
+    IRegion region_,
     IUniswapV2Router02 uniswapV2Router_
   ) Owned(msg.sender) {
     POP = pop_;
     staking = staking_;
     treasury = treasury_;
     insurance = insurance_;
-    beneficiaryVaults = beneficiaryVaults_;
+    region = region_;
     uniswapV2Router = uniswapV2Router_;
     rewardLimits[uint8(RewardTargets.Staking)] = [20e18, 80e18];
     rewardLimits[uint8(RewardTargets.Treasury)] = [10e18, 80e18];
@@ -184,8 +182,13 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
 
   function _distributeToVaults(uint256 amount_) internal {
     if (amount_ == 0) return;
-    POP.transfer(address(beneficiaryVaults), amount_);
-    emit BeneficiaryVaultsDeposited(address(beneficiaryVaults), amount_);
+    //This might lead to a gas overflow since the region array is unbound
+    address[] memory regionVaults = region.getAllVaults();
+    uint256 split = amount_.div(regionVaults.length);
+    for (uint256 i; i < regionVaults.length; i++) {
+      POP.transfer(regionVaults[i], split);
+    }
+    emit BeneficiaryVaultsDeposited(amount_);
   }
 
   /* ========== SETTER ========== */
@@ -227,21 +230,15 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   }
 
   /**
-   * @notice Overrides existing BeneficiaryVaults contract
-   * @param beneficiaryVaults_ Address of new BeneficiaryVaults contract
-   * @dev Must implement IeneficiaryVaults and cannot be same as existing
+   * @notice Overrides existing Region contract
+   * @param region_ Address of new Region contract
+   * @dev Must implement IRegion and cannot be same as existing
    */
-  function setBeneficiaryVaults(IBeneficiaryVaults beneficiaryVaults_)
-    public
-    onlyOwner
-  {
-    require(beneficiaryVaults != beneficiaryVaults_, "Same BeneficiaryVaults");
-    IBeneficiaryVaults _previousBeneficiaryVaults = beneficiaryVaults;
-    beneficiaryVaults = beneficiaryVaults_;
-    emit BeneficiaryVaultsChanged(
-      _previousBeneficiaryVaults,
-      beneficiaryVaults_
-    );
+  function setRegion(IRegion region_) public onlyOwner {
+    require(region != region_, "Same Region");
+    IRegion _previousRegion = region;
+    region = region_;
+    emit RegionChanged(_previousRegion, region_);
   }
 
   /**
