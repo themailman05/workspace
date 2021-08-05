@@ -5,8 +5,8 @@ import truncate from 'utils/truncate';
 // TODO: Figure out the types here
 export interface CardBodyProps {
   image: BeneficiaryImage;
-  name: any;
-  missionStatement: any;
+  name: string;
+  missionStatement: string;
 }
 
 const CardBody: React.FC<CardBodyProps> = ({
@@ -20,7 +20,7 @@ const CardBody: React.FC<CardBodyProps> = ({
         <img
           className="h-48 w-full object-cover"
           src={`${process.env.IPFS_URL}${image?.image}`}
-          alt={image?.description ? image.description : `Picture of ${name}`}
+          alt={image?.description || `Picture of ${name}`}
         />
       </div>
       <div className="flex-1 bg-white p-6 flex flex-col justify-between">
