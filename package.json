@@ -7,10 +7,11 @@
   "scripts": {
     "dev": "yarn lerna run dev",
     "build": "yarn lerna run --parallel build",
-    "app:build": "yarn lerna run --scope={@popcorn/utils,@popcorn/app} build",
+    "app:build": "yarn lerna run --scope={@popcorn/app,@popcorn/contracts} build",
     "app:start": "yarn lerna run --scope @popcorn/app start",
     "start": "yarn lerna run --scope @popcorn/app start",
     "pretify": "prettier --write .",
+    "test": "yarn lerna run test",
     "netlify-build": "lerna run --scope @popcorn/contracts compile; cd packages/app; yarn next build"
   },
   "dependencies": {

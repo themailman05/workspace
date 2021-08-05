@@ -57,9 +57,11 @@ const electionId = 0;
 
 async function deployContracts(): Promise<Contracts> {
   const mockPop = await (
-    await (
-      await ethers.getContractFactory("MockERC20")
-    ).deploy("TestPOP", "TPOP", 18)
+    await (await ethers.getContractFactory("MockERC20")).deploy(
+      "TestPOP",
+      "TPOP",
+      18
+    )
   ).deployed();
   await mockPop.mint(owner.address, parseEther("6500"));
   await mockPop.mint(beneficiary.address, parseEther("500"));
@@ -83,15 +85,14 @@ async function deployContracts(): Promise<Contracts> {
   );
 
   const beneficiaryVaults = await (
-    await (
-      await ethers.getContractFactory("BeneficiaryVaults")
-    ).deploy(mockPop.address, mockBeneficiaryRegistry.address)
+    await (await ethers.getContractFactory("BeneficiaryVaults")).deploy(
+      mockPop.address,
+      mockBeneficiaryRegistry.address
+    )
   ).deployed();
 
   const randomNumberHelper = await (
-    await (
-      await ethers.getContractFactory("RandomNumberHelper")
-    ).deploy(
+    await (await ethers.getContractFactory("RandomNumberHelper")).deploy(
       owner.address,
       mockPop.address,
       ethers.utils.formatBytes32String("secret")
@@ -103,9 +104,7 @@ async function deployContracts(): Promise<Contracts> {
     .transfer(randomNumberHelper.address, parseEther("500"));
 
   const grantElections = (await (
-    await (
-      await ethers.getContractFactory("GrantElections")
-    ).deploy(
+    await (await ethers.getContractFactory("GrantElections")).deploy(
       mockStaking.address,
       mockBeneficiaryRegistry.address,
       beneficiaryVaults.address,
@@ -579,14 +578,12 @@ describe("GrantElections", function () {
       );
       const metadata = await GrantElectionAdapter(
         contracts.grantElections
-      ).getElectionMetadata(electionId);
-      expect(metadata["votes"]).to.deep.eq([
-        {
-          voter: owner.address,
-          beneficiary: beneficiary.address,
-          weight: BigNumber.from(Math.round(Math.sqrt(5))),
-        },
-      ]);
+      ).getElectionMetadata(GRANT_TERM.MONTH);
+      expect(metadata["votes"][0]).to.deep.eq({
+        voter: owner.address,
+        beneficiary: beneficiary.address,
+        weight: BigNumber.from(Math.round(Math.sqrt(5))),
+      });
     });
 
     it("should not allow to vote twice for same address and grant term", async function () {
@@ -663,8 +660,9 @@ describe("GrantElections", function () {
         });
 
         it("overwrites merkleRoot when calling proposeFinalization twice", async function () {
-          const newMerkleRoot =
-            ethers.utils.formatBytes32String("newMerkleRoot");
+          const newMerkleRoot = ethers.utils.formatBytes32String(
+            "newMerkleRoot"
+          );
           ethers.provider.send("evm_increaseTime", [30 * ONE_DAY]);
           ethers.provider.send("evm_mine", []);
           await contracts.grantElections.refreshElectionState(electionId);
@@ -713,8 +711,7 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance1).to.equal(parseEther("500"));
-            const incentiveBudget1 =
-              await contracts.grantElections.incentiveBudget();
+            const incentiveBudget1 = await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget1).to.equal(parseEther("1000"));
           });
 
@@ -732,8 +729,7 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance1).to.equal(parseEther("2500"));
-            const incentiveBudget1 =
-              await contracts.grantElections.incentiveBudget();
+            const incentiveBudget1 = await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget1).to.equal(0);
           });
 
@@ -752,8 +748,7 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance1).to.equal(parseEther("2500"));
-            const incentiveBudget1 =
-              await contracts.grantElections.incentiveBudget();
+            const incentiveBudget1 = await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget1).to.equal(parseEther("2000"));
 
             await contracts.grantElections
@@ -763,8 +758,7 @@ describe("GrantElections", function () {
               beneficiary.address
             );
             expect(balance2).to.equal(parseEther("2500"));
-            const incentiveBudget2 =
-              await contracts.grantElections.incentiveBudget();
+            const incentiveBudget2 = await contracts.grantElections.incentiveBudget();
             expect(incentiveBudget2).to.equal(parseEther("2000"));
           });
         });
