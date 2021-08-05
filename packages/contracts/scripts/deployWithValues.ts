@@ -217,19 +217,6 @@ export default async function deploy(ethers): Promise<void> {
         }
       })
     );
-    // await bluebird.map(
-    //   bennies,
-    //   async (beneficiary: SignerWithAddress) => {
-    //     const balance = await ethers.provider.getBalance(beneficiary.address);
-    //     if (balance.lt(parseEther(".01"))) {
-    //       return accounts[0].sendTransaction({
-    //         to: beneficiary.address,
-    //         value: utils.parseEther(".02"),
-    //       });
-    //     }
-    //   },
-    //   { concurrency: 1 }
-    // );
   };
 
   const addBeneficiaryProposals = async (): Promise<void> => {
