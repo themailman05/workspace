@@ -112,11 +112,4 @@ contract BeneficiaryRegistry is
     require(_address == address(_address), "invalid address");
     _;
   }
-  modifier onlyOwnerOrCouncil(address _address) {
-    require(
-      msg.sender == owner() || msg.sender == council,
-      "Only the owner or council may perform this action"
-    );
-    _;
-  }
 }

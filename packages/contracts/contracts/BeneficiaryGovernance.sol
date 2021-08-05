@@ -359,6 +359,7 @@ contract BeneficiaryGovernance is ParticipationReward {
     if (proposal.proposalType == ProposalType.BeneficiaryNominationProposal) {
       beneficiaryRegistry.addBeneficiary(
         proposal.beneficiary,
+        proposal.region,
         proposal.applicationCid
       );
     }

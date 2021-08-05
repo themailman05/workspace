@@ -78,12 +78,6 @@ async function deployContracts(): Promise<Contracts> {
     beneficiaryRegistryFactory.interface.format() as any[]
   );
 
-  const beneficiaryVaults = await (
-    await (
-      await ethers.getContractFactory("BeneficiaryVaults")
-    ).deploy(mockPop.address, mockBeneficiaryRegistry.address)
-  ).deployed();
-
   const randomNumberHelper = await (
     await (
       await ethers.getContractFactory("RandomNumberHelper")
@@ -103,6 +97,7 @@ async function deployContracts(): Promise<Contracts> {
       await ethers.getContractFactory("BeneficiaryVaults")
     ).deploy(mockPop.address)
   ).deployed();
+
   await beneficiaryVaults
     .connect(owner)
     .setBeneficiaryRegistry(mockBeneficiaryRegistry.address);

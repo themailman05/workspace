@@ -242,24 +242,6 @@ contract RewardsManager is IRewardsManager, Owned, ReentrancyGuard {
   }
 
   /**
-   * @notice Overrides existing BeneficiaryVaults contract
-   * @param beneficiaryVaults_ Address of new BeneficiaryVaults contract
-   * @dev Must implement IeneficiaryVaults and cannot be same as existing
-   */
-  function setBeneficiaryVaults(IBeneficiaryVaults beneficiaryVaults_)
-    public
-    onlyOwner
-  {
-    require(beneficiaryVaults != beneficiaryVaults_, "Same BeneficiaryVaults");
-    IBeneficiaryVaults _previousBeneficiaryVaults = beneficiaryVaults;
-    beneficiaryVaults = beneficiaryVaults_;
-    emit BeneficiaryVaultsChanged(
-      _previousBeneficiaryVaults,
-      beneficiaryVaults_
-    );
-  }
-
-  /**
    * @notice Set new reward distribution allocations
    * @param splits_ Array of RewardTargets enumerated uint256 values within rewardLimits range
    * @dev Values must be within rewardsLimit range, specified in percent to 18 decimal place precision

@@ -7,7 +7,7 @@ contract CouncilControlled {
   /* ========== STATE VARIABLES ========== */
 
   IRegion internal region;
-  mapping(bytes2 => address) private council;
+  mapping(bytes2 => address) public council;
   mapping(bytes2 => address) public nominatedCouncil;
 
   /* ========== EVENTS ========== */
