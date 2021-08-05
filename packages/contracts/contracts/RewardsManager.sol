@@ -80,8 +80,6 @@ contract RewardsManager is
     rewardLimits[uint8(RewardTargets.Insurance)] = [0, 10e18];
     rewardLimits[uint8(RewardTargets.BeneficiaryVaults)] = [20e18, 90e18];
     rewardSplits = [32e18, 32e18, 2e18, 34e18];
-    createIncentive(block.timestamp, 1 days, 30 days, 10e18, true, false);
-    createIncentive(block.timestamp, 1 days, 30 days, 10e18, true, false);
   }
 
   receive() external payable {}
@@ -202,23 +200,23 @@ contract RewardsManager is
    * @notice Distribute POP rewards to dependent RewardTarget contracts
    * @dev Contract must have POP balance in order to distribute according to rewardSplits ratio
    */
-  function distributeRewards() public nonReentrant keeperIncentive(1) {
+  function distributeRewards() public nonReentrant keeperIncentive(0) {
     uint256 _availableReward = POP.balanceOf(address(this));
     require(_availableReward > 0, "No POP balance");
 
     //@todo check edge case precision overflow
     uint256 _stakingAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Staking)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.Staking)])
+      .div(100e18);
     uint256 _treasuryAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Treasury)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.Treasury)])
+      .div(100e18);
     uint256 _insuranceAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.Insurance)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.Insurance)])
+      .div(100e18);
     uint256 _beneficiaryVaultsAmount = _availableReward
-    .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
-    .div(100e18);
+      .mul(rewardSplits[uint8(RewardTargets.BeneficiaryVaults)])
+      .div(100e18);
 
     _distributeToStaking(_stakingAmount);
     _distributeToTreasury(_treasuryAmount);

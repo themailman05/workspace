@@ -20,7 +20,7 @@ contract KeeperIncentiveHelper is KeeperIncentive {
     emit FunctionCalled(msg.sender);
   }
 
-  function incentivisedFunction() public keeperIncentive(1) {
+  function incentivisedFunction() public keeperIncentive(0) {
     emit FunctionCalled(msg.sender);
   }
 }
