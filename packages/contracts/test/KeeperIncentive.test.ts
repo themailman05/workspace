@@ -1,9 +1,9 @@
-import { expect } from "chai";
-import { waffle, ethers } from "hardhat";
-import { parseEther } from "ethers/lib/utils";
-import { KeeperIncentiveHelper, MockERC20 } from "../typechain";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
 import { BigNumber } from "ethers";
+import { parseEther } from "ethers/lib/utils";
+import { ethers, waffle } from "hardhat";
+import { KeeperIncentiveHelper, MockERC20 } from "../typechain";
 
 let deployTimestamp;
 let owner: SignerWithAddress, nonOwner: SignerWithAddress;
@@ -87,17 +87,17 @@ describe("Keeper incentives", function () {
       "Only the contract governance may perform this action"
     );
     await expect(
-      keeperIncentiveHelper.connect(nonOwner).whitelistAccount(owner.address)
+      keeperIncentiveHelper.connect(nonOwner).approveAccount(owner.address)
     ).to.be.revertedWith(
       "Only the contract governance may perform this action"
     );
     await expect(
-      keeperIncentiveHelper.connect(nonOwner).removeWhitelisting(owner.address)
+      keeperIncentiveHelper.connect(nonOwner).removeApproval(owner.address)
     ).to.be.revertedWith(
       "Only the contract governance may perform this action"
     );
     await expect(
-      keeperIncentiveHelper.connect(nonOwner).toggleWhitelisting(0)
+      keeperIncentiveHelper.connect(nonOwner).toggleApproval(0)
     ).to.be.revertedWith(
       "Only the contract governance may perform this action"
     );
@@ -243,37 +243,37 @@ describe("Keeper incentives", function () {
         ).to.revertedWith("must be in the future");
       });
     });
-    context("whitelisting", function () {
-      it("should whitelist", async function () {
+    context("approval", function () {
+      it("should approve accounts", async function () {
         expect(
           await keeperIncentiveHelper
             .connect(owner)
-            .whitelistAccount(nonOwner.address)
+            .approveAccount(nonOwner.address)
         )
-          .to.emit(keeperIncentiveHelper, "allowed")
+          .to.emit(keeperIncentiveHelper, "Approved")
           .withArgs(nonOwner.address);
-        expect(
-          await keeperIncentiveHelper.allowed(nonOwner.address)
-        ).to.equal(true);
+        expect(await keeperIncentiveHelper.approved(nonOwner.address)).to.equal(
+          true
+        );
       });
-      it("should remove whitelisting", async function () {
+      it("should remove approval", async function () {
         await keeperIncentiveHelper
           .connect(owner)
-          .whitelistAccount(nonOwner.address);
+          .approveAccount(nonOwner.address);
         expect(
           await keeperIncentiveHelper
             .connect(owner)
-            .removeWhitelisting(nonOwner.address)
+            .removeApproval(nonOwner.address)
         )
-          .to.emit(keeperIncentiveHelper, "RemovedWhitelisting")
+          .to.emit(keeperIncentiveHelper, "RemovedApproval")
           .withArgs(nonOwner.address);
-        expect(
-          await keeperIncentiveHelper.allowed(nonOwner.address)
-        ).to.equal(false);
+        expect(await keeperIncentiveHelper.approved(nonOwner.address)).to.equal(
+          false
+        );
       });
-      it("should toggle whitelisting", async function () {
-        expect(await keeperIncentiveHelper.connect(owner).toggleWhitelisting(0))
-          .to.emit(keeperIncentiveHelper, "WhitelistingToggled")
+      it("should toggle approval", async function () {
+        expect(await keeperIncentiveHelper.connect(owner).toggleApproval(0))
+          .to.emit(keeperIncentiveHelper, "ApprovalToggled")
           .withArgs(0, true);
         expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
           BigNumber.from(deployTimestamp),
@@ -283,8 +283,8 @@ describe("Keeper incentives", function () {
           true,
           true,
         ]);
-        expect(await keeperIncentiveHelper.connect(owner).toggleWhitelisting(0))
-          .to.emit(keeperIncentiveHelper, "WhitelistingToggled")
+        expect(await keeperIncentiveHelper.connect(owner).toggleApproval(0))
+          .to.emit(keeperIncentiveHelper, "ApprovalToggled")
           .withArgs(0, false);
         expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
           BigNumber.from(deployTimestamp),
@@ -342,14 +342,14 @@ describe("Keeper incentives", function () {
       const newBalance = await mockPop.balanceOf(owner.address);
       expect(newBalance).to.equal(oldBalance);
     });
-    context("whitelisting", function () {
-      it("should not be callable for non allowed addresses", async function () {
+    context("approval", function () {
+      it("should not be callable for non approved addresses", async function () {
         await expect(
           keeperIncentiveHelper.connect(nonOwner).defaultIncentivisedFunction()
-        ).to.revertedWith("you are not allowed as a keeper");
+        ).to.revertedWith("you are not approved as a keeper");
       });
-      it("should be callable for non allowed addresses if the incentive is open to everyone", async function () {
-        await keeperIncentiveHelper.connect(owner).toggleWhitelisting(0);
+      it("should be callable for non approved addresses if the incentive is open to everyone", async function () {
+        await keeperIncentiveHelper.connect(owner).toggleApproval(0);
         await mockPop
           .connect(owner)
           .approve(keeperIncentiveHelper.address, parseEther("11"));
@@ -379,7 +379,7 @@ describe("Keeper incentives", function () {
         ]);
 
         const newbalance = await mockPop.balanceOf(nonOwner.address);
-        expect(newbalance).to.equal(oldBalance.add(incentive))
+        expect(newbalance).to.equal(oldBalance.add(incentive));
       });
     });
     context("should not do anything ", function () {
@@ -409,7 +409,7 @@ describe("Keeper incentives", function () {
         const oldBalance = await mockPop.balanceOf(owner.address);
         const result = await keeperIncentiveHelper
           .connect(owner)
-          .incentivisedFunction();
+          .defaultIncentivisedFunction();
         expect(result)
           .to.emit(keeperIncentiveHelper, "FunctionCalled")
           .withArgs(owner.address);

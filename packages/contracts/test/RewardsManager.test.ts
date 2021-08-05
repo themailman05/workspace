@@ -159,14 +159,6 @@ describe("RewardsManager", function () {
       true,
       false,
     ]);
-    expect(await contracts.RewardsManager.incentives(1)).to.deep.equal([
-      BigNumber.from(deployTimestamp),
-      BigNumber.from("86400"),
-      BigNumber.from(30 * 86400),
-      parseEther("10"),
-      true,
-      false,
-    ]);
   });
 
   it("reverts when setting reward splits as non-owner", async function () {
@@ -626,7 +618,7 @@ describe("RewardsManager", function () {
 
       await contracts.RewardsManager.connect(owner).distributeRewards();
       expect(await contracts.POP.balanceOf(owner.address)).to.equal(
-        parseEther("30")
+        parseEther("20")
       );
     });
   });

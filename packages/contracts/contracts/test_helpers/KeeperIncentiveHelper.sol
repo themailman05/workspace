@@ -12,15 +12,13 @@ contract KeeperIncentiveHelper is KeeperIncentive {
 
   event FunctionCalled(address account);
 
-  constructor(IERC20 pop_) public KeeperIncentive(msg.sender, pop_) {
-    createIncentive(block.timestamp, 1 days, 30 days, 10e18, true, false);
-  }
+  constructor(IERC20 pop_) public KeeperIncentive(msg.sender, pop_) {}
 
   function defaultIncentivisedFunction() public keeperIncentive(0) {
     emit FunctionCalled(msg.sender);
   }
 
-  function incentivisedFunction() public keeperIncentive(0) {
+  function incentivisedFunction() public keeperIncentive(1) {
     emit FunctionCalled(msg.sender);
   }
 }
