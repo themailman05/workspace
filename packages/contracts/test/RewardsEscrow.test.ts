@@ -1,5 +1,6 @@
 import { BigNumber } from "@ethersproject/bignumber";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import bluebird from "bluebird";
 import { expect } from "chai";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, waffle } from "hardhat";
@@ -55,7 +56,19 @@ async function deployContracts(): Promise<Contracts> {
 async function addEscrow(): Promise<void> {
   ethers.provider.send("evm_increaseTime", [1 * dayInSec]);
   ethers.provider.send("evm_mine", []);
+  console.log(
+    "before",
+    await (
+      await contracts.staking.getWithdrawableBalance(owner.address)
+    ).toString()
+  );
   await contracts.staking.connect(owner).getReward();
+  console.log(
+    "after",
+    await (
+      await contracts.staking.getWithdrawableBalance(owner.address)
+    ).toString()
+  );
 }
 
 describe("RewardsEscrow", function () {
@@ -179,38 +192,36 @@ describe("RewardsEscrow", function () {
         await contracts.staking.connect(owner).getReward();
       });
       it("reverts if there are no rewards to claim", async function () {
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
         await expect(
-          contracts.rewardsEscrow.connect(owner).claimRewards([0])
+          contracts.rewardsEscrow.connect(owner).claimReward(escrowIds[0])
         ).to.be.revertedWith("no rewards");
       });
       it("claims full rewards successfully after vesting period", async function () {
-        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
           owner.address
         );
-        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        const escrow = await contracts.rewardsEscrow.escrows(escrowIds[0]);
         ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
         ethers.provider.send("evm_mine", []);
         const oldBalance = await contracts.mockPop.balanceOf(owner.address);
 
-        await expect(contracts.rewardsEscrow.connect(owner).claimReward(0))
+        await expect(
+          contracts.rewardsEscrow.connect(owner).claimReward(escrowIds[0])
+        )
           .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
           .withArgs(owner.address, escrow.balance);
 
         const newBalance = await contracts.mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance.add(escrow.balance));
-
-        //Check if the escrowId got deleted
-        expect(
-          await contracts.rewardsEscrow.getEscrowsByUser(owner.address)
-        ).to.deep.equal([
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ]);
       });
       it("claims partial rewards successfully during the vesting period", async function () {
-        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
           owner.address
         );
-        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        const escrow = await contracts.rewardsEscrow.escrows(escrowIds[0]);
 
         ethers.provider.send("evm_increaseTime", [91 * dayInSec]);
         ethers.provider.send("evm_mine", []);
@@ -219,7 +230,7 @@ describe("RewardsEscrow", function () {
         const currentBlock = await waffle.provider.getBlock("latest");
         const result = await contracts.rewardsEscrow
           .connect(owner)
-          .claimReward(0);
+          .claimReward(escrowIds[0]);
 
         const expectedReward = escrow.balance
           .mul(
@@ -240,30 +251,30 @@ describe("RewardsEscrow", function () {
         ).to.equal(1);
       });
       it("should still claim when a lot of escrows got added", async function () {
-        await Promise.all(
-          new Array(50).fill(0).map(async (x, i) => await addEscrow())
+        await bluebird.map(
+          new Array(50).fill(0),
+          async (x, i) => {
+            await contracts.staking.connect(owner).getReward();
+          },
+          { concurrency: 1 }
         );
-        ethers.provider.send("evm_increaseTime", [131 * dayInSec]);
+        ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
         ethers.provider.send("evm_mine", []);
-        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
           owner.address
         );
-        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+
+        const escrow = await contracts.rewardsEscrow.escrows(escrowIds[0]);
         const oldBalance = await contracts.mockPop.balanceOf(owner.address);
 
-        await expect(contracts.rewardsEscrow.connect(owner).claimReward(0))
+        await expect(
+          contracts.rewardsEscrow.connect(owner).claimReward(escrowIds[0])
+        )
           .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
           .withArgs(owner.address, escrow.balance);
 
         const newBalance = await contracts.mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance.add(escrow.balance));
-
-        //Check if the escrowId got deleted
-        expect(
-          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address))[0]
-        ).to.deep.equal(
-          "0x0000000000000000000000000000000000000000000000000000000000000000"
-        );
       });
     });
     context("claim multiple escrows", function () {
@@ -276,53 +287,55 @@ describe("RewardsEscrow", function () {
         await contracts.staking.connect(owner).getReward();
       });
       it("reverts if there are no rewards to claim", async function () {
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
         await expect(
-          contracts.rewardsEscrow.connect(owner).claimRewards([0])
+          contracts.rewardsEscrow.connect(owner).claimRewards([escrowIds[0]])
         ).to.be.revertedWith("no rewards");
       });
       it("reverts when trying to claim to many escrows", async function () {
-        await Promise.all(
-          new Array(30).fill(0).map(async (x, i) => await addEscrow())
+        await bluebird.map(
+          new Array(30).fill(0),
+          async (x, i) => {
+            await contracts.staking.connect(owner).getReward();
+          },
+          { concurrency: 1 }
         );
-        ethers.provider.send("evm_increaseTime", [151 * dayInSec]);
+        ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
         ethers.provider.send("evm_mine", []);
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
+          owner.address
+        );
         await expect(
           contracts.rewardsEscrow
             .connect(owner)
-            .claimRewards([
-              0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18,
-              19, 20,
-            ])
+            .claimRewards(escrowIds.slice(0, 21))
         ).to.be.revertedWith("claiming too many escrows");
       });
       it("claims full rewards successfully after vesting period", async function () {
-        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
           owner.address
         );
-        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        const escrow = await contracts.rewardsEscrow.escrows(escrowIds[0]);
         ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
         ethers.provider.send("evm_mine", []);
         const oldBalance = await contracts.mockPop.balanceOf(owner.address);
 
-        await expect(contracts.rewardsEscrow.connect(owner).claimRewards([0]))
+        await expect(
+          contracts.rewardsEscrow.connect(owner).claimRewards([escrowIds[0]])
+        )
           .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
           .withArgs(owner.address, escrow.balance);
 
         const newBalance = await contracts.mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance.add(escrow.balance));
-
-        //Check if the escrowId got deleted
-        expect(
-          await contracts.rewardsEscrow.getEscrowsByUser(owner.address)
-        ).to.deep.equal([
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-        ]);
       });
       it("claims partial rewards successfully during the vesting period", async function () {
-        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
           owner.address
         );
-        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        const escrow = await contracts.rewardsEscrow.escrows(escrowIds[0]);
 
         ethers.provider.send("evm_increaseTime", [91 * dayInSec]);
         ethers.provider.send("evm_mine", []);
@@ -331,7 +344,7 @@ describe("RewardsEscrow", function () {
         const currentBlock = await waffle.provider.getBlock("latest");
         const result = await contracts.rewardsEscrow
           .connect(owner)
-          .claimRewards([0]);
+          .claimRewards([escrowIds[0]]);
 
         const expectedReward = escrow.balance
           .mul(
@@ -345,55 +358,62 @@ describe("RewardsEscrow", function () {
 
         const newBalance = await contracts.mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance.add(expectedReward));
-
-        //Check if the escrowId got deleted
-        expect(
-          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address)).length
-        ).to.equal(1);
       });
       it("should still claim when a lot of escrows got added", async function () {
-        await Promise.all(
-          new Array(50).fill(0).map(async (x, i) => await addEscrow())
+        await bluebird.map(
+          new Array(50).fill(0),
+          async (x, i) => {
+            await contracts.staking.connect(owner).getReward();
+          },
+          { concurrency: 1 }
         );
-        ethers.provider.send("evm_increaseTime", [131 * dayInSec]);
+        ethers.provider.send("evm_increaseTime", [181 * dayInSec]);
         ethers.provider.send("evm_mine", []);
-        const escrowId = await contracts.rewardsEscrow.getEscrowsByUser(
+        const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
           owner.address
         );
-        const escrow = await contracts.rewardsEscrow.escrows(escrowId[0]);
+        const escrow = await contracts.rewardsEscrow.escrows(escrowIds[0]);
         const oldBalance = await contracts.mockPop.balanceOf(owner.address);
 
-        await expect(contracts.rewardsEscrow.connect(owner).claimReward(0))
+        await expect(
+          contracts.rewardsEscrow.connect(owner).claimReward(escrowIds[0])
+        )
           .to.emit(contracts.rewardsEscrow, "RewardsClaimed")
           .withArgs(owner.address, escrow.balance);
 
         const newBalance = await contracts.mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance.add(escrow.balance));
-
-        //Check if the escrowId got deleted
-        expect(
-          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address))[0]
-        ).to.deep.equal(
-          "0x0000000000000000000000000000000000000000000000000000000000000000"
-        );
       });
       it("should allow to claim one escrow balance fully while claiming another one partially", async function () {
-        await Promise.all(
-          new Array(50).fill(0).map(async (x, i) => await addEscrow())
-        );
-        ethers.provider.send("evm_increaseTime", [131 * dayInSec]);
+        ethers.provider.send("evm_increaseTime", [1 * dayInSec]);
         ethers.provider.send("evm_mine", []);
+        await contracts.staking.connect(owner).getReward();
         const escrowIds = await contracts.rewardsEscrow.getEscrowsByUser(
           owner.address
         );
         const escrow1 = await contracts.rewardsEscrow.escrows(escrowIds[0]);
         const escrow2 = await contracts.rewardsEscrow.escrows(escrowIds[1]);
-
+        const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
+        ethers.provider.send("evm_increaseTime", [
+          escrow1.end.toNumber() - timestamp,
+        ]);
+        ethers.provider.send("evm_mine", []);
         const oldBalance = await contracts.mockPop.balanceOf(owner.address);
         const currentBlock = await waffle.provider.getBlock("latest");
         const result = await contracts.rewardsEscrow
           .connect(owner)
-          .claimRewards([0, 1]);
+          .claimRewards([escrowIds[0], escrowIds[1]]);
+
+        expect(
+          await (
+            await contracts.rewardsEscrow.escrows(escrowIds[0])
+          ).claimed
+        ).to.be.equal(true);
+        expect(
+          await (
+            await contracts.rewardsEscrow.escrows(escrowIds[1])
+          ).claimed
+        ).to.be.equal(false);
 
         const escrow2ExpectedReward = escrow2.balance
           .mul(
@@ -410,17 +430,6 @@ describe("RewardsEscrow", function () {
 
         const newBalance = await contracts.mockPop.balanceOf(owner.address);
         expect(newBalance).to.equal(oldBalance.add(expectedReward));
-
-        //Check if the escrowId got deleted
-        expect(
-          (await contracts.rewardsEscrow.getEscrowsByUser(owner.address)).slice(
-            0,
-            2
-          )
-        ).to.deep.equal([
-          "0x0000000000000000000000000000000000000000000000000000000000000000",
-          escrowIds[1],
-        ]);
       });
     });
   });

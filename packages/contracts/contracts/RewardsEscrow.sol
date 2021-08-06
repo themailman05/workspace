@@ -17,6 +17,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     uint256 start;
     uint256 end;
     uint256 balance;
+    bool claimed;
   }
 
   IERC20 public immutable POP;
@@ -83,7 +84,12 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
     uint256 _end = _start.add(escrowDuration);
     bytes32 id = keccak256(abi.encodePacked(account_, amount_, _now));
 
-    escrows[id] = Escrow({start: _start, end: _end, balance: amount_});
+    escrows[id] = Escrow({
+      start: _start,
+      end: _end,
+      balance: amount_,
+      claimed: false
+    });
     escrowIds[account_].push(id);
 
     POP.safeTransferFrom(msg.sender, address(this), amount_);
@@ -93,13 +99,12 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   /**
    * @notice Claim vested funds in escrow
-   * @param index_ uint256
    * @dev Uses the escrowId at the specified index of escrowIds.
    * @dev This function is used when a user only wants to claim a specific escrowVault or if they decide the gas cost of claimRewards are to high for now.
    * @dev (lower cost but also lower reward)
    */
-  function claimReward(uint256 index_) external nonReentrant {
-    uint256 reward = _claimReward(msg.sender, index_);
+  function claimReward(bytes32 escrowId_) external nonReentrant {
+    uint256 reward = _claimReward(msg.sender, escrowId_);
     require(reward > 0, "no rewards");
 
     POP.safeTransfer(msg.sender, reward);
@@ -109,18 +114,17 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   /**
    * @notice Claim rewards of a a number of escrows
-   * @param indices_ uint256[]
    * @dev Uses the vaultIds at the specified indices of escrowIds.
    * @dev This function is used when a user only wants to claim multiple escrowVaults at once (probably most of the time)
    * @dev The array of indices is limited to 20 as we want to prevent gas overflow of looping through too many vaults
    * TODO the upper bound of indices that can be used should be calculated with a simulation
    */
-  function claimRewards(uint256[] calldata indices_) external nonReentrant {
-    require(indices_.length <= 20, "claiming too many escrows");
+  function claimRewards(bytes32[] calldata escrowIds_) external nonReentrant {
+    require(escrowIds_.length <= 20, "claiming too many escrows");
     uint256 total;
 
-    for (uint256 i = 0; i < indices_.length; i++) {
-      total = total.add(_claimReward(msg.sender, indices_[i]));
+    for (uint256 i = 0; i < escrowIds_.length; i++) {
+      total = total.add(_claimReward(msg.sender, escrowIds_[i]));
     }
     require(total > 0, "no rewards");
 
@@ -133,21 +137,18 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
 
   /**
    * @notice Underlying function to calculate the rewards that a user gets
-   * @param account_ address
-   * @param index_ uint256
    * @dev We dont want it to error when a vault is empty for the user as this would terminate the entire loop when used in claimRewards()
    * @dev It deletes the escrow and escrowId when all token in it are claimable
    */
-  function _claimReward(address account_, uint256 index_)
+  function _claimReward(address account_, bytes32 escrowId_)
     internal
     returns (uint256)
   {
-    Escrow storage escrow = escrows[escrowIds[account_][index_]];
+    Escrow storage escrow = escrows[escrowId_];
     if (escrow.start <= block.timestamp) {
       uint256 claimable = _getClaimableAmount(escrow);
       if (claimable == escrow.balance) {
-        delete escrowIds[account_][index_];
-        delete escrows[escrowIds[account_][index_]];
+        escrow.claimed = true;
       }
       return claimable;
     }
