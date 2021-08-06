@@ -36,6 +36,7 @@ const beneficiaryApplicationCids = [
   "Qmdz9dhwW318kY2BJVqa2oZzP3nECqyZGM7LsfURBpV7B5",
 ];
 
+const DEFAULT_REGION = "0x5757";
 interface Contracts {
   beneficiaryRegistry: Contract;
   mockPop: Contract;
@@ -49,6 +50,7 @@ interface Contracts {
   uniswapRouter: Contract;
   uniswapPair: Contract;
   beneficiaryGovernance: Contract;
+  region: Contract;
 }
 
 enum Vote {
@@ -119,14 +121,28 @@ export default async function deploy(ethers): Promise<void> {
   const deployContracts = async (): Promise<void> => {
     console.log("deploying contracts ...");
 
-    const beneficiaryRegistry = await (
-      await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
-    ).deployed();
-
     const mockPop = await (
       await (
         await ethers.getContractFactory("MockERC20")
       ).deploy("TestPOP", "TPOP", 18)
+    ).deployed();
+
+    const beneficiaryVaults = await (
+      await (
+        await ethers.getContractFactory("BeneficiaryVaults")
+      ).deploy(mockPop.address)
+    ).deployed();
+
+    const region = await (
+      await (
+        await ethers.getContractFactory("Region")
+      ).deploy(beneficiaryVaults.address)
+    ).deployed();
+
+    const beneficiaryRegistry = await (
+      await (
+        await ethers.getContractFactory("BeneficiaryRegistry")
+      ).deploy(region.address)
     ).deployed();
 
     const mock3CRV = await (
@@ -166,12 +182,6 @@ export default async function deploy(ethers): Promise<void> {
       accounts[0]
     );
 
-    const beneficiaryVaults = await (
-      await (
-        await ethers.getContractFactory("BeneficiaryVaults")
-      ).deploy(mockPop.address, beneficiaryRegistry.address)
-    ).deployed();
-
     const rewardsManager = await (
       await (
         await ethers.getContractFactory("RewardsManager")
@@ -199,19 +209,6 @@ export default async function deploy(ethers): Promise<void> {
       )
     ).deployed();
 
-    const grantElections = await (
-      await (
-        await ethers.getContractFactory("GrantElections")
-      ).deploy(
-        staking.address,
-        beneficiaryRegistry.address,
-        beneficiaryVaults.address,
-        randomNumberConsumer.address,
-        mockPop.address,
-        accounts[0].address
-      )
-    ).deployed();
-
     const beneficiaryGovernance = await (
       await (
         await ethers.getContractFactory("BeneficiaryGovernance")
@@ -219,7 +216,21 @@ export default async function deploy(ethers): Promise<void> {
         staking.address,
         beneficiaryRegistry.address,
         mockPop.address,
+        region.address,
         accounts[0].address
+      )
+    ).deployed();
+
+    const grantElections = await (
+      await (
+        await ethers.getContractFactory("GrantElections")
+      ).deploy(
+        staking.address,
+        beneficiaryRegistry.address,
+        randomNumberConsumer.address,
+        mockPop.address,
+        region.address,
+        beneficiaryGovernance.address
       )
     ).deployed();
 
@@ -236,6 +247,7 @@ export default async function deploy(ethers): Promise<void> {
       uniswapRouter,
       uniswapPair,
       beneficiaryGovernance,
+      region,
     };
   };
 
@@ -263,6 +275,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             0,
             { gasLimit: 3000000 }
@@ -283,6 +296,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             0,
             { gasLimit: 3000000 }
@@ -306,6 +320,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             0,
             { gasLimit: 3000000 }
@@ -326,6 +341,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             ProposalType.Nomination,
             { gasLimit: 3000000 }
@@ -341,6 +357,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             ProposalType.Takedown,
             { gasLimit: 3000000 }
@@ -393,6 +410,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             ProposalType.Nomination,
             { gasLimit: 3000000 }
@@ -408,6 +426,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             ProposalType.Takedown,
             { gasLimit: 3000000 }
@@ -450,6 +469,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             ProposalType.Nomination,
             { gasLimit: 3000000 }
@@ -465,6 +485,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             ProposalType.Takedown,
             { gasLimit: 3000000 }
@@ -495,6 +516,7 @@ export default async function deploy(ethers): Promise<void> {
       async (beneficiary: SignerWithAddress) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
+          DEFAULT_REGION,
           getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
           { gasLimit: 3000000 }
         );
@@ -674,7 +696,7 @@ ADDR_UNISWAP_ROUTER=${contracts.uniswapRouter.address}
 ADDR_3CRV=${contracts.mock3CRV.address}
     `);
   };
-
+  const start = Date.now();
   await setSigners();
   await giveBeneficiariesETH();
   await deployContracts();
@@ -733,4 +755,5 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await addOpenProposals();
 
   await logResults();
+  console.log(`Time taken ${(Date.now() - start) / 1000} seconds`);
 }
