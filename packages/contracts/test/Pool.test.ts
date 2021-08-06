@@ -1,4 +1,8 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { expect } from "chai";
+import { BigNumber } from "ethers";
+import { parseEther } from "ethers/lib/utils";
+import { ethers, waffle } from "hardhat";
 import {
   BlockLockHelper,
   DefendedHelper,
@@ -9,10 +13,6 @@ import {
   MockYearnV1Vault,
   Pool,
 } from "../typechain";
-import { expect } from "chai";
-import { waffle, ethers } from "hardhat";
-import { parseEther } from "ethers/lib/utils";
-import { BigNumber } from "ethers";
 
 const provider = waffle.provider;
 
@@ -112,7 +112,7 @@ async function deployContracts(): Promise<Contracts> {
     await BlockLockHelper.deploy(pool.address, mock3Crv.address)
   ).deployed();
 
-  await pool.approveContractAccess(blockLockHelper.address)
+  await pool.approveContractAccess(blockLockHelper.address);
 
   return {
     mock3Crv,
@@ -231,11 +231,12 @@ describe("Pool", function () {
 
     it("should allow whitelisted contracts to deposit", async function () {
       let amount = parseEther("1000");
-      await contracts.pool.approveContractAccess(contracts.defendedHelper.address)
+      await contracts.pool.approveContractAccess(
+        contracts.defendedHelper.address
+      );
       await contracts.defendedHelper.deposit(amount);
       expect(
-        await contracts.mockYearnVault
-          .balanceOf(contracts.pool.address)
+        await contracts.mockYearnVault.balanceOf(contracts.pool.address)
       ).to.equal(parseEther("1000"));
     });
   });
@@ -820,7 +821,7 @@ describe("Pool", function () {
         expect(await contracts.pool.feesUpdatedAt()).to.equal(deployTimestamp);
       });
 
-      it("larger management fees dilute token value", async function () {
+      it.only("larger management fees dilute token value", async function () {
         await contracts.pool.connect(owner).setManagementFee(5000);
 
         let amount = parseEther("10000");
@@ -833,16 +834,53 @@ describe("Pool", function () {
         );
         await contracts.pool.connect(depositor).deposit(amount);
         await provider.send("evm_increaseTime", [365 * 24 * 60 * 60]);
-        await contracts.pool.takeFees();
+        const feesUpdatedAt = await contracts.pool.feesUpdatedAt();
+        const totalValue = await contracts.pool.totalValue();
+        const pricePerPoolToken = await contracts.pool.pricePerPoolToken();
+        const totalSupply = await contracts.pool.totalSupply();
 
+        await contracts.pool.takeFees();
+        const currentBlock = await waffle.provider.getBlock("latest");
+        const period = BigNumber.from(String(currentBlock.timestamp)).sub(
+          feesUpdatedAt
+        );
+        const fee = parseEther("5000")
+          .mul(totalValue)
+          .mul(period)
+          .div(BigNumber.from("31556952").mul(parseEther("10000")));
+
+        const minted = fee.mul(parseEther("1")).div(pricePerPoolToken);
         let managementTokenBalance = await contracts.pool.balanceOf(
           contracts.pool.address
         );
-        expect(await contracts.pool.pricePerPoolToken()).to.equal(
-          parseEther("0.666814242093680000")
-        );
+        console.log(minted.toString());
+        const yearnSharePrice =
+          await contracts.mockYearnVault.getPricePerFullShare();
+        const crvVirtualPrice =
+          await contracts.mockCurveMetapool.get_virtual_price();
+        console.log(yearnSharePrice.toString());
+        console.log(crvVirtualPrice.toString());
+        const poolShare = minted
+          .mul(parseEther("1"))
+          .div(totalSupply.add(minted));
+        console.log(poolShare.toString());
+        const yearnShares = amount.mul(poolShare).div(parseEther("1"));
+        console.log(yearnShares.toString());
+        const crvLPTokens = yearnSharePrice
+          .mul(yearnShares)
+          .div(parseEther("1"));
+        console.log(crvLPTokens.toString());
+
+        const mintedValue = crvLPTokens
+          .mul(crvVirtualPrice)
+          .div(parseEther("1"));
+        console.log(mintedValue.toString());
+        // expect(await contracts.pool.pricePerPoolToken()).to.equal(
+        //   parseEther("0.666814242093680000")
+        // );
+        //console.log((await contracts.pool.pricePerPoolToken()).toString());
         expect(await contracts.pool.valueFor(managementTokenBalance)).to.equal(
-          parseEther("3331.857579063154670000")
+          mintedValue
         );
       });
     });
