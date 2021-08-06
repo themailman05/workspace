@@ -127,6 +127,19 @@ async function deployContracts(): Promise<Contracts> {
   };
 }
 
+function calculatePoolShareValue(
+  amount: BigNumber,
+  totalSupply: BigNumber,
+  yearnSharePrice: BigNumber,
+  crvVirtualPrice: BigNumber
+): BigNumber {
+  const poolShare = amount.mul(parseEther("1")).div(totalSupply.add(amount));
+  const yearnShares = amount.mul(poolShare).div(parseEther("1"));
+  const crvLPTokens = yearnSharePrice.mul(yearnShares).div(parseEther("1"));
+
+  return crvLPTokens.mul(crvVirtualPrice).div(parseEther("1"));
+}
+
 describe("Pool", function () {
   beforeEach(async function () {
     [
@@ -848,37 +861,37 @@ describe("Pool", function () {
           .mul(totalValue)
           .mul(period)
           .div(BigNumber.from("31556952").mul(parseEther("10000")));
-
         const minted = fee.mul(parseEther("1")).div(pricePerPoolToken);
-        let managementTokenBalance = await contracts.pool.balanceOf(
+
+        const managementTokenBalance = await contracts.pool.balanceOf(
           contracts.pool.address
         );
-        console.log(minted.toString());
+        expect(managementTokenBalance).to.be.equal(minted);
+
         const yearnSharePrice =
           await contracts.mockYearnVault.getPricePerFullShare();
         const crvVirtualPrice =
           await contracts.mockCurveMetapool.get_virtual_price();
-        console.log(yearnSharePrice.toString());
-        console.log(crvVirtualPrice.toString());
-        const poolShare = minted
-          .mul(parseEther("1"))
-          .div(totalSupply.add(minted));
-        console.log(poolShare.toString());
-        const yearnShares = amount.mul(poolShare).div(parseEther("1"));
-        console.log(yearnShares.toString());
-        const crvLPTokens = yearnSharePrice
-          .mul(yearnShares)
-          .div(parseEther("1"));
-        console.log(crvLPTokens.toString());
 
-        const mintedValue = crvLPTokens
-          .mul(crvVirtualPrice)
-          .div(parseEther("1"));
-        console.log(mintedValue.toString());
-        // expect(await contracts.pool.pricePerPoolToken()).to.equal(
-        //   parseEther("0.666814242093680000")
-        // );
-        //console.log((await contracts.pool.pricePerPoolToken()).toString());
+        const totalValue2 = await contracts.pool.totalValue();
+        const totalSupply2 = await contracts.pool.totalSupply();
+        const expected = await contracts.pool.valueFor(parseEther("1"));
+        const blub = calculatePoolShareValue(
+          parseEther("1"),
+          totalSupply2,
+          yearnSharePrice,
+          crvVirtualPrice
+        );
+        const mintedValue = calculatePoolShareValue(
+          minted,
+          totalSupply2,
+          yearnSharePrice,
+          crvVirtualPrice
+        );
+
+        console.log(blub.toString());
+        console.log(expected.toString());
+        expect(await contracts.pool.pricePerPoolToken()).to.equal(expected);
         expect(await contracts.pool.valueFor(managementTokenBalance)).to.equal(
           mintedValue
         );
