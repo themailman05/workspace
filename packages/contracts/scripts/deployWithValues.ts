@@ -235,7 +235,7 @@ export default async function deploy(ethers): Promise<void> {
       bennies.map(async (beneficiary: SignerWithAddress) => {
         const balance = await ethers.provider.getBalance(beneficiary.address);
         if (balance.lt(parseEther(".01"))) {
-          return accounts[0].sendTransaction({
+          await accounts[0].sendTransaction({
             to: beneficiary.address,
             value: utils.parseEther(".02"),
           });
@@ -249,7 +249,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(0, 6),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance
+        await contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
@@ -265,7 +265,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(6, 12),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance
+        await contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
@@ -344,7 +344,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(12, 14),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance
+        await contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
@@ -360,7 +360,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(14, 16),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance
+        await contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
@@ -403,7 +403,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(16, 18),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance
+        await contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
@@ -419,7 +419,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies.slice(18),
       async (beneficiary) => {
-        return contracts.beneficiaryGovernance
+        await contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
@@ -452,7 +452,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       bennies,
       async (beneficiary: SignerWithAddress) => {
-        return contracts.beneficiaryRegistry.addBeneficiary(
+        await contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
           DEFAULT_REGION,
           getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
@@ -468,14 +468,14 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       accounts,
       async (account) => {
-        return contracts.mockPop.mint(account.address, parseEther("10000"));
+        await contracts.mockPop.mint(account.address, parseEther("10000"));
       },
       { concurrency: 1 }
     );
     await bluebird.map(
       accounts,
       async (account) => {
-        return contracts.mockPop
+        await contracts.mockPop
           .connect(account)
           .approve(contracts.grantElections.address, parseEther("10000"));
       },
@@ -484,7 +484,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       accounts,
       async (account) => {
-        return contracts.mockPop
+        await contracts.mockPop
           .connect(account)
           .approve(
             contracts.beneficiaryGovernance.address,
@@ -543,10 +543,10 @@ export default async function deploy(ethers): Promise<void> {
     console.log(`registering beneficiaries for election (${grantTerm}) ...`);
     await bluebird.map(
       bennies,
-      async (beneficiary: SignerWithAddress) => {
-        console.log(`registering ${beneficiary.address}`);
-        return contracts.grantElections.registerForElection(
-          beneficiary.address,
+      async (beneficiary: string) => {
+        console.log(`registering ${beneficiary}`);
+        await contracts.grantElections.registerForElection(
+          beneficiary,
           electionId,
           { gasLimit: 3000000 }
         );
@@ -557,7 +557,7 @@ export default async function deploy(ethers): Promise<void> {
 
   const initializeElection = async (
     electionTerm: ElectionTerm,
-    beneficiaries: SignerWithAddress[]
+    beneficiaries: string[]
   ): Promise<void> => {
     await contracts.grantElections.initialize(electionTerm, DEFAULT_REGION);
     await registerBeneficiariesForElection(electionTerm, beneficiaries);
@@ -566,14 +566,14 @@ export default async function deploy(ethers): Promise<void> {
   const stakePOP = async (): Promise<void> => {
     console.log("voters are staking POP ...");
     await bluebird.map(accounts, async (voter: SignerWithAddress) => {
-      return contracts.staking
+      await contracts.staking
         .connect(voter)
         .stake(utils.parseEther("1000"), 86400 * 365 * 4);
     });
   };
 
   const voteInElection = async (
-    beneficiaries: SignerWithAddress[],
+    beneficiaries: string[],
     voters: SignerWithAddress[],
     electionId: number
   ): Promise<void> => {
@@ -581,8 +581,8 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       voters,
       async (voter: SignerWithAddress) => {
-        return contracts.grantElections.connect(voter).vote(
-          beneficiaries.map((benny) => benny.address),
+        await contracts.grantElections.connect(voter).vote(
+          beneficiaries.map((benny) => benny),
           [
             utils.parseEther("100"),
             utils.parseEther("200"),
@@ -601,7 +601,7 @@ export default async function deploy(ethers): Promise<void> {
     await bluebird.map(
       accounts,
       async (account) => {
-        return contracts.mockPop
+        await contracts.mockPop
           .connect(account)
           .approve(contracts.staking.address, utils.parseEther("100000000"));
       },
@@ -668,7 +668,16 @@ ADDR_3CRV=${contracts.mock3CRV.address}
     ShareType.EqualWeight
   );
   console.log("initializing quarterly election");
-  await initializeElection(ElectionTerm.Quarterly, bennies.slice(0, 4));
+  const beneficiaryAddresses =
+    await contracts.beneficiaryRegistry.getBeneficiaryList();
+  // Remove revoked beneficiaries
+  const filteredBeneficiaryAddresses = beneficiaryAddresses.filter(
+    (address) => address !== "0x0000000000000000000000000000000000000000"
+  );
+  await initializeElection(
+    ElectionTerm.Quarterly,
+    filteredBeneficiaryAddresses.slice(0, 4)
+  );
   const electionId = await contracts.grantElections.activeElections(
     DEFAULT_REGION,
     ElectionTerm.Quarterly
@@ -677,10 +686,17 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   ethers.provider.send("evm_mine", []);
   console.log("refreshing quarterly election state");
   await contracts.grantElections.refreshElectionState(electionId);
-  await voteInElection(bennies.slice(0, 4), accounts.slice(0, 5), electionId);
+  await voteInElection(
+    filteredBeneficiaryAddresses.slice(0, 4),
+    accounts.slice(0, 4),
+    electionId
+  );
   // Yearly is in voting period
   console.log("initializing yearly election");
-  await initializeElection(ElectionTerm.Yearly, bennies.slice(0, 4));
+  await initializeElection(
+    ElectionTerm.Yearly,
+    filteredBeneficiaryAddresses.slice(0, 4)
+  );
   const electionIdYearly = await contracts.grantElections.activeElections(
     DEFAULT_REGION,
     ElectionTerm.Yearly
@@ -692,13 +708,16 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await contracts.grantElections.refreshElectionState(electionIdYearly);
   console.log("voting in elections");
   await voteInElection(
-    bennies.slice(0, 4),
-    accounts.slice(0, 5),
+    filteredBeneficiaryAddresses.slice(0, 4),
+    accounts.slice(0, 4),
     electionIdYearly
   );
   // Monthly in registration phase
   console.log("initializing monthly election");
-  await initializeElection(ElectionTerm.Monthly, bennies.slice(0, 4));
+  await initializeElection(
+    ElectionTerm.Monthly,
+    filteredBeneficiaryAddresses.slice(0, 4)
+  );
 
   await addVetoProposals();
   await addOpenProposals();
