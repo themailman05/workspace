@@ -37,9 +37,15 @@ const ProposalGrid: React.FC<ProposalGridProps> = ({ proposalType }) => {
         .includes(searchFilter.toLowerCase());
     })
     .filter((proposal) => {
+      const proposalStatus = (proposal as Proposal)?.status;
+      if (statusFilter === ProposalStatus.Completed) {
+        return (
+          proposalStatus === ProposalStatus.Passed ||
+          proposalStatus === ProposalStatus.Failed
+        );
+      }
       return (
-        (proposal as Proposal)?.status === statusFilter ||
-        statusFilter === ProposalStatus.All
+        proposalStatus === statusFilter || statusFilter === ProposalStatus.All
       );
     });
   useEffect(() => {
