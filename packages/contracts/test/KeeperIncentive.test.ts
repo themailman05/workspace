@@ -1,6 +1,5 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BigNumber } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, waffle } from "hardhat";
 import { KeeperIncentiveHelper, MockERC20 } from "../typechain";
@@ -31,47 +30,29 @@ describe("Keeper incentives", function () {
   });
   it("should create incentives with the correct parameters", async function () {
     expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-      BigNumber.from(deployTimestamp),
-      BigNumber.from(30 * dayInSec),
       incentive,
       true,
       false,
     ]);
-    await keeperIncentiveHelper.createIncentive(
-      deployTimestamp + 100,
-      30 * dayInSec,
-      incentive,
-      true,
-      false
-    );
+    await keeperIncentiveHelper.createIncentive(incentive, true, false);
     expect(await keeperIncentiveHelper.incentives(1)).to.deep.equal([
-      BigNumber.from(deployTimestamp + 100),
-      BigNumber.from(30 * dayInSec),
       incentive,
       true,
       false,
     ]);
   });
   it("functions should only be available for Governance", async function () {
-    const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
     await expect(
       keeperIncentiveHelper
         .connect(nonOwner)
-        .createIncentive(timestamp + 10, 30 * dayInSec, incentive, true, false)
+        .createIncentive(incentive, true, false)
     ).to.be.revertedWith(
       "Only the contract governance may perform this action"
     );
     await expect(
       keeperIncentiveHelper
         .connect(nonOwner)
-        .updateIncentive(
-          0,
-          timestamp + 100,
-          30 * dayInSec,
-          incentive,
-          true,
-          false
-        )
+        .updateIncentive(0, incentive, true, false)
     ).to.be.revertedWith(
       "Only the contract governance may perform this action"
     );
@@ -101,39 +82,14 @@ describe("Keeper incentives", function () {
       const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
       const result = await keeperIncentiveHelper
         .connect(owner)
-        .updateIncentive(
-          0,
-          timestamp + 100,
-          10 * dayInSec,
-          parseEther("100"),
-          false,
-          true
-        );
+        .updateIncentive(0, parseEther("100"), false, true);
       expect(result)
         .to.emit(keeperIncentiveHelper, "IncentiveChanged")
         .withArgs(0);
       expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-        BigNumber.from(timestamp + 100),
-        BigNumber.from(10 * dayInSec),
         parseEther("100"),
         false,
         true,
-      ]);
-    });
-    it("should change the targetDate", async function () {
-      const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
-      const result = await keeperIncentiveHelper
-        .connect(owner)
-        .updateStart(0, timestamp + 1000);
-      expect(result)
-        .to.emit(keeperIncentiveHelper, "StartUpdated")
-        .withArgs(0, timestamp + 1000);
-      expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-        BigNumber.from(timestamp + 1000),
-        BigNumber.from(30 * dayInSec),
-        incentive,
-        true,
-        false,
       ]);
     });
     it("should toggle if the incentive is enabled", async function () {
@@ -144,8 +100,6 @@ describe("Keeper incentives", function () {
         .to.emit(keeperIncentiveHelper, "IncentiveToggled")
         .withArgs(0, false);
       expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-        BigNumber.from(deployTimestamp),
-        BigNumber.from(30 * dayInSec),
         incentive,
         false,
         false,
@@ -157,8 +111,6 @@ describe("Keeper incentives", function () {
         .to.emit(keeperIncentiveHelper, "IncentiveToggled")
         .withArgs(0, true);
       expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-        BigNumber.from(deployTimestamp),
-        BigNumber.from(30 * dayInSec),
         incentive,
         true,
         false,
@@ -178,43 +130,6 @@ describe("Keeper incentives", function () {
         incentive
       );
       expect(await keeperIncentiveHelper.incentiveBudget()).to.equal(incentive);
-    });
-    context("targetDate in the past", function () {
-      it("should not allow a new incentive with target date in the past", async function () {
-        const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
-        await expect(
-          keeperIncentiveHelper
-            .connect(owner)
-            .createIncentive(
-              timestamp - 1,
-              30 * dayInSec,
-              incentive,
-              false,
-              true
-            )
-        ).to.revertedWith("must be in the future");
-      });
-      it("should not allow changing incentive with target date in the past", async function () {
-        const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
-        await expect(
-          keeperIncentiveHelper
-            .connect(owner)
-            .updateIncentive(
-              0,
-              timestamp - 1,
-              30 * dayInSec,
-              incentive,
-              false,
-              true
-            )
-        ).to.revertedWith("must be in the future");
-      });
-      it("should not allow to change target date in the past", async function () {
-        const timestamp = (await waffle.provider.getBlock("latest")).timestamp;
-        await expect(
-          keeperIncentiveHelper.connect(owner).updateStart(0, timestamp - 1)
-        ).to.revertedWith("must be in the future");
-      });
     });
     context("approval", function () {
       it("should approve accounts", async function () {
@@ -249,8 +164,6 @@ describe("Keeper incentives", function () {
           .to.emit(keeperIncentiveHelper, "ApprovalToggled")
           .withArgs(0, true);
         expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-          BigNumber.from(deployTimestamp),
-          BigNumber.from(30 * dayInSec),
           incentive,
           true,
           true,
@@ -259,8 +172,6 @@ describe("Keeper incentives", function () {
           .to.emit(keeperIncentiveHelper, "ApprovalToggled")
           .withArgs(0, false);
         expect(await keeperIncentiveHelper.incentives(0)).to.deep.equal([
-          BigNumber.from(deployTimestamp),
-          BigNumber.from(30 * dayInSec),
           incentive,
           true,
           false,
@@ -331,39 +242,6 @@ describe("Keeper incentives", function () {
         expect(
           await keeperIncentiveHelper.connect(owner).incentivisedFunction()
         )
-          .to.emit(keeperIncentiveHelper, "FunctionCalled")
-          .withArgs(owner.address);
-
-        const newBalance = await mockPop.balanceOf(owner.address);
-        expect(newBalance).to.equal(oldBalance);
-      });
-      it("if the function got called too early", async function () {
-        const currentTime =
-          (await waffle.provider.getBlock("latest")).timestamp + 1;
-        await keeperIncentiveHelper
-          .connect(owner)
-          .updateStart(0, currentTime + 10 * dayInSec);
-
-        const oldBalance = await mockPop.balanceOf(owner.address);
-        const result = await keeperIncentiveHelper
-          .connect(owner)
-          .defaultIncentivisedFunction();
-        expect(result)
-          .to.emit(keeperIncentiveHelper, "FunctionCalled")
-          .withArgs(owner.address);
-
-        const newBalance = await mockPop.balanceOf(owner.address);
-        expect(newBalance).to.equal(oldBalance);
-      });
-      it("if the function got called too late", async function () {
-        ethers.provider.send("evm_increaseTime", [2 * dayInSec]);
-        ethers.provider.send("evm_mine", []);
-
-        const oldBalance = await mockPop.balanceOf(owner.address);
-        const result = await keeperIncentiveHelper
-          .connect(owner)
-          .incentivisedFunction();
-        expect(result)
           .to.emit(keeperIncentiveHelper, "FunctionCalled")
           .withArgs(owner.address);
 

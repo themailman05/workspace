@@ -128,7 +128,6 @@ contract RewardsManager is
       address(this),
       block.timestamp.add(SWAP_TIMEOUT)
     );
-    _updateStart(0, block.timestamp + 30 days);
     emit TokenSwapped(path_[0], _amounts[0], _amounts[1]);
 
     return _amounts;
@@ -160,7 +159,6 @@ contract RewardsManager is
     _distributeToTreasury(_treasuryAmount);
     _distributeToInsurance(_insuranceAmount);
     _distributeToVaults(_beneficiaryVaultsAmount);
-    _updateStart(0, block.timestamp + 30 days);
 
     emit RewardsDistributed(_availableReward);
   }

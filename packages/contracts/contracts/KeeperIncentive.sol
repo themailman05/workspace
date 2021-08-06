@@ -9,8 +9,6 @@ contract KeeperIncentive is Governed {
   using SafeERC20 for IERC20;
 
   struct Incentive {
-    uint256 start; //timestamp
-    uint256 end; //time in seconds
     uint256 reward; //pop reward for calling the function
     bool enabled;
     bool openToEveryone; //can everyone call the function to get the reward or only approved?
@@ -32,29 +30,32 @@ contract KeeperIncentive is Governed {
   event RemovedApproval(address account);
   event ApprovalToggled(uint256 incentiveId, bool openToEveryone);
   event IncentiveToggled(uint256 incentiveId, bool enabled);
-  event StartUpdated(uint256 incentiveId, uint256 start);
 
   /* ========== CONSTRUCTOR ========== */
 
   constructor(address _governance, IERC20 _pop) public Governed(_governance) {
     POP = _pop;
-    createIncentive(block.timestamp, 30 days, 10e18, true, false);
+    createIncentive(10e18, true, false);
   }
 
   /* ========== SETTER ========== */
 
+  /**
+   * @notice Create Incentives for keeper to call a function
+   * @param _reward The amount in POP the Keeper receives for calling the function
+   * @param _enabled Is this Incentive currently enabled?
+   * @param _openToEveryone Can anyone call the function for rewards or only keeper?
+   * @dev This function is only for creating unique incentives for future contracts
+   * @dev Multiple functions can use the same incentive which can than be updated with one governance vote
+   * @dev Per default there will be always one incentive on index 0
+   */
   function createIncentive(
-    uint256 _start,
-    uint256 _end,
     uint256 _reward,
     bool _enabled,
     bool _openToEveryone
   ) public onlyGovernance returns (uint256) {
-    require(_start >= block.timestamp, "must be in the future");
     incentives.push(
       Incentive({
-        start: _start,
-        end: _end,
         reward: _reward,
         enabled: _enabled,
         openToEveryone: _openToEveryone
@@ -68,16 +69,11 @@ contract KeeperIncentive is Governed {
 
   function updateIncentive(
     uint256 _incentiveId,
-    uint256 _start,
-    uint256 _end,
     uint256 _reward,
     bool _enabled,
     bool _openToEveryone
   ) external onlyGovernance {
-    require(_start >= block.timestamp, "must be in the future");
     incentives[_incentiveId] = Incentive({
-      start: _start,
-      end: _end,
       reward: _reward,
       enabled: _enabled,
       openToEveryone: _openToEveryone
@@ -99,16 +95,6 @@ contract KeeperIncentive is Governed {
     incentives[_incentiveId].openToEveryone = !incentives[_incentiveId]
       .openToEveryone;
     emit ApprovalToggled(_incentiveId, incentives[_incentiveId].openToEveryone);
-  }
-
-  function updateStart(uint256 _incentiveId, uint256 _start) external {
-    _updateStart(_incentiveId, _start);
-  }
-
-  function _updateStart(uint256 _incentiveId, uint256 _start) internal {
-    require(_start >= block.timestamp, "must be in the future");
-    incentives[_incentiveId].start = _start;
-    emit StartUpdated(_incentiveId, _start);
   }
 
   function toggleIncentive(uint256 _incentiveId) external onlyGovernance {
@@ -134,11 +120,7 @@ contract KeeperIncentive is Governed {
           "you are not approved as a keeper"
         );
       }
-      if (
-        block.timestamp >= incentive.start &&
-        block.timestamp <= incentive.end &&
-        incentive.reward <= incentiveBudget
-      ) {
+      if (incentive.reward <= incentiveBudget) {
         incentiveBudget = incentiveBudget.sub(incentive.reward);
         POP.approve(address(this), incentive.reward);
         POP.safeTransferFrom(address(this), msg.sender, incentive.reward);

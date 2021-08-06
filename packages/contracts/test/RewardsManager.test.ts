@@ -1,7 +1,6 @@
 import { MockContract } from "@ethereum-waffle/mock-contract";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
-import { BigNumber } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ethers, waffle } from "hardhat";
 import IUniswapV2Factory from "../artifacts/@uniswap/v2-core/contracts/interfaces/IUniswapV2Factory.sol/IUniswapV2Factory.json";
@@ -176,9 +175,6 @@ describe("RewardsManager", function () {
 
   it("should be initialized with correct keeper incentives", async function () {
     expect(await contracts.RewardsManager.incentives(0)).to.deep.equal([
-      BigNumber.from(deployTimestamp),
-      BigNumber.from("86400"),
-      BigNumber.from(30 * 86400),
       parseEther("10"),
       true,
       false,
@@ -629,7 +625,7 @@ describe("RewardsManager", function () {
 
       await contracts.RewardsManager.connect(owner).distributeRewards();
       expect(await contracts.POP.balanceOf(owner.address)).to.equal(
-        parseEther("20")
+        parseEther("30")
       );
     });
   });
