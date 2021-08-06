@@ -230,7 +230,7 @@ export default async function deploy(ethers): Promise<void> {
         randomNumberConsumer.address,
         mockPop.address,
         region.address,
-        beneficiaryGovernance.address
+        accounts[0].address
       )
     ).deployed();
 
