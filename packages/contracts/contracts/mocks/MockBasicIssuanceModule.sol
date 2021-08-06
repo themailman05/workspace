@@ -54,4 +54,27 @@ contract MockBasicIssuanceModule {
     }
     emit SetRedeemed(_setToken, _quantity, msg.sender);
   }
+
+  function getRequiredComponentUnitsForIssue(
+    ISetToken _setToken,
+    uint256 _quantity
+  ) public view returns (address[] memory, uint256[] memory) {
+    address[] memory components = _setToken.getComponents();
+
+    uint256[] memory notionalUnits = new uint256[](components.length);
+
+    for (uint256 i = 0; i < components.length; i++) {
+      require(
+        !_setToken.hasExternalPosition(components[i]),
+        "Only default positions are supported"
+      );
+
+      notionalUnits[i] = _setToken
+        .getDefaultPositionRealUnit(components[i])
+        .toUint256()
+        .preciseMulCeil(_quantity);
+    }
+
+    return (components, notionalUnits);
+  }
 }
