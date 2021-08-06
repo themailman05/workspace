@@ -18,9 +18,14 @@ export const BeneficiaryRegistryAdapter = (
     > => {
       const beneficiaryAddresses = await contract.getBeneficiaryList();
       const ipfsHashes = await Promise.all(
-        beneficiaryAddresses.map(async (address) => {
-          return contract.getBeneficiary(address);
-        })
+        beneficiaryAddresses
+          .filter(
+            (address) =>
+              address !== "0x0000000000000000000000000000000000000000"
+          )
+          .map(async (address) => {
+            return contract.getBeneficiary(address);
+          })
       );
       return await await Promise.all(
         ipfsHashes.map(async (cid: string) => await IpfsClient.get(cid))
