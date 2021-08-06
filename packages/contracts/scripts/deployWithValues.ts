@@ -278,7 +278,8 @@ export default async function deploy(ethers): Promise<void> {
       { concurrency: 1 }
     );
     console.log("voting on nomination proposals");
-    await bluebird.map(bennies.slice(0, 6), async (x, i) => {
+    // These nomination proposals will pass
+    await bluebird.map(bennies.slice(0, 4), async (x, i) => {
       await contracts.beneficiaryGovernance
         .connect(bennies[0])
         .vote(i, Vote.Yes);
@@ -289,8 +290,21 @@ export default async function deploy(ethers): Promise<void> {
         .connect(bennies[2])
         .vote(i, Vote.No);
     });
+    // These nomination proposals will fail
+    await bluebird.map(bennies.slice(4, 6), async (x, i) => {
+      await contracts.beneficiaryGovernance
+        .connect(bennies[0])
+        .vote(i + 4, Vote.No);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[1])
+        .vote(i + 4, Vote.No);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[2])
+        .vote(i + 4, Vote.No);
+    });
     console.log("voting on takedown proposals");
-    await bluebird.map(bennies.slice(6, 12), async (x, i) => {
+    // These takedown proposals will pass
+    await bluebird.map(bennies.slice(6, 10), async (x, i) => {
       await contracts.beneficiaryGovernance
         .connect(bennies[0])
         .vote(i + 6, Vote.Yes);
@@ -300,6 +314,18 @@ export default async function deploy(ethers): Promise<void> {
       await contracts.beneficiaryGovernance
         .connect(bennies[2])
         .vote(i + 6, Vote.No);
+    });
+    // These takedown proposals will fail
+    await bluebird.map(bennies.slice(10, 12), async (x, i) => {
+      await contracts.beneficiaryGovernance
+        .connect(bennies[0])
+        .vote(i + 10, Vote.No);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[1])
+        .vote(i + 10, Vote.No);
+      await contracts.beneficiaryGovernance
+        .connect(bennies[2])
+        .vote(i + 10, Vote.No);
     });
     ethers.provider.send("evm_increaseTime", [4 * SECONDS_IN_DAY]);
     ethers.provider.send("evm_mine", []);
@@ -619,8 +645,8 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await addBeneficiariesToRegistry(bennies.slice(18));
   await mintPOP();
   await approveForStaking();
-  //await prepareUniswap();
-  //await fundRewardsManager();
+  await prepareUniswap();
+  // await fundRewardsManager();
   await stakePOP();
   await contracts.beneficiaryRegistry.transferOwnership(
     contracts.beneficiaryGovernance.address
@@ -642,7 +668,7 @@ ADDR_3CRV=${contracts.mock3CRV.address}
     ShareType.EqualWeight
   );
   console.log("initializing quarterly election");
-  await initializeElection(ElectionTerm.Quarterly, bennies.slice(0, 6));
+  await initializeElection(ElectionTerm.Quarterly, bennies.slice(0, 4));
   const electionId = await contracts.grantElections.activeElections(
     DEFAULT_REGION,
     ElectionTerm.Quarterly
@@ -654,7 +680,7 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await voteInElection(bennies.slice(0, 4), accounts.slice(0, 5), electionId);
   // Yearly is in voting period
   console.log("initializing yearly election");
-  await initializeElection(ElectionTerm.Yearly, bennies.slice(0, 6));
+  await initializeElection(ElectionTerm.Yearly, bennies.slice(0, 4));
   const electionIdYearly = await contracts.grantElections.activeElections(
     DEFAULT_REGION,
     ElectionTerm.Yearly
@@ -672,7 +698,7 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   );
   // Monthly in registration phase
   console.log("initializing monthly election");
-  await initializeElection(ElectionTerm.Monthly, bennies.slice(0, 6));
+  await initializeElection(ElectionTerm.Monthly, bennies.slice(0, 4));
 
   await addVetoProposals();
   await addOpenProposals();
