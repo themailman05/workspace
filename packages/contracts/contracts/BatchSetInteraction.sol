@@ -160,9 +160,9 @@ contract BatchSetInteraction is Owned {
 
     for (uint256 i; i < underlyingToken.length; i++) {
       uint256 allocation = batch
-      .suppliedToken
-      .mul(underlyingToken[i].allocation)
-      .div(100e18);
+        .suppliedToken
+        .mul(underlyingToken[i].allocation)
+        .div(100e18);
       uint256 crvLPTokenAmount = _sendToCurve(
         allocation,
         underlyingToken[i].curveMetaPool
@@ -243,18 +243,6 @@ contract BatchSetInteraction is Owned {
     );
     batchesOfAccount[msg.sender].push(currentBatchId);
     emit Deposit(msg.sender, amount_);
-  }
-
-  function _claim(
-    uint256 shares_,
-    uint256 unclaimedShares_,
-    uint256 batchBalance_,
-    IERC20 token_
-  ) internal returns (uint256) {
-    uint256 claimableToken = batchBalance_.mul(shares_).div(unclaimedShares_);
-    token_.safeIncreaseAllowance(address(this), claimableToken);
-    token_.safeTransferFrom(address(this), msg.sender, claimableToken);
-    return claimableToken;
   }
 
   function _sendToCurve(uint256 amount_, CurveMetapool curveMetapool_)
