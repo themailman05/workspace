@@ -389,8 +389,16 @@ export default async function deploy(ethers): Promise<void> {
     );
   };
 
+  const addClosedProposals = async (): Promise<void> => {
+    await addNominationProposals();
+    await addTakedownProposals();
+    await voteOnNominationProposals();
+    await voteOnTakedownProposals();
+    await finalizeProposals();
+  };
+
   const addNominationProposals = async (): Promise<void> => {
-    console.log("adding completed nomination proposals...");
+    console.log("adding nomination proposals...");
     await bluebird.map(
       bennies.slice(0, 6),
       async (beneficiary) => {
@@ -409,7 +417,7 @@ export default async function deploy(ethers): Promise<void> {
   };
 
   const addTakedownProposals = async (): Promise<void> => {
-    console.log("adding completed takedown proposals...");
+    console.log("adding takedown proposals...");
     await bluebird.map(
       bennies.slice(6, 12),
       async (beneficiary) => {
@@ -482,9 +490,8 @@ export default async function deploy(ethers): Promise<void> {
   };
 
   const finalizeProposals = async (): Promise<void> => {
-    ethers.provider.send("evm_increaseTime", [4 * SECONDS_IN_DAY]);
-    ethers.provider.send("evm_mine", []);
-    console.log("finalize nomination/takedown proposals");
+    console.log("finalizing nomination/takedown proposals");
+    await increaseEvmTimeAndMine(4);
     await bluebird.map(
       bennies.slice(0, 12),
       async (x, i) => {
@@ -540,8 +547,7 @@ export default async function deploy(ethers): Promise<void> {
         .vote(i + 12, Vote.No);
     });
 
-    ethers.provider.send("evm_increaseTime", [2 * SECONDS_IN_DAY]);
-    ethers.provider.send("evm_mine", []);
+    await increaseEvmTimeAndMine(2);
 
     await bluebird.map(bennies.slice(12, 16), async (x, i) => {
       await contracts.beneficiaryGovernance
@@ -816,19 +822,12 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await fundRewardsManager();
   await stakePOP();
   await transferBeneficiaryRegistryOwnership();
-  await addNominationProposals();
-  await addTakedownProposals();
-  await voteOnNominationProposals();
-  await voteOnTakedownProposals();
-  await finalizeProposals();
-
+  await addClosedProposals();
   await initializeMonthlyElection();
   await initializeQuarterlyElection();
   await initializeYearlyElection();
-
   await voteInQuarterlyElection();
   await voteInYearlyElection();
-
   await addVetoProposals();
   await addOpenProposals();
   await logResults();
