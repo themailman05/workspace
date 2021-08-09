@@ -42,7 +42,7 @@ export default async function deploy(ethers): Promise<void> {
     gasLimit: 9999999,
   };
   let accounts: SignerWithAddress[];
-  let bennies: SignerWithAddress[];
+  let beneficiaries: SignerWithAddress[];
   let voters: SignerWithAddress[];
   let contracts: Contracts;
   let treasuryFund: SignerWithAddress;
@@ -51,7 +51,7 @@ export default async function deploy(ethers): Promise<void> {
   const setSigners = async (): Promise<void> => {
     accounts = await ethers.getSigners();
     voters = accounts.slice(0, 4);
-    bennies = accounts.slice(1, 20);
+    beneficiaries = accounts.slice(1, 20);
     treasuryFund = accounts[18];
     insuranceFund = accounts[19];
   };
@@ -59,7 +59,7 @@ export default async function deploy(ethers): Promise<void> {
   const giveBeneficiariesETH = async (): Promise<void> => {
     console.log("giving ETH to beneficiaries ...");
     await Promise.all(
-      bennies.map(async (beneficiary: SignerWithAddress) => {
+      beneficiaries.map(async (beneficiary: SignerWithAddress) => {
         const balance = await ethers.provider.getBalance(beneficiary.address);
         if (balance.lt(parseEther(".01"))) {
           await accounts[0].sendTransaction({
@@ -209,7 +209,7 @@ export default async function deploy(ethers): Promise<void> {
       "adding beneficiaries to registry which'll be completed takedown proposals ..."
     );
     await bluebird.map(
-      bennies.slice(6, 12),
+      beneficiaries.slice(6, 12),
       async (beneficiary: SignerWithAddress) => {
         await contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
@@ -224,7 +224,7 @@ export default async function deploy(ethers): Promise<void> {
       "adding beneficiaries to registry which'll be vetoed takedown proposals ..."
     );
     await bluebird.map(
-      bennies.slice(14, 16),
+      beneficiaries.slice(14, 16),
       async (beneficiary: SignerWithAddress) => {
         await contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
@@ -239,7 +239,7 @@ export default async function deploy(ethers): Promise<void> {
       "adding beneficiaries to registry which'll be takedown proposals in open veto stage..."
     );
     await bluebird.map(
-      bennies.slice(18),
+      beneficiaries.slice(18),
       async (beneficiary: SignerWithAddress) => {
         await contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
@@ -359,7 +359,7 @@ export default async function deploy(ethers): Promise<void> {
   const addNominationProposals = async (): Promise<void> => {
     console.log("adding nomination proposals...");
     await bluebird.map(
-      bennies.slice(0, 6),
+      beneficiaries.slice(0, 6),
       async (beneficiary) => {
         await contracts.beneficiaryGovernance
           .connect(beneficiary)
@@ -378,7 +378,7 @@ export default async function deploy(ethers): Promise<void> {
   const addTakedownProposals = async (): Promise<void> => {
     console.log("adding takedown proposals...");
     await bluebird.map(
-      bennies.slice(6, 12),
+      beneficiaries.slice(6, 12),
       async (beneficiary) => {
         await contracts.beneficiaryGovernance
           .connect(beneficiary)
@@ -397,7 +397,7 @@ export default async function deploy(ethers): Promise<void> {
   const voteOnNominationProposals = async (): Promise<void> => {
     console.log("voting on nomination proposals");
     // These nomination proposals will pass
-    await bluebird.map(bennies.slice(0, 4), async (x, i) => {
+    await bluebird.map(beneficiaries.slice(0, 4), async (x, i) => {
       await contracts.beneficiaryGovernance
         .connect(voters[0])
         .vote(i, Vote.Yes);
@@ -407,7 +407,7 @@ export default async function deploy(ethers): Promise<void> {
       await contracts.beneficiaryGovernance.connect(voters[2]).vote(i, Vote.No);
     });
     // These nomination proposals will fail
-    await bluebird.map(bennies.slice(4, 6), async (x, i) => {
+    await bluebird.map(beneficiaries.slice(4, 6), async (x, i) => {
       await contracts.beneficiaryGovernance
         .connect(voters[0])
         .vote(i + 4, Vote.No);
@@ -423,7 +423,7 @@ export default async function deploy(ethers): Promise<void> {
   const voteOnTakedownProposals = async (): Promise<void> => {
     console.log("voting on takedown proposals");
     // These takedown proposals will pass
-    await bluebird.map(bennies.slice(6, 10), async (x, i) => {
+    await bluebird.map(beneficiaries.slice(6, 10), async (x, i) => {
       await contracts.beneficiaryGovernance
         .connect(voters[0])
         .vote(i + 6, Vote.Yes);
@@ -435,7 +435,7 @@ export default async function deploy(ethers): Promise<void> {
         .vote(i + 6, Vote.No);
     });
     // These takedown proposals will fail
-    await bluebird.map(bennies.slice(10, 12), async (x, i) => {
+    await bluebird.map(beneficiaries.slice(10, 12), async (x, i) => {
       await contracts.beneficiaryGovernance
         .connect(voters[0])
         .vote(i + 10, Vote.No);
@@ -452,7 +452,7 @@ export default async function deploy(ethers): Promise<void> {
     console.log("finalizing nomination/takedown proposals");
     await increaseEvmTimeAndMine(4);
     await bluebird.map(
-      bennies.slice(0, 12),
+      beneficiaries.slice(0, 12),
       async (x, i) => {
         await contracts.beneficiaryGovernance.connect(accounts[0]).finalize(i);
       },
@@ -463,7 +463,7 @@ export default async function deploy(ethers): Promise<void> {
   const addVetoProposals = async (): Promise<void> => {
     console.log("adding veto nomination proposals...");
     await bluebird.map(
-      bennies.slice(12, 14),
+      beneficiaries.slice(12, 14),
       async (beneficiary) => {
         await contracts.beneficiaryGovernance
           .connect(beneficiary)
@@ -479,7 +479,7 @@ export default async function deploy(ethers): Promise<void> {
     );
     console.log("adding veto takedown proposals...");
     await bluebird.map(
-      bennies.slice(14, 16),
+      beneficiaries.slice(14, 16),
       async (beneficiary) => {
         await contracts.beneficiaryGovernance
           .connect(beneficiary)
@@ -494,26 +494,26 @@ export default async function deploy(ethers): Promise<void> {
       { concurrency: 1 }
     );
     console.log("voting on nomination and takedown proposals");
-    await bluebird.map(bennies.slice(12, 16), async (x, i) => {
+    await bluebird.map(beneficiaries.slice(12, 16), async (x, i) => {
       await contracts.beneficiaryGovernance
-        .connect(bennies[0])
+        .connect(beneficiaries[0])
         .vote(i + 12, Vote.Yes);
       await contracts.beneficiaryGovernance
-        .connect(bennies[1])
+        .connect(beneficiaries[1])
         .vote(i + 12, Vote.Yes);
       await contracts.beneficiaryGovernance
-        .connect(bennies[2])
+        .connect(beneficiaries[2])
         .vote(i + 12, Vote.No);
     });
 
     await increaseEvmTimeAndMine(2);
 
-    await bluebird.map(bennies.slice(12, 16), async (x, i) => {
+    await bluebird.map(beneficiaries.slice(12, 16), async (x, i) => {
       await contracts.beneficiaryGovernance
-        .connect(bennies[3])
+        .connect(beneficiaries[3])
         .vote(i + 12, Vote.No);
       await contracts.beneficiaryGovernance
-        .connect(bennies[4])
+        .connect(beneficiaries[4])
         .vote(i + 12, Vote.No);
     });
   };
@@ -521,7 +521,7 @@ export default async function deploy(ethers): Promise<void> {
   const addOpenProposals = async (): Promise<void> => {
     console.log("adding veto nomination proposals...");
     await bluebird.map(
-      bennies.slice(16, 18),
+      beneficiaries.slice(16, 18),
       async (beneficiary) => {
         await contracts.beneficiaryGovernance
           .connect(beneficiary)
@@ -537,7 +537,7 @@ export default async function deploy(ethers): Promise<void> {
     );
     console.log("adding veto takedown proposals...");
     await bluebird.map(
-      bennies.slice(18),
+      beneficiaries.slice(18),
       async (beneficiary) => {
         await contracts.beneficiaryGovernance
           .connect(beneficiary)
@@ -552,22 +552,22 @@ export default async function deploy(ethers): Promise<void> {
       { concurrency: 1 }
     );
     console.log("voting on nomination and takedown proposals");
-    await bluebird.map(bennies.slice(16), async (x, i) => {
+    await bluebird.map(beneficiaries.slice(16), async (x, i) => {
       await contracts.beneficiaryGovernance
-        .connect(bennies[0])
+        .connect(beneficiaries[0])
         .vote(i + 16, Vote.Yes);
       await contracts.beneficiaryGovernance
-        .connect(bennies[1])
+        .connect(beneficiaries[1])
         .vote(i + 16, Vote.Yes);
       await contracts.beneficiaryGovernance
-        .connect(bennies[2])
+        .connect(beneficiaries[2])
         .vote(i + 16, Vote.No);
     });
   };
 
   const registerBeneficiariesForElection = async (
     grantTerm,
-    bennies
+    beneficiaries
   ): Promise<void> => {
     console.log("getting election id");
     const electionId = await contracts.grantElections.activeElections(
@@ -576,9 +576,8 @@ export default async function deploy(ethers): Promise<void> {
     );
     console.log(`registering beneficiaries for election (${grantTerm}) ...`);
     await bluebird.map(
-      bennies,
+      beneficiaries,
       async (beneficiary: string) => {
-        console.log(`registering ${beneficiary}`);
         await contracts.grantElections.registerForElection(
           beneficiary,
           electionId,
@@ -695,7 +694,9 @@ export default async function deploy(ethers): Promise<void> {
       voters,
       async (voter: SignerWithAddress) => {
         await contracts.grantElections.connect(voter).vote(
-          activeBeneficiaryAddresses.slice(0, 4).map((benny) => benny),
+          activeBeneficiaryAddresses
+            .slice(0, 4)
+            .map((beneficiary) => beneficiary),
           [
             utils.parseEther("100"),
             utils.parseEther("200"),
@@ -725,7 +726,9 @@ export default async function deploy(ethers): Promise<void> {
       voters,
       async (voter: SignerWithAddress) => {
         await contracts.grantElections.connect(voter).vote(
-          activeBeneficiaryAddresses.slice(0, 4).map((benny) => benny),
+          activeBeneficiaryAddresses
+            .slice(0, 4)
+            .map((beneficiary) => beneficiary),
           [
             utils.parseEther("100"),
             utils.parseEther("200"),
