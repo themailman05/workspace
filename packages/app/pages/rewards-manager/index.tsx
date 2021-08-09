@@ -76,11 +76,10 @@ export default function Register(): JSX.Element {
     toast.loading('Distributing funds...');
     await contracts.rewardsManager
       .connect(library.getSigner())
-      .distributeRewards().then(res =>     toast.success('Funds distributed!');
-      )
+      .distributeRewards()
+      .then((res) => toast.success('Funds distributed!'))
       .catch((err) => {
-        console.log('err', err);
-        toast.error('Couldnt distribute funds');
+        toast.error(err.data.message.split("'")[1]);
       });
     setWait(false);
   }
