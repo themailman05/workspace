@@ -84,12 +84,14 @@ export default async function deploy(ethers): Promise<void> {
   };
   let accounts: SignerWithAddress[];
   let bennies: SignerWithAddress[];
+  let voters: SignerWithAddress[];
   let contracts: Contracts;
   let treasuryFund: SignerWithAddress;
   let insuranceFund: SignerWithAddress;
 
   const setSigners = async (): Promise<void> => {
     accounts = await ethers.getSigners();
+    voters = accounts.slice(0, 4);
     bennies = accounts.slice(1, 20);
     treasuryFund = accounts[18];
     insuranceFund = accounts[19];
@@ -243,7 +245,7 @@ export default async function deploy(ethers): Promise<void> {
     );
   };
 
-  const addCompletedProposals = async (): Promise<void> => {
+  const addNominationProposals = async (): Promise<void> => {
     console.log("adding completed nomination proposals...");
     await bluebird.map(
       bennies.slice(0, 6),
@@ -260,6 +262,9 @@ export default async function deploy(ethers): Promise<void> {
       },
       { concurrency: 1 }
     );
+  };
+
+  const addTakedownProposals = async (): Promise<void> => {
     console.log("adding completed takedown proposals...");
     await bluebird.map(
       bennies.slice(6, 12),
@@ -276,56 +281,63 @@ export default async function deploy(ethers): Promise<void> {
       },
       { concurrency: 1 }
     );
+  };
+
+  const voteOnNominationProposals = async (): Promise<void> => {
     console.log("voting on nomination proposals");
     // These nomination proposals will pass
     await bluebird.map(bennies.slice(0, 4), async (x, i) => {
       await contracts.beneficiaryGovernance
-        .connect(bennies[0])
+        .connect(voters[0])
         .vote(i, Vote.Yes);
       await contracts.beneficiaryGovernance
-        .connect(bennies[1])
+        .connect(voters[1])
         .vote(i, Vote.Yes);
-      await contracts.beneficiaryGovernance
-        .connect(bennies[2])
-        .vote(i, Vote.No);
+      await contracts.beneficiaryGovernance.connect(voters[2]).vote(i, Vote.No);
     });
     // These nomination proposals will fail
     await bluebird.map(bennies.slice(4, 6), async (x, i) => {
       await contracts.beneficiaryGovernance
-        .connect(bennies[0])
+        .connect(voters[0])
         .vote(i + 4, Vote.No);
       await contracts.beneficiaryGovernance
-        .connect(bennies[1])
+        .connect(voters[1])
         .vote(i + 4, Vote.No);
       await contracts.beneficiaryGovernance
-        .connect(bennies[2])
+        .connect(voters[2])
         .vote(i + 4, Vote.No);
     });
+  };
+
+  const voteOnTakedownProposals = async (): Promise<void> => {
     console.log("voting on takedown proposals");
     // These takedown proposals will pass
     await bluebird.map(bennies.slice(6, 10), async (x, i) => {
       await contracts.beneficiaryGovernance
-        .connect(bennies[0])
+        .connect(voters[0])
         .vote(i + 6, Vote.Yes);
       await contracts.beneficiaryGovernance
-        .connect(bennies[1])
+        .connect(voters[1])
         .vote(i + 6, Vote.Yes);
       await contracts.beneficiaryGovernance
-        .connect(bennies[2])
+        .connect(voters[2])
         .vote(i + 6, Vote.No);
     });
     // These takedown proposals will fail
     await bluebird.map(bennies.slice(10, 12), async (x, i) => {
       await contracts.beneficiaryGovernance
-        .connect(bennies[0])
+        .connect(voters[0])
         .vote(i + 10, Vote.No);
       await contracts.beneficiaryGovernance
-        .connect(bennies[1])
+        .connect(voters[1])
         .vote(i + 10, Vote.No);
       await contracts.beneficiaryGovernance
-        .connect(bennies[2])
+        .connect(voters[2])
         .vote(i + 10, Vote.No);
     });
+  };
+
+  const finalizeProposals = async (): Promise<void> => {
     ethers.provider.send("evm_increaseTime", [4 * SECONDS_IN_DAY]);
     ethers.provider.send("evm_mine", []);
     console.log("finalize nomination/takedown proposals");
@@ -721,18 +733,24 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await fundRewardsManager();
   await stakePOP();
   await transferBeneficiaryRegistryOwnership();
-  await addCompletedProposals();
+  await addNominationProposals();
+  await addTakedownProposals();
+  await voteOnNominationProposals();
+  await voteOnTakedownProposals();
+  await finalizeProposals();
+
   await setQuarterlyElectionConfig();
   await initializeElection(ElectionTerm.Quarterly);
   await increaseEvmTimeAndMine(14);
   await refreshElectionState(ElectionTerm.Quarterly);
-  await voteInElection(accounts.slice(0, 4), ElectionTerm.Quarterly);
+  await voteInElection(voters, ElectionTerm.Quarterly);
   await initializeElection(ElectionTerm.Yearly);
   await increaseEvmTimeAndMine(30);
   await refreshElectionState(ElectionTerm.Quarterly);
   await refreshElectionState(ElectionTerm.Yearly);
-  await voteInElection(accounts.slice(0, 4), ElectionTerm.Yearly);
+  await voteInElection(voters, ElectionTerm.Yearly);
   await initializeElection(ElectionTerm.Monthly);
+
   await addVetoProposals();
   await addOpenProposals();
   await logResults();
