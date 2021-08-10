@@ -25,20 +25,26 @@ module.exports = {
         101: '1.01',
         102: '1.02',
       },
+      rotate: {
+        '-30': '-30deg',
+      },
       colors: {
-        primary: '#F28705',
-        primaryLight: '#F29F05',
-        primaryDark: '#BF4904',
+        primary: '#FDEAA7',
+        primaryLight: '#FFF5CF',
 
-        secondary: '#B72E73',
-        secondaryLight: '#D5264E',
-        secondaryDark: '#8739B0',
+        secondary: '#73B7EA',
+        secondaryLight: '#DBEAFE',
 
         ctaYellow: '#F6CB22',
         ctaYellowLight: '#FFD324',
       },
       backgroundImage: (theme) => ({
-        'hero-pattern': "url('/images/popcorn_playing.gif')",
+        'hero-pattern': "url('/images/bgHero.svg')",
+        'impact-pattern': "url('/images/bgImpact.svg')",
+        'countdown-pattern': "url('/images/bgCountdown.svg')",
+        'popcorn1-pattern': "url('/images/bgPopcorn1.svg')",
+        'popcorn2-pattern': "url('/images/bgPopcorn2.svg')",
+        'popcorn3-pattern': "url('/images/bgPopcorn3.svg')",
       }),
       fontFamily: {
         landing: ['Avenir Next LT Pro', 'sans-serif'],
