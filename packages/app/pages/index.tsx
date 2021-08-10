@@ -27,16 +27,24 @@ const IndexPage = () => {
           </div>
           <div className="space-x-8">
             <Link href="/" passHref>
-              <a className="font-medium text-base">About us</a>
+              <a className="font-medium text-base hover:text-blue-600">
+                About us
+              </a>
             </Link>
             <Link href="/" passHref>
-              <a className="font-medium text-base">Products</a>
+              <a className="font-medium text-base hover:text-blue-600">
+                Products
+              </a>
             </Link>
             <Link href="/" passHref>
-              <a className="font-medium text-base">Whitepaper</a>
+              <a className="font-medium text-base hover:text-blue-600">
+                Whitepaper
+              </a>
             </Link>
             <Link href="/" passHref>
-              <a className="font-medium text-base">PopcornDAO</a>
+              <a className="font-medium text-base hover:text-blue-600">
+                PopcornDAO
+              </a>
             </Link>
             <Link href="/" passHref>
               <a className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl p-4">
@@ -103,7 +111,7 @@ const IndexPage = () => {
                         value="Join Waitlist"
                         name="subscribe"
                         id="mc-embedded-subscribe"
-                        className="button pb-2 button-primary bg-blue-600 hover:bg-blue-500 text-white rounded-xl h-10 flex flex-col items-center justify-center cursor-pointer"
+                        className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-4 py-2 cursor-pointer"
                         readOnly
                       />
                     </div>
@@ -344,7 +352,7 @@ const IndexPage = () => {
                   value="Join Waitlist"
                   name="subscribe"
                   id="mc-embedded-subscribe"
-                  className="button pb-2 button-primary bg-blue-600 hover:bg-blue-500 text-white rounded-xl h-10 flex flex-col items-center justify-center cursor-pointer"
+                  className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-4 py-2 cursor-pointer"
                   readOnly
                 />
               </div>
@@ -365,49 +373,53 @@ const IndexPage = () => {
               Popcorn is a carbon-neutral crypto savings account where fees fund
               educational, environmental and open source initiatives
             </p>
-            <div className="flex flex-row space-x-4">
+            <div className="flex flex-row space-x-4 items-center">
               <Link href="/" passHref>
-                <GitHub />
+                <GitHub className="hover:text-blue-600 cursor-pointer" />
               </Link>
               <Link href="/" passHref>
-                <Facebook />
+                <Facebook className="hover:text-blue-600 cursor-pointer" />
               </Link>
               <Link href="/" passHref>
-                <Twitter />
+                <Twitter className="hover:text-blue-600 cursor-pointer" />
               </Link>
               <Link href="/" passHref>
-                <Twitter />
+                <img
+                  src="/images/discord.svg"
+                  alt="discord"
+                  className="w-8 h-8 cursor-pointer discord"
+                ></img>
               </Link>
             </div>
           </div>
           <div className="flex flex-col space-y-3">
             <p className="font-medium text-base uppercase">Site</p>
             <Link href="/" passHref>
-              <a>Home</a>
+              <a className="hover:text-blue-600">Home</a>
             </Link>
             <Link href="/" passHref>
-              <a>About us</a>
+              <a className="hover:text-blue-600">About us</a>
             </Link>
             <Link href="/" passHref>
-              <a>Blog</a>
+              <a className="hover:text-blue-600">Blog</a>
             </Link>
           </div>
           <div className="flex flex-col space-y-3">
             <p className="font-medium text-base uppercase">Connect</p>
             <Link href="/" passHref>
-              <a>Twitter</a>
+              <a className="hover:text-blue-600">Twitter</a>
             </Link>
             <Link href="/" passHref>
-              <a>Discord</a>
+              <a className="hover:text-blue-600">Discord</a>
             </Link>
             <Link href="/" passHref>
-              <a>Github</a>
+              <a className="hover:text-blue-600">Github</a>
             </Link>
           </div>
           <div className="flex flex-col space-y-3">
             <p className="font-medium text-base uppercase">Documentation</p>
             <Link href="/" passHref>
-              <a>Gitbook</a>
+              <a className="hover:text-blue-600">Gitbook</a>
             </Link>
           </div>
         </div>

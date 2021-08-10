@@ -112,3 +112,8 @@ p {
   border-color: #636363;
   color: #636363;
 }
+
+.discord:hover {
+  filter: invert(30%) sepia(34%) saturate(5612%) hue-rotate(215deg)
+    brightness(95%) contrast(93%);
+}
