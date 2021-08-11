@@ -487,7 +487,7 @@ const IndexPage = () => {
                     <img
                       src="/images/logo.png"
                       alt="Logo"
-                      className="h-10  flex-grow-0 flex-shrink-0"
+                      className="h-14 flex-grow-0 flex-shrink-0"
                     ></img>
                   </a>
                 </Link>
@@ -527,7 +527,7 @@ const IndexPage = () => {
           </div>
         )}
         <header className="w-full bg-primary">
-          <nav className="w-10/12 mx-auto pt-12 pb-6 border-b border-primaryLight flex flex-row items-center justify-between">
+          <nav className="w-10/12 mx-auto pt-12 pb-3 border-b border-primaryLight flex flex-row items-center justify-between">
             <div>
               <Link href="/" passHref>
                 <a>
@@ -535,7 +535,7 @@ const IndexPage = () => {
                   <img
                     src="/images/logo.png"
                     alt="Logo"
-                    className="h-10 flex-grow-0 flex-shrink-0"
+                    className="h-14 flex-grow-0 flex-shrink-0"
                   ></img>
                 </a>
               </Link>
