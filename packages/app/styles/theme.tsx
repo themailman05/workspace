@@ -1,9 +1,9 @@
 import Inter from './inter';
-import { createMuiTheme } from '@material-ui/core/styles';
+import { createTheme } from '@material-ui/core/styles';
 import palette from "./palette";
 
 // Create a theme instance.
-export const theme = createMuiTheme({
+export const theme = createTheme({
   typography:{ fontFamily: [
     'Inter',
     'Roboto',
