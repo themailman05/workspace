@@ -47,7 +47,7 @@ const IndexPage = () => {
       {/* DESKTOP + TABLET VERSION */}
       <div className="hidden lg:flex flex-col w-full h-full">
         <header className="w-full bg-primary">
-          <nav className="w-10/12 mx-auto pt-12 pb-6 border-b border-primaryLight flex flex-row items-center justify-between">
+          <nav className="w-10/12 mx-auto pt-12 pb-4 border-b border-primaryLight flex flex-row items-center justify-between">
             <div>
               <Link href="/" passHref>
                 <a>
@@ -55,7 +55,7 @@ const IndexPage = () => {
                   <img
                     src="/images/textLogo.png"
                     alt="Logo"
-                    className="h-10"
+                    className="h-12"
                   ></img>
                 </a>
               </Link>
@@ -407,7 +407,7 @@ const IndexPage = () => {
           </div>
         </section>
         <section className="w-full bg-secondary">
-          <div className="w-10/12 mx-auto flex flex-row justify-between border-b border-secondaryDark pb-12">
+          <div className="w-10/12 mx-auto flex flex-row justify-between border-b border-gray-500 pb-12">
             <div className="w-6/12">
               <Link href="/" passHref>
                 <a>
