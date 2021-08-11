@@ -47,7 +47,7 @@ const IndexPage = () => {
       {/* DESKTOP + TABLET VERSION */}
       <div className="hidden lg:flex flex-col w-full h-full">
         <header className="w-full bg-primary">
-          <nav className="w-10/12 mx-auto pt-12 pb-6 border-b border-white flex flex-row items-center justify-between">
+          <nav className="w-10/12 mx-auto pt-12 pb-6 border-b border-primaryLight flex flex-row items-center justify-between">
             <div>
               <Link href="/" passHref>
                 <a>
@@ -158,6 +158,7 @@ const IndexPage = () => {
                 <img src="/images/catPool.svg" alt="pool" className=""></img>
               </div>
             </div>
+            <div className="w-full h-24"></div>
           </div>
         </section>
         <section className="w-10/12 mx-auto mb-24">
@@ -406,11 +407,11 @@ const IndexPage = () => {
           </div>
         </section>
         <section className="w-full bg-secondary">
-          <div className="w-10/12 mx-auto flex flex-row justify-between border-b border-gray-500 pb-12">
+          <div className="w-10/12 mx-auto flex flex-row justify-between border-b border-secondaryDark pb-12">
             <div className="w-6/12">
               <Link href="/" passHref>
                 <a>
-                  {/*TODO The logo is slightly blurred even though its copied straight from figma*/}
+                  {/*TODO The logo is slightly blurred even though its copied strcmdaight from figma*/}
                   <img src="/images/logo.png" alt="Logo" className="h-10"></img>
                 </a>
               </Link>
@@ -526,7 +527,7 @@ const IndexPage = () => {
           </div>
         )}
         <header className="w-full bg-primary">
-          <nav className="w-10/12 mx-auto pt-12 pb-6 border-b border-white flex flex-row items-center justify-between">
+          <nav className="w-10/12 mx-auto pt-12 pb-6 border-b border-primaryLight flex flex-row items-center justify-between">
             <div>
               <Link href="/" passHref>
                 <a>

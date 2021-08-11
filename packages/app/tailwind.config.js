@@ -34,6 +34,7 @@ module.exports = {
 
         secondary: '#73B7EA',
         secondaryLight: '#DBEAFE',
+        secondaryDark: "#25283D",
 
         ctaYellow: '#F6CB22',
         ctaYellowLight: '#FFD324',
