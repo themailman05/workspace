@@ -712,11 +712,10 @@ export default async function deploy(ethers): Promise<void> {
 
   const voteInYearlyElection = async (): Promise<void> => {
     const electionTerm = ElectionTerm.Yearly;
-    console.log(`opening yearly election and closing quarterly election...`);
+    console.log(`opening yearly election...`);
     await increaseEvmTimeAndMine(8);
     await refreshElectionState(electionTerm);
-    await refreshElectionState(ElectionTerm.Quarterly);
-    console.log(`voting in quarterly election...`);
+    console.log(`voting in yearly election...`);
     const electionId = await contracts.grantElections.activeElections(
       DEFAULT_REGION,
       electionTerm
@@ -740,6 +739,11 @@ export default async function deploy(ethers): Promise<void> {
       },
       { concurrency: 1 }
     );
+  };
+
+  const closeQuarterlyElectionState = async (): Promise<void> => {
+    console.log(`closing quarterly election...`);
+    await refreshElectionState(ElectionTerm.Quarterly);
   };
 
   const logResults = async (): Promise<void> => {
@@ -790,6 +794,7 @@ ADDR_3CRV=${contracts.mock3CRV.address}
   await initializeYearlyElection();
   await voteInQuarterlyElection();
   await voteInYearlyElection();
+  await closeQuarterlyElectionState();
   await addVetoProposals();
   await addOpenProposals();
   await logResults();
