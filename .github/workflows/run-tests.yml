@@ -35,3 +35,7 @@ jobs:
         name: "run tests"
         with:
           cmd: test
+      - uses: borales/actions-yarn@v2.3.0
+        name: "solidity coverage"
+        with:
+          cmd: coverage
