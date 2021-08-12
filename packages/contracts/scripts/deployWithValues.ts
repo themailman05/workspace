@@ -21,6 +21,7 @@ interface Contracts {
   randomNumberConsumer: Contract;
   grantElections: Contract;
   beneficiaryVaults: Contract;
+  rewardsEscrow: Contract;
   rewardsManager: Contract;
   mock3CRV: Contract;
   uniswapFactory: Contract;
@@ -108,8 +109,16 @@ export default async function deploy(ethers): Promise<void> {
       await (await ethers.getContractFactory("WETH9")).deploy()
     ).deployed();
 
+    const rewardsEscrow = await (
+      await (
+        await ethers.getContractFactory("RewardsEscrow")
+      ).deploy(mockPop.address)
+    ).deployed();
+
     const staking = await (
-      await (await ethers.getContractFactory("Staking")).deploy(mockPop.address)
+      await (
+        await ethers.getContractFactory("Staking")
+      ).deploy(mockPop.address, rewardsEscrow.address)
     ).deployed();
 
     const uniswapFactory = await deployContract(
@@ -195,6 +204,7 @@ export default async function deploy(ethers): Promise<void> {
       grantElections,
       beneficiaryVaults,
       rewardsManager,
+      rewardsEscrow,
       mock3CRV,
       uniswapFactory,
       uniswapRouter,
@@ -349,17 +359,22 @@ export default async function deploy(ethers): Promise<void> {
   };
 
   const addClosedProposals = async (): Promise<void> => {
-    await addNominationProposals();
-    await addTakedownProposals();
+    await addProposals(beneficiaries.slice(0, 6), 0);
+    await addProposals(beneficiaries.slice(6, 12), 1);
     await voteOnNominationProposals();
     await voteOnTakedownProposals();
     await finalizeProposals();
   };
 
-  const addNominationProposals = async (): Promise<void> => {
-    console.log("adding nomination proposals...");
+  const addProposals = async (
+    beneficiaries: SignerWithAddress[],
+    proposalType: ProposalType
+  ): Promise<void> => {
+    console.log(
+      `adding ${proposalType === 0 ? "nomination" : "takedown"} proposals...`
+    );
     await bluebird.map(
-      beneficiaries.slice(0, 6),
+      beneficiaries,
       async (beneficiary) => {
         await contracts.beneficiaryGovernance
           .connect(beneficiary)
@@ -368,25 +383,6 @@ export default async function deploy(ethers): Promise<void> {
             DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
             ProposalType.Nomination,
-            { gasLimit: 3000000 }
-          );
-      },
-      { concurrency: 1 }
-    );
-  };
-
-  const addTakedownProposals = async (): Promise<void> => {
-    console.log("adding takedown proposals...");
-    await bluebird.map(
-      beneficiaries.slice(6, 12),
-      async (beneficiary) => {
-        await contracts.beneficiaryGovernance
-          .connect(beneficiary)
-          .createProposal(
-            beneficiary.address,
-            DEFAULT_REGION,
-            getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
-            ProposalType.Takedown,
             { gasLimit: 3000000 }
           );
       },
