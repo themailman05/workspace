@@ -1,10 +1,10 @@
-/* This example requires Tailwind CSS v2.0+ */
 import {
   CloudIcon,
   CursorClickIcon,
   TrendingUpIcon,
 } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
+import LineBarChart from '../../../recharts/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
 
 const stats = [
   {
@@ -43,8 +43,7 @@ export default function Example() {
       <h3 className="text-lg leading-6 font-medium text-gray-900 mt-16">
         Totals between 12/04/2021 and 30/05/2021
       </h3>
-
-      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((item) => (
           <div
             key={item.id}
@@ -91,6 +90,7 @@ export default function Example() {
             </dd>
           </div>
         ))}
+        <LineBarChart />
       </dl>
     </div>
   );

@@ -9,14 +9,7 @@ export default {
 const Template = (args) => <LineBarChart {...args} />;
 
 export const Default = Template.bind({});
-Default.args = {
-  chart: {
-    id: '1',
-    title: 'Test SimpleLineChart',
-    state: 'TASK_INBOX',
-    updatedAt: new Date(2021, 0, 1, 9, 0),
-  },
-};
+Default.args = {};
 
 export const Pinned = Template.bind({});
 Pinned.args = {

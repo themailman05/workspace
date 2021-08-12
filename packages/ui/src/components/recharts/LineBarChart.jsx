@@ -3,6 +3,7 @@ import {
   Bar,
   CartesianGrid,
   ComposedChart,
+  Label,
   Legend,
   Line,
   Tooltip,
@@ -10,64 +11,47 @@ import {
   YAxis,
 } from 'recharts';
 
-const data = [
-  {
-    name: 'Page A',
-    uv: 590,
-    pv: 800,
-  },
-  {
-    name: 'Page B',
-    uv: 868,
-    pv: 967,
-  },
-  {
-    name: 'Page C',
-    uv: 1397,
-    pv: 1098,
-  },
-  {
-    name: 'Page D',
-    uv: 1480,
-    pv: 1200,
-  },
-  {
-    name: 'Page E',
-    uv: 1520,
-    pv: 1108,
-  },
-  {
-    name: 'Page F',
-    uv: 1400,
-    pv: 680,
-  },
-];
+const data = new Array(20).fill(undefined).map((x, i) => {
+  return {
+    name: `${i}/05/2021`,
+    'CO2 Emissions': 500 * Math.random(),
+    'Transaction Volume': 500 * Math.random(),
+  };
+});
 
-export default function SimpleBarChart({ chart: { id, title, state } }) {
+export default function SimpleBarChart() {
   return (
-    <div className="list-item">
-      <input type="text" value={title} readOnly={true} />
-
-      <ComposedChart
-        width={500}
-        height={400}
-        data={data}
-        margin={{
-          top: 20,
-          right: 20,
-          bottom: 20,
-          left: 20,
-        }}
-      >
-        <CartesianGrid stroke="#f5f5f5" />
-        <XAxis dataKey="name" scale="band" />
-        <YAxis yAxisId="left" />
-        <YAxis yAxisId="right" orientation="right" />
-        <Tooltip />
-        <Legend />
-        <Bar yAxisId="right" dataKey="pv" barSize={20} fill="#413ea0" />
-        <Line yAxisId="left" type="monotone" dataKey="uv" stroke="#ff7300" />
-      </ComposedChart>
-    </div>
+    <ComposedChart
+      width={300}
+      height={300}
+      data={data}
+      margin={{
+        top: 20,
+        right: 20,
+        bottom: 20,
+        left: 20,
+      }}
+    >
+      <CartesianGrid stroke="#f5f5f5" />
+      <XAxis dataKey="name" scale="band">
+        <Label value="Date" offset={-5} position="insideBottom" />
+      </XAxis>
+      <YAxis yAxisId="left" dataKey="CO2 Emissions" />
+      <YAxis yAxisId="right" orientation="right" dataKey="Transaction Volume" />
+      <Tooltip />
+      <Legend />
+      <Bar
+        yAxisId="right"
+        dataKey="CO2 Emissions"
+        barSize={20}
+        fill="#6366F1"
+      />
+      <Line
+        yAxisId="left"
+        type="monotone"
+        dataKey="Transaction Volume"
+        stroke="#ff7300"
+      />
+    </ComposedChart>
   );
 }
