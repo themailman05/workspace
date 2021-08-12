@@ -33,10 +33,7 @@ const RewardSplits = {
 };
 const OwnerInitial = parseEther("10");
 const RewarderInitial = parseEther("5");
-const overrides = {
-  gasLimit: 9999999,
-};
-
+let deployTimestamp;
 
 let owner: SignerWithAddress,
   rewarder: SignerWithAddress,
@@ -110,6 +107,7 @@ async function deployContracts(): Promise<Contracts> {
   const rewardsManagerFactory = await ethers.getContractFactory(
     "RewardsManager"
   );
+  deployTimestamp = (await waffle.provider.getBlock("latest")).timestamp + 1;
   const RewardsManager = await rewardsManagerFactory.deploy(
     POP.address,
     Staking.address,
@@ -173,6 +171,14 @@ describe("RewardsManager", function () {
     expect(await contracts.RewardsManager.rewardSplits(3)).to.equal(
       parseEther("34")
     );
+  });
+
+  it("should be initialized with correct keeper incentives", async function () {
+    expect(await contracts.RewardsManager.incentives(0)).to.deep.equal([
+      parseEther("10"),
+      true,
+      false,
+    ]);
   });
 
   it("reverts when setting reward splits as non-owner", async function () {
@@ -469,9 +475,7 @@ describe("RewardsManager", function () {
               .withArgs(contracts.Insurance.address, insuranceSecondReward);
             expect(result)
               .to.emit(contracts.RewardsManager, "BeneficiaryVaultsDeposited")
-              .withArgs(
-                beneficiaryVaultsSecondReward
-              );
+              .withArgs(beneficiaryVaultsSecondReward);
             expect(result)
               .to.emit(contracts.RewardsManager, "RewardsDistributed")
               .withArgs(secondReward);
@@ -582,6 +586,47 @@ describe("RewardsManager", function () {
           ).to.equal(firstReward.add(swapReward));
         });
       });
+    });
+  });
+  describe("Keeper Incentives", function () {
+    it("pays out keeper incentives", async function () {
+      //Test preparation
+      await contracts.POP.mint(owner.address, parseEther("20.24"));
+      await contracts.POP.connect(owner).approve(
+        contracts.RewardsManager.address,
+        parseEther("20")
+      );
+      await contracts.RewardsManager.connect(owner).fundIncentive(
+        parseEther("20")
+      );
+      const swapReward = parseEther("0.24");
+      const altAmount = parseEther("1");
+      await contracts.MockAlt.transfer(
+        contracts.RewardsManager.address,
+        altAmount
+      );
+      await contracts.POP.transfer(
+        contracts.RewardsManager.address,
+        swapReward
+      );
+
+      await contracts.mockUniswapV2Router.mock.swapExactTokensForTokens.returns(
+        [altAmount, swapReward]
+      );
+
+      //Actual test
+      await contracts.RewardsManager.swapTokenForRewards(
+        [contracts.MockAlt.address, contracts.POP.address],
+        swapReward
+      );
+      expect(await contracts.POP.balanceOf(owner.address)).to.equal(
+        parseEther("20")
+      );
+
+      await contracts.RewardsManager.connect(owner).distributeRewards();
+      expect(await contracts.POP.balanceOf(owner.address)).to.equal(
+        parseEther("30")
+      );
     });
   });
 });
