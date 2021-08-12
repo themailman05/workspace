@@ -9,6 +9,7 @@ import {
   BeneficiaryVaults,
   MockERC20,
   Region,
+  RewardsEscrow,
   RewardsManager,
   Staking,
 } from "../typechain";
@@ -33,7 +34,6 @@ const RewardSplits = {
 };
 const OwnerInitial = parseEther("10");
 const RewarderInitial = parseEther("5");
-let deployTimestamp;
 
 let owner: SignerWithAddress,
   rewarder: SignerWithAddress,
@@ -66,8 +66,14 @@ async function deployContracts(): Promise<Contracts> {
     insuranceFactory.interface.format() as any[]
   );
 
+  const rewardsEscrow = (await (
+    await (await ethers.getContractFactory("RewardsEscrow")).deploy(POP.address)
+  ).deployed()) as RewardsEscrow;
+
   const Staking = await (
-    await (await ethers.getContractFactory("Staking")).deploy(POP.address)
+    await (
+      await ethers.getContractFactory("Staking")
+    ).deploy(POP.address, rewardsEscrow.address)
   ).deployed();
 
   const mockBeneficiaryRegistryFactory = await ethers.getContractFactory(
@@ -107,7 +113,6 @@ async function deployContracts(): Promise<Contracts> {
   const rewardsManagerFactory = await ethers.getContractFactory(
     "RewardsManager"
   );
-  deployTimestamp = (await waffle.provider.getBlock("latest")).timestamp + 1;
   const RewardsManager = await rewardsManagerFactory.deploy(
     POP.address,
     Staking.address,
@@ -117,7 +122,7 @@ async function deployContracts(): Promise<Contracts> {
     mockUniswapV2Router.address
   );
   await RewardsManager.deployed();
-  await Staking.setRewardsManager(RewardsManager.address);
+  await Staking.init(RewardsManager.address);
   return {
     POP,
     MockAlt,

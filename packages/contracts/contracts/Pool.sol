@@ -238,6 +238,12 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable, Defended {
     return _issuePoolTokens(to, tokens);
   }
 
+  function _takeFees() internal {
+    _takeManagementFee();
+    _takePerformanceFee();
+    feesUpdatedAt = block.timestamp;
+  }
+
   function _takeManagementFee() internal {
     uint256 period = block.timestamp.sub(feesUpdatedAt);
     uint256 fee = (managementFee.mul(totalValue()).mul(period)).div(
@@ -260,12 +266,6 @@ contract Pool is ERC20, Ownable, ReentrancyGuard, Pausable, Defended {
       _issuePoolTokensForAmount(address(this), fee);
       emit PerformanceFee(fee);
     }
-  }
-
-  function _takeFees() internal {
-    _takeManagementFee();
-    _takePerformanceFee();
-    feesUpdatedAt = block.timestamp;
   }
 
   function _calculateWithdrawalFee(uint256 withdrawalAmount)
