@@ -3,7 +3,7 @@ import ReactTooltip from 'react-tooltip';
 
 interface TooltipProps {
   id: string;
-  direction: 'top' | 'right' | 'bottom' | 'left';
+  direction?: 'top' | 'right' | 'bottom' | 'left';
   title: string;
   text: string;
   size?: number;
@@ -11,7 +11,7 @@ interface TooltipProps {
 
 const Tooltip: React.FC<TooltipProps> = ({
   id,
-  direction,
+  direction = 'bottom',
   title,
   text,
   size = 4,
