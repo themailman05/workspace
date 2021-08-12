@@ -139,7 +139,7 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   /**
    * @notice Underlying function to calculate the rewards that a user gets
    * @dev We dont want it to error when a vault is empty for the user as this would terminate the entire loop when used in claimRewards()
-   * @dev It deletes the escrow and escrowId when all token in it are claimable
+   * @dev It marks the escrow as claimed when the whole balance was claimed
    */
   function _claimReward(address account_, bytes32 escrowId_)
     internal
