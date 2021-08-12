@@ -2,16 +2,20 @@
 
 pragma solidity >=0.6.0 <0.8.0;
 
+import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./MockERC20.sol";
 
 contract MockCurveMetapool {
-  MockERC20 lpToken;
+  using SafeERC20 for MockERC20;
+
+  MockERC20 public lpToken;
+  MockERC20 public threeCrv;
   MockERC20 token;
-  MockERC20 threeCrv;
   MockERC20 dai;
   MockERC20 usdc;
   MockERC20 usdt;
-
   uint256 virtualPrice = 1e18;
 
   uint256 withdrawalSlippageBps = 10;
@@ -64,14 +68,14 @@ contract MockCurveMetapool {
   }
 
   function remove_liquidity_one_coin(
-    uint256 amount,
+    uint256 _token_amount,
     int128 i,
-    uint256 min_underlying_amount
+    uint256 _min_amount
   ) external returns (uint256) {
-    lpToken.transferFrom(msg.sender, address(this), amount);
+    lpToken.transferFrom(msg.sender, address(this), _token_amount);
 
-    uint256 slippage = (amount * withdrawalSlippageBps) / 10000;
-    uint256 transferOut = amount - slippage;
+    uint256 slippage = (_token_amount * withdrawalSlippageBps) / 10000;
+    uint256 transferOut = _token_amount - slippage;
 
     uint256 i = uint256(i);
     tokens[i].approve(address(this), transferOut);

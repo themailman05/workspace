@@ -5,65 +5,11 @@ pragma solidity >=0.7.0 <0.8.0;
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-
-interface Curve3Pool {
-  function add_liquidity(uint256[3] calldata amounts, uint256 min_mint_amounts)
-    external;
-
-  function remove_liquidity_one_coin(
-    uint256 burn_amount,
-    int128 i,
-    uint256 min_amount
-  ) external;
-}
-
-interface CurveMetapool {
-  function add_liquidity(uint256[2] calldata amounts, uint256 min_mint_amounts)
-    external
-    returns (uint256);
-
-  function remove_liquidity_one_coin(
-    uint256 burn_amount,
-    int128 i,
-    uint256 min_amount
-  ) external returns (uint256);
-}
-
-interface CurveAddressProvider {
-  function get_registry() external view returns (address);
-}
-
-interface CurveRegistry {
-  function get_pool_from_lp_token(address lp_token)
-    external
-    view
-    returns (address);
-
-  function get_lp_token(address pool) external view returns (address);
-
-  function get_coins(address pool) external view returns (address[8] memory);
-
-  function get_underlying_coins(address pool)
-    external
-    view
-    returns (address[8] memory);
-}
-
-interface IPool {
-  function token() external view returns (address);
-
-  function depositFor(uint256 amount, address recipient)
-    external
-    returns (uint256);
-
-  function transferFrom(
-    address sender,
-    address recipient,
-    uint256 amount
-  ) external returns (bool);
-
-  function withdraw(uint256 amount) external returns (uint256);
-}
+import "./Interfaces/IPool.sol";
+import "./Interfaces/Integrations/CurveAddressProvider.sol";
+import "./Interfaces/Integrations/CurveRegistry.sol";
+import "./Interfaces/Integrations/CurveMetapool.sol";
+import "./Interfaces/Integrations/Curve3Pool.sol";
 
 contract Zapper {
   using SafeERC20 for IERC20;

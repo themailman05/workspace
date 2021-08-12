@@ -1,0 +1,3 @@
+interface CurveAddressProvider {
+  function get_registry() external view returns (address);
+}

@@ -3,10 +3,11 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import "./IStaking.sol";
-import "./IBeneficiaryRegistry.sol";
-import "./IGrantRegistry.sol";
-import "./IRandomNumberConsumer.sol";
+import "./Interfaces/IStaking.sol";
+import "./Interfaces/IBeneficiaryRegistry.sol";
+import "./Interfaces/IGrantRegistry.sol";
+import "./Interfaces/IRandomNumberConsumer.sol";
+import "./Governed.sol";
 import "./ParticipationReward.sol";
 
 contract GrantElections is ParticipationReward {

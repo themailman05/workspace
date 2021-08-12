@@ -9,16 +9,9 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./lib/AffiliateToken.sol";
+import "./Interfaces/IERC20Metadata.sol";
+import "./Interfaces/Integrations/CurveContracts.sol";
 import "./Defended.sol";
-
-
-interface IERC20Metadata is IERC20 {
-  function name() external view returns (string memory);
-
-  function symbol() external view returns (string memory);
-
-  function decimals() external view returns (uint8);
-}
 
 contract Pool is AffiliateToken, Ownable, ReentrancyGuard, Pausable, Defended {
   using SafeMath for uint256;

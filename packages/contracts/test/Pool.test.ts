@@ -4,20 +4,21 @@ import {
   PoolDefendedHelper,
   MockERC20,
   MockYearnV2Vault,
-  MockYearnRegistry,
   Pool,
 } from "../typechain";
 import { expect } from "chai";
 import { waffle, ethers } from "hardhat";
 import { parseEther } from "ethers/lib/utils";
 import { BigNumber } from "ethers";
+import { deployMockContract, MockContract } from "ethereum-waffle";
+import yearnRegistryABI from "../contracts/mocks/abis/yearnRegistry.json";
 
 const provider = waffle.provider;
 
 interface Contracts {
   mockToken: MockERC20;
   mockYearnVault: MockYearnV2Vault;
-  mockYearnRegistry: MockYearnRegistry;
+  mockYearnRegistry: MockContract;
   pool: Pool;
   blockLockHelper: BlockLockHelper;
   defendedHelper: PoolDefendedHelper;
@@ -51,12 +52,10 @@ async function deployContracts(): Promise<Contracts> {
     await MockYearnV2Vault.deploy(mockToken.address)
   ).deployed();
 
-  const MockYearnRegistry = await ethers.getContractFactory(
-    "MockYearnRegistry"
-  );
-  const mockYearnRegistry = await (
-    await MockYearnRegistry.deploy(mockYearnVault.address)
-  ).deployed();
+  const mockYearnRegistry = await deployMockContract(owner, yearnRegistryABI);
+  await mockYearnRegistry.mock.latestVault.returns(mockYearnVault.address);
+  await mockYearnRegistry.mock.numVaults.returns(1);
+  await mockYearnRegistry.mock.vaults.returns(mockYearnVault.address);
 
   const Pool = await ethers.getContractFactory("Pool");
   const pool = await (
@@ -66,12 +65,6 @@ async function deployContracts(): Promise<Contracts> {
       rewardsManager.address
     )
   ).deployed();
-
-  const Staking = await ethers.getContractFactory("Staking");
-  const mockStaking = await waffle.deployMockContract(
-    owner,
-    Staking.interface.format() as any
-  );
 
   const PoolDefendedHelper = await ethers.getContractFactory(
     "PoolDefendedHelper"

@@ -28,7 +28,7 @@
     "@nomiclabs/hardhat-waffle": "^2.0.1",
     "@openzeppelin/contracts": "^3.4.0",
     "@popcorn/utils": "*",
-    "@setprotocol/set-protocol-v2": "^0.0.7",
+    "@setprotocol/set-protocol-v2": "^0.0.45",
     "@typechain/ethers-v5": "^7.0.0",
     "@typechain/hardhat": "^2.0.0",
     "@uniswap/sdk": "^3.0.3",
@@ -48,7 +48,8 @@
     "ts-node": "^9.1.1",
     "typechain": "^5.0.0",
     "typescript": "^4.2.4",
-    "yearn-protocol": "yaoandrew/yearn-vaults#v0.4.0"
+    "yearn-protocol": "yaoandrew/yearn-vaults#v0.4.0",
+    "solidity-coverage": "^0.7.6"
   },
   "license": "MIT"
 }
