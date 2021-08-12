@@ -1,7 +1,4 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline';
-import React from 'react';
-import ReactTooltip from 'react-tooltip';
-import './Tooltip.module.css';
 
 interface TooltipProps {
   id: string;
@@ -31,4 +28,10 @@ const Tooltip: React.FC<TooltipProps> = ({ id, direction, title, text }) => {
   );
 };
 
-export default Tooltip;
+export default function Test() {
+  return (
+    <div>
+      <Tooltip id="tooltip" direction="bottom" title="title" text="text" />
+    </div>
+  );
+}
