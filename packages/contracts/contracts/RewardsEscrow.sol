@@ -49,7 +49,8 @@ contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   function isClaimable(bytes32 escrowId_) external view returns (bool) {
     return
       escrows[escrowId_].start <= block.timestamp &&
-      escrows[escrowId_].start != 0;
+      escrows[escrowId_].start != 0 &&
+      escrows[escrowId_].claimed == false;
   }
 
   /**
