@@ -161,6 +161,8 @@ export default async function deploy(ethers): Promise<void> {
       .connect(accounts[0])
       .setRewardsManager(rewardsManager.address);
 
+    await staking.connect(accounts[0]).init(rewardsManager.address);
+
     const randomNumberConsumer = await (
       await (
         await ethers.getContractFactory("RandomNumberConsumer")
@@ -382,7 +384,7 @@ export default async function deploy(ethers): Promise<void> {
             beneficiary.address,
             DEFAULT_REGION,
             getBytes32FromIpfsHash(addressCidMap[beneficiary.address]),
-            ProposalType.Nomination,
+            proposalType,
             { gasLimit: 3000000 }
           );
       },
