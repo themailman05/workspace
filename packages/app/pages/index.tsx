@@ -19,27 +19,29 @@ const IndexPage = () => {
     }
   }, [router.pathname]);
 
-  if (countdownActive) {
-    setInterval(function () {
-      const now = new Date().getTime();
+  useEffect(() => {
+    if (countdownActive) {
+      setInterval(function () {
+        const now = new Date().getTime();
 
-      const distance = endDate - now;
-      if (distance < 0) {
-        disableCountdown(false);
-        setCountdown([0, 0, 0, 0]);
-      }
+        const distance = endDate - now;
+        if (distance < 0) {
+          disableCountdown(false);
+          setCountdown([0, 0, 0, 0]);
+        }
 
-      // Time calculations for days, hours, minutes and seconds
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor(
-        (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
-      );
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        // Time calculations for days, hours, minutes and seconds
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor(
+          (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+        );
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      setCountdown([days, hours, minutes, seconds]);
-    }, 1000);
-  }
+        setCountdown([days, hours, minutes, seconds]);
+      }, 1000);
+    }
+  }, []);
 
   return (
     <div className="font-landing">
