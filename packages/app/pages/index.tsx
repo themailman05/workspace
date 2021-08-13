@@ -164,7 +164,7 @@ const IndexPage = () => {
               </a>
             </Link>*/}
               <Link href="/docs/Popcorn_whitepaper_v1.pdf" passHref>
-                <a className="font-medium text-base hover:text-blue-600">
+                <a className="font-medium text-base hover:text-blue-600" target="_window">
                   Whitepaper
                 </a>
               </Link>
@@ -600,7 +600,7 @@ const IndexPage = () => {
               </a>
             </Link>*/}
                 <Link href="/docs/Popcorn_whitepaper_v1.pdf" passHref>
-                  <a className="font-medium text-base hover:text-blue-600">
+                  <a className="font-medium text-base hover:text-blue-600" target="_window">
                     Whitepaper
                   </a>
                 </Link>
