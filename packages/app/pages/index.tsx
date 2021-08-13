@@ -301,7 +301,7 @@ const IndexPage = () => {
                 </div>
                 <h3 className="font-medium text-4xl py-8">Do well</h3>
                 <p className="w-3/4 text-center text-xl text-gray-500">
-                  Earn competitive returns on you crypto assets
+                  Earn competitive returns on your crypto assets
                 </p>
               </div>
             </div>
@@ -755,7 +755,7 @@ const IndexPage = () => {
                 </div>
                 <h3 className="font-medium text-2xl py-8">Do well</h3>
                 <p className="w-3/4 text-center text-lg text-gray-500">
-                  Earn competitive returns on you crypto assets
+                  Earn competitive returns on your crypto assets
                 </p>
               </div>
             </div>
