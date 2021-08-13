@@ -1,8 +1,8 @@
+import { Dialog, Transition } from '@headlessui/react';
 import FacebookPixel from 'components/FacebookPixel';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React, { useEffect } from 'react';
-import { useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Facebook, GitHub, Menu, Twitter, X } from 'react-feather';
 
 const IndexPage = () => {
@@ -11,6 +11,7 @@ const IndexPage = () => {
   const [countdown, setCountdown] = useState<number[]>([]);
   const [countdownActive, disableCountdown] = useState<boolean>(true);
   const [menuVisible, toggleMenu] = useState<boolean>(false);
+  const [ctaModalVisible, toggleCtaModal] = useState<boolean>(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname !== '/') {
@@ -43,7 +44,93 @@ const IndexPage = () => {
   return (
     <div className="font-landing">
       <FacebookPixel />
+      {/* Modal to display signup form*/}
+      <Transition.Root show={ctaModalVisible} as={Fragment}>
+        <Dialog
+          as="div"
+          auto-reopen="true"
+          className="fixed z-10 inset-0 overflow-y-auto"
+          onClose={toggleCtaModal}
+        >
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-60 text-center sm:block sm:p-0">
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0"
+              enterTo="opacity-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100"
+              leaveTo="opacity-0"
+            >
+              <Dialog.Overlay className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+            </Transition.Child>
 
+            {/* This element is to trick the browser into centering the modal contents. */}
+            <span
+              className="hidden sm:inline-block sm:align-middle sm:h-screen"
+              aria-hidden="true"
+            >
+              &#8203;
+            </span>
+            <Transition.Child
+              as={Fragment}
+              enter="ease-out duration-300"
+              enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <div className="w-full md:w-1/2 xl:w-1/3 inline-block transform transition-all align-middle">
+                <form
+                  action="https://network.us1.list-manage.com/subscribe/post?u=5ce5e82d673fd2cfaf12849a5&amp;id=e85a091ed3"
+                  method="post"
+                  id="mc-embedded-subscribe-form"
+                  name="mc-embedded-subscribe-form"
+                  className="validate"
+                  target="_blank"
+                  noValidate
+                >
+                  <div
+                    id="mc_embed_signup_scroll"
+                    className="shadow-xl bg-white rounded-xl py-2 px-2 mt-8 w-full flex flex-col md:flex-row items-center justify-between"
+                  >
+                    <input
+                      type="email"
+                      name="EMAIL"
+                      className="w-10/12 p-2 text-base mx-4 text-gray-900"
+                      id="mce-EMAIL"
+                      placeholder="Email Address"
+                      required
+                    />
+                    <div
+                      style={{ position: 'absolute', left: '-5000px' }}
+                      aria-hidden="true"
+                    >
+                      <input
+                        type="text"
+                        name="b_5ce5e82d673fd2cfaf12849a5_e85a091ed3"
+                        tabIndex={-1}
+                      />
+                    </div>
+                    <div className="clear">
+                      <input
+                        type="submit"
+                        value="Join Waitlist"
+                        name="subscribe"
+                        id="mc-embedded-subscribe"
+                        className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl px-4 py-2 mt-4 md:mt-0 cursor-pointer"
+                        readOnly
+                        onClick={(e) => toggleCtaModal(false)}
+                      />
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </Transition.Child>
+          </div>
+        </Dialog>
+      </Transition.Root>
       {/* DESKTOP + TABLET VERSION */}
       <div className="hidden lg:flex flex-col w-full h-full">
         <header className="w-full bg-primary">
@@ -81,11 +168,12 @@ const IndexPage = () => {
                 PopcornDAO
               </a>
             </Link>*/}
-              {/*<Link href="/" passHref>
-              <a className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl p-4">
+              <a
+                className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl p-4"
+                onClick={(e) => toggleCtaModal(true)}
+              >
                 Early Access
               </a>
-            </Link>*/}
             </div>
           </nav>
         </header>
@@ -474,7 +562,6 @@ const IndexPage = () => {
           </p>
         </section>
       </div>
-
       {/* MOBILE VERSION */}
       <div className="w-full h-full lg:hidden">
         {menuVisible && (
@@ -496,7 +583,7 @@ const IndexPage = () => {
                   onClick={(e) => toggleMenu(false)}
                 />
               </div>
-              <div className="space-y-4 mt-8">
+              <div className="flex flex-col space-y-4 mt-8">
                 {/*<Link href="/" passHref>
               <a className="font-medium text-base hover:text-blue-600">
                 About us
@@ -517,11 +604,15 @@ const IndexPage = () => {
                 PopcornDAO
               </a>
             </Link>*/}
-                {/*<Link href="/" passHref>
-              <a className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl p-4">
-                Early Access
-              </a>
-            </Link>*/}
+                <a
+                  className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl p-4"
+                  onClick={(e) => {
+                    toggleCtaModal(true);
+                    toggleMenu(false);
+                  }}
+                >
+                  Early Access
+                </a>
               </div>
             </div>
           </div>
