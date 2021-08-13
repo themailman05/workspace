@@ -50,7 +50,7 @@ const IndexPage = () => {
           as="div"
           auto-reopen="true"
           className="fixed z-10 inset-0 overflow-y-auto"
-          onClose={toggleCtaModal}
+          onClose={(e) => toggleCtaModal(false)}
         >
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-60 text-center sm:block sm:p-0">
             <Transition.Child
@@ -172,7 +172,7 @@ const IndexPage = () => {
               </a>
             </Link>*/}
               <a
-                className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl p-4"
+                className="font-medium text-base bg-blue-600 hover:bg-blue-500 text-white rounded-xl p-4 cursor-pointer"
                 onClick={(e) => toggleCtaModal(true)}
               >
                 Early Access
