@@ -27,6 +27,7 @@ const Tooltip: React.FC<TooltipProps> = ({
         id={id}
         place={direction}
         effect="solid"
+        type="light"
         className="shadow-lg border border-gray-50 p-1 w-60"
       >
         <p className="font-bold text-center">{title}</p>
