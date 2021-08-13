@@ -7,6 +7,12 @@ import { Contract, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ShareType } from "../adapters/GrantElection/GrantElectionAdapter";
 import * as addressCidMap from "./addressCidMap.json";
+const beneficiaryGovernanceTypechainArtifact = require("../artifacts/contracts/BeneficiaryGovernance.sol/BeneficiaryGovernance.json");
+const beneficiaryGovernanceABI = beneficiaryGovernanceTypechainArtifact.abi;
+
+const beneficiaryGovernanceABIInterface = new utils.Interface(
+  beneficiaryGovernanceABI
+);
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
@@ -156,10 +162,6 @@ export default async function deploy(ethers): Promise<void> {
         uniswapRouter.address
       )
     ).deployed();
-
-    await staking
-      .connect(accounts[0])
-      .setRewardsManager(rewardsManager.address);
 
     await staking.connect(accounts[0]).init(rewardsManager.address);
 
@@ -363,6 +365,13 @@ export default async function deploy(ethers): Promise<void> {
   const addClosedProposals = async (): Promise<void> => {
     await addProposals(beneficiaries.slice(0, 6), 0);
     await addProposals(beneficiaries.slice(6, 12), 1);
+    console.log("getting number of proposals...");
+    const numNominationProposals = await contracts.beneficiaryGovernance
+      .connect(accounts[0])
+      .getNumberOfProposals(0);
+    const numTakedownProposals = await contracts.beneficiaryGovernance
+      .connect(accounts[0])
+      .getNumberOfProposals(1);
     await voteOnNominationProposals();
     await voteOnTakedownProposals();
     await finalizeProposals();
@@ -375,10 +384,10 @@ export default async function deploy(ethers): Promise<void> {
     console.log(
       `adding ${proposalType === 0 ? "nomination" : "takedown"} proposals...`
     );
-    await bluebird.map(
+    const proposalIds = await bluebird.map(
       beneficiaries,
       async (beneficiary) => {
-        await contracts.beneficiaryGovernance
+        const result = await contracts.beneficiaryGovernance
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
@@ -387,9 +396,25 @@ export default async function deploy(ethers): Promise<void> {
             proposalType,
             { gasLimit: 3000000 }
           );
+
+        const parsedTransaction = beneficiaryGovernanceABIInterface.parseLog({
+          data: result.data,
+          topics: result,
+        });
+        // Decoded Transaction
+        console.log({
+          parsedTransaction,
+          function_name: parsedTransaction.name,
+          from: result.from,
+          to: parsedTransaction.args[0],
+          erc20Value: Number(parsedTransaction.args[1]),
+        });
+
+        return result;
       },
       { concurrency: 1 }
     );
+    console.log({ proposalIds });
   };
 
   const voteOnNominationProposals = async (): Promise<void> => {
