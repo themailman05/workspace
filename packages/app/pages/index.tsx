@@ -809,7 +809,7 @@ const IndexPage = () => {
             While Remaining Carbon Neutral
           </h2>
           <p className="text-lg font-landing text-gray-500 text-center">
-            Popcorn calcualtes and neutralizes blockchain carbon emissions by
+            Popcorn calculates and neutralizes blockchain carbon emissions by
             partnering with carbon sequestration and negative emission projects.
           </p>
         </section>
