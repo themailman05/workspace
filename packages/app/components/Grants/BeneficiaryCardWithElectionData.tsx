@@ -1,9 +1,11 @@
-import { BeneficiaryApplication, GrantElectionAdapter } from '@popcorn/contracts/adapters';
+import {
+  BeneficiaryApplication,
+  GrantElectionAdapter,
+} from '@popcorn/contracts/adapters';
 import Link from 'next/link';
-import truncate from 'utils/truncate';
+import { ElectionProps } from './ElectionProps';
 import GrantFunded from './GrantFunded';
 import VoteSlider from './VoteSlider';
-import { ElectionProps } from './ElectionProps';
 interface BeneficiaryCardWithElectionDataProps {
   beneficiary: BeneficiaryApplication;
   electionProps: ElectionProps;
@@ -38,14 +40,14 @@ const BeneficiaryCardWithElectionData: React.FC<BeneficiaryCardWithElectionDataP
               </a>
             </Link>
           </div>
-          <div className="h-32">
+          <div className="h-32 overflow-hidden overflow-clip">
             <Link
               href={`/beneficiary/${beneficiary?.beneficiaryAddress}`}
               passHref
             >
               <a>
                 <p className="text-sm text-gray-700">
-                  {truncate(beneficiary?.missionStatement, 180)}
+                  {beneficiary?.missionStatement}
                 </p>
               </a>
             </Link>
