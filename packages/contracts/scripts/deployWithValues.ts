@@ -48,6 +48,8 @@ interface Contracts {
   uniswapRouter: Contract;
   uniswapPair: Contract;
   beneficiaryGovernance: Contract;
+  region: Contract;
+  rewardsEscrow: Contract;
 }
 
 enum Vote {
@@ -58,6 +60,7 @@ enum Vote {
 export default async function deploy(ethers): Promise<void> {
   const GrantTerm = { Month: 0, Quarter: 1, Year: 2 };
   const GrantTermMap = { 0: "Monthly", 1: "Quarterly", 2: "Yearly" };
+  const DEFAULT_REGION = "0x5757";
   const overrides = {
     gasLimit: 9999999,
   };
@@ -77,10 +80,6 @@ export default async function deploy(ethers): Promise<void> {
   const deployContracts = async (): Promise<void> => {
     console.log("deploying contracts ...");
 
-    const beneficiaryRegistry = await (
-      await (await ethers.getContractFactory("BeneficiaryRegistry")).deploy()
-    ).deployed();
-
     const mockPop = await (
       await (
         await ethers.getContractFactory("MockERC20")
@@ -97,8 +96,16 @@ export default async function deploy(ethers): Promise<void> {
       await (await ethers.getContractFactory("WETH9")).deploy()
     ).deployed();
 
+    const rewardsEscrow = await (
+      await (
+        await ethers.getContractFactory("RewardsEscrow")
+      ).deploy(mockPop.address)
+    ).deployed();
+
     const staking = await (
-      await (await ethers.getContractFactory("Staking")).deploy(mockPop.address)
+      await (
+        await ethers.getContractFactory("Staking")
+      ).deploy(mockPop.address, rewardsEscrow.address)
     ).deployed();
 
     const uniswapFactory = await deployContract(
@@ -127,7 +134,19 @@ export default async function deploy(ethers): Promise<void> {
     const beneficiaryVaults = await (
       await (
         await ethers.getContractFactory("BeneficiaryVaults")
-      ).deploy(mockPop.address, beneficiaryRegistry.address)
+      ).deploy(mockPop.address)
+    ).deployed();
+
+    const region = await (
+      await (
+        await ethers.getContractFactory("Region")
+      ).deploy(beneficiaryVaults.address)
+    ).deployed();
+
+    const beneficiaryRegistry = await (
+      await (
+        await ethers.getContractFactory("BeneficiaryRegistry")
+      ).deploy(region.address)
     ).deployed();
 
     const rewardsManager = await (
@@ -143,9 +162,7 @@ export default async function deploy(ethers): Promise<void> {
       )
     ).deployed();
 
-    await staking
-      .connect(accounts[0])
-      .setRewardsManager(rewardsManager.address);
+    await staking.connect(accounts[0]).init(rewardsManager.address);
 
     const randomNumberConsumer = await (
       await (
@@ -163,9 +180,9 @@ export default async function deploy(ethers): Promise<void> {
       ).deploy(
         staking.address,
         beneficiaryRegistry.address,
-        beneficiaryVaults.address,
         randomNumberConsumer.address,
         mockPop.address,
+        region.address,
         accounts[0].address
       )
     ).deployed();
@@ -177,6 +194,7 @@ export default async function deploy(ethers): Promise<void> {
         staking.address,
         beneficiaryRegistry.address,
         mockPop.address,
+        region.address,
         accounts[0].address
       )
     ).deployed();
@@ -194,6 +212,8 @@ export default async function deploy(ethers): Promise<void> {
       uniswapRouter,
       uniswapPair,
       beneficiaryGovernance,
+      region,
+      rewardsEscrow,
     };
   };
 
@@ -213,7 +233,7 @@ export default async function deploy(ethers): Promise<void> {
   };
 
   const addBeneficiaryProposals = async (): Promise<void> => {
-    console.log("adding beneficiaries proposals...");
+    console.log("adding beneficiary proposals...");
     await bluebird.map(
       bennies.slice(0, 3),
       async (beneficiary) => {
@@ -221,6 +241,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(
               "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
@@ -243,6 +264,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(
               "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
@@ -268,6 +290,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(
               "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
@@ -295,6 +318,7 @@ export default async function deploy(ethers): Promise<void> {
           .connect(beneficiary)
           .createProposal(
             beneficiary.address,
+            DEFAULT_REGION,
             getBytes32FromIpfsHash(
               "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
             ),
@@ -343,6 +367,7 @@ export default async function deploy(ethers): Promise<void> {
       async (beneficiary: SignerWithAddress) => {
         return contracts.beneficiaryRegistry.addBeneficiary(
           beneficiary.address,
+          DEFAULT_REGION,
           getBytes32FromIpfsHash(
             "QmNcbrqvXLqScWQ1CDn9V2S2g7rzCzFNo22sWjdE2bQCJ6"
           ),
@@ -428,12 +453,12 @@ export default async function deploy(ethers): Promise<void> {
       `initializing ${GrantTermMap[grantTerm]} election with fast voting enabled ...`
     );
     await contracts.grantElections.setConfiguration(
-      GrantTerm.Quarter,
+      grantTerm,
       1, // 1 awardee
       3, // 3 qualifying
-      true,
-      10, // secs for voting period
-      120, // secs for registration period,
+      false,
+      10, // secs for registration period
+      1200, // secs for voting period,
       10,
       0,
       false,
@@ -441,8 +466,7 @@ export default async function deploy(ethers): Promise<void> {
       true,
       ShareType.EqualWeight
     );
-
-    await contracts.grantElections.initialize(grantTerm);
+    await contracts.grantElections.initialize(grantTerm, DEFAULT_REGION);
     console.log(
       await GrantElectionAdapter(contracts.grantElections).electionDefaults(
         grantTerm
@@ -452,18 +476,20 @@ export default async function deploy(ethers): Promise<void> {
 
   const registerBeneficiariesForElection = async (
     grantTerm,
+    electionId,
     bennies
   ): Promise<void> => {
     console.log(
       `registering beneficiaries for election (${GrantTermMap[grantTerm]}) ...`
     );
+
     await bluebird.map(
       bennies,
       async (beneficiary: SignerWithAddress) => {
         console.log(`registering ${beneficiary.address}`);
         return contracts.grantElections.registerForElection(
           beneficiary.address,
-          grantTerm,
+          electionId,
           { gasLimit: 3000000 }
         );
       },
@@ -485,6 +511,7 @@ export default async function deploy(ethers): Promise<void> {
     await initializeElectionWithFastVotingEnabled(GrantTerm.Month);
     await registerBeneficiariesForElection(
       GrantTerm.Month,
+      0,
       bennies.slice(11, 14)
     );
     await displayElectionMetadata(GrantTerm.Month);
@@ -554,9 +581,9 @@ export default async function deploy(ethers): Promise<void> {
       GrantTerm.Quarter,
       1, // 1 awardee
       3, // 3 qualifying
-      true,
-      1, // secs for voting period
-      120, // secs for registration period,
+      false,
+      10, // secs for registration period
+      5, // secs for voting period,
       100,
       0,
       false,
@@ -564,7 +591,10 @@ export default async function deploy(ethers): Promise<void> {
       true,
       ShareType.EqualWeight
     );
-    await contracts.grantElections.initialize(GrantTerm.Quarter);
+    await contracts.grantElections.initialize(
+      GrantTerm.Quarter,
+      DEFAULT_REGION
+    );
     console.log(
       await GrantElectionAdapter(contracts.grantElections).electionDefaults(
         GrantTerm.Quarter
@@ -572,6 +602,7 @@ export default async function deploy(ethers): Promise<void> {
     );
     await registerBeneficiariesForElection(
       GrantTerm.Quarter,
+      1,
       bennies.slice(14, 17)
     );
 
@@ -619,9 +650,13 @@ export default async function deploy(ethers): Promise<void> {
   // registration period
   const initializeYearlyElection = async (): Promise<void> => {
     console.log("initializing yearly election ...");
-    await contracts.grantElections.initialize(GrantTerm.Year);
+    await contracts.grantElections.initialize(GrantTerm.Year, DEFAULT_REGION);
     await new Promise((r) => setTimeout(r, 20000));
-    await registerBeneficiariesForElection(GrantTerm.Year, bennies.slice(18));
+    await registerBeneficiariesForElection(
+      GrantTerm.Year,
+      2,
+      bennies.slice(18)
+    );
     await displayElectionMetadata(GrantTerm.Year);
   };
 
@@ -663,6 +698,7 @@ ADDR_BENEFICIARY_VAULT=${contracts.beneficiaryVaults.address}
 ADDR_REWARDS_MANAGER=${contracts.rewardsManager.address}
 ADDR_UNISWAP_ROUTER=${contracts.uniswapRouter.address}
 ADDR_3CRV=${contracts.mock3CRV.address}
+ADDR_REGION=${contracts.region.address}
     `);
   };
 
