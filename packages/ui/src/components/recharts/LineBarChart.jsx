@@ -20,7 +20,13 @@ const data = new Array(20).fill(undefined).map((x, i) => {
 
 export default function SimpleBarChart() {
   return (
-    <ComposedChart width={300} height={200} data={data} margin={4}>
+    <ComposedChart
+      width={300}
+      height={200}
+      data={data}
+      margin={4}
+      className="my-3"
+    >
       <CartesianGrid stroke="#f5f5f5" />
       <XAxis dataKey="name" scale="band"></XAxis>
       <YAxis
