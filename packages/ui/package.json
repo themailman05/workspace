@@ -13,7 +13,7 @@
     "tsc": "tsc -b",
     "story": "start-storybook",
     "storybook": "start-storybook -p 6006 --no-dll",
-    "build-storybook": "build-storybook --no-dll"
+    "build-storybook": "yarn build-storybook --no-dll"
   },
   "peerDependencies": {
     "react": "^16.13.1",
