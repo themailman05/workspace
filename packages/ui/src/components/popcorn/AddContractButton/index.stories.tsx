@@ -18,8 +18,4 @@ export default {
 const Template: Story = (args) => <AddContractButton {...args} />;
 
 export const Primary = Template.bind({});
-Primary.args = {
-  title: 'Example Title',
-  content: 'Lorem ipsum lorem ipsum lorem ipsum lorem ipsum',
-  place: 'right',
-};
+Primary.args = {};
