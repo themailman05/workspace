@@ -53,15 +53,14 @@ const StyledRocket = styled(RocketSvg)`
 
   #jupiter1,
   #planet2,
-  #planet5 {
+  #planet6 {
     animation: ${wobble1} 1s infinite ease;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in;
   }
 
   #jupiter2,
-  #planet3,
-  #planet6 {
+  #planet3 {
     animation: ${wobble2} 1.1s infinite ease;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in;
@@ -69,7 +68,8 @@ const StyledRocket = styled(RocketSvg)`
 
   #jupiter3,
   #planet1,
-  #planet4 {
+  #planet4,
+  #planet5  {
     animation: ${wobble3} 1.2s infinite ease;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in;
