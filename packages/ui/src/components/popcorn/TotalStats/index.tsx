@@ -4,7 +4,7 @@ import {
   TrendingUpIcon,
 } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
-import AreaChart from '../recharts/AreaChart/AreaChart';
+import AreaChart from '../recharts/AreaChart';
 import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
 
 const stats = [

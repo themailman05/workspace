@@ -2,7 +2,7 @@
 import { CloudIcon, TrendingUpIcon } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
 import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
-import LineBarChart from '../recharts/LineBarChart/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
+import LineBarChart from '../recharts/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
 
 const stats = [
   {
