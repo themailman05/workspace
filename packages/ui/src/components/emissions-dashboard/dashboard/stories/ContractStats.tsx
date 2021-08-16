@@ -30,8 +30,8 @@ export default function Example() {
   return (
     <div className="pb-4">
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mx-4">
-        <div className="relative bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 overflow-hidden">
-          <p className="my-auto h-24 text-2xl font-semibold text-gray-900">
+        <div className="relative bg-gray-50 pt-5 px-6 pb-6 sm:pt-6 sm:px-6 overflow-hidden">
+          <p className="my-auto h-24 text-2xl font-semibold text-gray-900 ">
             Popcorn HYSI Staking Pool
           </p>
         </div>

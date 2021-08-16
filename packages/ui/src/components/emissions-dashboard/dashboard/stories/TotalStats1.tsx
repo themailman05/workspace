@@ -39,7 +39,7 @@ function classNames(...classes) {
 
 export default function TotalStats1() {
   return (
-    <div className="pb-8">
+    <div className="pb-8 bg-gray-50">
       <h3 className="text-lg leading-6 font-medium text-gray-900 mt-16">
         Totals between 12/04/2021 and 30/05/2021
       </h3>
