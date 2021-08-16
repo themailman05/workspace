@@ -1,4 +1,4 @@
-import { Proposal, ProposalStatus } from "@popcorn/contracts/adapters";
+import { Proposal, ProposalStatus } from '@popcorn/contracts/adapters';
 
 interface VotingRowProps {
   name: string;
@@ -24,19 +24,14 @@ const VotingInformation: React.FC<Proposal> = (proposal): JSX.Element => {
         name={'Voting Deadline'}
         value={proposal.stageDeadline.toLocaleString()}
       />
-      <VotingRow
-        name={'Votes For'}
-        value={proposal.votes.for}
-      />
-      <VotingRow
-        name={'Votes Against'}
-        value={proposal.votes.against}
-      />
+      <VotingRow name={'Votes For'} value={proposal.votes.for} />
+      <VotingRow name={'Votes Against'} value={proposal.votes.against} />
       <VotingRow
         name={'Total Votes'}
-        value={
-          (+proposal.votes.for + +proposal.votes.against).toString()
-        }
+        value={(
+          Number(proposal.votes.for.replace(',', '')) +
+          Number(proposal.votes.against.replace(',', ''))
+        ).toLocaleString()}
       />
     </div>
   );
