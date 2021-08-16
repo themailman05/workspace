@@ -1,5 +1,5 @@
 [build]
-  command = "yarn build-storybook"
+  command = "yarn build:storybook"
   publish = "packages/ui/storybook-static"
 
 [build.environment]
