@@ -1,5 +1,4 @@
-/* This example requires Tailwind CSS v2.0+ */
-export default function Example() {
+export default function Divider() {
   return (
     <div className="relative">
       <div className="absolute inset-0 flex items-center" aria-hidden="true">
