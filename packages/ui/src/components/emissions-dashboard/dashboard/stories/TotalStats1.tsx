@@ -37,13 +37,13 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function Example() {
+export default function TotalStats1() {
   return (
     <div className="pb-8">
       <h3 className="text-lg leading-6 font-medium text-gray-900 mt-16">
         Totals between 12/04/2021 and 30/05/2021
       </h3>
-      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mx-4">
         {stats.map((item) => (
           <div
             key={item.id}
