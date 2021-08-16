@@ -1,11 +1,8 @@
-import {
-  CloudIcon,
-  CursorClickIcon,
-  TrendingUpIcon,
-} from '@heroicons/react/outline';
+/* This example requires Tailwind CSS v2.0+ */
+import { CloudIcon, TrendingUpIcon } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
-import AreaChart from '../../../recharts/AreaChart/AreaChart';
-import { getDummyEmissionData } from '../../../recharts/dummyEmissionsData';
+import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
+import LineBarChart from '../recharts/LineBarChart/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
 
 const stats = [
   {
@@ -19,18 +16,10 @@ const stats = [
   {
     id: 2,
     name: 'Transactions',
-    stat: '23',
+    stat: '23k',
     icon: TrendingUpIcon,
     change: '5.4%',
     changeType: 'increase',
-  },
-  {
-    id: 3,
-    name: 'Average Gas Price',
-    stat: '45',
-    icon: CursorClickIcon,
-    change: '3.2%',
-    changeType: 'decrease',
   },
 ];
 
@@ -38,18 +27,26 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function TotalStats1() {
+export default function Example() {
   return (
-    <div className="pb-8 bg-gray-50">
-      <h3 className="text-lg leading-6 font-medium text-gray-900 mt-16">
-        Totals between 12/04/2021 and 30/05/2021
-      </h3>
+    <div className="pb-4">
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mx-4">
+        <div className="relative bg-gray-50 pt-5 px-6 pb-6 sm:pt-6 sm:px-6 overflow-hidden">
+          <p className="my-auto h-24 text-2xl font-semibold text-gray-900 ">
+            Popcorn HYSI Staking Pool
+          </p>
+        </div>
         {stats.map((item) => (
           <div
             key={item.id}
-            className="relative h-24 bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden "
+            className="relative h-24 bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden"
           >
+            <dt>
+              <div className="absolute bg-indigo-500 rounded-md p-3">
+                <item.icon className="h-6 w-6 text-white" aria-hidden="true" />
+              </div>
+            </dt>
+
             <dt>
               <div className="absolute bg-indigo-500 rounded-md p-3">
                 <item.icon className="h-6 w-6 text-white" aria-hidden="true" />
@@ -91,7 +88,7 @@ export default function TotalStats1() {
             </dd>
           </div>
         ))}
-        <AreaChart data={getDummyEmissionData()} width={300} height={200} />
+        <LineBarChart data={getDummyEmissionData()} width={300} height={200} />
       </dl>
     </div>
   );
