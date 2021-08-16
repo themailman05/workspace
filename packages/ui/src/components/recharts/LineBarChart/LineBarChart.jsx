@@ -10,11 +10,11 @@ import {
   YAxis,
 } from 'recharts';
 
-export default function LineBarChart({ data }) {
+export default function LineBarChart({ data, height, width }) {
   return (
     <ComposedChart
-      width={300}
-      height={200}
+      width={width}
+      height={height}
       data={data}
       margin={4}
       className="my-3"

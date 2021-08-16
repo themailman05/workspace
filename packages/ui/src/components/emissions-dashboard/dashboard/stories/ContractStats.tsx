@@ -88,7 +88,7 @@ export default function Example() {
             </dd>
           </div>
         ))}
-        <LineBarChart data={getDummyEmissionData()} />
+        <LineBarChart data={getDummyEmissionData()} width={300} height={200} />
       </dl>
     </div>
   );

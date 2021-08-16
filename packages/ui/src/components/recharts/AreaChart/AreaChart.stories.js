@@ -8,4 +8,4 @@ export default {
 };
 
 const data = getDummyEmissionData();
-export const Default = () => <AreaChart data={data} />;
+export const Default = () => <AreaChart data={data} width={300} height={200} />;

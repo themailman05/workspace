@@ -8,12 +8,12 @@ import {
   YAxis,
 } from 'recharts';
 
-export default function AreaChartExample({ data }) {
+export default function AreaChartExample({ data, height, width }) {
   return (
     <div>
       <AreaChart
-        width={300}
-        height={200}
+        width={width}
+        height={height}
         data={data}
         margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
       >

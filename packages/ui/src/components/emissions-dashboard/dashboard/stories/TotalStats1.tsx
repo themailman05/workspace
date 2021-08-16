@@ -91,7 +91,7 @@ export default function TotalStats1() {
             </dd>
           </div>
         ))}
-        <AreaChart data={getDummyEmissionData()} />
+        <AreaChart data={getDummyEmissionData()} width={300} height={200} />
       </dl>
     </div>
   );

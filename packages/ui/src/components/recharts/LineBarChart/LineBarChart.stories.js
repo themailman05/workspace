@@ -8,4 +8,6 @@ export default {
 };
 
 const data = getDummyEmissionData();
-export const Default = () => <LineBarChart data={data} />;
+export const Default = () => (
+  <LineBarChart data={data} width={300} height={200} />
+);
