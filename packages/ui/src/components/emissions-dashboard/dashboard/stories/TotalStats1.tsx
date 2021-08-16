@@ -47,7 +47,7 @@ export default function TotalStats1() {
         {stats.map((item) => (
           <div
             key={item.id}
-            className="relative bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden"
+            className="relative h-24 bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden "
           >
             <dt>
               <div className="absolute bg-indigo-500 rounded-md p-3">
