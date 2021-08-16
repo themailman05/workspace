@@ -1,5 +1,4 @@
-/* This example requires Tailwind CSS v2.0+ */
-export default function Example() {
+export const PageHeader = () => {
   return (
     <div className="md:flex md:items-center md:justify-between">
       <div className="flex-1 min-w-0">
@@ -52,4 +51,4 @@ export default function Example() {
       </div>
     </div>
   );
-}
+};

@@ -1,10 +1,10 @@
 import { Meta, Story } from '@storybook/react/types-6-0';
 import { getDummyEmissionData } from '../dummyEmissionsData';
-import LineBarChart from './index';
+import { EmissionsLineBarChart } from './index';
 
 export default {
-  title: 'Popcorn/Charts/LineBarChart',
-  component: LineBarChart,
+  title: 'Popcorn/Charts/EmissionsLineBarChart',
+  component: EmissionsLineBarChart,
   decorators: [
     (Story) => (
       <div className="flex flex-row justify-center">
@@ -14,7 +14,7 @@ export default {
   ],
 } as Meta;
 
-const Template: Story = (args) => <LineBarChart {...args} />;
+const Template: Story = (args) => <EmissionsLineBarChart {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = { data: getDummyEmissionData(), width: 300, height: 200 };

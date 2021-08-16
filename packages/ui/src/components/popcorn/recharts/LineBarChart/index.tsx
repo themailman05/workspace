@@ -9,8 +9,19 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { ChartData } from '../AreaChart';
 
-export default function LineBarChart({ data, height, width }) {
+export interface AreaChartProps {
+  data: ChartData[];
+  height?: number;
+  width?: number;
+}
+
+export const EmissionsLineBarChart: React.FC<AreaChartProps> = ({
+  data,
+  height,
+  width,
+}) => {
   return (
     <ComposedChart
       width={width}
@@ -24,11 +35,11 @@ export default function LineBarChart({ data, height, width }) {
       <YAxis
         yAxisId="left"
         orientation="left"
-        dataKey="CO2 Emissions"
+        dataKey="co2Emissions"
         tick={false}
         label={
           <Text x={0} y={0} dx={50} dy={150} offset={0} angle={-90}>
-            CO2 Emissions (g)
+            CO2 Emissions
           </Text>
         }
       />
@@ -36,7 +47,7 @@ export default function LineBarChart({ data, height, width }) {
       <YAxis
         yAxisId="right"
         orientation="right"
-        dataKey="Transaction Volume"
+        dataKey="numTransactions"
         tick={false}
         label={
           <Text
@@ -53,18 +64,13 @@ export default function LineBarChart({ data, height, width }) {
         }
       />
       <Tooltip />
-      <Bar
-        yAxisId="right"
-        dataKey="CO2 Emissions"
-        barSize={20}
-        fill="#6366F1"
-      />
+      <Bar yAxisId="right" dataKey="co2Emissions" barSize={20} fill="#6366F1" />
       <Line
         yAxisId="left"
         type="monotone"
-        dataKey="Transaction Volume"
+        dataKey="numTransactions"
         stroke="#ff7300"
       />
     </ComposedChart>
   );
-}
+};

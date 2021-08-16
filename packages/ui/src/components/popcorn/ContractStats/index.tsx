@@ -2,12 +2,12 @@
 import { CloudIcon, TrendingUpIcon } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
 import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
-import LineBarChart from '../recharts/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
+import { EmissionsLineBarChart } from '../recharts/LineBarChart';
 
 const stats = [
   {
     id: 1,
-    name: 'CO2 Emissions',
+    name: 'co2Emissions',
     stat: '71kg',
     icon: CloudIcon,
     change: '12.38%',
@@ -27,7 +27,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function Example() {
+export const ContractStats = () => {
   return (
     <div className="pb-4">
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mx-4">
@@ -88,8 +88,12 @@ export default function Example() {
             </dd>
           </div>
         ))}
-        <LineBarChart data={getDummyEmissionData()} width={300} height={200} />
+        <EmissionsLineBarChart
+          data={getDummyEmissionData()}
+          width={300}
+          height={200}
+        />
       </dl>
     </div>
   );
-}
+};

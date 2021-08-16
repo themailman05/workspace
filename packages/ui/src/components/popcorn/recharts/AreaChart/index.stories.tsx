@@ -1,10 +1,10 @@
 import { Meta, Story } from '@storybook/react/types-6-0';
 import { getDummyEmissionData } from '../dummyEmissionsData';
-import AreaChart from './index';
+import { EmissionsAreaChart } from './index';
 
 export default {
   title: 'Popcorn/Charts/AreaChart',
-  component: AreaChart,
+  component: EmissionsAreaChart,
   decorators: [
     (Story) => (
       <div className="flex flex-row justify-center">
@@ -14,7 +14,7 @@ export default {
   ],
 } as Meta;
 
-const Template: Story = (args) => <AreaChart {...args} />;
+const Template: Story = (args) => <EmissionsAreaChart {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = { data: getDummyEmissionData(), width: 300, height: 200 };

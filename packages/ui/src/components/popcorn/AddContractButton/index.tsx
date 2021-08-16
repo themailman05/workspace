@@ -1,6 +1,6 @@
 import { PlusIcon as PlusIconOutline } from '@heroicons/react/outline';
 
-export default function AddContractButton() {
+export const AddContractButton = () => {
   return (
     <div className="flex items-center">
       <div className="mx-auto flex flex-row">
@@ -16,4 +16,4 @@ export default function AddContractButton() {
       </div>
     </div>
   );
-}
+};

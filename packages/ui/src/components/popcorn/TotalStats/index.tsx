@@ -4,13 +4,13 @@ import {
   TrendingUpIcon,
 } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
-import AreaChart from '../recharts/AreaChart';
+import { EmissionsAreaChart } from '../recharts/AreaChart';
 import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
 
 const stats = [
   {
     id: 1,
-    name: 'CO2 Emissions',
+    name: 'co2Emissions',
     stat: '71kg',
     icon: CloudIcon,
     change: '12.38%',
@@ -38,7 +38,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export default function TotalStats() {
+export const TotalStats = () => {
   return (
     <div className="pb-8 bg-gray-50">
       <h3 className="text-lg leading-6 font-medium text-gray-900 mt-16">
@@ -91,8 +91,12 @@ export default function TotalStats() {
             </dd>
           </div>
         ))}
-        <AreaChart data={getDummyEmissionData()} width={300} height={200} />
+        <EmissionsAreaChart
+          data={getDummyEmissionData()}
+          width={300}
+          height={200}
+        />
       </dl>
     </div>
   );
-}
+};

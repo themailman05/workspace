@@ -8,7 +8,25 @@ import {
   YAxis,
 } from 'recharts';
 
-export default function AreaChartExample({ data, height, width }) {
+export interface ChartData {
+  date: string;
+  co2Emissions: number;
+  numTransactions: number;
+}
+
+export interface AreaChartProps {
+  data: ChartData[];
+  height?: number;
+  width?: number;
+}
+
+export const EmissionsAreaChart: React.FC<AreaChartProps> = ({
+  data,
+  height,
+  width,
+}) => {
+  height = height || 200;
+  width = width || 300;
   return (
     <div>
       <AreaChart
@@ -33,14 +51,14 @@ export default function AreaChartExample({ data, height, width }) {
         <Tooltip />
         <Area
           type="monotone"
-          dataKey="CO2 Emissions"
+          dataKey="co2Emissions"
           stroke="#818CF8"
           fillOpacity={1}
           fill="url(#colorUv)"
         />
         <Area
           type="monotone"
-          dataKey="Transaction Volume"
+          dataKey="numTransactions"
           stroke="#34D399"
           fillOpacity={1}
           fill="url(#colorPv)"
@@ -48,4 +66,4 @@ export default function AreaChartExample({ data, height, width }) {
       </AreaChart>
     </div>
   );
-}
+};
