@@ -699,6 +699,7 @@ ADDR_REWARDS_MANAGER=${contracts.rewardsManager.address}
 ADDR_UNISWAP_ROUTER=${contracts.uniswapRouter.address}
 ADDR_3CRV=${contracts.mock3CRV.address}
 ADDR_REGION=${contracts.region.address}
+ADDR_REWARDS_ESCROW=${contracts.rewardsEscrow.address}
     `);
   };
 
