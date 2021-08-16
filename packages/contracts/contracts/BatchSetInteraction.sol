@@ -145,7 +145,7 @@ contract BatchSetInteraction is Owned {
     emit Claimed(msg.sender, shares);
   }
 
-  function batchMint(uint256 amount_) external {
+  function batchMint() external {
     Batch storage batch = batches[currentMintBatchId];
     require(
       (block.timestamp.sub(lastMintedAt) >= batchCooldown) ||
@@ -158,11 +158,26 @@ contract BatchSetInteraction is Owned {
       "insufficient balance"
     );
 
+    //its absolutely necessary that the order of underylingToken matches the order of getRequireedComponentUnitsforIssue
+    uint256[] quantities = setBasicIssuanceModule
+      .getRequiredComponentUnitsForIssue(setToken, 1e18);
+    uint256 HysiInUSD;
+    uint256[] yPrices;
+
     for (uint256 i; i < underlyingToken.length; i++) {
-      uint256 allocation = batch
-        .suppliedToken
-        .mul(underlyingToken[i].allocation)
-        .div(100e18);
+      uint256 yPrice = underlyingToken[i].yToken.getPricePerFullShare();
+      //This takes amount of lp tokes and index of underlying 3crv stable but not 3crv
+      uint256 crvPoolSharePrice = underlyingToken
+        .curveMetaPool
+        .calc_withdraw_one_coin(1e18, 1);
+      uint256 yPriceUSD = yPrice.mul(crvPoolSharePrice);
+      HysiInUSD = HysiInUSD.add(yPriceUSD.mul(quantities[i]));
+      yPrice[i] = yPriceUSD;
+    }
+    uint256 hysiAmount = HysiInUSD.div(batch.suppliedToken);
+
+    for (uint256 i; i < underlyingToken.length; i++) {
+      uint256 allocation = hysiAmount.mul(yPrices[i]);
       uint256 crvLPTokenAmount = _sendToCurve(
         allocation,
         underlyingToken[i].curveMetaPool
@@ -291,6 +306,7 @@ contract BatchSetInteraction is Owned {
 
   /* ========== SETTER ========== */
 
+  //its absolutely necessary that the order of underylingToken matches the order of getRequireedComponentUnitsforIssue
   function setUnderylingToken(UnderlyingToken[] calldata underlyingToken_)
     external
     onlyOwner
