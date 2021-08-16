@@ -9,7 +9,6 @@
     "build": "yarn lerna run --parallel build",
     "app:build": "yarn lerna run --scope={@popcorn/app,@popcorn/contracts} build",
     "app:start": "yarn lerna run --scope @popcorn/app start",
-    "build-storybook": "yarn lerna run build-storybook",
     "start": "yarn lerna run --scope @popcorn/app start",
     "pretify": "prettier --write .",
     "test": "yarn lerna run test",
