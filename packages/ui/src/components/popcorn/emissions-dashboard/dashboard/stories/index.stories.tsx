@@ -64,7 +64,7 @@ export default {
   ],
 } as Meta;
 
-const Template: Story = (args) => <EmissionsDashboard {...args} />;
+const Template: Story = (args) => <EmissionsDashboardPage {...args} />;
 
 export const Primary = Template.bind({});
 Primary.args = {};
