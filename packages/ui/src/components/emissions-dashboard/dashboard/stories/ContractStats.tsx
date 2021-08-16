@@ -1,13 +1,14 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { CloudIcon, TrendingUpIcon } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
-import LineBarChart from '../../../recharts/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
+import { getDummyEmissionData } from '../../../recharts/dummyEmissionsData';
+import LineBarChart from '../../../recharts/LineBarChart/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
 
 const stats = [
   {
     id: 1,
     name: 'CO2 Emissions',
-    stat: '71,897kg',
+    stat: '71kg',
     icon: CloudIcon,
     change: '12.38%',
     changeType: 'increase',
@@ -15,7 +16,7 @@ const stats = [
   {
     id: 2,
     name: 'Transactions',
-    stat: '23,123',
+    stat: '23k',
     icon: TrendingUpIcon,
     change: '5.4%',
     changeType: 'increase',
@@ -87,7 +88,7 @@ export default function Example() {
             </dd>
           </div>
         ))}
-        <LineBarChart />
+        <LineBarChart data={getDummyEmissionData()} />
       </dl>
     </div>
   );

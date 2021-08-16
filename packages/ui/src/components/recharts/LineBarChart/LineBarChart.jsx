@@ -9,10 +9,8 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { getDummyEmissionData } from './dummyEmissionsData';
 
-export default function LineBarChart() {
-  const data = getDummyEmissionData();
+export default function LineBarChart({ data }) {
   return (
     <ComposedChart
       width={300}
@@ -54,9 +52,7 @@ export default function LineBarChart() {
           </Text>
         }
       />
-
       <Tooltip />
-
       <Bar
         yAxisId="right"
         dataKey="CO2 Emissions"
