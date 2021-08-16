@@ -1,51 +1,35 @@
-import {
-  CloudIcon,
-  CursorClickIcon,
-  TrendingUpIcon,
-} from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
+import { SVGProps } from 'react';
 import { EmissionsAreaChart } from '../recharts/AreaChart';
 import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
 
-const stats = [
-  {
-    id: 1,
-    name: 'co2Emissions',
-    stat: '71kg',
-    icon: CloudIcon,
-    change: '12.38%',
-    changeType: 'increase',
-  },
-  {
-    id: 2,
-    name: 'Transactions',
-    stat: '23',
-    icon: TrendingUpIcon,
-    change: '5.4%',
-    changeType: 'increase',
-  },
-  {
-    id: 3,
-    name: 'Average Gas Price',
-    stat: '45',
-    icon: CursorClickIcon,
-    change: '3.2%',
-    changeType: 'decrease',
-  },
-];
+export interface EmissionSummaryStats {
+  id: number;
+  name: string;
+  stat: string;
+  icon: (props: SVGProps<SVGSVGElement>) => JSX.Element;
+  change: string;
+  changeType: 'increase' | 'decrease';
+}
+
+interface TotalStatsProps {
+  emissionSummaryStats: EmissionSummaryStats[];
+}
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ');
 }
 
-export const TotalStats = () => {
+export const TotalStats: React.FC<TotalStatsProps> = ({
+  emissionSummaryStats,
+}) => {
   return (
     <div className="pb-8 bg-gray-50">
       <h3 className="text-lg leading-6 font-medium text-gray-900 mt-16">
         Totals between 12/04/2021 and 30/05/2021
       </h3>
       <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mx-4">
-        {stats.map((item) => (
+        {emissionSummaryStats.map((item) => (
           <div
             key={item.id}
             className="relative h-24 bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden "

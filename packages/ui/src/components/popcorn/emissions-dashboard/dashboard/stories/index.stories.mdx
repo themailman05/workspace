@@ -1,4 +1,9 @@
 import { Meta, Story } from '@storybook/addon-docs/blocks';
+import {
+  CloudIcon,
+  CursorClickIcon,
+  TrendingUpIcon,
+} from '@heroicons/react/outline';
 
 import { PageHeader } from '../../../PageHeader';
 import { TotalStats } from '../../../TotalStats';
@@ -11,7 +16,34 @@ import { AddContractButton } from '../../../AddContractButton';
 <Story name="Dashboard">
   <div className="bg-gray-50">
     <PageHeader />
-    <TotalStats />
+    <TotalStats
+      emissionSummaryStats={[
+        {
+          id: 1,
+          name: 'co2Emissions',
+          stat: '71kg',
+          icon: CloudIcon,
+          change: '12.38%',
+          changeType: 'increase',
+        },
+        {
+          id: 2,
+          name: 'Transactions',
+          stat: '23',
+          icon: TrendingUpIcon,
+          change: '5.4%',
+          changeType: 'increase',
+        },
+        {
+          id: 3,
+          name: 'Average Gas Price',
+          stat: '45',
+          icon: CursorClickIcon,
+          change: '3.2%',
+          changeType: 'decrease',
+        },
+      ]}
+    />
     <Divider />
     <ContractStats />
     <ContractStats />
