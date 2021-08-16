@@ -9,16 +9,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import { getDummyEmissionData } from './dummyEmissionsData';
 
-const data = new Array(20).fill(undefined).map((x, i) => {
-  return {
-    name: `${i}/05/2021`,
-    'CO2 Emissions': 500 * Math.random(),
-    'Transaction Volume': 500 * Math.random(),
-  };
-});
-
-export default function SimpleBarChart() {
+export default function LineBarChart() {
+  const data = getDummyEmissionData();
   return (
     <ComposedChart
       width={300}
@@ -28,7 +22,7 @@ export default function SimpleBarChart() {
       className="my-3"
     >
       <CartesianGrid stroke="#f5f5f5" />
-      <XAxis dataKey="name" scale="band"></XAxis>
+      <XAxis dataKey="date" scale="band"></XAxis>
       <YAxis
         yAxisId="left"
         orientation="left"
@@ -36,7 +30,7 @@ export default function SimpleBarChart() {
         tick={false}
         label={
           <Text x={0} y={0} dx={50} dy={150} offset={0} angle={-90}>
-            CO2 Emissions
+            CO2 Emissions (g)
           </Text>
         }
       />

@@ -4,7 +4,7 @@ import {
   TrendingUpIcon,
 } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
-import LineBarChart from '../../../recharts/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
+import AreaChart from '../../../recharts/AreaChart';
 
 const stats = [
   {
@@ -90,7 +90,7 @@ export default function TotalStats1() {
             </dd>
           </div>
         ))}
-        <LineBarChart />
+        <AreaChart />
       </dl>
     </div>
   );
