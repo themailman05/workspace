@@ -1,6 +1,7 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { CloudIcon, TrendingUpIcon } from '@heroicons/react/outline';
 import { ArrowSmDownIcon, ArrowSmUpIcon } from '@heroicons/react/solid';
+import LineBarChart from '../../../recharts/LineBarChart'; /* This example requires Tailwind CSS v2.0+ */
 
 const stats = [
   {
@@ -28,16 +29,16 @@ function classNames(...classes) {
 export default function Example() {
   return (
     <div className="pb-4">
-      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <dl className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mx-4">
         <div className="relative bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 overflow-hidden">
-          <p className="my-auto text-2xl font-semibold text-gray-900">
+          <p className="my-auto h-24 text-2xl font-semibold text-gray-900">
             Popcorn HYSI Staking Pool
           </p>
         </div>
         {stats.map((item) => (
           <div
             key={item.id}
-            className="relative bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden"
+            className="relative h-24 bg-white pt-5 px-6 pb-6 sm:pt-6 sm:px-6 shadow rounded-lg overflow-hidden"
           >
             <dt>
               <div className="absolute bg-indigo-500 rounded-md p-3">
@@ -86,6 +87,7 @@ export default function Example() {
             </dd>
           </div>
         ))}
+        <LineBarChart />
       </dl>
     </div>
   );
