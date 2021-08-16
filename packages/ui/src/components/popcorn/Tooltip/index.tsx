@@ -1,7 +1,13 @@
 import { QuestionMarkCircleIcon } from '@heroicons/react/outline';
 import ReactTooltip from 'react-tooltip';
 
-export default function Example() {
+export interface TooltipProps {
+  title: string;
+  content: string | React.ReactElement;
+  place?: "bottom" | "left" | "right" | "top";
+}
+
+export const Tooltip: React.FC<TooltipProps> = ({ title, content, place }) => {
   return (
     <div className="">
       <QuestionMarkCircleIcon
@@ -11,14 +17,15 @@ export default function Example() {
       />
       <ReactTooltip
         id="tooltip"
-        place="bottom"
+        place={place || "bottom"}
         effect="solid"
         type="light"
         className="shadow-lg border border-gray-50 p-1 w-60"
       >
-        <p className="font-bold text-center">Title</p>
-        <p className="text-center text-gray-600">Lorem Ipsum Lorem Ipsum</p>
+        <p className="font-bold text-center">{title}</p>
+        <p className="text-center text-gray-600">{content}</p>
       </ReactTooltip>
     </div>
   );
 }
+export default Tooltip;
