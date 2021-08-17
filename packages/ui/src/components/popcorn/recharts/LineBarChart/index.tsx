@@ -53,7 +53,7 @@ export const EmissionsLineBarChart: React.FC<AreaChartProps> = ({
           <Text
             x={0}
             y={0}
-            dx={255}
+            dx={width - 45}
             dy={85}
             offset={0}
             angle={-90}

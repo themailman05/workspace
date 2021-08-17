@@ -1,8 +1,4 @@
-import {
-  CloudIcon,
-  CursorClickIcon,
-  TrendingUpIcon,
-} from '@heroicons/react/outline';
+import { CloudIcon, TrendingUpIcon } from '@heroicons/react/outline';
 import { Meta, Story } from '@storybook/react/types-6-0';
 import React from 'react';
 import { EmissionSummaryStats, TotalStatsMini } from './index';
@@ -36,14 +32,6 @@ const emissionSummaryStats: EmissionSummaryStats[] = [
     change: '5.4%',
     changeType: 'increase',
   },
-  {
-    id: 3,
-    name: 'Average Gas Price',
-    stat: '45',
-    icon: CursorClickIcon,
-    change: '3.2%',
-    changeType: 'increase',
-  },
 ];
 
 const emissionSummaryStatDecrease: EmissionSummaryStats[] = [
@@ -61,14 +49,6 @@ const emissionSummaryStatDecrease: EmissionSummaryStats[] = [
     stat: '23',
     icon: TrendingUpIcon,
     change: '5.4%',
-    changeType: 'decrease',
-  },
-  {
-    id: 3,
-    name: 'Average Gas Price',
-    stat: '45',
-    icon: CursorClickIcon,
-    change: '3.2%',
     changeType: 'decrease',
   },
 ];
