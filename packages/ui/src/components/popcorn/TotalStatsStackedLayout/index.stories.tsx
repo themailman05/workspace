@@ -5,19 +5,8 @@ import {
 } from '@heroicons/react/outline';
 import { Meta, Story } from '@storybook/react/types-6-0';
 import React from 'react';
-import { EmissionSummaryStats, TotalStatsMini } from './index';
-
-export default {
-  title: 'Popcorn/TotalStats/Mini',
-  component: TotalStatsMini,
-  decorators: [
-    (Story) => (
-      <div className="flex flex-row justify-center">
-        <Story></Story>
-      </div>
-    ),
-  ],
-} as Meta;
+import { EmissionSummaryStats } from '../TotalStats';
+import { TotalStatsStackedLayout } from './index';
 
 const emissionSummaryStats: EmissionSummaryStats[] = [
   {
@@ -73,8 +62,19 @@ const emissionSummaryStatDecrease: EmissionSummaryStats[] = [
   },
 ];
 
-const Template: Story = (args) => <TotalStatsMini {...args} />;
+export default {
+  title: 'Popcorn/TotalStatsStackedLayout',
+  component: TotalStatsStackedLayout,
+  decorators: [
+    (Story) => (
+      <div className="flex flex-row justify-center ">
+        <Story></Story>
+      </div>
+    ),
+  ],
+} as Meta;
 
+const Template: Story = (args) => <TotalStatsStackedLayout {...args} />;
 export const Increase = Template.bind({});
 Increase.args = { emissionSummaryStats: emissionSummaryStats };
 

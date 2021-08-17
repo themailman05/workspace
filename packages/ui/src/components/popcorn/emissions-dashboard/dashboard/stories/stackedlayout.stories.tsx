@@ -6,11 +6,11 @@ import {
 import { Meta, Story } from '@storybook/react/types-6-0';
 import React from 'react';
 import { AddContractButton } from '../../../AddContractButton';
-import Container from '../../../Container/';
-import { ContractStatsMini } from '../../../ContractStatsMini';
+import Container from '../../../Container';
+import { ContractStatsStackedLayout } from '../../../ContractStatsStackedLayout';
+import { DateRangePicker } from '../../../DateRangePicker';
 import { Divider } from '../../../Divider';
-import { PageHeader } from '../../../PageHeader';
-import { TotalStatsMini } from '../../../TotalStatsMini';
+import { TotalStatsStackedLayout } from '../../../TotalStatsStackedLayout';
 
 const totalStatsEmissionsData = [
   {
@@ -61,22 +61,31 @@ const contractStats = [
 const EmissionsDashboardPage = () => {
   return (
     <div className="bg-gray-50">
-      <PageHeader />
-      <TotalStatsMini emissionSummaryStats={totalStatsEmissionsData} />
+      <div className="py-10">
+        <header>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold leading-tight text-gray-900">
+              Smart Contract Carbon Emissions Dashboard
+            </h1>
+          </div>
+        </header>
+      </div>
+      <DateRangePicker />
+      <TotalStatsStackedLayout emissionSummaryStats={totalStatsEmissionsData} />
       <Divider />
-      <ContractStatsMini
+      <ContractStatsStackedLayout
         emissionSummaryStats={contractStats}
         contractName={'Popcorn HYSI Staking Pool'}
       />
-      <ContractStatsMini
+      <ContractStatsStackedLayout
         emissionSummaryStats={contractStats}
         contractName={'Popcorn HYSI Staking Pool'}
       />
-      <ContractStatsMini
+      <ContractStatsStackedLayout
         emissionSummaryStats={contractStats}
         contractName={'Popcorn HYSI Staking Pool'}
       />
-      <ContractStatsMini
+      <ContractStatsStackedLayout
         emissionSummaryStats={contractStats}
         contractName={'Popcorn HYSI Staking Pool'}
       />
@@ -86,38 +95,12 @@ const EmissionsDashboardPage = () => {
 };
 
 export default {
-  title: 'Emissions Dashboard / Dashboard / Mini',
+  title: 'Emissions Dashboard / Dashboard / StackedLayout',
   component: EmissionsDashboardPage,
   decorators: [
     (Story) => (
-      <div>
+      <div className="bg-gray-100">
         <Container title={'Smart Contract Emissions Dashboard'} />
-        {/* Main 3 column grid */}
-        <div className="grid grid-cols-1 gap-4 items-start lg:grid-cols-3 lg:gap-8">
-          {/* Left column */}
-          <div className="grid grid-cols-1 gap-4 lg:col-span-2">
-            <section aria-labelledby="section-1-title">
-              <h2 className="sr-only" id="section-1-title">
-                Section title
-              </h2>
-              <div className="rounded-lg bg-white overflow-hidden shadow">
-                <div className="p-6">{/* Your content */}</div>
-              </div>
-            </section>
-          </div>
-
-          {/* Right column */}
-          <div className="grid grid-cols-1 gap-4">
-            <section aria-labelledby="section-2-title">
-              <h2 className="sr-only" id="section-2-title">
-                Section title
-              </h2>
-              <div className="rounded-lg bg-white overflow-hidden shadow">
-                <div className="p-6">{/* Your content */}</div>
-              </div>
-            </section>
-          </div>
-        </div>
         <Story />
       </div>
     ),

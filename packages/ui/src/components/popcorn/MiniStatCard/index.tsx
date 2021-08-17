@@ -13,7 +13,7 @@ export const MiniStatCard: React.FC<MiniStatCardProps> = ({ item }) => {
   return (
     <div
       key={item.id}
-      className="relative h-16 w-40 bg-white pt-2 px-3 pb-3 sm:pt-3 sm:px-3 shadow rounded-lg overflow-hidden"
+      className="relative mx-auto h-16 w-40 bg-white my-2 py-2 px-3 pb-3 sm:pt-3 sm:px-3 shadow rounded-lg overflow-hidden"
     >
       <dt>
         <div className="absolute bg-indigo-500 rounded-md p-1 mt-1">

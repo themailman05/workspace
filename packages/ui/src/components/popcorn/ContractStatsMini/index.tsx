@@ -17,10 +17,6 @@ interface TotalStatsProps {
   contractName: string;
 }
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
 export const ContractStatsMini: React.FC<TotalStatsProps> = ({
   emissionSummaryStats,
   contractName,
