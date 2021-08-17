@@ -1,6 +1,6 @@
 import React, { SVGProps } from 'react';
 import { MiniStatCard } from '../MiniStatCard';
-import { EmissionsAreaChart } from '../recharts/AreaChart';
+import { AreaBarChart } from '../recharts/AreaBarChart';
 import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
 
 export interface EmissionSummaryStats {
@@ -39,7 +39,7 @@ export const TotalStatsMini: React.FC<TotalStatsProps> = ({
           </dl>
         </div>
         <div className="col-span-2">
-          <EmissionsAreaChart
+          <AreaBarChart
             data={getDummyEmissionData()}
             width={350}
             height={125}
