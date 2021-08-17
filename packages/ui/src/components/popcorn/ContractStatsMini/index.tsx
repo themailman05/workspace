@@ -26,24 +26,17 @@ export const ContractStatsMini: React.FC<TotalStatsProps> = ({
   contractName,
 }) => {
   return (
-    <div className="pb-8 my-8 bg-gray-50">
-      <div className="grid sm:grid-cols-2 md:grid-cols-5 gap-4">
-        <div className="col-span-3">
-          <dl className="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 mx-4 ">
-            <div className="mt-2">
-              <dt>
-                <p className="text-lg leading-6 font-medium text-gray-900">
-                  {contractName}
-                </p>
-              </dt>
-            </div>
-
-            {emissionSummaryStats.map((item) => (
-              <MiniStatCard item={item} />
-            ))}
-          </dl>
+    <div className="py-8 px-4 bg-gray-50">
+      <div className="grid grid-cols-6">
+        <div className="col-span-1">
+          <p className="text-lg font-medium text-gray-900">{contractName}</p>
         </div>
-        <div className="col-span-2">
+        {emissionSummaryStats.map((item) => (
+          <div className="col-span-1">
+            <MiniStatCard item={item} />
+          </div>
+        ))}
+        <div className="col-span-3">
           <EmissionsLineBarChart
             data={getDummyEmissionData()}
             width={500}
