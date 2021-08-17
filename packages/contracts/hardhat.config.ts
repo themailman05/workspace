@@ -236,7 +236,7 @@ module.exports = {
     },
     hardhat: {
       forking:
-        process.env.FORKING_ENABLED == "true"
+        process.env.FORKING_ENABLED == "false"
           ? {
               url: process.env.FORKING_RPC_URL,
               blockNumber: parseInt(process.env.FORKING_BLOCK_NUMBER),
