@@ -69,24 +69,24 @@ contract Zapper {
       curveRegistry.get_underlying_coins(curveMetapoolAddress(popcornPool));
   }
 
-  function canZap(address popcornPool, address token)
+  function canZap(address popcornPool, address tokenAddress)
     public
     view
     returns (bool)
   {
-    require(address(token) != address(0));
-    return tokenIndex(popcornPool, token) != 8;
+    require(address(tokenAddress) != address(0));
+    return tokenIndex(popcornPool, tokenAddress) != 8;
   }
 
-  function tokenIndex(address popcornPool, address token)
+  function tokenIndex(address popcornPool, address tokenAddress)
     public
     view
     returns (uint8)
   {
     uint8 index = 8;
-    address[8] memory supportedTokens = supportedTokens(popcornPool);
-    for (uint8 i = 0; i < supportedTokens.length; i++) {
-      if (address(supportedTokens[i]) == address(token)) {
+    address[8] memory supportedTokenAddresses = supportedTokens(popcornPool);
+    for (uint8 i = 0; i < supportedTokenAddresses.length; i++) {
+      if (address(supportedTokenAddresses[i]) == address(tokenAddress)) {
         index = i;
         break;
       }
@@ -110,9 +110,9 @@ contract Zapper {
         amount
       );
       lpTokens = CurveMetapool(curveMetapoolAddress(popcornPool)).add_liquidity(
-          [amount, 0],
-          0
-        );
+        [amount, 0],
+        0
+      );
     } else {
       IERC20(depositToken).safeIncreaseAllowance(
         curveBasepoolAddress(popcornPool),
@@ -132,9 +132,9 @@ contract Zapper {
         threeCrvLPTokens
       );
       lpTokens = CurveMetapool(curveMetapoolAddress(popcornPool)).add_liquidity(
-          [0, threeCrvLPTokens],
-          0
-        );
+        [0, threeCrvLPTokens],
+        0
+      );
     }
     IERC20(token(popcornPool)).safeIncreaseAllowance(popcornPool, lpTokens);
     uint256 shares = IPool(popcornPool).depositFor(lpTokens, msg.sender);
@@ -159,7 +159,7 @@ contract Zapper {
     uint256 withdrawal;
     if (tokenIndex(popcornPool, withdrawalToken) == 0) {
       withdrawal = CurveMetapool(curveMetapoolAddress(popcornPool))
-        .remove_liquidity_one_coin(lpTokens, 0, 0);
+      .remove_liquidity_one_coin(lpTokens, 0, 0);
     } else {
       uint256 threeCrvWithdrawal = CurveMetapool(
         curveMetapoolAddress(popcornPool)

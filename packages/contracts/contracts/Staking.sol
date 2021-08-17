@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/Owned.sol";
 import "./Interfaces/IStaking.sol";
 import "./Interfaces/IRewardsManager.sol";
-import "./IRewardsEscrow.sol";
+import "./Interfaces/IRewardsEscrow.sol";
 import "./Defended.sol";
 
 contract Staking is IStaking, Owned, ReentrancyGuard, Defended {

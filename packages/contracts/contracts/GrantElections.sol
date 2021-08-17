@@ -6,9 +6,8 @@ import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./Interfaces/IStaking.sol";
 import "./Interfaces/IBeneficiaryRegistry.sol";
 import "./Interfaces/IBeneficiaryVaults.sol";
-import "./Interfaces/IGrantRegistry.sol";
 import "./Interfaces/IRandomNumberConsumer.sol";
-import "./IRegion.sol";
+import "./Interfaces/IRegion.sol";
 import "./Governed.sol";
 import "./ParticipationReward.sol";
 

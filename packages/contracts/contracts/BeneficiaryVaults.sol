@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/cryptography/MerkleProof.sol";
 import "./lib/Owned.sol";
-import "./IRegion.sol";
+import "./Interfaces/IRegion.sol";
 import "./Interfaces/IBeneficiaryVaults.sol";
 import "./Interfaces/IBeneficiaryRegistry.sol";
 

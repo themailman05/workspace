@@ -83,13 +83,13 @@ contract MockYearnV2Vault is MockERC20 {
   function increasePricePerFullShare(uint256 multiplier) external {
     uint256 newPrice = pricePerShare().mul(multiplier).div(1e18);
     token.burn(address(this), token.balanceOf(address(this)));
-    uint256 balance = newPrice.mul(totalSupply()).div(1e18);
-    token.mint(address(this), balance);
+    uint256 balanceAmount = newPrice.mul(totalSupply()).div(1e18);
+    token.mint(address(this), balanceAmount);
   }
 
   function setPricePerFullShare(uint256 pricePerFullShare) external {
     token.burn(address(this), token.balanceOf(address(this)));
-    uint256 balance = pricePerFullShare.mul(totalSupply()).div(1e18);
-    token.mint(address(this), balance);
+    uint256 balanceAmount = pricePerFullShare.mul(totalSupply()).div(1e18);
+    token.mint(address(this), balanceAmount);
   }
 }

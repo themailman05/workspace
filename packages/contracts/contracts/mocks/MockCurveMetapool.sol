@@ -41,13 +41,17 @@ contract MockCurveMetapool {
   }
 
   function coins() external view returns (address[2] memory) {
-    address[2] memory coins = [address(token), address(threeCrv)];
-    return coins;
+    address[2] memory coinAddresses = [address(token), address(threeCrv)];
+    return coinAddresses;
   }
 
   function base_coins() external view returns (address[3] memory) {
-    address[3] memory coins = [address(dai), address(usdc), address(usdt)];
-    return coins;
+    address[3] memory coinAddresses = [
+      address(dai),
+      address(usdc),
+      address(usdt)
+    ];
+    return coinAddresses;
   }
 
   function get_virtual_price() external view returns (uint256) {
@@ -77,10 +81,10 @@ contract MockCurveMetapool {
     uint256 slippage = (_token_amount * withdrawalSlippageBps) / 10000;
     uint256 transferOut = _token_amount - slippage;
 
-    uint256 i = uint256(i);
-    tokens[i].approve(address(this), transferOut);
-    tokens[i].mint(address(this), transferOut);
-    tokens[i].transferFrom(address(this), msg.sender, transferOut);
+    uint256 idx = uint256(i);
+    tokens[idx].approve(address(this), transferOut);
+    tokens[idx].mint(address(this), transferOut);
+    tokens[idx].transferFrom(address(this), msg.sender, transferOut);
     return transferOut;
   }
 

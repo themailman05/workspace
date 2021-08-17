@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "./lib/Owned.sol";
 import "./Interfaces/IStaking.sol";
-import "./IRewardsEscrow.sol";
+import "./Interfaces/IRewardsEscrow.sol";
 
 contract RewardsEscrow is IRewardsEscrow, Owned, ReentrancyGuard {
   using SafeMath for uint256;
