@@ -5,6 +5,7 @@ import {
 } from '@heroicons/react/outline';
 import { Meta, Story } from '@storybook/react/types-6-0';
 import React from 'react';
+import LightNavOnGrayBackground from '../../../../tailwindui-react/StackedLayouts/stories/LightNavOnGrayBackground';
 import { AddContractButton } from '../../../AddContractButton';
 import { ContractStatsMini } from '../../../ContractStatsMini';
 import { Divider } from '../../../Divider';
@@ -89,7 +90,8 @@ export default {
   component: EmissionsDashboardPage,
   decorators: [
     (Story) => (
-      <div className="flex flex-row justify-center">
+      <div>
+        <LightNavOnGrayBackground />
         <Story></Story>
       </div>
     ),
