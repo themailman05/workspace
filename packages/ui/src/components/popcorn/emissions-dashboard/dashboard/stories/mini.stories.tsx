@@ -5,8 +5,8 @@ import {
 } from '@heroicons/react/outline';
 import { Meta, Story } from '@storybook/react/types-6-0';
 import React from 'react';
-import LightNavOnGrayBackground from '../../../../tailwindui-react/StackedLayouts/stories/LightNavOnGrayBackground';
 import { AddContractButton } from '../../../AddContractButton';
+import Container from '../../../Container/';
 import { ContractStatsMini } from '../../../ContractStatsMini';
 import { Divider } from '../../../Divider';
 import { PageHeader } from '../../../PageHeader';
@@ -91,8 +91,8 @@ export default {
   decorators: [
     (Story) => (
       <div>
-        <LightNavOnGrayBackground />
-        <Story></Story>
+        <Container title={'Smart Contract Emissions Dashboard'} />
+        <Story />
       </div>
     ),
   ],
