@@ -5,11 +5,11 @@ import {
 } from '@heroicons/react/outline';
 import { Meta, Story } from '@storybook/react/types-6-0';
 import React from 'react';
-import { EmissionSummaryStats, TotalStats } from './index';
+import { EmissionSummaryStats, TotalStatsMini } from './index';
 
 export default {
-  title: 'Popcorn/TotalStats/Normal',
-  component: TotalStats,
+  title: 'Popcorn/TotalStats/Mini',
+  component: TotalStatsMini,
   decorators: [
     (Story) => (
       <div className="flex flex-row justify-center">
@@ -73,7 +73,7 @@ const emissionSummaryStatDecrease: EmissionSummaryStats[] = [
   },
 ];
 
-const Template: Story = (args) => <TotalStats {...args} />;
+const Template: Story = (args) => <TotalStatsMini {...args} />;
 
 export const Increase = Template.bind({});
 Increase.args = { emissionSummaryStats: emissionSummaryStats };
