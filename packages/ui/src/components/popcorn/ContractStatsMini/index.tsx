@@ -1,8 +1,8 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { SVGProps } from 'react';
 import { MiniStatCard } from '../MiniStatCard';
+import { EmissionsAreaChart } from '../recharts/AreaChart';
 import { getDummyEmissionData } from '../recharts/dummyEmissionsData';
-import { EmissionsLineBarChart } from '../recharts/LineBarChart';
 export interface EmissionSummaryStats {
   id: number;
   name: string;
@@ -37,7 +37,7 @@ export const ContractStatsMini: React.FC<TotalStatsProps> = ({
           </div>
         ))}
         <div className="col-span-3">
-          <EmissionsLineBarChart
+          <EmissionsAreaChart
             data={getDummyEmissionData()}
             width={500}
             height={125}
