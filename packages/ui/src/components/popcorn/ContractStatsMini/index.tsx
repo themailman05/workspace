@@ -40,7 +40,7 @@ export const ContractStatsMini: React.FC<TotalStatsProps> = ({
           <EmissionsLineBarChart
             data={getDummyEmissionData()}
             width={500}
-            height={200}
+            height={125}
           />
         </div>
       </div>

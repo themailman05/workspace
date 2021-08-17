@@ -41,8 +41,8 @@ export const TotalStatsMini: React.FC<TotalStatsProps> = ({
         <div className="col-span-2">
           <EmissionsAreaChart
             data={getDummyEmissionData()}
-            width={300}
-            height={200}
+            width={350}
+            height={125}
           />
         </div>
       </div>

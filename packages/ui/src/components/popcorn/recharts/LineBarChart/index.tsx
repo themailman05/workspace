@@ -38,8 +38,8 @@ export const EmissionsLineBarChart: React.FC<AreaChartProps> = ({
         dataKey="co2Emissions"
         tick={false}
         label={
-          <Text x={0} y={0} dx={50} dy={150} offset={0} angle={-90}>
-            CO2 Emissions
+          <Text x={0} y={0} dx={50} dy={height - 25} offset={0} angle={-90}>
+            CO2 (kg))
           </Text>
         }
       />
@@ -54,12 +54,12 @@ export const EmissionsLineBarChart: React.FC<AreaChartProps> = ({
             x={0}
             y={0}
             dx={width - 45}
-            dy={85}
+            dy={height - 70}
             offset={0}
             angle={-90}
             textAnchor={'middle'}
           >
-            Transaction Volume
+            Transactions
           </Text>
         }
       />
