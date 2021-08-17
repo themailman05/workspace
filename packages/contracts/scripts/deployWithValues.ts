@@ -7,12 +7,7 @@ import { Contract, utils } from "ethers";
 import { parseEther } from "ethers/lib/utils";
 import { ShareType } from "../adapters/GrantElection/GrantElectionAdapter";
 import * as addressCidMap from "./addressCidMap.json";
-const beneficiaryGovernanceTypechainArtifact = require("../artifacts/contracts/BeneficiaryGovernance.sol/BeneficiaryGovernance.json");
-const beneficiaryGovernanceABI = beneficiaryGovernanceTypechainArtifact.abi;
 
-const beneficiaryGovernanceABIInterface = new utils.Interface(
-  beneficiaryGovernanceABI
-);
 const UniswapV2FactoryJSON = require("../artifactsUniswap/UniswapV2Factory.json");
 const UniswapV2Router02JSON = require("../artifactsUniswap/UniswapV2Router.json");
 const UniswapV2PairJSON = require("../artifactsUniswap/UniswapV2Pair.json");
@@ -396,21 +391,6 @@ export default async function deploy(ethers): Promise<void> {
             proposalType,
             { gasLimit: 3000000 }
           );
-
-        const parsedTransaction = beneficiaryGovernanceABIInterface.parseLog({
-          data: result.data,
-          topics: result,
-        });
-        // Decoded Transaction
-        console.log({
-          parsedTransaction,
-          function_name: parsedTransaction.name,
-          from: result.from,
-          to: parsedTransaction.args[0],
-          erc20Value: Number(parsedTransaction.args[1]),
-        });
-
-        return result;
       },
       { concurrency: 1 }
     );
