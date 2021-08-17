@@ -4,49 +4,81 @@ import {
   TrendingUpIcon,
 } from '@heroicons/react/outline';
 import { Meta, Story } from '@storybook/react/types-6-0';
+import React from 'react';
 import { AddContractButton } from '../../../AddContractButton';
-import { ContractStats } from '../../../ContractStats';
+import { ContractStatsMini } from '../../../ContractStatsMini';
 import { Divider } from '../../../Divider';
 import { PageHeader } from '../../../PageHeader';
 import { TotalStatsMini } from '../../../TotalStatsMini';
+
+const totalStatsEmissionsData = [
+  {
+    id: 1,
+    name: 'co2Emissions',
+    stat: '71kg',
+    icon: CloudIcon,
+    change: '12.38%',
+    changeType: 'increase',
+  },
+  {
+    id: 2,
+    name: 'Transactions',
+    stat: '23',
+    icon: TrendingUpIcon,
+    change: '5.4%',
+    changeType: 'increase',
+  },
+  {
+    id: 3,
+    name: 'Average Gas Price',
+    stat: '45',
+    icon: CursorClickIcon,
+    change: '3.2%',
+    changeType: 'decrease',
+  },
+];
+
+const contractStats = [
+  {
+    id: 1,
+    name: 'co2Emissions',
+    stat: '71kg',
+    icon: CloudIcon,
+    change: '12.38%',
+    changeType: 'increase',
+  },
+  {
+    id: 2,
+    name: 'Transactions',
+    stat: '23',
+    icon: TrendingUpIcon,
+    change: '5.4%',
+    changeType: 'increase',
+  },
+];
 
 const EmissionsDashboardPage = () => {
   return (
     <div className="bg-gray-50">
       <PageHeader />
-      <TotalStatsMini
-        emissionSummaryStats={[
-          {
-            id: 1,
-            name: 'co2Emissions',
-            stat: '71kg',
-            icon: CloudIcon,
-            change: '12.38%',
-            changeType: 'increase',
-          },
-          {
-            id: 2,
-            name: 'Transactions',
-            stat: '23',
-            icon: TrendingUpIcon,
-            change: '5.4%',
-            changeType: 'increase',
-          },
-          {
-            id: 3,
-            name: 'Average Gas Price',
-            stat: '45',
-            icon: CursorClickIcon,
-            change: '3.2%',
-            changeType: 'decrease',
-          },
-        ]}
-      />
+      <TotalStatsMini emissionSummaryStats={totalStatsEmissionsData} />
       <Divider />
-      <ContractStats />
-      <ContractStats />
-      <ContractStats />
-      <ContractStats />
+      <ContractStatsMini
+        emissionSummaryStats={contractStats}
+        contractName={'Popcorn HYSI Staking Pool'}
+      />
+      <ContractStatsMini
+        emissionSummaryStats={contractStats}
+        contractName={'Popcorn HYSI Staking Pool'}
+      />
+      <ContractStatsMini
+        emissionSummaryStats={contractStats}
+        contractName={'Popcorn HYSI Staking Pool'}
+      />
+      <ContractStatsMini
+        emissionSummaryStats={contractStats}
+        contractName={'Popcorn HYSI Staking Pool'}
+      />
       <AddContractButton />
     </div>
   );
