@@ -16,7 +16,7 @@ export const MiniStatCard: React.FC<MiniStatCardProps> = ({ item }) => {
       className="relative h-16 w-40 bg-white pt-2 px-3 pb-3 sm:pt-3 sm:px-3 shadow rounded-lg overflow-hidden"
     >
       <dt>
-        <div className="absolute bg-indigo-500 rounded-md p-1 mt-3">
+        <div className="absolute bg-indigo-500 rounded-md p-1 mt-1">
           <item.icon className="h-3 w-3 text-white" aria-hidden="true" />
         </div>
         <p className="ml-8 text-sm font-medium text-gray-500 truncate">
