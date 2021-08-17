@@ -13,7 +13,7 @@ import "./Interfaces/Integrations/CurveContracts.sol";
 import "./Interfaces/Integrations/BasicIssuanceModule.sol";
 import "./Interfaces/Integrations/ISetToken.sol";
 
-contract BatchSetInteraction is Owned {
+contract HysiBatchInteraction is Owned {
   using SafeMath for uint256;
   using SafeERC20 for ThreeCrv;
   using SafeERC20 for CrvLPToken;
@@ -26,9 +26,8 @@ contract BatchSetInteraction is Owned {
     Redeem
   }
 
-  struct UnderlyingToken {
+  struct Underlying {
     IERC20 crvToken;
-    uint256 allocation;
     YearnVault yToken;
     CurveMetapool curveMetaPool;
   }
@@ -46,7 +45,7 @@ contract BatchSetInteraction is Owned {
   ThreeCrv public threeCrv;
   BasicIssuanceModule public setBasicIssuanceModule;
   ISetToken public setToken;
-  UnderlyingToken[] public underlyingToken;
+  Underlying[] public underlying;
 
   mapping(address => bytes32[]) public batchesOfAccount;
   mapping(bytes32 => Batch) public batches;
@@ -94,6 +93,51 @@ contract BatchSetInteraction is Owned {
   }
 
   /* ========== VIEWS ========== */
+
+  function getExpectedHysi(uint256 threeCrvAmount_)
+    public
+    view
+    returns (uint256)
+  {
+    (
+      address[] memory tokenAddresses,
+      uint256[] memory quantities
+    ) = setBasicIssuanceModule.getRequiredComponentUnitsForIssue(
+        setToken,
+        1e18
+      );
+
+    //Amount of 3crv needed to mint 1 hysi
+    uint256 hysiIn3Crv;
+
+    //Amount of 3crv needed to mint the necessary quantity of yToken for hysi
+    uint256[] memory quantitiesIn3Crv = new uint256[](quantities.length);
+
+    for (uint256 i; i < underlying.length; i++) {
+      //Check how many crvToken are needed to mint one yToken
+      uint256 yTokenInCrvToken = underlying[i].yToken.getPricePerFullShare();
+
+      //Check how many 3crv are needed to mint one crvToken
+      uint256 crvTokenIn3Crv = underlying[i]
+        .curveMetaPool
+        .calc_withdraw_one_coin(1e18, 1);
+
+      //Calc how many 3crv are needed to mint one yToken
+      uint256 yTokenIn3Crv = yTokenInCrvToken.mul(crvTokenIn3Crv).div(1e18);
+
+      //Calc how many 3crv are needed to mint the quantity in yToken
+      uint256 quantityIn3Crv = yTokenIn3Crv.mul(quantities[i]).div(1e18);
+
+      //Calc total price of 1 HYSI in 3crv
+      hysiIn3Crv = hysiIn3Crv.add(quantityIn3Crv);
+
+      //Save allocation in 3crv for later
+      quantitiesIn3Crv[i] = quantityIn3Crv;
+    }
+
+    //Calc max amount of Hysi mintable
+    return threeCrvAmount_.div(hysiIn3Crv).mul(1e18);
+  }
 
   /* ========== MUTATIVE FUNCTIONS ========== */
 
@@ -157,43 +201,63 @@ contract BatchSetInteraction is Owned {
       threeCrv.balanceOf(address(this)) >= batch.suppliedToken,
       "insufficient balance"
     );
+    //!!! its absolutely necessary that the order of underylingToken matches the order of getRequireedComponentUnitsforIssue
+    (
+      address[] memory tokenAddresses,
+      uint256[] memory quantities
+    ) = setBasicIssuanceModule.getRequiredComponentUnitsForIssue(
+        setToken,
+        1e18
+      );
 
-    //its absolutely necessary that the order of underylingToken matches the order of getRequireedComponentUnitsforIssue
-    uint256[] quantities = setBasicIssuanceModule
-      .getRequiredComponentUnitsForIssue(setToken, 1e18);
-    uint256 HysiInUSD;
-    uint256[] yPrices;
+    //Amount of 3crv needed to mint 1 hysi
+    uint256 hysiIn3Crv;
 
-    for (uint256 i; i < underlyingToken.length; i++) {
-      uint256 yPrice = underlyingToken[i].yToken.getPricePerFullShare();
-      //This takes amount of lp tokes and index of underlying 3crv stable but not 3crv
-      uint256 crvPoolSharePrice = underlyingToken
+    //Amount of 3crv needed to mint the necessary quantity of yToken for hysi
+    uint256[] memory quantitiesIn3Crv = new uint256[](quantities.length);
+
+    for (uint256 i; i < underlying.length; i++) {
+      //Check how many crvToken are needed to mint one yToken
+      uint256 yTokenInCrvToken = underlying[i].yToken.getPricePerFullShare();
+
+      //Check how many 3crv are needed to mint one crvToken
+      uint256 crvTokenIn3Crv = underlying[i]
         .curveMetaPool
         .calc_withdraw_one_coin(1e18, 1);
-      uint256 yPriceUSD = yPrice.mul(crvPoolSharePrice);
-      HysiInUSD = HysiInUSD.add(yPriceUSD.mul(quantities[i]));
-      yPrice[i] = yPriceUSD;
-    }
-    uint256 hysiAmount = HysiInUSD.div(batch.suppliedToken);
 
-    for (uint256 i; i < underlyingToken.length; i++) {
-      uint256 allocation = hysiAmount.mul(yPrices[i]);
-      uint256 crvLPTokenAmount = _sendToCurve(
-        allocation,
-        underlyingToken[i].curveMetaPool
+      //Calc how many 3crv are needed to mint one yToken
+      uint256 yTokenIn3Crv = yTokenInCrvToken.mul(crvTokenIn3Crv).div(1e18);
+
+      //Calc how many 3crv are needed to mint the quantity in yToken
+      uint256 quantityIn3Crv = yTokenIn3Crv.mul(quantities[i]).div(1e18);
+
+      //Calc total price of 1 HYSI in 3crv
+      hysiIn3Crv = hysiIn3Crv.add(quantityIn3Crv);
+
+      //Save allocation in 3crv for later
+      quantitiesIn3Crv[i] = quantityIn3Crv;
+    }
+
+    //Calc max amount of Hysi mintable
+    uint256 hysiAmount = batch.suppliedToken.div(hysiIn3Crv).mul(1e18);
+
+    for (uint256 i; i < underlying.length; i++) {
+      _sendToCurve(
+        quantitiesIn3Crv[i].mul(hysiAmount).div(1e18),
+        underlying[i].curveMetaPool
       );
       _sendToYearn(
-        underlyingToken[i].crvToken.balanceOf(address(this)),
-        underlyingToken[i].crvToken,
-        underlyingToken[i].yToken
+        underlying[i].crvToken.balanceOf(address(this)),
+        underlying[i].crvToken,
+        underlying[i].yToken
       );
-      underlyingToken[i].yToken.safeIncreaseAllowance(
+      underlying[i].yToken.safeIncreaseAllowance(
         address(setBasicIssuanceModule),
-        underlyingToken[i].yToken.balanceOf(address(this))
+        underlying[i].yToken.balanceOf(address(this))
       );
     }
     uint256 oldBalance = setToken.balanceOf(address(this));
-    setBasicIssuanceModule.issue(setToken, amount_, address(this));
+    setBasicIssuanceModule.issue(setToken, hysiAmount, address(this));
     batch.claimableToken = setToken.balanceOf(address(this)).sub(oldBalance);
     batch.suppliedToken = 0;
     batch.claimable = true;
@@ -201,7 +265,7 @@ contract BatchSetInteraction is Owned {
     lastMintedAt = block.timestamp;
     currentMintBatchId = _generateNextBatchId(currentMintBatchId);
 
-    emit BatchMinted(amount_);
+    emit BatchMinted(hysiAmount);
   }
 
   function batchRedeem() external {
@@ -225,15 +289,15 @@ contract BatchSetInteraction is Owned {
     setBasicIssuanceModule.redeem(setToken, batch.suppliedToken, address(this));
 
     uint256 oldBalance = threeCrv.balanceOf(address(this));
-    for (uint256 i; i < underlyingToken.length; i++) {
+    for (uint256 i; i < underlying.length; i++) {
       _withdrawFromYearn(
-        underlyingToken[i].yToken.balanceOf(address(this)),
-        underlyingToken[i].yToken
+        underlying[i].yToken.balanceOf(address(this)),
+        underlying[i].yToken
       );
       _withdrawFromCurve(
-        underlyingToken[i].crvToken.balanceOf(address(this)),
-        underlyingToken[i].crvToken,
-        underlyingToken[i].curveMetaPool
+        underlying[i].crvToken.balanceOf(address(this)),
+        underlying[i].crvToken,
+        underlying[i].curveMetaPool
       );
     }
 
@@ -306,13 +370,19 @@ contract BatchSetInteraction is Owned {
 
   /* ========== SETTER ========== */
 
-  //its absolutely necessary that the order of underylingToken matches the order of getRequireedComponentUnitsforIssue
-  function setUnderylingToken(UnderlyingToken[] calldata underlyingToken_)
+  /**
+    @notice This function defines which underyling token and pools are needed to mint a hysi token
+    @param underlying_ An array structs describing underlying yToken, crvToken and curve metapool
+    @dev !!! Its absolutely necessary that the order of underylingToken matches the order of getRequireedComponentUnitsforIssue
+    @dev since our calculations for minting just iterate through the index and match it with the quantities given by Set
+    @dev we must make sure to align them correctly by index, otherwise our whole calculation breaks down
+  */
+  function setUnderylingToken(Underlying[] calldata underlying_)
     external
     onlyOwner
   {
-    for (uint256 i; i < underlyingToken_.length; i++) {
-      underlyingToken.push(underlyingToken_[i]);
+    for (uint256 i; i < underlying_.length; i++) {
+      underlying.push(underlying_[i]);
     }
   }
 

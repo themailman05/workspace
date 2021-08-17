@@ -25,6 +25,11 @@ interface CurveMetapool {
     int128 i,
     uint256 min_underlying_amount
   ) external returns (uint256);
+
+  function calc_withdraw_one_coin(uint256 _token_amount, int128 i)
+    external
+    view
+    returns (uint256);
 }
 
 interface ThreeCrv is IERC20 {}
