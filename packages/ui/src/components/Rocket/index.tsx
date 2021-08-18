@@ -62,14 +62,14 @@ const StyledRocket = styled(RocketSvg)`
   #jupiter1,
   #planet2,
   #planet6 {
-    animation: ${wobble1} 3s infinite ease;
+    animation: ${wobble1} 4s infinite ease;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in;
   }
 
   #jupiter2,
   #planet3 {
-    animation: ${wobble2} 3s infinite ease;
+    animation: ${wobble2} 4s infinite ease;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in;
   }
@@ -78,7 +78,7 @@ const StyledRocket = styled(RocketSvg)`
   #planet1,
   #planet4,
   #planet5  {
-    animation: ${wobble3} 3s infinite ease;
+    animation: ${wobble3} 4s infinite ease;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in;
   }
@@ -86,7 +86,7 @@ const StyledRocket = styled(RocketSvg)`
   #ship {
     transform-origin: 75% 20%;
     animation: ${rocketAnimation};
-    animation-duration: 2s;
+    animation-duration: 3s;
     animation-iteration-count: infinite;
     animation-timing-function: ease-in-out;
   }
