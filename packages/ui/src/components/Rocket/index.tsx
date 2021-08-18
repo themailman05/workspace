@@ -33,8 +33,18 @@ const wobble3 = keyframes`
 
 const starAnimation = keyframes`
   from, to { transform: scale3d(1,1,1); }
+  10% { transform: scale3d(1,1,1); }
+  15% { transform: scale3d(1.1, 1.1, 1) rotate3d(0,0,1,-10deg); }
+  20% { transform: scale3d(1,1,1); }
+  30% { transform: scale3d(1,1,1); }
+  35% { transform: scale3d(1.05, 1.05, 1) rotate3d(0,0,1,-5deg); }
+  40% { transform: scale3d(1,1,1); }
+  45% { transform: scale3d(1.05, 1.05, 1) rotate3d(0,0,1,-5deg); }
+  50% { transform: scale3d(1,1,1); }
+  55% { transform: scale3d(1.05, 1.05, 1) rotate3d(0,0,1,-5deg); }
+  60% { transform: scale3d(1,1,1); }
   80% { transform: scale3d(1,1,1); }
-  85% { transform: scale3d(1.3, 1.3, 1) rotate3d(0,0,1,-15deg); }
+  85% { transform: scale3d(1.2, 1.2, 1) rotate3d(0,0,1,-10deg); }
   90% { transform: scale3d(1,1,1); }
 `;
 
