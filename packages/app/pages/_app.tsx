@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Head from 'next/head';
 import { ThemeProvider } from 'styled-components';
 import { MuiThemeProvider, StylesProvider } from '@material-ui/core/styles';
@@ -45,6 +45,9 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
   }, []);
+
+  const PureCanvas = forwardRef((props, ref) => <canvas ref={ref} />);
+
 
   return (
     <React.Fragment>

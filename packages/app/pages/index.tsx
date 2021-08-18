@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useEffect, useState } from 'react';
 import { Facebook, GitHub, Menu, Twitter, X } from 'react-feather';
+import CatPoolAnimation from '../components/CatPoolAnimation'
+
 
 const IndexPage = () => {
   const router = useRouter();
@@ -13,6 +15,7 @@ const IndexPage = () => {
   const [menuVisible, toggleMenu] = useState<boolean>(false);
   const [ctaModalVisible, toggleCtaModal] = useState<boolean>(false);
 
+   
   useEffect(() => {
     if (typeof window !== 'undefined' && window.location.pathname !== '/') {
       router.replace(window.location.pathname);
@@ -248,7 +251,7 @@ const IndexPage = () => {
                 </div>
               </div>
               <div className="w-full lg:w-6/12 xl:w-7/12 order-1 lg:order-2 mb-8 lg:mb-0">
-                <img src="/images/catPool.svg" alt="pool" className=""></img>
+                <CatPoolAnimation/>
               </div>
             </div>
             <div className="w-full h-24"></div>
