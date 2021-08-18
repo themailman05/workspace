@@ -1,5 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import FacebookPixel from 'components/FacebookPixel';
+import { CatPool } from '@popcorn/ui/components/CatPool';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useEffect, useState } from 'react';
@@ -248,8 +249,8 @@ const IndexPage = () => {
                 </div>
               </div>
               <div className="w-full lg:w-6/12 xl:w-7/12 order-1 lg:order-2 mb-8 lg:mb-0">
-                <img src="/images/catPool.svg" alt="pool" className=""></img>
-              </div>
+              <CatPool />
+             </div>
             </div>
             <div className="w-full h-24"></div>
           </div>
@@ -650,11 +651,7 @@ const IndexPage = () => {
             }}
           >
             <div className="w-10/12 mx-auto flex flex-col lg:flex-row justify-between pb-48 items-center text-center">
-              <img
-                src="/images/catPool.svg"
-                alt="pool"
-                className="w-full mb-8"
-              ></img>
+              <CatPool/>
               <h1 className="font-bold text-4xl leading-snug mb-8">
                 Start doing good with DeFi
               </h1>
