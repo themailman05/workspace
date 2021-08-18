@@ -9,3 +9,4 @@ export * from "./Widget";
 export * from "./Icons";
 export * from "./Link";
 export * from "./Rocket";
+export * from "./CatPool";
