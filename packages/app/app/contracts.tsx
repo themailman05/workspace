@@ -11,8 +11,6 @@ import {
 import {
   GrantElections,
   GrantElections__factory,
-  GrantRegistry,
-  GrantRegistry__factory,
   Staking,
   Staking__factory,
   BeneficiaryRegistry,
@@ -26,7 +24,6 @@ export interface Contracts {
   beneficiary?: BeneficiaryRegistry;
   election?: GrantElections;
   pop?: ERC20;
-  grant?: GrantRegistry;
 }
 
 interface ContractsContext {
@@ -96,10 +93,6 @@ export default function ContractsWrapper({
         library,
       ),
       pop: ERC20__factory.connect(process.env.ADDR_POP, library),
-      grant: GrantRegistry__factory.connect(
-        process.env.ADDR_GRANT_REGISTRY,
-        library,
-      ),
     });
   }, [library, active]);
 
