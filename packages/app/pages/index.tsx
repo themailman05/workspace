@@ -1,5 +1,6 @@
 import { Dialog, Transition } from '@headlessui/react';
 import FacebookPixel from 'components/FacebookPixel';
+import { Rocket } from '@popcorn/ui/components/Rocket';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useEffect, useState } from 'react';
@@ -347,7 +348,7 @@ const IndexPage = () => {
               ></img>
             </div>
             <div className="w-6/12">
-              <img src="/images/rocket.svg" alt="rocket" className=""></img>
+              <Rocket />
             </div>
           </div>
         </section>
@@ -777,7 +778,7 @@ const IndexPage = () => {
           </div>
         </section>
         <section className="w-10/12 h-full mx-auto">
-          <img src="/images/rocket.svg" alt="rocket" className=""></img>
+          <Rocket />
           <h2 className="font-bold text-3xl leading-snug mb-4 mt-12 text-center">
             Maximize your Crypto Portfolio
           </h2>
