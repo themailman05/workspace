@@ -13,15 +13,7 @@ interface IGrantFunded {
 export default function GrantFunded({  election, beneficiary }: IGrantFunded): JSX.Element {
   const { contracts } = useContext(ContractsContext);
   const [awarded, setAwarded] = useState(false);
-  const isBeneficiaryGrantRecipient = async () =>{
-    setAwarded((await contracts.grant.getActiveAwardees(election.electionTerm)).includes(beneficiary.address));
-  }
 
-  useEffect(() => {
-    if (contracts?.grant) {
-      isBeneficiaryGrantRecipient();
-    }
-  }, [contracts]);
 
   return (
     <span className="flex flex-row">

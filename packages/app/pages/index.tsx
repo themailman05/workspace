@@ -1,6 +1,7 @@
 import { Dialog, Transition } from '@headlessui/react';
 import FacebookPixel from 'components/FacebookPixel';
 import { CatPool } from '@popcorn/ui/components/CatPool';
+import { Rocket } from '@popcorn/ui/components/Rocket';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import React, { Fragment, useEffect, useState } from 'react';
@@ -348,7 +349,7 @@ const IndexPage = () => {
               ></img>
             </div>
             <div className="w-6/12">
-              <img src="/images/rocket.svg" alt="rocket" className=""></img>
+              <Rocket />
             </div>
           </div>
         </section>
@@ -523,7 +524,7 @@ const IndexPage = () => {
                 <Link href="https://twitter.com/Popcorn_DAO" passHref>
                   <Twitter className="hover:text-blue-600 cursor-pointer" />
                 </Link>
-                <Link href="https://discord.gg/TttaZdZC" passHref>
+                <Link href="https://discord.gg/wzm9BHWq" passHref>
                   <img
                     src="/images/discord.svg"
                     alt="discord"
@@ -549,7 +550,7 @@ const IndexPage = () => {
               <Link href="https://twitter.com/Popcorn_DAO" passHref>
                 <a className="hover:text-blue-600">Twitter</a>
               </Link>
-              <Link href="https://discord.gg/TttaZdZC" passHref>
+              <Link href="https://discord.gg/wzm9BHWq" passHref>
                 <a className="hover:text-blue-600">Discord</a>
               </Link>
               <Link href="https://github.com/popcorndao" passHref>
@@ -774,7 +775,7 @@ const IndexPage = () => {
           </div>
         </section>
         <section className="w-10/12 h-full mx-auto">
-          <img src="/images/rocket.svg" alt="rocket" className=""></img>
+          <Rocket />
           <h2 className="font-bold text-3xl leading-snug mb-4 mt-12 text-center">
             Maximize your Crypto Portfolio
           </h2>
@@ -945,7 +946,7 @@ const IndexPage = () => {
               <Link href="https://twitter.com/Popcorn_DAO" passHref>
                 <Twitter className="hover:text-blue-600 cursor-pointer" />
               </Link>
-              <Link href="https://discord.gg/TttaZdZC" passHref>
+              <Link href="https://discord.gg/wzm9BHWq" passHref>
                 <img
                   src="/images/discord.svg"
                   alt="discord"
@@ -971,7 +972,7 @@ const IndexPage = () => {
                 <Link href="https://twitter.com/Popcorn_DAO" passHref>
                   <a className="hover:text-blue-600">Twitter</a>
                 </Link>
-                <Link href="https://discord.gg/TttaZdZC" passHref>
+                <Link href="https://discord.gg/wzm9BHWq" passHref>
                   <a className="hover:text-blue-600">Discord</a>
                 </Link>
                 <Link href="https://github.com/popcorndao" passHref>
