@@ -18,10 +18,10 @@ const tailJump = keyframes`
 
 const redcatfall = keyframes`
   from{
-    transform: translate(-50px, -50px);
+    transform: rotateZ(0deg);
   }
   to{
-    transform: translate(35px, 25px);
+    transform:rotateZ(-15deg);
   }
 `;
 
@@ -31,6 +31,16 @@ const snowFall = keyframes`
   }
   to{
     transform : translate(0px,0px);
+  }
+`;
+
+const lightBlueCatRise = keyframes`{
+  from{
+        transform: rotateZ(0deg);
+    }
+    to{
+        transform:rotateZ(-20deg);
+    }
   }
 `;
 
@@ -54,7 +64,7 @@ const StyledCatPool = styled(CatPoolSvg)`
     transition-timing-function: ease;
   }
 
-  #svg-id-bluecat{
+  #svg-id-greencat{
     animation: ${catRotate} 9s  infinite linear;
     transform-origin: center;
     transform-box: fill-box;
@@ -70,11 +80,17 @@ const StyledCatPool = styled(CatPoolSvg)`
     transform-origin: top;
 }
 
-  #svg-id-snowflake {
-    animation: ${snowFall} 5s infinite ease;
-    animation-iteration-count: infinite;
-    animation-timing-function: ease-in;
+  #svg-id-popcorn {
+    animation: ${snowFall} 12s infinite;
+    transform-origin: top;
+    transform-box: fill-box;
   }
+
+  #svg-id-lightbluecat{
+    animation: ${lightBlueCatRise}  12s infinite;
+     transform-origin: center;
+     transform-box: fill-box;
+ }
 `;
 
 export const CatPool: React.FC = () => <StyledCatPool />;
