@@ -18,10 +18,10 @@ const tailJump = keyframes`
 
 const redcatfall = keyframes`
   from{
-    transform: rotateZ(0deg);
+    transform: translate(-50px, -50px);
   }
   to{
-    transform:rotateZ(-15deg);
+    transform: translate(35px, 25px);
   }
 `;
 
