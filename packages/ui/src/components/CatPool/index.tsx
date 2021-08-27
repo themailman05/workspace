@@ -36,11 +36,11 @@ const snowFall = keyframes`
 
 const lightBlueCatRise = keyframes`{
   from{
-        transform: rotateZ(0deg);
-    }
-    to{
-        transform:rotateZ(-20deg);
-    }
+    transform: translate(0px,0px) rotateZ(0deg);
+     
+  }
+  to{
+      transform: translate(-20px,-20px) rotateZ(-20deg);
   }
 `;
 
